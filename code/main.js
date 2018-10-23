@@ -1,21 +1,27 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow} = require('electron')
-
+// require('devtron').install()
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
-let wechatWindow
+
 
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600})
-  // wechatWindow = new BrowserWindow({show: false})
-  wechatWindow = new BrowserWindow()
+  mainWindow = new BrowserWindow({
+    width: 1024,
+    height: 768,
+    resizable: true
+  });
 
-  // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
+  mainWindow.loadFile('./templates/index.html');
 
-  wechatWindow.loadURL("https://wx2.qq.com/")
+  mainWindow.webContents.openDevTools()
+  mainWindow.maximize()
+
+  // <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+  
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
