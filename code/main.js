@@ -4,6 +4,7 @@ const {app, BrowserWindow} = require('electron')
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+let directWindow
 
 
 function createWindow () {
@@ -14,11 +15,18 @@ function createWindow () {
     resizable: true
   });
 
+  directWindow= new BrowserWindow({  
+    webPreferences: {
+    nodeIntegration: false   } });
+
   mainWindow.loadFile('./templates/index.html');
 
   mainWindow.webContents.openDevTools()
   mainWindow.maximize()
 
+  directWindow.loadURL("https://web.skype.com/en/")
+  directWindow.webContents.openDevTools()
+  directWindow.maximize()  
   // <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
   
