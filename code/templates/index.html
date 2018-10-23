@@ -2,9 +2,16 @@
 <html>
   <head>
     <title>jQuery injection into webview preload</title>
+    <!-- <script src="../static/js/jQuery/jquery-3.3.1.min.js"></script> -->
+    <!-- jQuery 必须这么用 -->
+    <script>window.$ = window.jQuery = require('../static/js/jQuery/jquery-3.3.1.min.js');</script>
+    <script src="../static/js/own/index.js"></script>
   </head>
   <body style="overflow:hidden;">
-    <webview id="webview" preload="../static/js/manipulateGoogle.js" src="https://web.skype.com/en/" style="position:absolute;width:100%;height:100%;"></webview>
+    <button id="goto-skype">skype</button>
+    <button id="goto-wechat">wechat</button>
+    <webview id="webview-skype" preload="../static/js/own/manipulateGoogle.js" src="https://web.skype.com/en/" style="position:absolute;width:100%;height:100%; "></webview>
+    <webview id="webview-wechat" preload="../static/js/own/manipulateGoogle.js" src="https://web2.wechat.com/" style="position:absolute;width:100%;height:100%; visibility:hidden;"></webview>
     <script>
       // need to have a script tag make webview work even if you don't plan to use it...
     </script>
