@@ -1,5 +1,9 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const  electron= require('electron')
+const app = electron.app;
+const BrowserWindow = electron.BrowserWindow;
+const ipc = electron.ipcMain
+
 // require('devtron').install()
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -58,5 +62,15 @@ app.on('activate', function () {
   }
 })
 
+
+ipc.on('ipc-asynchronous-message', function(event,arg){
+  event.sender.send('ipc-asynchronous-reply', 'main copy asynchronous that')
+  console.log("main asynchronous-ipc : ", arg)
+})
+
+ipc.on('ipc-synchronous-message', function(event,arg){
+  event.returnValue = 'main copy synchronous that'
+  console.log("main synchronous-ipc : ", arg)
+})
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
