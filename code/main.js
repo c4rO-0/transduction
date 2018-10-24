@@ -63,14 +63,16 @@ app.on('activate', function () {
 })
 
 
-ipc.on('ipc-asynchronous-message', function(event,arg){
-  event.sender.send('ipc-asynchronous-reply', 'main copy asynchronous that')
-  console.log("main asynchronous-ipc : ", arg)
+// ===========其他窗口消息===============
+// 虽然send后面接非常多的参数(channel,[arg1,arg2,....]) 
+// 但是为了统一接口, 只接受一个字典参数
+ipc.on('msg-ipc-asy-to-main', function(event,arg){
+  event.sender.send('msg-ipc-asy-main-reply', {'type': 'reply msg from main'})
+  console.log("main asy receive : ", arg)
 })
 
-ipc.on('ipc-synchronous-message', function(event,arg){
-  event.returnValue = 'main copy synchronous that'
-  console.log("main synchronous-ipc : ", arg)
+ipc.on('msg-ipc-sy-to-main', function(event,arg){
+  event.returnValue = {'type': 'reply msg from main'}
+  console.log("main sy receive : ", arg)
 })
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+

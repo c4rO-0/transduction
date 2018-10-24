@@ -1,11 +1,13 @@
 const electron = require("electron");
 const ipc = electron.ipcRenderer
 
-
-ipc.on('ipc-asynchronous-reply', function(event, arg){
-    console.log("asynchronous-ipc reply : ", arg)
+// =========等待消息==============
+//  main消息
+ipc.on('msg-ipc-asy-main-reply', function(event, arg){
+    console.log("main asy reply : ", arg)
 
 })   
+// 其他消息
 
 
 $(document).ready(function () {
@@ -18,20 +20,24 @@ $(document).ready(function () {
         $("#webview-skype").css("visibility","hidden")
     })    
 
+
+    // =========向main发送消息==============
     let ASobjBtn = document.getElementById('asynchronous-messageBtn')
 
     let SobjBtn = document.getElementById('synchronous-messageBtn')
 
     ASobjBtn.addEventListener('click', function(){
         console.log("index : msg 1");
-        ipc.send('ipc-asynchronous-message', "asynchronous msg from index")
+        ipc.send('msg-ipc-asy-to-main', {"type": "msg from index"})
     })
 
     SobjBtn.addEventListener('click', function(){
         console.log("index : msg 2");
-        let msgReply = ipc.sendSync('ipc-synchronous-message', "synchronous msg from index")
-        console.log("synchronous-ipc reply : ",msgReply)
+        let msgReply = ipc.sendSync('msg-ipc-sy-to-main',{"type": "msg from index"})
+        console.log("main sy reply : ",msgReply)
     })    
+
+    // 
     
 });
 
