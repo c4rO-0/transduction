@@ -1,5 +1,11 @@
 # 日志
 
+## 2018Oct25
+auther : BS
+目前用微信做实验. 实现webview和mian通讯.
+skype没试, 估计会有问题. 主要原因是skype会对页面进行跳转, 跳转之后preload的脚本就失效了.
+所以考虑skype需要搞一套普适的沟通框架.
+
 ## 2018Oct24
 auther : BS
 - 坑爹啊, preload要用绝对路径
