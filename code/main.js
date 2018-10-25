@@ -68,11 +68,15 @@ app.on('activate', function () {
 // 但是为了统一接口, 只接受一个字典参数
 ipc.on('msg-ipc-asy-to-main', function(event,arg){
   event.sender.send('msg-ipc-asy-main-reply', {'type': 'reply msg from main'})
-  console.log("main asy receive : ", arg)
+  console.log("========================")
+  console.log("main asy receive from window ", event.sender.getOwnerBrowserWindow().id)
+  console.log("msg is : ", arg)
 })
 
 ipc.on('msg-ipc-sy-to-main', function(event,arg){
   event.returnValue = {'type': 'reply msg from main'}
-  console.log("main sy receive : ", arg)
+  console.log("========================")
+  console.log("main sy receive from window  ", event.sender.getOwnerBrowserWindow().id)
+  console.log("msg is : ", arg)
 })
 
