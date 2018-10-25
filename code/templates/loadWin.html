@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>load social app</title>
+  <!-- <script src="../static/js/jQuery/jquery-3.3.1.min.js"></script> -->
+  <!-- jQuery 必须这么用 -->
+  <script>window.$ = window.jQuery = require('../static/js/jQuery/jquery-3.3.1.min.js');</script>
+  <script src="../static/js/own/loadWin.js"></script>
+</head>
+
+<body style="overflow:hidden;">
+  <button id="goto-skype">skype</button>
+  <button id="goto-wechat">wechat</button>
+  <button id="asynchronous-messageBtn">send asynchronous message</button>
+  <button id="synchronous-messageBtn">send synchronous message</button>
+  <webview id="webview-skype" preload="../static/js/own/skype_webview.js" src="https://web.skype.com/en/" style="position:absolute;width:100%;height:100%; "></webview>
+  <webview id="webview-wechat" preload="../static/js/own/wechat_webview.js" src="https://web2.wechat.com/" style="position:absolute;width:100%;height:100%; visibility:hidden;"></webview>
+  <script>
+      // need to have a script tag make webview work even if you don't plan to use it...
+  </script>
+</body>
+
+</html>

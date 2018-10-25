@@ -7,7 +7,8 @@ const ipc = electron.ipcMain
 // require('devtron').install()
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let mainWindow=null
+let loadWindow=null
 
 
 function createWindow () {
@@ -17,18 +18,24 @@ function createWindow () {
     height: 768,
     resizable: true
   });
-
+  
   mainWindow.loadFile('./templates/index.html');
 
   mainWindow.webContents.openDevTools()
   mainWindow.maximize()
 
-  // <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
-  
 
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  loadWindow = new BrowserWindow({
+    width: 1024,
+    height: 768,
+    resizable: true
+  });
+
+  loadWindow.loadFile('./templates/loadWin.html');
+
+  loadWindow.webContents.openDevTools()
+  loadWindow.maximize() 
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
