@@ -11,15 +11,19 @@ let mainWindow=null
 let loadWindow=null
 
 
+
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
-    resizable: true
+    resizable: true,
+    title: "mainWin"
   });
+
   
   mainWindow.loadFile('./templates/index.html');
+
 
   mainWindow.webContents.openDevTools()
   mainWindow.maximize()
@@ -29,7 +33,8 @@ function createWindow () {
   loadWindow = new BrowserWindow({
     width: 1024,
     height: 768,
-    resizable: true
+    resizable: true,
+    title: "loadWin"
   });
 
   loadWindow.loadFile('./templates/loadWin.html');
@@ -72,7 +77,7 @@ app.on('activate', function () {
 
 // ===========其他窗口消息===============
 // 虽然send后面接非常多的参数(channel,[arg1,arg2,....]) 
-// 但是为了统一接口, 只接受一个字典参数
+// 但是为了统一接口, 只接受一个object参数
 ipc.on('msg-ipc-asy-to-main', function(event,arg){
   event.sender.send('msg-ipc-asy-main-reply', {'type': 'reply msg from main'})
   console.log("========================")
@@ -81,9 +86,25 @@ ipc.on('msg-ipc-asy-to-main', function(event,arg){
 })
 
 ipc.on('msg-ipc-sy-to-main', function(event,arg){
-  event.returnValue = {'type': 'reply msg from main'}
+  
   console.log("========================")
   console.log("main sy receive from window  ", event.sender.getOwnerBrowserWindow().id)
   console.log("msg is : ", arg)
+  let returnValue = new Object;
+
+  for (let key in arg){
+    if(key == "query"){
+      if(arg[key] == "winID"){
+        // 获取全部window ID
+        let IDList = new Object;
+        for (let win of BrowserWindow.getAllWindows()) {
+          IDList[win.id] = win.getTitle();
+        }
+        returnValue[key+":"+arg[key]] = IDList
+      }
+    }
+  }
+
+  event.returnValue = returnValue
 })
 

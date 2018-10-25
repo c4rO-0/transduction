@@ -30,6 +30,17 @@ $(document).ready(function () {
     // })
 
     // 
-
+    let BtnRequestWinID = $('#btn-request-win-id');
+    $(BtnRequestWinID).on("click",()=>{
+        let msgReply = ipc.sendSync('msg-ipc-sy-to-main', { "query": "winID" })
+        // console.log(msgReply)
+        let IDList = msgReply["query:winID"]
+        let txtAdd='ID : title\n'
+        for (winID in IDList) {
+            txtAdd = txtAdd+ winID.toString() + " : " + IDList[winID] +"\n"
+        }
+        // console.log(txtAdd)
+        $("#txt-win-id").text(txtAdd);
+    })
 });
 
