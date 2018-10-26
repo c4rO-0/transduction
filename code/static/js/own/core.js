@@ -21,9 +21,10 @@ module.exports = {
     webviewDynamicInsertJS: function (IDwebview, pathJS) {
 
         let elementWebview = document.getElementById(IDwebview)
+        console.log(elementWebview)
         // 发现URL变化
         elementWebview.addEventListener('did-navigate-in-page', (event) => {
-            // console.log("url change : ", event.isMainFrame, event.url)
+            console.log(IDwebview, "url change : ", event.isMainFrame, event.url)
 
             // 注入指定脚本
             var script = fs.readFileSync(pathJS, 'utf8')
@@ -35,6 +36,7 @@ module.exports = {
         })
         // 等待页面加载完成
         elementWebview.addEventListener('dom-ready', () => {
+            console.log(IDwebview, "dom-ready")
             // 注入指定脚本
             var script = fs.readFileSync(pathJS, 'utf8')
             elementWebview.executeJavaScript("if(document.getElementById('webviewJS')==undefined){\
