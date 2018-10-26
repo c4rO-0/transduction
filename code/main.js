@@ -26,8 +26,10 @@ function MsgMainResponse(key, arg) {
       for (let win of BrowserWindow.getAllWindows()) {
         IDList[win.id] = win.getTitle();
       }
-      returnValu =  IDList
+      returnValue =  IDList
     }
+  }else{
+    returnValue ="Main request error"
   }
 
   return returnValue
