@@ -1,8 +1,13 @@
 // Modules to control application life and create native browser window
-const  electron= require('electron')
+// var path = require('path');
+// global.appRoot = path.resolve(__dirname);
+
+const core = require( process.env.PWD+'/static/js/own/core.js')
+
+const electron= require('electron')
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
-const ipc = electron.ipcMain
+// const ipcMain = electron.ipcMain
 
 // require('devtron').install()
 // Keep a global reference of the window object, if you don't, the window will
@@ -75,36 +80,5 @@ app.on('activate', function () {
 })
 
 
-// ===========其他窗口消息===============
-// 虽然send后面接非常多的参数(channel,[arg1,arg2,....]) 
-// 但是为了统一接口, 只接受一个object参数
-ipc.on('msg-ipc-asy-to-main', function(event,arg){
-  event.sender.send('msg-ipc-asy-main-reply', {'type': 'reply msg from main'})
-  console.log("========================")
-  console.log("main asy receive from window ", event.sender.getOwnerBrowserWindow().id)
-  console.log("msg is : ", arg)
-})
-
-ipc.on('msg-ipc-sy-to-main', function(event,arg){
-  
-  console.log("========================")
-  console.log("main sy receive from window  ", event.sender.getOwnerBrowserWindow().id)
-  console.log("msg is : ", arg)
-  let returnValue = new Object;
-
-  for (let key in arg){
-    if(key == "query"){
-      if(arg[key] == "winID"){
-        // 获取全部window ID
-        let IDList = new Object;
-        for (let win of BrowserWindow.getAllWindows()) {
-          IDList[win.id] = win.getTitle();
-        }
-        returnValue[key+":"+arg[key]] = IDList
-      }
-    }
-  }
-
-  event.returnValue = returnValue
-})
-
+core.MainReply()
+core.MainReplySync()
