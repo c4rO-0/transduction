@@ -80,16 +80,24 @@ module.exports = {
     // ===========其他窗口消息===============
     // 虽然send后面接非常多的参数(channel,[arg1,arg2,....]) 
     // 但是为了统一接口, 只接受一个object参数
-    MainReply: function () {
+    MainReply: function (fcnResponse) {
         ipcMain.on('msg-ipc-asy-to-main', function (event, arg) {
-            event.sender.send('msg-ipc-asy-main-reply', { 'type': 'reply msg from main' })
+
             console.log("========================")
-            console.log("main asy receive from window ", event.sender.getOwnerBrowserWindow().id)
+            console.log("main asy receive from window  ", event.sender.getOwnerBrowserWindow().id)
             console.log("msg is : ", arg)
+            let returnValue = new Object;
+
+            for (let key in arg) {
+                returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
+            }
+       
+            event.sender.send('msg-ipc-asy-main-reply', returnValue)
+
         })
     },
 
-    MainReplySync: function () {
+    MainReplySync: function (fcnResponse) {
         ipcMain.on('msg-ipc-sy-to-main', function (event, arg) {
 
             console.log("========================")
@@ -98,20 +106,43 @@ module.exports = {
             let returnValue = new Object;
 
             for (let key in arg) {
-                if (key == "query") {
-                    if (arg[key] == "winID") {
-                        // 获取全部window ID
-                        let IDList = new Object;
-                        for (let win of BrowserWindow.getAllWindows()) {
-                            IDList[win.id] = win.getTitle();
-                        }
-                        returnValue[key + ":" + arg[key]] = IDList
-                    }
-                }
+                returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
             }
 
             event.returnValue = returnValue
         })
-    }
+    },
 
+    sendToWin: function (winID, msg) {
+
+        return new Promise((resolve, reject) => {
+            ipcRender.sendTo(winID, 'msg-ipc-asy-to-win', msg);
+            // 等待回复
+            ipcRender.on('msg-ipc-asy-win-reply', function (event, arg) {
+                console.log("main asy reply : ", arg)
+                resolve(arg)
+            })
+            setTimeout(() => {
+                reject("time out")
+            }, 5000);
+
+        })
+    },
+
+    WinReply: function (fcnResponse) {
+        ipcMain.on('msg-ipc-asy-to-win', function (event, arg) {
+
+            console.log("========================")
+            console.log("main asy receive from window  ", event.sender.getOwnerBrowserWindow().id)
+            console.log("msg is : ", arg)
+            let returnValue = new Object;
+
+            for (let key in arg) {
+                returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
+            }
+       
+            event.sender.send('msg-ipc-asy-win-reply', returnValue)
+
+        })
+    }
 };

@@ -2,9 +2,9 @@
 // var path = require('path');
 // global.appRoot = path.resolve(__dirname);
 
-const core = require( process.env.PWD+'/static/js/own/core.js')
+const core = require(process.env.PWD + '/static/js/own/core.js')
 
-const electron= require('electron')
+const electron = require('electron')
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 // const ipcMain = electron.ipcMain
@@ -12,12 +12,29 @@ const BrowserWindow = electron.BrowserWindow;
 // require('devtron').install()
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow=null
-let loadWindow=null
+let mainWindow = null
+let loadWindow = null
 
 
+function MsgMainResponse(key, arg) {
+  let returnValue = null;
 
-function createWindow () {
+  if (key == "query") {
+    if (arg == "winID") {
+      // 获取全部window ID
+      let IDList = new Object;
+      for (let win of BrowserWindow.getAllWindows()) {
+        IDList[win.id] = win.getTitle();
+      }
+      returnValu =  IDList
+    }
+  }
+
+  return returnValue
+}
+
+
+function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1024,
@@ -26,7 +43,7 @@ function createWindow () {
     title: "mainWin"
   });
 
-  
+
   mainWindow.loadFile('./templates/index.html');
 
 
@@ -45,7 +62,7 @@ function createWindow () {
   loadWindow.loadFile('./templates/loadWin.html');
 
   loadWindow.webContents.openDevTools()
-  loadWindow.maximize() 
+  loadWindow.maximize()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -80,5 +97,5 @@ app.on('activate', function () {
 })
 
 
-core.MainReply()
-core.MainReplySync()
+core.MainReply(MsgMainResponse)
+core.MainReplySync(MsgMainResponse)
