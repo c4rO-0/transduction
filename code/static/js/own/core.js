@@ -35,7 +35,7 @@ module.exports = {
             script = script.replace(/\n/g, '\\n');            
             script = script.replace(/\r/g, '\\r');  
             script = script.replace(/\t/g, '\\t');     
-            script = script.replace(/\b/g, '\\b');   
+            // script = script.replace(/\b/g, '\\b');   
             script = script.replace(/\f/g, '\\f');   
                         
             elementWebview.executeJavaScript("if(document.getElementById('webviewJS')==undefined){\
@@ -55,7 +55,7 @@ module.exports = {
             script = script.replace(/\n/g, '\\n');            
             script = script.replace(/\r/g, '\\r');  
             script = script.replace(/\t/g, '\\t');     
-            script = script.replace(/\b/g, '\\b');   
+            // script = script.replace(/\b/g, '\\b');   
             script = script.replace(/\f/g, '\\f');   
             elementWebview.executeJavaScript("if(document.getElementById('webviewJS')==undefined){\
 var el = document.createElement('script'); \
