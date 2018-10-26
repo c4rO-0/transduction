@@ -29,9 +29,14 @@ module.exports = {
 
             // 注入指定脚本
             var script = fs.readFileSync(pathJS, 'utf8')
+            script = script.replace(/\\/g, '\\\\');
             script = script.replace(/'/g, '\\\'');
             script = script.replace(/"/g, '\\\"');
-            script = script.replace(/\\/g, '\\\\');
+            script = script.replace(/\n/g, '\\n');            
+            script = script.replace(/\r/g, '\\r');  
+            script = script.replace(/\t/g, '\\t');     
+            script = script.replace(/\b/g, '\\b');   
+            script = script.replace(/\f/g, '\\f');   
                         
             elementWebview.executeJavaScript("if(document.getElementById('webviewJS')==undefined){\
         var el = document.createElement('script'); \
@@ -44,15 +49,19 @@ module.exports = {
             console.log(IDwebview, "dom-ready")
             // 注入指定脚本
             var script = fs.readFileSync(pathJS, 'utf8')
+            script = script.replace(/\\/g, '\\\\');
             script = script.replace(/'/g, '\\\'');
             script = script.replace(/"/g, '\\\"');
-            script = script.replace(/\\/g, '\\\\');
-
+            script = script.replace(/\n/g, '\\n');            
+            script = script.replace(/\r/g, '\\r');  
+            script = script.replace(/\t/g, '\\t');     
+            script = script.replace(/\b/g, '\\b');   
+            script = script.replace(/\f/g, '\\f');   
             elementWebview.executeJavaScript("if(document.getElementById('webviewJS')==undefined){\
-        var el = document.createElement('script'); \
-        el.id='webviewJS';\
-        el.innerHTML = '"+ script + "';\
-        document.body.appendChild(el);}")
+var el = document.createElement('script'); \
+el.id='webviewJS';\
+el.innerHTML = '"+ script + "';\
+document.body.appendChild(el);}")
         })
 
     },
