@@ -21,6 +21,7 @@ module.exports = {
     webviewDynamicInsertJS: function (IDwebview, pathJS) {
 
         let elementWebview = document.getElementById(IDwebview)
+
         console.log(elementWebview)
         // 发现URL变化
         elementWebview.addEventListener('did-navigate-in-page', (event) => {
@@ -28,10 +29,14 @@ module.exports = {
 
             // 注入指定脚本
             var script = fs.readFileSync(pathJS, 'utf8')
+            script = script.replace(/'/g, '\\\'');
+            script = script.replace(/"/g, '\\\"');
+            script = script.replace(/\\/g, '\\\\');
+                        
             elementWebview.executeJavaScript("if(document.getElementById('webviewJS')==undefined){\
         var el = document.createElement('script'); \
         el.id='webviewJS';\
-        el.innerHTML = "+ script + ";\
+        el.innerHTML = '"+ script + "';\
         document.body.appendChild(el);}")
         })
         // 等待页面加载完成
@@ -39,10 +44,14 @@ module.exports = {
             console.log(IDwebview, "dom-ready")
             // 注入指定脚本
             var script = fs.readFileSync(pathJS, 'utf8')
+            script = script.replace(/'/g, '\\\'');
+            script = script.replace(/"/g, '\\\"');
+            script = script.replace(/\\/g, '\\\\');
+
             elementWebview.executeJavaScript("if(document.getElementById('webviewJS')==undefined){\
         var el = document.createElement('script'); \
         el.id='webviewJS';\
-        el.innerHTML = "+ script + ";\
+        el.innerHTML = '"+ script + "';\
         document.body.appendChild(el);}")
         })
 
