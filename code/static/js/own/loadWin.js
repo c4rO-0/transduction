@@ -32,8 +32,8 @@ $(document).ready(function () {
     })
 
     // 监测webview, 像页面注入脚本
-    core.webviewDynamicInsertJS("webview-skype", process.env.PWD+ '/static/js/own/skype_webview.js')
-    // core.webviewDynamicInsertJS("webview-wechat", process.env.PWD+ '/static/js/own/wechat_webview.js')
+    core.webviewDynamicInsertJS("webview-skype", process.env.PWD+ '/static/js/own/skype_web.js')
+    core.webviewDynamicInsertJS("webview-wechat", process.env.PWD+ '/static/js/own/wechat_web.js')
 
 });
 

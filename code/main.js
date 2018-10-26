@@ -28,6 +28,8 @@ function MsgMainResponse(key, arg) {
       }
       returnValue =  IDList
     }
+  }else if(key == "test"){
+    returnValue = "test response"
   }else{
     returnValue ="Main request error"
   }

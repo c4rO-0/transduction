@@ -1,7 +1,13 @@
 # 日志
 
+## 2018Oct27
+author : BS
+哇, skype坑爹啊. 登录之后那个页面jquery被禁用掉了, 然后整个聊天框被嵌入到了ifram里
+导致脚本注入失败....
+打算把注入部分也放在preload里好了
+
 ## 2018Oct26
-auther : BS
+author : BS
 加载skype始终是个问题. 目前设计的思路.(不仅限于skype)
 
 - webview preload加载的scripte是一直在运行的.
@@ -13,13 +19,13 @@ auther : BS
 "添加按钮" 功能可以使用动态在页面插入脚本功能.
 
 ## 2018Oct25
-auther : BS
+author : BS
 目前用微信做实验. 实现webview和mian通讯.
 skype没试, 估计会有问题. 主要原因是skype会对页面进行跳转, 跳转之后preload的脚本就失效了.
 所以考虑skype需要搞一套普适的沟通框架.
 
 ## 2018Oct24
-auther : BS
+author : BS
 - 坑爹啊, preload要用绝对路径
 ``` javascript
   mainWindow = new BrowserWindow({
