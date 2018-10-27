@@ -5,6 +5,7 @@ const electron = require("electron");
 const ipcRender = electron.ipcRenderer
 const ipcMain = electron.ipcMain
 
+
 //  读取本地文件
 const fs = require('fs');
 const $ = require(process.env.PWD + '/static/js/jQuery/jquery-3.3.1.min.js')
@@ -203,6 +204,12 @@ module.exports = {
         }
         waitForKeyElements.controlObj = controlObj;
     },
+    insertReady : function (){
+        if ($('#electronReady') ==null || $('#electronReady').length == 0) {
+          $("body").append("<p id='electronReady' style='visibility:hidden;'> electronReady </p>")
+          whatUdo()
+        }
+      },
     // ===========fuction===============
     // 在webview动态插入脚本
     // IDwebview : str : webview id 
