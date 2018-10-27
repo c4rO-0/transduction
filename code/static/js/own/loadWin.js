@@ -3,13 +3,17 @@ const core = require( process.env.PWD+'/static/js/own/core.js')
 
 
 $(document).ready(function () {
+
+    let webWechat = $("#webview-wechat")
+    let webSkype = $("#webview-skype")
+
     $("#goto-skype").on("click", () => {
-        $("#webview-wechat").css("visibility", "hidden")
-        $("#webview-skype").css("visibility", "visible")
+        $(webWechat).css("visibility", "hidden")
+        $(webSkype).css("visibility", "visible")
     })
     $("#goto-wechat").on("click", () => {
-        $("#webview-wechat").css("visibility", "visible")
-        $("#webview-skype").css("visibility", "hidden")
+        $(webWechat).css("visibility", "visible")
+        $(webSkype).css("visibility", "hidden")
     })
 
     // =========向main发送消息==============
@@ -30,6 +34,14 @@ $(document).ready(function () {
         let msgReply = core.sendToMainSync({"type":"synchronous msg from loadWin"})
         console.log("main sy reply : ", msgReply)
     })
+
+    // debug
+    // $(webWechat).get(0).addEventListener("dom-ready", ()=>{
+    //     $(webWechat).get(0).openDevTools();
+    // })
+    $(webSkype).get(0).addEventListener("dom-ready", ()=>{
+        $(webSkype).get(0).openDevTools();
+    })    
 
 });
 

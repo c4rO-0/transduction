@@ -1,46 +1,38 @@
 const electron = require("electron");
-const ipc = electron.ipcRenderer
+let $ = require(process.env.PWD + '/static/js/jQuery/jquery-3.3.1.min.js')
+const core = require(process.env.PWD + '/static/js/own/core.js')
 
-// =========等待消息==============
-//  main消息
-ipc.on('msg-ipc-asy-main-reply', function (event, arg) {
-    console.log("main asy reply : ", arg)
+function MsgWinResponse(key, arg) {
+    let returnValue = null;
+  
+    if (key == "query") {
 
-})
-// 其他消息
-
+    }else if(key == "test"){
+      returnValue = "Win test response"
+    }else{
+      returnValue ="Win request error"
+    }
+  
+    return returnValue
+  }
 
 $(document).ready(function () {
 
-
-    // =========向main发送消息==============
-    // let ASobjBtn = document.getElementById('asynchronous-messageBtn')
-
-    // let SobjBtn = document.getElementById('synchronous-messageBtn')
-
-    // ASobjBtn.addEventListener('click', function () {
-    //     console.log("index : msg 1");
-    //     ipc.send('msg-ipc-asy-to-main', { "type": "msg from index" })
-    // })
-
-    // SobjBtn.addEventListener('click', function () {
-    //     console.log("index : msg 2");
-    //     let msgReply = ipc.sendSync('msg-ipc-sy-to-main', { "type": "msg from index" })
-    //     console.log("main sy reply : ", msgReply)
-    // })
-
-    // 
+    // // 
     let BtnRequestWinID = $('#btn-request-win-id');
     $(BtnRequestWinID).on("click",()=>{
-        let msgReply = ipc.sendSync('msg-ipc-sy-to-main', { "query": "winID" })
-        // console.log(msgReply)
-        let IDList = msgReply["query:winID"]
-        let txtAdd='ID : title\n'
-        for (winID in IDList) {
-            txtAdd = txtAdd+ winID.toString() + " : " + IDList[winID] +"\n"
-        }
-        // console.log(txtAdd)
-        $("#txt-win-id").text(txtAdd);
+
+        core.sendToMain({ "query": "winID" }).then((msgReply)=>{
+            let IDList = msgReply["query:winID"]
+            let txtAdd='ID : title\n'
+            for (winID in IDList) {
+                txtAdd = txtAdd+ winID.toString() + " : " + IDList[winID] +"\n"
+            }
+            $("#txt-win-id").text(txtAdd);            
+        })
+
     })
+
+    core.WinReply(MsgWinResponse)
 });
 

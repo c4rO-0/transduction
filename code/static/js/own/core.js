@@ -207,7 +207,6 @@ module.exports = {
     insertReady : function (){
         if ($('#electronReady') ==null || $('#electronReady').length == 0) {
           $("body").append("<p id='electronReady' style='visibility:hidden;'> electronReady </p>")
-          whatUdo()
         }
       },
     // ===========fuction===============
@@ -346,10 +345,9 @@ document.body.appendChild(el);}")
     },
 
     WinReply: function (fcnResponse) {
-        ipcMain.on('msg-ipc-asy-to-win', function (event, arg) {
+        ipcRender.on('msg-ipc-asy-to-win', function (event, arg) {
 
             console.log("========================")
-            console.log("main asy receive from window  ", event.sender.getOwnerBrowserWindow().id)
             console.log("msg is : ", arg)
             let returnValue = new Object;
 

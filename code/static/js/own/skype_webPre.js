@@ -19,17 +19,22 @@ window.onload = function () {
   core.waitForKeyElements("#electronReady", () => {
     // 页面加载完成=====================
 
-    $("body").append("<button id='asynchronous-messageBtn'> asynchronous </button>")
+    $("body").append("<button id='msgBtnMain'> send to Main </button>")
+    $("body").append("<button id='msgBtnWin'> send to Window </button>")
 
     $("body").append("<textarea id='txt-msg' rows='5' cols='100' style='background-color:red'>")
     
-    $("#asynchronous-messageBtn").on("click", () => {
-      core.sendToMain({ "test": "msg from skype" }).then((arg) => {
-        // console.log("add:", arg["test:msg"])
-        $("#txt-msg").text(arg["test:msg"])
+    $("#msgBtnMain").on("click", () => {
+      core.sendToMain({ "test": "msgMain" }).then((arg) => {
+        $("#txt-msg").text("Main : ", arg["test:msgMain"])
       })
     })
 
+    $("#msgBtnWin").on("click", () => {
+      core.sendToWin(1,{ "test": "msgWin" }).then((arg) => {
+        $("#txt-msg").text("Win : ", arg["test:msgWin"])
+      })
+    })
 
     // ===============================
 
