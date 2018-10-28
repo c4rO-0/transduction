@@ -12,25 +12,25 @@ const $ = require(process.env.PWD + '/static/js/jQuery/jquery-3.3.1.min.js')
 
 console.log("load core");
 
-    /*--- waitForKeyElements():  A utility function, for Greasemonkey scripts,
-        that detects and handles AJAXed content.
-        auther : BrockA
-        homepage : https://gist.github.com/BrockA/2625891#file-waitforkeyelements-js
-        Usage example:
+/*--- waitForKeyElements():  A utility function, for Greasemonkey scripts,
+    that detects and handles AJAXed content.
+    auther : BrockA
+    homepage : https://gist.github.com/BrockA/2625891#file-waitforkeyelements-js
+    Usage example:
 
-            waitForKeyElements (
-                "div.comments"
-                , commentCallbackFunction
-            );
+        waitForKeyElements (
+            "div.comments"
+            , commentCallbackFunction
+        );
 
-            //--- Page-specific function to do what we want when the node is found.
-            function commentCallbackFunction (jNode) {
-                jNode.text ("This comment changed by waitForKeyElements().");
-            }
+        //--- Page-specific function to do what we want when the node is found.
+        function commentCallbackFunction (jNode) {
+            jNode.text ("This comment changed by waitForKeyElements().");
+        }
 
-        IMPORTANT: This function requires your script to have loaded jQuery.
-    */
-   function waitForKeyElements(
+    IMPORTANT: This function requires your script to have loaded jQuery.
+*/
+function waitForKeyElements(
     selectorTxt,    /* Required: The jQuery selector string that
                     specifies the desired element(s).
                 */
@@ -128,7 +128,7 @@ module.exports = {
 
         IMPORTANT: This function requires your script to have loaded jQuery.
     */
-    waitForKeyElements : function (
+    waitForKeyElements: function (
         selectorTxt,    /* Required: The jQuery selector string that
                     specifies the desired element(s).
                 */
@@ -204,11 +204,11 @@ module.exports = {
         }
         waitForKeyElements.controlObj = controlObj;
     },
-    insertReady : function (){
-        if ($('#electronReady') ==null || $('#electronReady').length == 0) {
-          $("body").append("<p id='electronReady' style='visibility:hidden;'> electronReady </p>")
+    insertReady: function () {
+        if ($('#electronReady') == null || $('#electronReady').length == 0) {
+            $("body").append("<p id='electronReady' style='visibility:hidden;'> electronReady </p>")
         }
-      },
+    },
     // ===========fuction===============
     // 在webview动态插入脚本
     // IDwebview : str : webview id 
@@ -360,46 +360,94 @@ document.body.appendChild(el);}")
         })
     },
 
-    WinSendToWeb : function (winID, webviewID, msg) {
+    // WinSendToWeb: function (winID, webviewID, msg) {
+    //     return new Promise((resolve, reject) => {
+    //         ipcRender.sendTo(winID, 'msg-ipc-asy-to-web', webviewID, msg);
+    //         // 等待回复
+    //         ipcRender.on('msg-ipc-asy-web-reply', function (event, arg) {
+    //             console.log("main asy reply : ", arg)
+    //             resolve(arg)
+    //         })
+    //         setTimeout(() => {
+    //             reject("time out")
+    //         }, 5000);
+
+    //     })
+    // },
+
+    // WebReplyInWin: function () {
+    //     ipcRender.on('msg-ipc-asy-to-web', function (event, webviewID, arg) {
+
+    //         let returnValue = new Object;
+    //         let web = document.getElementById(webviewID);
+
+    //         if (web == undefined) {
+    //             for (let key in arg) {
+    //                 returnValue[key + ":" + arg[key]] = undefined
+    //             }
+    //         } else {
+    //             // 
+    //             web.send(arg)
+    //         }
+
+    //         ipcRender.on('msg-ipc-asy-from-web-to-win', function (eventRe, webviewIDRe, argRe) {
+    //             if (webviewIDRe == webviewID) {
+    //                 returnValue = arg
+    //             }
+
+    //         })
+
+    //         event.sender.send('msg-ipc-asy-win-reply', returnValue)
+
+    //     })
+    // },
+
+    HostSendToWeb: function (webviewID, msg) {
         return new Promise((resolve, reject) => {
-            ipcRender.sendTo(winID, 'msg-ipc-asy-to-web', webviewID, msg);
-            // 等待回复
-            ipcRender.on('msg-ipc-asy-web-reply', function (event, arg) {
-                console.log("main asy reply : ", arg)
-                resolve(arg)
+            
+            let web = document.getElementById(webviewID);
+            if (web == undefined) {
+                let returnValue = new Object;
+                for (let key in msg) {
+                    returnValue[key + ":" + msg[key]] = undefined
+                }
+                resolve(returnValue)
+            } else {
+                web.send('msg-ipc-asy-from-host-to-web', msg)
+            }
+            web.addEventListener('ipc-message', (event) => {
+                // if(event.channel == "msg-ipc-asy-web-reply-to-host"){
+                    resolve(event.channel)
+                // }
+                
             })
+
+            // web.on('msg-ipc-asy-web-reply-to-host', (event, arg) => {
+            //     resolve(arg)
+            // })
+
             setTimeout(() => {
                 reject("time out")
             }, 5000);
 
         })
+
     },
 
-    WebReplyInWin: function () {
-        ipcRender.on('msg-ipc-asy-to-web', function (event, webviewID, arg) {
+    WebReply : function (fcnResponse){
+        ipcRender.on('msg-ipc-asy-from-host-to-web', function (event, arg) {
 
+            console.log("========================")
+            console.log("msg is : ", arg)
             let returnValue = new Object;
-            let web = document.getElementById(webviewID);
 
-            if(web == undefined){
-                for (let key in arg) {
-                    returnValue[key + ":" + arg[key]] = undefined
-                }
-            }else{
-                // 
-                web.executeJavaScript("WebReplyInWeb()")
+            for (let key in arg) {
+                returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
             }
-            
-            ipcRender.on('msg-ipc-asy-from-web-to-win', function (event, webviewID, arg){
-                returnValue = arg
-            })
-            
-            event.sender.send('msg-ipc-asy-win-reply', returnValue)
+            // console.log("return : ", returnValue)
+            // ipcRender.sendToHost('msg-ipc-asy-web-reply-to-host', returnValue)
+            ipcRender.sendToHost(returnValue)
 
-        })
-
-
-
-        
+        })        
     }
 };

@@ -1,3 +1,14 @@
+// =========function===========
+
+function webResponse(key,arg){
+
+  return "web reply!"
+}
+
+
+// =======================
+
+
 window.onload = function () {
   let $ = require(process.env.PWD + '/static/js/jQuery/jquery-3.3.1.min.js')
   const core = require(process.env.PWD + '/static/js/own/core.js')
@@ -19,9 +30,10 @@ window.onload = function () {
   core.waitForKeyElements("#electronReady", () => {
     // 页面加载完成=====================
 
-    $("body").append("<button id='asynchronous-messageBtn'> asynchronous </button>")
+    $("body").append("<button id='Btn-Web'> asynchronous </button>")
 
     $("body").append("<textarea id='txt-msg' rows='5' cols='100' style='background-color:red'>")
+    
     
     $("#asynchronous-messageBtn").on("click", () => {
       core.sendToMain({ "test": "msg from wechat" }).then((arg) => {
@@ -33,6 +45,8 @@ window.onload = function () {
 
     // ===============================
 
+
+    core.WebReply(webResponse);
   }, false)
 
 };

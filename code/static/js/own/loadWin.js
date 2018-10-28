@@ -21,6 +21,8 @@ $(document).ready(function () {
 
     let SobjBtn = document.getElementById('synchronous-messageBtn')
 
+    let ToWebBtn = document.getElementById('ToWeb-messageBtn')
+
     ASobjBtn.addEventListener('click', function () {
         console.log("index : msg 1");
         core.sendToMain({"type":"asynchronous msg from loadWin"}).then((arg)=>{
@@ -35,13 +37,21 @@ $(document).ready(function () {
         console.log("main sy reply : ", msgReply)
     })
 
+    ToWebBtn.addEventListener('click', function () {
+        console.log("index : msg 3");
+        core.HostSendToWeb("webview-wechat", {"test":"from win to web"}).then((arg)=>{
+            console.log("got it")
+            console.log(arg)
+        })
+    })
+
     // debug
-    // $(webWechat).get(0).addEventListener("dom-ready", ()=>{
-    //     $(webWechat).get(0).openDevTools();
-    // })
-    $(webSkype).get(0).addEventListener("dom-ready", ()=>{
-        $(webSkype).get(0).openDevTools();
-    })    
+    $(webWechat).get(0).addEventListener("dom-ready", ()=>{
+        $(webWechat).get(0).openDevTools();
+    })
+    // $(webSkype).get(0).addEventListener("dom-ready", ()=>{
+    //     $(webSkype).get(0).openDevTools();
+    // })    
 
 });
 

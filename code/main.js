@@ -9,14 +9,14 @@ const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 // const ipcMain = electron.ipcMain
 
-// require('devtron').install()
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
+// =======变量===========
 let mainWindow = null
 let loadWindow = null
 
 
+// ========函数===========
 
+// -------Response:调用的处理函数------
 function ResponseGetWinID() {
   // 获取全部window ID
   let IDList = new Object;
@@ -33,7 +33,7 @@ function ResponseTest() {
 
 }
 
-
+// -------Main Msg : 分类函数-----
 function MsgMainResponse(key, arg) {
   let returnValue = null;
 
@@ -52,6 +52,7 @@ function MsgMainResponse(key, arg) {
 }
 
 
+// ============对Window处理===================
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -115,5 +116,7 @@ app.on('activate', function () {
 })
 
 
+
+// ===========消息处理==========
 core.MainReply(MsgMainResponse)
 core.MainReplySync(MsgMainResponse)
