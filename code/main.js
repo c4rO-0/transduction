@@ -16,22 +16,36 @@ let mainWindow = null
 let loadWindow = null
 
 
+
+function ResponseGetWinID() {
+  // 获取全部window ID
+  let IDList = new Object;
+  for (let win of BrowserWindow.getAllWindows()) {
+    IDList[win.id] = win.getTitle();
+  }
+  return IDList
+
+}
+
+function ResponseTest() {
+
+  return "test response"
+
+}
+
+
 function MsgMainResponse(key, arg) {
   let returnValue = null;
 
   if (key == "query") {
     if (arg == "winID") {
       // 获取全部window ID
-      let IDList = new Object;
-      for (let win of BrowserWindow.getAllWindows()) {
-        IDList[win.id] = win.getTitle();
-      }
-      returnValue =  IDList
+      returnValue = ResponseGetWinID()
     }
-  }else if(key == "test"){
-    returnValue = "test response"
-  }else{
-    returnValue ="Main request error"
+  } else if (key == "test") {
+    returnValue = ResponseTest()
+  } else {
+    returnValue = "Main request error"
   }
 
   return returnValue
