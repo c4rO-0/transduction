@@ -234,10 +234,10 @@ module.exports = {
             script = script.replace(/\f/g, '\\f');
 
             elementWebview.executeJavaScript("if(document.getElementById('webviewJS')==undefined){\
-        var el = document.createElement('script'); \
-        el.id='webviewJS';\
-        el.innerHTML = '"+ script + "';\
-        document.body.appendChild(el);}")
+var el = document.createElement('script'); \
+el.id='webviewJS';\
+el.innerHTML = '"+ script + "';\
+document.body.appendChild(el);}")
         })
         // 等待页面加载完成
         elementWebview.addEventListener('dom-ready', () => {
@@ -358,5 +358,48 @@ document.body.appendChild(el);}")
             event.sender.send('msg-ipc-asy-win-reply', returnValue)
 
         })
+    },
+
+    WinSendToWeb : function (winID, webviewID, msg) {
+        return new Promise((resolve, reject) => {
+            ipcRender.sendTo(winID, 'msg-ipc-asy-to-web', webviewID, msg);
+            // 等待回复
+            ipcRender.on('msg-ipc-asy-web-reply', function (event, arg) {
+                console.log("main asy reply : ", arg)
+                resolve(arg)
+            })
+            setTimeout(() => {
+                reject("time out")
+            }, 5000);
+
+        })
+    },
+
+    WebReplyInWin: function () {
+        ipcRender.on('msg-ipc-asy-to-web', function (event, webviewID, arg) {
+
+            let returnValue = new Object;
+            let web = document.getElementById(webviewID);
+
+            if(web == undefined){
+                for (let key in arg) {
+                    returnValue[key + ":" + arg[key]] = undefined
+                }
+            }else{
+                // 
+                web.executeJavaScript("WebReplyInWeb()")
+            }
+            
+            ipcRender.on('msg-ipc-asy-from-web-to-win', function (event, webviewID, arg){
+                returnValue = arg
+            })
+            
+            event.sender.send('msg-ipc-asy-win-reply', returnValue)
+
+        })
+
+
+
+        
     }
 };
