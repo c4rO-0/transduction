@@ -120,3 +120,4 @@ app.on('activate', function () {
 // ===========消息处理==========
 core.MainReply(MsgMainResponse)
 core.MainReplySync(MsgMainResponse)
+

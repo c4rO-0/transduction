@@ -1,6 +1,13 @@
 
 const core = require( process.env.PWD+'/static/js/own/core.js')
 
+function MsgWinWebResponse(key, arg){
+    console.log("MsgWinWebResponse")
+    console.log(key, arg)
+
+    return "test response"
+}
+
 
 $(document).ready(function () {
 
@@ -52,6 +59,8 @@ $(document).ready(function () {
     // $(webSkype).get(0).addEventListener("dom-ready", ()=>{
     //     $(webSkype).get(0).openDevTools();
     // })    
+
+    core.WinReplyWeb("webview-wechat",MsgWinWebResponse)
 
 });
 

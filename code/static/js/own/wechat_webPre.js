@@ -33,12 +33,20 @@ window.onload = function () {
     $("body").append("<button id='Btn-Web'> asynchronous </button>")
 
     $("body").append("<textarea id='txt-msg' rows='5' cols='100' style='background-color:red'>")
+
+    $("body").append("<button id='Btn-to-Host'> send to Host </button>")
     
     
     $("#asynchronous-messageBtn").on("click", () => {
       core.sendToMain({ "test": "msg from wechat" }).then((arg) => {
         // console.log("add:", arg["test:msg"])
         $("#txt-msg").text(arg["test:msg"])
+      })
+    })
+
+    $("#Btn-to-Host").on("click", ()=>{
+      core.WebToHost({"test":"send directly"}).then((arg) =>{
+        console.log("Host reply : ", arg)
       })
     })
 

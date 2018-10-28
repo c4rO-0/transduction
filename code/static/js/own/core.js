@@ -4,6 +4,8 @@
 const electron = require("electron");
 const ipcRender = electron.ipcRenderer
 const ipcMain = electron.ipcMain
+// const Date = require("date")
+// const Math = require("math")
 
 
 //  读取本地文件
@@ -107,6 +109,11 @@ function waitForKeyElements(
     waitForKeyElements.controlObj = controlObj;
 }
 
+function UniqueStr() {
+
+    return (Date.now() + Math.random()).toString()
+}
+
 module.exports = {
     // ==========var====================
 
@@ -144,65 +151,9 @@ module.exports = {
                     search.
                 */
     ) {
-        var targetNodes, btargetsFound;
 
-        if (typeof iframeSelector == "undefined")
-            targetNodes = $(selectorTxt);
-        else
-            targetNodes = $(iframeSelector).contents()
-                .find(selectorTxt);
+        waitForKeyElements(selectorTxt, actionFunction, bWaitOnce, iframeSelector)
 
-        if (targetNodes && targetNodes.length > 0) {
-            btargetsFound = true;
-            /*--- Found target node(s).  Go through each and act if they
-                are new.
-            */
-            targetNodes.each(function () {
-                var jThis = $(this);
-                var alreadyFound = jThis.data('alreadyFound') || false;
-
-                if (!alreadyFound) {
-                    //--- Call the payload function.
-                    var cancelFound = actionFunction(jThis);
-                    if (cancelFound)
-                        btargetsFound = false;
-                    else
-                        jThis.data('alreadyFound', true);
-                }
-            });
-        }
-        else {
-            btargetsFound = false;
-        }
-
-
-        //--- Get the timer-control variable for this selector.
-        var controlObj = waitForKeyElements.controlObj || {};
-        var controlKey = selectorTxt.replace(/[^\w]/g, "_");
-        var timeControl = controlObj[controlKey];
-
-        //--- Now set or clear the timer as appropriate.
-        if (btargetsFound && bWaitOnce && timeControl) {
-            //--- The only condition where we need to clear the timer.
-            clearInterval(timeControl);
-            delete controlObj[controlKey]
-        }
-        else {
-            //--- Set a timer, if needed.
-            if (!timeControl) {
-                timeControl = setInterval(function () {
-                    waitForKeyElements(selectorTxt,
-                        actionFunction,
-                        bWaitOnce,
-                        iframeSelector
-                    );
-                },
-                    300
-                );
-                controlObj[controlKey] = timeControl;
-            }
-        }
-        waitForKeyElements.controlObj = controlObj;
     },
     insertReady: function () {
         if ($('#electronReady') == null || $('#electronReady').length == 0) {
@@ -261,6 +212,11 @@ document.body.appendChild(el);}")
 
     },
 
+    UniqueStr: function () {
+
+        return UniqueStr()
+    },
+
     //  发送消息
     //  向main发送异步消息
     //  in : dict msg 要发送的信息
@@ -268,11 +224,13 @@ document.body.appendChild(el);}")
     //  resolve : 返回的消息, 字典
     //  reject : time out
     sendToMain: function (msg) {
+        // console.log(UniqueStr())
 
         return new Promise((resolve, reject) => {
-            ipcRender.send('msg-ipc-asy-to-main', msg);
+            let uStr = UniqueStr()
+            ipcRender.send('msg-ipc-asy-to-main', uStr, msg);
             // 等待回复
-            ipcRender.on('msg-ipc-asy-main-reply', function (event, arg) {
+            ipcRender.once('msg-ipc-asy-main-reply-' + uStr, function (event, arg) {
                 console.log("main asy reply : ", arg)
                 resolve(arg)
             })
@@ -286,6 +244,7 @@ document.body.appendChild(el);}")
     //  向main发送同步消息
     //  return  字典
     sendToMainSync: function (msg) {
+
         return ipcRender.sendSync('msg-ipc-sy-to-main', msg)
     },
 
@@ -296,7 +255,7 @@ document.body.appendChild(el);}")
     // 虽然send后面接非常多的参数(channel,[arg1,arg2,....]) 
     // 但是为了统一接口, 只接受一个object参数
     MainReply: function (fcnResponse) {
-        ipcMain.on('msg-ipc-asy-to-main', function (event, arg) {
+        ipcMain.on('msg-ipc-asy-to-main', function (event, uStr, arg) {
 
             console.log("========================")
             console.log("main asy receive from window  ", event.sender.getOwnerBrowserWindow().id)
@@ -307,7 +266,7 @@ document.body.appendChild(el);}")
                 returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
             }
 
-            event.sender.send('msg-ipc-asy-main-reply', returnValue)
+            event.sender.send('msg-ipc-asy-main-reply-' + uStr, returnValue)
 
         })
     },
@@ -331,9 +290,10 @@ document.body.appendChild(el);}")
     sendToWin: function (winID, msg) {
 
         return new Promise((resolve, reject) => {
-            ipcRender.sendTo(winID, 'msg-ipc-asy-to-win', msg);
+            let uStr = UniqueStr()
+            ipcRender.sendTo(winID, 'msg-ipc-asy-to-win', uStr, msg);
             // 等待回复
-            ipcRender.on('msg-ipc-asy-win-reply', function (event, arg) {
+            ipcRender.once('msg-ipc-asy-win-reply-' + uStr, function (event, arg) {
                 console.log("main asy reply : ", arg)
                 resolve(arg)
             })
@@ -345,7 +305,7 @@ document.body.appendChild(el);}")
     },
 
     WinReply: function (fcnResponse) {
-        ipcRender.on('msg-ipc-asy-to-win', function (event, arg) {
+        ipcRender.on('msg-ipc-asy-to-win', function (event, uStr, arg) {
 
             console.log("========================")
             console.log("msg is : ", arg)
@@ -355,9 +315,10 @@ document.body.appendChild(el);}")
                 returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
             }
 
-            event.sender.send('msg-ipc-asy-win-reply', returnValue)
+            event.sender.send('msg-ipc-asy-win-reply-' + uStr, returnValue)
 
         })
+
     },
 
     // WinSendToWeb: function (winID, webviewID, msg) {
@@ -404,7 +365,7 @@ document.body.appendChild(el);}")
 
     HostSendToWeb: function (webviewID, msg) {
         return new Promise((resolve, reject) => {
-            
+            let uStr = UniqueStr()
             let web = document.getElementById(webviewID);
             if (web == undefined) {
                 let returnValue = new Object;
@@ -413,16 +374,19 @@ document.body.appendChild(el);}")
                 }
                 resolve(returnValue)
             } else {
-                web.send('msg-ipc-asy-from-host-to-web', msg)
+                web.send('msg-ipc-asy-from-host-to-web', uStr, msg)
             }
             web.addEventListener('ipc-message', (event) => {
-                // if(event.channel == "msg-ipc-asy-web-reply-to-host"){
-                    resolve(event.channel)
-                // }
-                
-            })
+                console.log("webview-message")
+                // console.log(event)
+                if (event.channel == 'msg-ipc-asy-web-reply-to-host-' + uStr) {
+                    resolve(event.args[0])
+                }
 
-            // web.on('msg-ipc-asy-web-reply-to-host', (event, arg) => {
+            }, { once: true })
+
+            // ipcRender.on("msg-ipc-asy-web-reply-to-host", function (event, arg) {
+            //     console.log("webview-message")
             //     resolve(arg)
             // })
 
@@ -434,8 +398,8 @@ document.body.appendChild(el);}")
 
     },
 
-    WebReply : function (fcnResponse){
-        ipcRender.on('msg-ipc-asy-from-host-to-web', function (event, arg) {
+    WebReply: function (fcnResponse) {
+        ipcRender.on('msg-ipc-asy-from-host-to-web', function (event, uStr, arg) {
 
             console.log("========================")
             console.log("msg is : ", arg)
@@ -445,9 +409,46 @@ document.body.appendChild(el);}")
                 returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
             }
             // console.log("return : ", returnValue)
-            // ipcRender.sendToHost('msg-ipc-asy-web-reply-to-host', returnValue)
-            ipcRender.sendToHost(returnValue)
+            // event.sender.send('msg-ipc-asy-web-reply-to-host', returnValue)
+            // console.log(event)
+            event.sender.sendToHost('msg-ipc-asy-web-reply-to-host-' + uStr, returnValue)
 
-        })        
+        })
+    },
+
+    WebToHost: function (msg) {
+        return new Promise((resolve, reject) => {
+            let uStr = UniqueStr()
+            ipcRender.sendToHost('msg-ipc-asy-web-to-host', uStr, msg)
+
+            ipcRender.once('msg-ipc-asy-win-reply-web' + uStr, function (event, arg) {
+                resolve(arg)
+            })
+
+            setTimeout(() => {
+                reject("time out")
+            }, 5000);
+        })
+
+    },
+
+    WinReplyWeb : function (webviewID, fcnResponse){
+        let web = document.getElementById(webviewID);
+        web.addEventListener('ipc-message', (event) => {
+            console.log("webview-message-listen")
+            // console.log(event)
+            if (event.channel == 'msg-ipc-asy-web-to-host') {
+                let returnValue = new Object;
+                let uStr = event.args[0]
+                let arg = event.args[1]
+                for (let key in arg) {
+                    returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
+                } 
+                web.send("msg-ipc-asy-win-reply-web-"+uStr, returnValue)               
+            }
+
+        })
     }
+
+
 };
