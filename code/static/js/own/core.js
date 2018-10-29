@@ -227,35 +227,39 @@ document.body.appendChild(el);}")
         // console.log(UniqueStr())
 
         return new Promise((resolve, reject) => {
-            if(Object.keys(msg).length == 0){
+            if (Object.keys(msg).length == 0) {
                 reject("sendToMain no msg")
-            }else if(Object.keys(msg).length == 1){
+            } else if (Object.keys(msg).length == 1) {
+
+                // 为了removeListener需要单独封装
+                function handleMsg(event, arg) {
+                    console.log("main asy reply : ", arg)
+                    if (Object.keys(arg).length == 0) {
+                        reject("sendToMain recieve nothing")
+                    } else if (Object.keys(arg).length == 1) {
+                        let key = (Object.keys(arg))[0]
+                        if (typeof (arg[key]) == "string" && arg[key].indexOf("error :") == 0) {
+                            reject("sendToMain" + arg[key].substr(7))
+                        } else {
+                            resolve(arg)
+                        }
+                    } else {
+                        reject("sendToMain recieve two many")
+                    }
+
+                }
+
                 let uStr = UniqueStr()
                 ipcRender.send('msg-ipc-asy-to-main', uStr, msg);
                 // 等待回复
-                let listenerRe = ipcRender.once('msg-ipc-asy-main-reply-' + uStr, function (event, arg) {
-                    console.log("main asy reply : ", arg)
-                    if(Object.keys(arg).length == 0){
-                        reject("sendToMain recieve nothing")
-                    }else if(Object.keys(arg).length == 1){
-                        let key = (Object.keys(arg))[0]
-                        if(typeof(arg[key]) == "string" && arg[key].indexOf("error :") == 0){
-                            reject("sendToMain" + arg[key].substr(7))
-                        }else{
-                            resolve(arg)
-                        }
-                    }else{
-                        reject("sendToMain recieve two many")
-                    }
-                    
-                })
+                let listenerRe = ipcRender.once('msg-ipc-asy-main-reply-' + uStr, handleMsg)
                 setTimeout(() => {
-    
-                    // ipcRender.removeListener('msg-ipc-asy-main-reply-' + uStr, listenerRe)
+
+                    ipcRender.removeListener('msg-ipc-asy-main-reply-' + uStr, handleMsg)
                     reject("sendToMain time out")
-    
+
                 }, 10000);
-            }else{
+            } else {
                 reject("sendToMain two many msg")
             }
 
@@ -264,10 +268,10 @@ document.body.appendChild(el);}")
 
     //  向main发送同步消息
     //  return  字典
-    sendToMainSync: function (msg) {
+    // sendToMainSync: function (msg) {
 
-        return ipcRender.sendSync('msg-ipc-sy-to-main', msg)
-    },
+    //     return ipcRender.sendSync('msg-ipc-sy-to-main', msg)
+    // },
 
 
     // main处理消息函数
@@ -281,66 +285,92 @@ document.body.appendChild(el);}")
             console.log("========================")
             console.log("main asy receive from window  ", event.sender.getOwnerBrowserWindow().id)
             console.log("msg is : ", arg, Object.keys(arg).length)
-            
+
             let returnValue = new Object;
-            if(Object.keys(arg).length == 0){
+            if (Object.keys(arg).length == 0) {
                 returnValue[":"] = "error : MainReply no opertion input"
                 event.sender.send('msg-ipc-asy-main-reply-' + uStr, returnValue)
-            }else if(Object.keys(arg).length == 1){
+            } else if (Object.keys(arg).length == 1) {
                 let key = (Object.keys(arg))[0];
                 // console.log(key)
-                fcnResponse(key, arg[key]).then((re) =>{
+                fcnResponse(key, arg[key]).then((re) => {
                     console.log("then : ", re)
                     returnValue[key + ":" + arg[key]] = re
                     event.sender.send('msg-ipc-asy-main-reply-' + uStr, returnValue)
-                }).catch((error)=>{
+                }).catch((error) => {
                     console.log("then : ", error)
                     returnValue[key + ":" + arg[key]] = 'error : ' + error
                     event.sender.send('msg-ipc-asy-main-reply-' + uStr, returnValue)
                 })
-            }else{
-                for (key in  arg){
+            } else {
+                for (key in arg) {
                     returnValue[key + ":" + arg[key]] = "error : MainReply two many input"
                 }
                 event.sender.send('msg-ipc-asy-main-reply-' + uStr, returnValue)
             }
-            
+
 
         })
     },
 
-    MainReplySync: function (fcnResponse) {
-        ipcMain.on('msg-ipc-sy-to-main', function (event, arg) {
+    // MainReplySync: function (fcnResponse) {
+    //     ipcMain.on('msg-ipc-sy-to-main', function (event, arg) {
 
-            console.log("========================")
-            console.log("main sy receive from window  ", event.sender.getOwnerBrowserWindow().id)
-            console.log("msg is : ", arg)
-            let returnValue = new Object;
+    //         console.log("========================")
+    //         console.log("main sy receive from window  ", event.sender.getOwnerBrowserWindow().id)
+    //         console.log("msg is : ", arg)
+    //         let returnValue = new Object;
 
-            for (let key in arg) {
-                returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
-            }
+    //         for (let key in arg) {
+    //             returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
+    //         }
 
-            event.returnValue = returnValue
-        })
-    },
+    //         event.returnValue = returnValue
+    //     })
+    // },
 
     sendToWin: function (winID, msg) {
 
         return new Promise((resolve, reject) => {
-            let uStr = UniqueStr()
-            ipcRender.sendTo(winID, 'msg-ipc-asy-to-win', uStr, msg);
-            // 等待回复
-            let listenerRe =  ipcRender.once('msg-ipc-asy-win-reply-' + uStr, function (event, arg) {
-                console.log("main asy reply : ", arg)
-                resolve(arg)
-            })
-            setTimeout(() => {
-                // ipcRender.removeListener('msg-ipc-asy-win-reply-' + uStr, listenerRe)
-                reject("time out")
-            }, 5000);
+            if (Object.keys(msg).length == 0) {
+                reject("sendToWin no msg")
+            } else if (Object.keys(msg).length == 1) {
+
+                // 为了removeListener需要单独封装
+                function handleMsg(event, arg) {
+                    // console.log("win asy reply : ", arg)
+                    if (Object.keys(arg).length == 0) {
+                        reject("sendToWin recieve nothing")
+                    } else if (Object.keys(arg).length == 1) {
+                        let key = (Object.keys(arg))[0]
+                        if (typeof (arg[key]) == "string" && arg[key].indexOf("error :") == 0) {
+                            reject("sendToWin" + arg[key].substr(7))
+                        } else {
+                            resolve(arg)
+                        }
+                    } else {
+                        reject("sendToWin recieve two many")
+                    }
+
+                }
+
+                let uStr = UniqueStr()
+                ipcRender.sendTo(winID, 'msg-ipc-asy-to-win', uStr, msg);
+                // 等待回复
+                let listenerRe = ipcRender.once('msg-ipc-asy-win-reply-' + uStr, handleMsg)
+                setTimeout(() => {
+
+                    ipcRender.removeListener('msg-ipc-asy-win-reply-' + uStr, handleMsg)
+                    reject("sendToWin time out")
+
+                }, 10000);
+            } else {
+                reject("sendToWin two many msg")
+            }
 
         })
+
+
     },
 
     WinReply: function (fcnResponse) {
@@ -472,7 +502,7 @@ document.body.appendChild(el);}")
 
     },
 
-    WinReplyWeb : function (webviewID, fcnResponse){
+    WinReplyWeb: function (webviewID, fcnResponse) {
         let web = document.getElementById(webviewID);
         web.addEventListener('ipc-message', (event) => {
             console.log("webview-message-listen")
@@ -483,8 +513,8 @@ document.body.appendChild(el);}")
                 let arg = event.args[1]
                 for (let key in arg) {
                     returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
-                } 
-                web.send("msg-ipc-asy-win-reply-web-"+uStr, returnValue)               
+                }
+                web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
             }
 
         })
