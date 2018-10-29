@@ -1,0 +1,19 @@
+{
+  "name": "l_is_learning",
+  "version": "1.0.0",
+  "description": "L finally got started",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "what_is_test_command"
+  },
+  "repository": {
+    "type": "git",
+    "url": "D:\\\\Users\\\\walker\\\\Documents\\\\NutGit\\\\transduction.git"
+  },
+  "author": "L",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^3.0.6"
+  }
+}
