@@ -530,18 +530,44 @@ document.body.appendChild(el);}")
     },
 
     WebToHost: function (msg) {
+
         return new Promise((resolve, reject) => {
-            let uStr = UniqueStr()
-            ipcRender.sendToHost('msg-ipc-asy-web-to-host', uStr, msg)
+            if (Object.keys(msg).length == 0) {
+                reject("WebToHost no msg")
+            } else if (Object.keys(msg).length == 1) {
 
-            let listenerRe = ipcRender.once('msg-ipc-asy-win-reply-web' + uStr, function (event, arg) {
-                resolve(arg)
-            })
+                // 为了removeListener需要单独封装
+                function handleMsg(event, arg) {
+                    // console.log("win asy reply : ", arg)
+                    if (Object.keys(arg).length == 0) {
+                        reject("WebToHost recieve nothing")
+                    } else if (Object.keys(arg).length == 1) {
+                        let key = (Object.keys(arg))[0]
+                        if (typeof (arg[key]) == "string" && arg[key].indexOf("error :") == 0) {
+                            reject("WebToHost" + arg[key].substr(7))
+                        } else {
+                            resolve(arg)
+                        }
+                    } else {
+                        reject("WebToHost recieve two many")
+                    }
 
-            setTimeout(() => {
-                ipcRender.removeListener('msg-ipc-asy-win-reply-web' + uStr, listenerRe)
-                reject("time out")
-            }, 5000);
+                }
+
+                let uStr = UniqueStr()
+                ipcRender.sendToHost('msg-ipc-asy-web-to-host', uStr, msg);
+                // 等待回复
+                let listenerRe = ipcRender.once('msg-ipc-asy-win-reply-web-' + uStr, handleMsg)
+                setTimeout(() => {
+
+                    ipcRender.removeListener('msg-ipc-asy-win-reply-web-' + uStr, handleMsg)
+                    reject("WebToHost time out")
+
+                }, 5000);
+            } else {
+                reject("WebToHost two many msg")
+            }
+
         })
 
     },
@@ -555,14 +581,37 @@ document.body.appendChild(el);}")
                 let returnValue = new Object;
                 let uStr = event.args[0]
                 let arg = event.args[1]
-                for (let key in arg) {
-                    returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
+
+                let returnValue = new Object;
+
+                if (Object.keys(arg).length == 0) {
+                    returnValue[":"] = "error : WinReplyWeb no opertion input"
+                    web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
+                } else if (Object.keys(arg).length == 1) {
+                    let key = (Object.keys(arg))[0];
+                    // console.log(key)
+                    fcnResponse(key, arg[key]).then((re) => {
+                        console.log("then : ", re)
+                        returnValue[key + ":" + arg[key]] = re
+                        web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
+                    }).catch((error) => {
+                        console.log("then : ", error)
+                        returnValue[key + ":" + arg[key]] = 'error : ' + error
+                        web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
+                    })
+                } else {
+                    for (key in arg) {
+                        returnValue[key + ":" + arg[key]] = "error : WinReplyWeb two many input"
+                    }
+                    web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
                 }
-                web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
             }
 
         })
+
     }
+
+}
 
 
 };
