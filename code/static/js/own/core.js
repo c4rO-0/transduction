@@ -450,37 +450,50 @@ document.body.appendChild(el);}")
     // },
 
     HostSendToWeb: function (webviewID, msg) {
+
         return new Promise((resolve, reject) => {
-            let uStr = UniqueStr()
-            let web = document.getElementById(webviewID);
-            if (web == undefined) {
-                let returnValue = new Object;
-                for (let key in msg) {
-                    returnValue[key + ":" + msg[key]] = undefined
+            if (Object.keys(msg).length == 0) {
+                reject("HostSendToWeb no msg")
+            } else if (Object.keys(msg).length == 1) {
+
+                // 为了removeListener需要单独封装
+                function handleMsg(event) {
+                    if (event.channel == 'msg-ipc-asy-web-reply-to-host-' + uStr) {
+                        let arg = event.args[0]
+                        if (Object.keys(arg).length == 0) {
+                            reject("HostSendToWeb recieve nothing")
+                        } else if (Object.keys(arg).length == 1) {
+                            let key = (Object.keys(arg))[0]
+                            if (typeof (arg[key]) == "string" && arg[key].indexOf("error :") == 0) {
+                                reject("HostSendToWeb" + arg[key].substr(7))
+                            } else {
+                                resolve(arg)
+                            }
+                        } else {
+                            reject("HostSendToWeb recieve two many")
+                        }
+                    }
+
+
                 }
-                resolve(returnValue)
-            } else {
-                web.send('msg-ipc-asy-from-host-to-web', uStr, msg)
+
+                let uStr = UniqueStr()
+
+                let web = document.getElementById(webviewID);
+                if (web == undefined) {
+                    reject("HostSendToWeb undefined webviewID")
+                } else {
+                    web.send('msg-ipc-asy-from-host-to-web', uStr, msg)
+                }
+                web.addEventListener('ipc-message', handleMsg, { once: true })
+                setTimeout(() => {
+                    web.removeEventListener('ipc-message', handleMsg)
+                    reject("time out")
+                }, 5000);
             }
-            web.addEventListener('ipc-message', (event) => {
-                console.log("webview-message")
-                // console.log(event)
-                if (event.channel == 'msg-ipc-asy-web-reply-to-host-' + uStr) {
-                    resolve(event.args[0])
-                }
-
-            }, { once: true })
-
-            // ipcRender.on("msg-ipc-asy-web-reply-to-host", function (event, arg) {
-            //     console.log("webview-message")
-            //     resolve(arg)
-            // })
-
-            setTimeout(() => {
-                reject("time out")
-            }, 5000);
 
         })
+
 
     },
 
@@ -491,13 +504,27 @@ document.body.appendChild(el);}")
             console.log("msg is : ", arg)
             let returnValue = new Object;
 
-            for (let key in arg) {
-                returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
+            if (Object.keys(arg).length == 0) {
+                returnValue[":"] = "error : WinReply no opertion input"
+                event.sender.sendToHost('msg-ipc-asy-web-reply-to-host-' + uStr, returnValue)
+            } else if (Object.keys(arg).length == 1) {
+                let key = (Object.keys(arg))[0];
+                // console.log(key)
+                fcnResponse(key, arg[key]).then((re) => {
+                    console.log("then : ", re)
+                    returnValue[key + ":" + arg[key]] = re
+                    event.sender.sendToHost('msg-ipc-asy-web-reply-to-host-' + uStr, returnValue)
+                }).catch((error) => {
+                    console.log("then : ", error)
+                    returnValue[key + ":" + arg[key]] = 'error : ' + error
+                    event.sender.sendToHost('msg-ipc-asy-web-reply-to-host-' + uStr, returnValue)
+                })
+            } else {
+                for (key in arg) {
+                    returnValue[key + ":" + arg[key]] = "error : WinReply two many input"
+                }
+                event.sender.sendToHost('msg-ipc-asy-web-reply-to-host-' + uStr, returnValue)
             }
-            // console.log("return : ", returnValue)
-            // event.sender.send('msg-ipc-asy-web-reply-to-host', returnValue)
-            // console.log(event)
-            event.sender.sendToHost('msg-ipc-asy-web-reply-to-host-' + uStr, returnValue)
 
         })
     },
