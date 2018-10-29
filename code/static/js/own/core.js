@@ -378,13 +378,30 @@ document.body.appendChild(el);}")
 
             console.log("========================")
             console.log("msg is : ", arg)
-            let returnValue = new Object;
 
-            for (let key in arg) {
-                returnValue[key + ":" + arg[key]] = fcnResponse(key, arg[key])
+            let returnValue = new Object;
+            if (Object.keys(arg).length == 0) {
+                returnValue[":"] = "error : WinReply no opertion input"
+                event.sender.send('msg-ipc-asy-win-reply-' + uStr, returnValue)
+            } else if (Object.keys(arg).length == 1) {
+                let key = (Object.keys(arg))[0];
+                // console.log(key)
+                fcnResponse(key, arg[key]).then((re) => {
+                    console.log("then : ", re)
+                    returnValue[key + ":" + arg[key]] = re
+                    event.sender.send('msg-ipc-asy-win-reply-' + uStr, returnValue)
+                }).catch((error) => {
+                    console.log("then : ", error)
+                    returnValue[key + ":" + arg[key]] = 'error : ' + error
+                    event.sender.send('msg-ipc-asy-win-reply-' + uStr, returnValue)
+                })
+            } else {
+                for (key in arg) {
+                    returnValue[key + ":" + arg[key]] = "error : WinReply two many input"
+                }
+                event.sender.send('msg-ipc-asy-win-reply-' + uStr, returnValue)
             }
 
-            event.sender.send('msg-ipc-asy-win-reply-' + uStr, returnValue)
 
         })
 
