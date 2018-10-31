@@ -217,34 +217,37 @@ document.body.appendChild(el);}")
         return UniqueStr()
     },
 
-    //  发送消息
-    //  向main发送异步消息
-    //  in : dict msg 要发送的信息
-    //  return  Promise
-    //  resolve : 返回的消息, 字典
-    //  reject : time out
+    /**
+     *  向Main发送消息
+     * @param {Object} msg 要发送的信息, object.length必须为1
+     * @returns {Promise}
+     */
     sendToMain: function (msg) {
         // console.log(UniqueStr())
 
         return new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
-                reject("sendToMain no msg")
+                reject("sendToMain : no msg")
             } else if (Object.keys(msg).length == 1) {
 
-                // 为了removeListener需要单独封装
+                /**
+                 * 接收到Main回复后的处理函数
+                 * @param {Event} event ipcRender Event
+                 * @param {*} arg 返回的结果
+                 */
                 function handleMsg(event, arg) {
                     console.log("main asy reply : ", arg)
                     if (Object.keys(arg).length == 0) {
-                        reject("sendToMain recieve nothing")
+                        reject("sendToMain : receive nothing")
                     } else if (Object.keys(arg).length == 1) {
                         let key = (Object.keys(arg))[0]
                         if (typeof (arg[key]) == "string" && arg[key].indexOf("error :") == 0) {
-                            reject("sendToMain" + arg[key].substr(7))
+                            reject("sendToMain : " + arg[key].substr(7))
                         } else {
                             resolve(arg)
                         }
                     } else {
-                        reject("sendToMain recieve two many")
+                        reject("sendToMain : receive two many return arg")
                     }
 
                 }
@@ -256,23 +259,15 @@ document.body.appendChild(el);}")
                 setTimeout(() => {
 
                     ipcRender.removeListener('msg-ipc-asy-main-reply-' + uStr, handleMsg)
-                    reject("sendToMain time out")
+                    reject("sendToMain : time out 10000")
 
                 }, 10000);
             } else {
-                reject("sendToMain two many msg")
+                reject("sendToMain : two many msg")
             }
 
         })
     },
-
-    //  向main发送同步消息
-    //  return  字典
-    // sendToMainSync: function (msg) {
-
-    //     return ipcRender.sendSync('msg-ipc-sy-to-main', msg)
-    // },
-
 
     // main处理消息函数
 
