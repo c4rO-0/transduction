@@ -16,39 +16,69 @@ let loadWindow = null
 
 // ========函数===========
 
+
+// -------Main Msg : 分类函数-----
+
+/**
+ * @description Main处理消息/请求的函数
+ * @param {String} key 请求的关键词 
+ *  - query : 查询
+ *  - test : 测试
+ * @param {String} arg 具体事件
+ *  - winID : 对winID的操作
+ * @returns {Promise}
+ *  - 如果key和arg和预设不匹配将会返回"error : Main Response"
+ */
+function MsgMainResponse(key, arg) {
+
+  return new Promise((resolve, reject) => {
+    // let returnValue = null;
+
+    if (key == "query") {
+      if (arg == "winID") {
+        // 获取全部window ID
+        ResponseGetWinID().then((res) => {
+          resolve(res)
+        }).catch((rej) => {
+          reject("MsgMainResponse : key=query arg=winID |-> " + rej)
+        })
+      }
+    } else if (key == "test") {
+      ResponseTest().then((res) => {
+        resolve(res)
+      }).catch((rej) => {
+        reject("MsgMainResponse : key=test |-> " + rej)
+      })
+    } else {
+      reject("MsgMainResponse : no matched key or arg")
+    }
+
+    setTimeout(() => {
+      reject("MsgMainResponse : timeout 5000")
+    }, 5000);
+  })
+}
+
+
 // -------Response:调用的处理函数------
 function ResponseGetWinID() {
   // 获取全部window ID
-  let IDList = new Object;
-  for (let win of BrowserWindow.getAllWindows()) {
-    IDList[win.id] = win.getTitle();
-  }
-  return IDList
+  return new Promise((resolve, reject) => {
+    let IDList = new Object;
+    for (let win of BrowserWindow.getAllWindows()) {
+      IDList[win.id] = win.getTitle();
+    }
+    resolve(IDList)
+  })
 
 }
 
 function ResponseTest() {
 
-  return "test response"
+  return new Promise((resolve, reject) => {
+    resolve("test response")
+  })
 
-}
-
-// -------Main Msg : 分类函数-----
-function MsgMainResponse(key, arg) {
-  let returnValue = null;
-
-  if (key == "query") {
-    if (arg == "winID") {
-      // 获取全部window ID
-      returnValue = ResponseGetWinID()
-    }
-  } else if (key == "test") {
-    returnValue = ResponseTest()
-  } else {
-    returnValue = "Main request error"
-  }
-
-  return returnValue
 }
 
 
@@ -71,17 +101,17 @@ function createWindow() {
 
 
 
-  loadWindow = new BrowserWindow({
-    width: 1024,
-    height: 768,
-    resizable: true,
-    title: "loadWin"
-  });
+  // loadWindow = new BrowserWindow({
+  //   width: 1024,
+  //   height: 768,
+  //   resizable: true,
+  //   title: "loadWin"
+  // });
 
-  loadWindow.loadFile('./templates/loadWin.html');
+  // loadWindow.loadFile('./templates/loadWin.html');
 
-  loadWindow.webContents.openDevTools()
-  loadWindow.maximize()
+  // loadWindow.webContents.openDevTools()
+  // loadWindow.maximize()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -119,5 +149,7 @@ app.on('activate', function () {
 
 // ===========消息处理==========
 core.MainReply(MsgMainResponse)
-core.MainReplySync(MsgMainResponse)
+
+
+
 

@@ -277,8 +277,13 @@ document.body.appendChild(el);}")
     // main处理消息函数
 
     // ===========其他窗口消息===============
-    // 虽然send后面接非常多的参数(channel,[arg1,arg2,....]) 
-    // 但是为了统一接口, 只接受一个object参数
+    /**
+     * @description main process 处理消息并返回处理结果.
+     * 例如 : 查询全部窗口的id
+     * 该函数只负责给收到的信息进行分类和将处理结果返回给发送者.
+     * 具体对消息进行响应的是fcnResponse
+     * @param {Function} fcnResponse - 实际处理的处理函数
+     */
     MainReply: function (fcnResponse) {
         ipcMain.on('msg-ipc-asy-to-main', function (event, uStr, arg) {
 
@@ -498,6 +503,7 @@ document.body.appendChild(el);}")
     },
 
     WebReply: function (fcnResponse) {
+
         ipcRender.on('msg-ipc-asy-from-host-to-web', function (event, uStr, arg) {
 
             console.log("========================")
@@ -610,8 +616,5 @@ document.body.appendChild(el);}")
         })
 
     }
-
-}
-
 
 };
