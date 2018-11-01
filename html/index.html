@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 
-<head>
+<head style="height:100%">
   <meta charset="UTF-8">
   <title>Hello World!</title>
   <script>window.$=window.jQuery=require("../toolkit/jquery-3.3.1.min.js")</script>
   <script src="../toolkit/bootstrap.js"></script>
   <link href="../toolkit/bootstrap.css" rel="stylesheet" type="text/css">
   <script src="../js/index.js"></script>
+  <link href="../css/index.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
@@ -18,10 +19,9 @@
   <script>document.write(process.versions.chrome)</script>,
   and Electron
   <script>document.write(process.versions.electron)</script>.
-  <button type="button" class="btn btn-primary">test</button>
-  <script>
-    console.log(process.versions.electron)
-  </script>
+  <button id="switch" type="button" class="btn btn-primary">switch</button>
+  <webview id="webviewSkype" src="https://web.skype.com/en/"></webview>
+  <webview id="webviewWechat" src="https://web.wechat.com/"></webview>
 </body>
 
 </html>
