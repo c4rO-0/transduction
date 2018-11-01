@@ -4,8 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Hello World!</title>
-  <script src="../js/index.js"></script>
+  <script>window.$=window.jQuery=require("../toolkit/jquery-3.3.1.min.js")</script>
+  <script src="../toolkit/bootstrap.js"></script>
   <link href="../toolkit/bootstrap.css" rel="stylesheet" type="text/css">
+  <script src="../js/index.js"></script>
 </head>
 
 <body>
@@ -18,7 +20,6 @@
   <script>document.write(process.versions.electron)</script>.
   <button type="button" class="btn btn-primary">test</button>
   <script>
-    console.log("why there is not a notification?")
     console.log(process.versions.electron)
   </script>
 </body>
