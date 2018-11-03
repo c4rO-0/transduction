@@ -333,14 +333,14 @@ document.body.appendChild(el);}")
 
         return new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
-                reject("sendToWin no msg")
+                reject("sendToWin : no msg")
             } else if (Object.keys(msg).length == 1) {
 
                 // 为了removeListener需要单独封装
                 function handleMsg(event, arg) {
                     // console.log("win asy reply : ", arg)
                     if (Object.keys(arg).length == 0) {
-                        reject("sendToWin recieve nothing")
+                        reject("sendToWin : receive nothing")
                     } else if (Object.keys(arg).length == 1) {
                         let key = (Object.keys(arg))[0]
                         if (typeof (arg[key]) == "string" && arg[key].indexOf("error :") == 0) {
@@ -349,7 +349,7 @@ document.body.appendChild(el);}")
                             resolve(arg)
                         }
                     } else {
-                        reject("sendToWin recieve two many")
+                        reject("sendToWin : receive two many")
                     }
 
                 }
@@ -361,11 +361,11 @@ document.body.appendChild(el);}")
                 setTimeout(() => {
 
                     ipcRender.removeListener('msg-ipc-asy-win-reply-' + uStr, handleMsg)
-                    reject("sendToWin time out")
+                    reject("sendToWin : time out")
 
                 }, 10000);
             } else {
-                reject("sendToWin two many msg")
+                reject("sendToWin : two many msg")
             }
 
         })
