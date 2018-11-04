@@ -1,5 +1,9 @@
 # 开发文档
 
+## 2018Nov04: BS
+发现linux下不能调用`BrowserWindow.setMenu(null)`.
+目前做一个平台识别.
+
 ## 2018Nov04: L
 
 经过短暂学习，开始正式开发。

@@ -8,7 +8,12 @@ function createWindow() {
     if (debug) {
         win.webContents.openDevTools()
     }
-    win.setMenu(null)
+    
+    if(! (process.platform == "linux")){
+        win.setMenu(null)
+    }
+    
 }
 
 app.on('ready', createWindow)
+
