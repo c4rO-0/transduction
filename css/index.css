@@ -1,0 +1,11 @@
+html {
+    min-height: 100%;
+}
+
+body {
+    min-height: -webkit-fill-available;
+}
+
+webview {
+    height: -webkit-fill-available;
+}
