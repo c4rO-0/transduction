@@ -1,10 +1,19 @@
 # 开发文档
 
-## 2018Nov04: BS
+---
+
+## 技术相关
+### JSDOC
+[JSDOC变量列表](http://usejsdoc.org/index.html)
+
+---
+
+## 日志
+### 2018Nov04: BS
 发现linux下不能调用`BrowserWindow.setMenu(null)`.
 目前做一个平台识别.
 
-## 2018Nov04: L
+### 2018Nov04: L
 
 经过短暂学习，开始正式开发。
 基本是将L的学习代码原样搬过来，但是不用担心，代码只在hello world的基础上做了一点点修改。  
