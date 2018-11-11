@@ -12,4 +12,5 @@ $(document).ready(function(){
             status="webviewSkype"
         }
     })
+    document.querySelector('webview').openDevTools()
 })
