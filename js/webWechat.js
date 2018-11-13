@@ -1,7 +1,7 @@
 window.onload = function () {
 
-    const core = require(process.env.PWD + "/js/core.js")
-    const watchJS = require(process.env.PWD + "/toolkit/watch-1.4.2.js")
+    const core = require("../js/core.js")
+    const watchJS = require("../toolkit/watch-1.4.2.js")
 
 
     // 通过RemarkName查找用户ID

@@ -9,11 +9,11 @@ function createWindow() {
     if (debug) {
         win.webContents.openDevTools()
     }
-    
-    if(! (process.platform == "linux")){
+
+    if (process.platform == "win32") {
         win.setMenu(null)
     }
-    
+
 }
 
 app.on('ready', createWindow)
