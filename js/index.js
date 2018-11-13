@@ -12,7 +12,7 @@ $(document).ready(function () {
             status = "webviewSkype"
         }
     })
-    let webWechat = document.getElementById("webviewWechat");
-    webWechat.addEventListener("dom-ready", function () { webWechat.openDevTools(); });
+    let webWechat = document.getElementById("webviewSkype").openDevTools();
+    // webWechat.addEventListener("dom-ready", function () { webWechat.openDevTools(); });
 })
 

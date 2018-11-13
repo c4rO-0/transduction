@@ -1,6 +1,19 @@
-window.onload=function(){
+window.onload = function () {
+    console.log("runing skype preload")
+    console.log(process.versions.electron)
+    console.log(process.env.PWD)
+    console.log(process.cwd())
     window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
-    console.log($("aside.sideContainer"))
+    const core = require("../js/core")
+
+    core.waitForKeyElements("aside.sideContainer span.tileName", function () {
+        console.log("function is working...")
+        $("aside.sideContainer span.tileName").each(function (ele) {
+            console.log(ele)
+            console.log(this)
+        })
+    }, false)
+
 }
 // console.log("script working...")
 // console.log(document.querySelectorAll("aside.sideContainer span.tileName"))
