@@ -3,6 +3,7 @@ window.onload = function () {
     const core = require("../js/core.js")
     const watchJS = require("../toolkit/watch-1.4.2.js")
 
+    // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
     // 通过RemarkName查找用户ID
     function getUsernameByRemarkName(remarkName) {
@@ -18,6 +19,8 @@ window.onload = function () {
 
         return undefined
     }
+
+
 
     $(document).ready(function () {
 
@@ -61,14 +64,30 @@ window.onload = function () {
                 // 新来消息
                 console.log("----------------------")    
                 console.log("new MSG & User : ")    
-                for(let index_newMSG in objSlide){
-                    let newMSG = objSlide[index_newMSG]
+
+
+                    let newMSG = objSlide[objSlide.length-1]
                     let content = newMSG["Content"]
                     let fromUserName = newMSG["FromUserName"]
+                    let time = newMSG["MMDigestTime"]
+                    let remarkName =''
+                    let nickName = ''
+                    if(contacts[fromUserName] != undefined){
+                        remarkName = (contacts[fromUserName])["RemarkName"]
+                        nickName = (contacts[fromUserName])["NickName"]
+                    }
+                    // 获取有几条未读消息
+                    
+                    let unread = parseInt($("div.ng-scope div [data-username='"+fromUserName+"'] i").text())
+                    if(unread == NaN){
+                        unread = 0
+                    }
 
+                    console.log("ID :", fromUserName)
+                    console.log("Name :", nickName, remarkName)
                     console.log("content :", content)
-                    console.log("fromUserName :", fromUserName)
-                }
+                    console.log("time :", time)
+                    console.log("unread :", unread)                    
 
             }
 
@@ -81,9 +100,29 @@ window.onload = function () {
                     
                     let content = newMSG["Content"]
                     let fromUserName = newMSG["FromUserName"]
+                    let time = newMSG["MMDigestTime"]
 
+                    let remarkName =''
+                    let nickName = ''
+                    if(contacts[fromUserName] != undefined){
+                        remarkName = (contacts[fromUserName])["RemarkName"]
+                        nickName = (contacts[fromUserName])["NickName"]
+                    }
+                    
+                    // 获取有几条未读消息
+                    
+                    let unread = parseInt($("div.ng-scope div [data-username='"+fromUserName+"'] i").text())
+                    if(unread == NaN){
+                        unread = 0
+                    }
+
+                    console.log("ID :", fromUserName)
+                    console.log("Name :", nickName, remarkName)
                     console.log("content :", content)
-                    console.log("fromUserName :", fromUserName)
+                    console.log("time :", time)
+                    console.log("unread :", unread)
+
+
                 }
 
 
