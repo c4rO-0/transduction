@@ -10,10 +10,14 @@
 
 ## 日志
 
+### 2018Nov13: L
+- 由于优秀的文件夹结构，和不同操作系统 process 变量的各向异性，决定推广相对路径
+
 ### 2018Nov12：L
 - 神奇的 window.onload=function(){}
 - skype 网页左侧大框 aside.sideContainer; 右侧大框 div.chatContainer
 - 对方的名字全部写在 span.tileName 里，左右都有
+- 聊天记录在 div.content
 
 ### 2018Nov04: BS
 发现linux下不能调用`BrowserWindow.setMenu(null)`.

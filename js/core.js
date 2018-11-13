@@ -13,7 +13,7 @@ const ipcMain = electron.ipcMain
 //  读取本地文件
 const fs = require('fs');
 // 声明Jquery
-const $ = require(process.env.PWD + '/toolkit/jquery-3.3.1.min.js')
+const $ = require('../toolkit/jquery-3.3.1.min.js')
 
 // =============================
 // local Function
