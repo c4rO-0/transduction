@@ -55,13 +55,35 @@ window.onload = function () {
         core.waitForKeyElements("div.chat_item.slide-left.ng-scope", (chatSlide) => {
             console.log("chat slide added : ", $(chatSlide).attr("data-username"))
             let objSlide = chatContent[$(chatSlide).attr("data-username")]
-            watchJS.watch(objSlide, (prop, action) => {
 
+            console.log(objSlide)   
+            if(objSlide.length>0){
+                // 新来消息
+                console.log("----------------------")    
+                console.log("new MSG & User : ")    
+                for(let index_newMSG in objSlide){
+                    let newMSG = objSlide[index_newMSG]
+                    let content = newMSG["Content"]
+                    let fromUserName = newMSG["FromUserName"]
+
+                    console.log("content :", content)
+                    console.log("fromUserName :", fromUserName)
+                }
+
+            }
+
+            watchJS.watch(objSlide, (prop, action, newMSG) => {
+                
                 if (action == 'push') {
                     // 消息有更新
-                    console.log("MSG update : ")
-                    console.log(objSlide)
+                    console.log("----------------------")    
+                    console.log("new MSG : ", typeof(newMSG))    
+                    
+                    let content = newMSG["Content"]
+                    let fromUserName = newMSG["FromUserName"]
 
+                    console.log("content :", content)
+                    console.log("fromUserName :", fromUserName)
                 }
 
 
