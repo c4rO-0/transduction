@@ -205,6 +205,7 @@ window.onload = function () {
     
                         let options = {
                             host: window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                          ,  port: window.location.port || (window.location.protocol.replace(/:/g,'') === 'https' ? '443' : '80')
                           , path: $("div [data-cm*='"+MSG.MSGID+"'] img.msg-img").attr("src")
                         }
                         console.log(options)
@@ -217,6 +218,7 @@ window.onload = function () {
                             })
                         
                             res.on('end', function(){
+                                console.log(imagedata)
                                 fs.writeFile('../cache/test.png', imagedata, 'binary', function(err){
                                     if (err) throw err
                                     console.log('File saved.')
