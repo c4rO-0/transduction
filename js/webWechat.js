@@ -2,8 +2,10 @@ window.onload = function () {
 
     const core = require("../js/core.js")
     const watchJS = require("../toolkit/watch-1.4.2.js")
-    const http = require('http')
+    // const http = require('http')
     const fs = require('fs')
+    // const request = require('request')
+    // const setimmediate = require('setimmediate')
 
 
     let wechatMSGType ={
@@ -81,7 +83,16 @@ window.onload = function () {
 
     }
 
-
+    let cache = function (uri, filename, callback){
+        let request = new ClientRequest
+        request.head(uri, function(err, res, body){
+            console.log('content-type:', res.headers['content-type']);
+            console.log('content-length:', res.headers['content-length']);
+            console.log(uri)
+            request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+        });
+    };
+      
 
     $(document).ready(function () {
 
@@ -209,23 +220,9 @@ window.onload = function () {
                           , path: $("div [data-cm*='"+MSG.MSGID+"'] img.msg-img").attr("src")
                         }
                         console.log(options)
-                        let request = http.get(options, function(res){
-                            let imagedata = ''
-                            res.setEncoding('binary')
-                        
-                            res.on('data', function(chunk){
-                                imagedata += chunk
-                            })
-                        
-                            res.on('end', function(){
-                                console.log(imagedata)
-                                fs.writeFile('../cache/test.png', imagedata, 'binary', function(err){
-                                    if (err) throw err
-                                    console.log('File saved.')
-                                })
-                            })
-                        
-                        })                    
+                        // cache(options.host+options.path, './cache/test.png', function(){
+                        //     console.log('done');
+                        // });     
     
                     }
                 }                
