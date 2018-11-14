@@ -21,16 +21,16 @@ $(document).ready(function () {
         return new Promise((resolve, reject) => {
             console.log("debug : ", "MSG from wechat")
             // console.log(arg)
-            
-            if($("#insert #"+arg.MSGID).length == 0){
+
+            if ($("#insert #" + arg.MSGID).length == 0) {
                 if (arg.type == 3) {
                     // 是图片
-                    $("#insert").append("<p id='"+ arg.MSGID +"'> " + arg.time + "<img src='" + arg.content + "'></img></p>")
+                    $("#insert").append("<p id='" + arg.MSGID + "'> " + arg.time + "<img src='" + arg.content + "'></img></p>")
                 } else {
-                    $("#insert").append("<p id='"+ arg.MSGID +"'> " + arg.time + arg.content + "</p>")
+                    $("#insert").append("<p id='" + arg.MSGID + "'> " + arg.time + arg.content + "</p>")
                 }
                 resolve("copy that")
-            }else{
+            } else {
                 resolve("existed")
             }
 
@@ -40,6 +40,14 @@ $(document).ready(function () {
             }, 1000);
 
         })
+    })
+
+    $("#wechatGet").click(() => {
+        core.HostSendToWeb("webviewWechat", { "get": "filehelper" }).then((res) => {
+            console.log(res)
+        }).catch((error) => {
+            throw error
+        });
     })
 })
 

@@ -279,6 +279,66 @@ window.onload = function () {
 
         })
 
+        core.WebReply((key, arg) => {
+            return new Promise((resolve, reject) => {
+                if (key == 'get') {
+
+                    console.log("debug : ", "---获取用户聊天记录----")
+                    // 下面开始模拟点击
+                    let ID = arg
+
+                    if ($("div.ng-scope div [data-username='" + ID + "']").length == 0) reject("user not existed")
+
+                    $("div.ng-scope div [data-username='" + ID + "']").click();
+
+                    resolve("request received. MSG will send.")
+
+                    setTimeout(() => {
+                        // 获取内容
+                        let objSlide = chatContent[ID]
+                        for (let indexMSG in objSlide) {
+                            console.log("debug : ", indexMSG, "---->")
+                            // console.log(objSlide[indexMSG])
+                            let MSG = grepMSG(contacts, objSlide[indexMSG])
+
+                            if (MSG.type == wechatMSGType.MSGTYPE_TEXT) {
+                                // 正常输出
+
+                                // console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
+                                // console.log("type :", MSG.type)
+                                // console.log("Name :", MSG.nickName, MSG.remarkName)
+                                // console.log("type :", MSG.type)
+                                // console.log("content :", MSG.content)
+                                // console.log("time :", MSG.time)
+                                // console.log("unread :", MSG.unread)
+
+
+                            } else if (MSG.type == wechatMSGType.MSGTYPE_IMAGE) {
+                                // 缓存图片
+                                // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
+                                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
+                                // 置换内容
+                                MSG.content = imgUrl
+                            } else {
+
+                            }
+
+
+                            core.WebToHost({ "MSG": MSG }).then((res) => {
+                                console.log(res)
+                            }).catch((error) => {
+                                throw error
+                            });
+                        }
+                    }, 100);
+                } else {
+                    reject('unknown key')
+                }
+
+            })
+
+        })
+
 
     })
 
