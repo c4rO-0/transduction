@@ -4,11 +4,12 @@ window.onload = function () {
     const watchJS = require("../toolkit/watch-1.4.2.js")
     // const http = require('http')
     const fs = require('fs')
+    const { net } = require('electron').remote
     // const request = require('request')
     // const setimmediate = require('setimmediate')
 
 
-    let wechatMSGType ={
+    let wechatMSGType = {
         MSGTYPE_TEXT: 1,
         MSGTYPE_IMAGE: 3,
         MSGTYPE_VOICE: 34,
@@ -51,48 +52,92 @@ window.onload = function () {
      * @param {Object} MSG 微信单条消息
      * @returns {Object} 拿到我们关系的内容
      */
-    function grepMSG(contacts,MSG){
+    function grepMSG(contacts, MSG) {
 
         let fromUserName = MSG["FromUserName"]
         let toUserName = MSG["ToUserName"]
         let time = MSG["MMDigestTime"]
-        let remarkName =''
+        let remarkName = ''
         let nickName = ''
-        if(contacts[fromUserName] != undefined){
+        if (contacts[fromUserName] != undefined) {
             remarkName = (contacts[fromUserName])["RemarkName"]
             nickName = (contacts[fromUserName])["NickName"]
         }
         // 获取有几条未读消息
-        let strUnread = $("div.ng-scope div [data-username='"+fromUserName+"'] i").text()
+        let strUnread = $("div.ng-scope div [data-username='" + fromUserName + "'] i").text()
         let unread = strUnread == '' ? 0 : parseInt(strUnread)
         let type = MSG["MsgType"]
         let content = MSG["MMDigest"]
-        let MSGID = MSG["MsgId"] 
+        let MSGID = MSG["MsgId"]
 
-        return {"fromUserName":fromUserName,
-                "toUserName":toUserName,
-                "MSGID":MSGID,
-                "time":time,
-                "remarkName":remarkName,
-                "nickName":nickName,
-                "unread":unread,
-                "type":type,
-                "content":content
-                }
+        return {
+            "fromUserName": fromUserName,
+            "toUserName": toUserName,
+            "MSGID": MSGID,
+            "time": time,
+            "remarkName": remarkName,
+            "nickName": nickName,
+            "unread": unread,
+            "type": type,
+            "content": content
+        }
 
 
     }
 
-    let cache = function (uri, filename, callback){
-        let request = new ClientRequest
-        request.head(uri, function(err, res, body){
-            console.log('content-type:', res.headers['content-type']);
-            console.log('content-length:', res.headers['content-length']);
-            console.log(uri)
-            request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
-        });
-    };
-      
+    // let cache = function (uri, filename, callback){
+    //     let request = new ClientRequest
+    //     request.head(uri, function(err, res, body){
+    //         console.log('content-type:', res.headers['content-type']);
+    //         console.log('content-length:', res.headers['content-length']);
+    //         console.log(uri)
+    //         request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+    //     });
+    // };
+
+
+    /**
+     * Promise based download file method
+     */
+    // function downloadFile(configuration) {
+    //     return new Promise(function (resolve, reject) {
+    //         // Save variable to know progress
+    //         var received_bytes = 0;
+    //         var total_bytes = 0;
+
+    //         var req = request({
+    //             method: 'GET',
+    //             uri: configuration.remoteFile
+    //         });
+
+    //         var out = fs.createWriteStream(configuration.localFile);
+    //         req.pipe(out);
+
+    //         req.on('response', function (data) {
+    //             // Change the total bytes value to get progress later.
+    //             total_bytes = parseInt(data.headers['content-length']);
+    //         });
+
+    //         // Get progress if callback exists
+    //         if (configuration.hasOwnProperty("onProgress")) {
+    //             req.on('data', function (chunk) {
+    //                 // Update the received bytes
+    //                 received_bytes += chunk.length;
+
+    //                 configuration.onProgress(received_bytes, total_bytes);
+    //             });
+    //         } else {
+    //             req.on('data', function (chunk) {
+    //                 // Update the received bytes
+    //                 received_bytes += chunk.length;
+    //             });
+    //         }
+
+    //         req.on('end', function () {
+    //             resolve();
+    //         });
+    //     });
+    // }
 
     $(document).ready(function () {
 
@@ -100,7 +145,6 @@ window.onload = function () {
         let chatContent = window._chatContent
 
         // let remarkName = "乐宏昊"
-
 
         // 等待拉取联系人
         core.waitForKeyElements("div.contact_item ", () => {
@@ -131,42 +175,42 @@ window.onload = function () {
             console.log("chat slide added : ", $(chatSlide).attr("data-username"))
             let objSlide = chatContent[$(chatSlide).attr("data-username")]
 
-            console.log(objSlide)   
-            if(objSlide.length>0){
+            console.log(objSlide)
+            if (objSlide.length > 0) {
                 // 新来消息
-                console.log("----------------------")    
-                console.log("new MSG & User : ")    
+                console.log("----------------------")
+                console.log("new MSG & User : ")
 
 
-                    let newMSG = objSlide[objSlide.length-1]
-                    let MSG = grepMSG(contacts,newMSG)
+                let newMSG = objSlide[objSlide.length - 1]
+                let MSG = grepMSG(contacts, newMSG)
 
 
-                    console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
-                    console.log("type :", MSG.type)
-                    console.log("Name :", MSG.nickName, MSG.remarkName)
-                    console.log("type :", MSG.type)
-                    console.log("content :", MSG.content)
-                    console.log("time :", MSG.time)
-                    console.log("unread :", MSG.unread)               
+                console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
+                console.log("type :", MSG.type)
+                console.log("Name :", MSG.nickName, MSG.remarkName)
+                console.log("type :", MSG.type)
+                console.log("content :", MSG.content)
+                console.log("time :", MSG.time)
+                console.log("unread :", MSG.unread)
 
             }
 
             watchJS.watch(objSlide, (prop, action, newMSG) => {
-                
+
                 if (action == 'push') {
                     // 消息有更新
-                    console.log("----------------------")    
-                    console.log("new MSG : ", typeof(newMSG))    
-                    
-                    let MSG = grepMSG(contacts,newMSG)
+                    console.log("----------------------")
+                    console.log("new MSG : ", typeof (newMSG))
+
+                    let MSG = grepMSG(contacts, newMSG)
                     console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
                     console.log("type :", MSG.type)
                     console.log("Name :", MSG.nickName, MSG.remarkName)
                     console.log("type :", MSG.type)
                     console.log("content :", MSG.content)
                     console.log("time :", MSG.time)
-                    console.log("unread :", MSG.unread)         
+                    console.log("unread :", MSG.unread)
 
 
 
@@ -177,7 +221,7 @@ window.onload = function () {
         }, false)
 
         // 尝试拦截notification
-        window.Notification = function(title,ops){
+        window.Notification = function (title, ops) {
             // title is the title of the notifations, ops is the config object
 
             console.log('-----notification------')
@@ -186,22 +230,22 @@ window.onload = function () {
         };
 
         $("div.header").append("<button id='e-testButton'> test</button>")
-        $("#e-testButton").click(()=>{
-            
-                console.log("---获取用户聊天记录----")
-                // 下面开始模拟点击
-                let ID = 'filehelper'
-                // console.log($("div.ng-scope div [data-username='"+ID+"']"))
-                $("div.ng-scope div [data-username='"+ID+"']").click();
+        $("#e-testButton").click(() => {
+
+            console.log("---获取用户聊天记录----")
+            // 下面开始模拟点击
+            let ID = 'filehelper'
+            // console.log($("div.ng-scope div [data-username='"+ID+"']"))
+            $("div.ng-scope div [data-username='" + ID + "']").click();
             setTimeout(() => {
                 // 获取内容
                 let objSlide = chatContent[ID]
-                for (let indexMSG in objSlide){
-                    console.log(indexMSG,"---->")    
+                for (let indexMSG in objSlide) {
+                    console.log(indexMSG, "---->")
                     // console.log(objSlide[indexMSG])
                     let MSG = grepMSG(contacts, objSlide[indexMSG])
-    
-                    if(MSG.type == wechatMSGType.MSGTYPE_TEXT){
+
+                    if (MSG.type == wechatMSGType.MSGTYPE_TEXT) {
                         // 正常输出
                         console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
                         console.log("type :", MSG.type)
@@ -209,23 +253,63 @@ window.onload = function () {
                         console.log("type :", MSG.type)
                         console.log("content :", MSG.content)
                         console.log("time :", MSG.time)
-                        console.log("unread :", MSG.unread)                           
-                    }else if(MSG.type == wechatMSGType.MSGTYPE_IMAGE){
+                        console.log("unread :", MSG.unread)
+                    } else if (MSG.type == wechatMSGType.MSGTYPE_IMAGE) {
                         // 缓存图片
-                        console.log($("div [data-cm*='"+MSG.MSGID+"'] img.msg-img"))
-    
-                        let options = {
-                            host: window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                          ,  port: window.location.port || (window.location.protocol.replace(/:/g,'') === 'https' ? '443' : '80')
-                          , path: $("div [data-cm*='"+MSG.MSGID+"'] img.msg-img").attr("src")
-                        }
-                        console.log(options)
+                        console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
+
+                        // let options = {
+                        //     host: window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                        //     , port: window.location.port || (window.location.protocol.replace(/:/g, '') === 'https' ? '443' : '80')
+                        //     , path: $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
+                        // }
+                        let url = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
+                        console.log(url)
                         // cache(options.host+options.path, './cache/test.png', function(){
                         //     console.log('done');
                         // });     
-    
+                        // downloadFile({
+                        //     remoteFile: options.host+options.path,
+                        //     localFile: "test.jpeg",
+                        //     onProgress: function (received,total){
+                        //         var percentage = (received * 100) / total;
+                        //         console.log(percentage + "% | " + received + " bytes out of " + total + " bytes.");
+                        //     }
+                        // }).then(function(){
+                        //     alert("File successfully downloaded");
+                        // });
+
+                        let request = net.request(url)
+
+                        // request.on('response', (response) => {
+                        //     let imagedata = ''
+                        //     // response.setEncoding('binary')
+
+                        //     console.log(`STATUS: ${response.statusCode}`)
+                        //     console.log(`HEADERS: ${JSON.stringify(response.headers)}`)
+                            
+                        //     response.on('data', (chunk) => {
+                        //         console.log("data")
+                        //         imagedata += chunk
+                        //         console.log(imagedata.length)
+                        //         fs.writeFile('test.jpg', imagedata, 'binary', function (err) {
+                        //             if (err) throw err
+                        //             console.log('File saved.')
+                        //         })                                
+                        //     })
+                        //     response.on('end', () => {
+                        //         console.log("end")
+                        //         // fs.writeFile('test.jpg', imagedata, 'binary', function (err) {
+                        //         //     if (err) throw err
+                        //         //     console.log('File saved.')
+                        //         // })
+                        //     })
+                        // })
+                        // request.end()
+                        core.WebToHost({"img":url})
+
                     }
-                }                
+                }
             }, 100);
 
 
