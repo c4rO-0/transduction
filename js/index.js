@@ -17,12 +17,30 @@ $(document).ready(function () {
     webWechat.addEventListener("dom-ready", function () { webWechat.openDevTools(); });
 
 
-    core.WinReplyWeb("webviewWechat",(key, arg)=>{
-        console.log("MSG from wechat")
-        console.log(key)
-        console.log(arg)
-        $("#insert").append("<img src='"+arg+"'><\img>")
-    })    
+    core.WinReplyWeb("webviewWechat", (key, arg) => {
+        return new Promise((resolve, reject) => {
+            console.log("debug : ", "MSG from wechat")
+            // console.log(arg)
+            
+            if($("#insert #"+arg.MSGID).length == 0){
+                if (arg.type == 3) {
+                    // 是图片
+                    $("#insert").append("<p id='"+ arg.MSGID +"'> " + arg.time + "<img src='" + arg.content + "'></img></p>")
+                } else {
+                    $("#insert").append("<p id='"+ arg.MSGID +"'> " + arg.time + arg.content + "</p>")
+                }
+                resolve("copy that")
+            }else{
+                resolve("existed")
+            }
+
+
+            setTimeout(() => {
+                reject("time out")
+            }, 1000);
+
+        })
+    })
 })
 
 

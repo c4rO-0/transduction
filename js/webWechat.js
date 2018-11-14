@@ -150,7 +150,7 @@ window.onload = function () {
         core.waitForKeyElements("div.contact_item ", () => {
 
 
-            console.log("----------contact change----------")
+            console.log("debug : ", "----------contact change----------")
 
             // 联系人有变化
             if ($("#navContact").scrollTop() + $("#navContact")[0].clientHeight != $("#navContact")[0].scrollHeight) {
@@ -172,27 +172,27 @@ window.onload = function () {
 
 
         core.waitForKeyElements("div.chat_item.slide-left.ng-scope", (chatSlide) => {
-            console.log("chat slide added : ", $(chatSlide).attr("data-username"))
+            console.log("debug : ", "chat slide added : ", $(chatSlide).attr("data-username"))
             let objSlide = chatContent[$(chatSlide).attr("data-username")]
 
             console.log(objSlide)
             if (objSlide.length > 0) {
                 // 新来消息
-                console.log("----------------------")
-                console.log("new MSG & User : ")
+                console.log("debug : ", "----------------------")
+                console.log("debug : ", "new MSG & User : ")
 
 
                 let newMSG = objSlide[objSlide.length - 1]
                 let MSG = grepMSG(contacts, newMSG)
 
 
-                console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
-                console.log("type :", MSG.type)
-                console.log("Name :", MSG.nickName, MSG.remarkName)
-                console.log("type :", MSG.type)
-                console.log("content :", MSG.content)
-                console.log("time :", MSG.time)
-                console.log("unread :", MSG.unread)
+                console.log("debug : ", "ID :", MSG.fromUserName, "->", MSG.toUserName)
+                console.log("debug : ", "type :", MSG.type)
+                console.log("debug : ", "Name :", MSG.nickName, MSG.remarkName)
+                console.log("debug : ", "type :", MSG.type)
+                console.log("debug : ", "content :", MSG.content)
+                console.log("debug : ", "time :", MSG.time)
+                console.log("debug : ", "unread :", MSG.unread)
 
             }
 
@@ -200,17 +200,17 @@ window.onload = function () {
 
                 if (action == 'push') {
                     // 消息有更新
-                    console.log("----------------------")
-                    console.log("new MSG : ", typeof (newMSG))
+                    console.log("debug : ", "----------------------")
+                    console.log("debug : ", "new MSG : ", typeof (newMSG))
 
                     let MSG = grepMSG(contacts, newMSG)
-                    console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
-                    console.log("type :", MSG.type)
-                    console.log("Name :", MSG.nickName, MSG.remarkName)
-                    console.log("type :", MSG.type)
-                    console.log("content :", MSG.content)
-                    console.log("time :", MSG.time)
-                    console.log("unread :", MSG.unread)
+                    console.log("debug : ", "ID :", MSG.fromUserName, "->", MSG.toUserName)
+                    console.log("debug : ", "type :", MSG.type)
+                    console.log("debug : ", "Name :", MSG.nickName, MSG.remarkName)
+                    console.log("debug : ", "type :", MSG.type)
+                    console.log("debug : ", "content :", MSG.content)
+                    console.log("debug : ", "time :", MSG.time)
+                    console.log("debug : ", "unread :", MSG.unread)
 
 
 
@@ -232,7 +232,7 @@ window.onload = function () {
         $("div.header").append("<button id='e-testButton'> test</button>")
         $("#e-testButton").click(() => {
 
-            console.log("---获取用户聊天记录----")
+            console.log("debug : ", "---获取用户聊天记录----")
             // 下面开始模拟点击
             let ID = 'filehelper'
             // console.log($("div.ng-scope div [data-username='"+ID+"']"))
@@ -241,74 +241,38 @@ window.onload = function () {
                 // 获取内容
                 let objSlide = chatContent[ID]
                 for (let indexMSG in objSlide) {
-                    console.log(indexMSG, "---->")
+                    console.log("debug : ", indexMSG, "---->")
                     // console.log(objSlide[indexMSG])
                     let MSG = grepMSG(contacts, objSlide[indexMSG])
 
                     if (MSG.type == wechatMSGType.MSGTYPE_TEXT) {
                         // 正常输出
-                        console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
-                        console.log("type :", MSG.type)
-                        console.log("Name :", MSG.nickName, MSG.remarkName)
-                        console.log("type :", MSG.type)
-                        console.log("content :", MSG.content)
-                        console.log("time :", MSG.time)
-                        console.log("unread :", MSG.unread)
+
+                        // console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
+                        // console.log("type :", MSG.type)
+                        // console.log("Name :", MSG.nickName, MSG.remarkName)
+                        // console.log("type :", MSG.type)
+                        // console.log("content :", MSG.content)
+                        // console.log("time :", MSG.time)
+                        // console.log("unread :", MSG.unread)
+
+
                     } else if (MSG.type == wechatMSGType.MSGTYPE_IMAGE) {
                         // 缓存图片
-                        console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
-
-                        // let options = {
-                        //     host: window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                        //     , port: window.location.port || (window.location.protocol.replace(/:/g, '') === 'https' ? '443' : '80')
-                        //     , path: $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
-                        // }
-                        let url = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
-                        console.log(url)
-                        // cache(options.host+options.path, './cache/test.png', function(){
-                        //     console.log('done');
-                        // });     
-                        // downloadFile({
-                        //     remoteFile: options.host+options.path,
-                        //     localFile: "test.jpeg",
-                        //     onProgress: function (received,total){
-                        //         var percentage = (received * 100) / total;
-                        //         console.log(percentage + "% | " + received + " bytes out of " + total + " bytes.");
-                        //     }
-                        // }).then(function(){
-                        //     alert("File successfully downloaded");
-                        // });
-
-                        let request = net.request(url)
-
-                        // request.on('response', (response) => {
-                        //     let imagedata = ''
-                        //     // response.setEncoding('binary')
-
-                        //     console.log(`STATUS: ${response.statusCode}`)
-                        //     console.log(`HEADERS: ${JSON.stringify(response.headers)}`)
-                            
-                        //     response.on('data', (chunk) => {
-                        //         console.log("data")
-                        //         imagedata += chunk
-                        //         console.log(imagedata.length)
-                        //         fs.writeFile('test.jpg', imagedata, 'binary', function (err) {
-                        //             if (err) throw err
-                        //             console.log('File saved.')
-                        //         })                                
-                        //     })
-                        //     response.on('end', () => {
-                        //         console.log("end")
-                        //         // fs.writeFile('test.jpg', imagedata, 'binary', function (err) {
-                        //         //     if (err) throw err
-                        //         //     console.log('File saved.')
-                        //         // })
-                        //     })
-                        // })
-                        // request.end()
-                        core.WebToHost({"img":url})
+                        // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
+                        let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
+                        // 置换内容
+                        MSG.content = imgUrl
+                    } else {
 
                     }
+
+
+                    core.WebToHost({ "MSG": MSG }).then((res) => {
+                        console.log(res)
+                    }).catch((error) => {
+                        throw error
+                    });
                 }
             }, 100);
 
