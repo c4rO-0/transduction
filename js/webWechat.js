@@ -129,7 +129,14 @@ window.onload = function () {
             }, 0, true)
         }, false)
 
-        // 监控chat content
+        // 尝试拦截notification
+        window.Notification = function(title,ops){
+            // title is the title of the notifations, ops is the config object
+
+            console.log('-----notification------')
+            console.log(title)
+            console.log(ops)
+        };
 
     })
 
