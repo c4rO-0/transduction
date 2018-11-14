@@ -2,6 +2,30 @@ window.onload = function () {
 
     const core = require("../js/core.js")
     const watchJS = require("../toolkit/watch-1.4.2.js")
+    const http = require('http')
+    const fs = require('fs')
+
+
+    let wechatMSGType ={
+        MSGTYPE_TEXT: 1,
+        MSGTYPE_IMAGE: 3,
+        MSGTYPE_VOICE: 34,
+        MSGTYPE_VIDEO: 43,
+        MSGTYPE_MICROVIDEO: 62,
+        MSGTYPE_EMOTICON: 47,
+        MSGTYPE_APP: 49,
+        MSGTYPE_VOIPMSG: 50,
+        MSGTYPE_VOIPNOTIFY: 52,
+        MSGTYPE_VOIPINVITE: 53,
+        MSGTYPE_LOCATION: 48,
+        MSGTYPE_STATUSNOTIFY: 51,
+        MSGTYPE_SYSNOTICE: 9999,
+        MSGTYPE_POSSIBLEFRIEND_MSG: 40,
+        MSGTYPE_VERIFYMSG: 37,
+        MSGTYPE_SHARECARD: 42,
+        MSGTYPE_SYS: 1e4
+    }
+
 
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
@@ -18,6 +42,43 @@ window.onload = function () {
         }
 
         return undefined
+    }
+
+    /**
+     * 
+     * @param {Object} MSG 微信单条消息
+     * @returns {Object} 拿到我们关系的内容
+     */
+    function grepMSG(contacts,MSG){
+
+        let fromUserName = MSG["FromUserName"]
+        let toUserName = MSG["ToUserName"]
+        let time = MSG["MMDigestTime"]
+        let remarkName =''
+        let nickName = ''
+        if(contacts[fromUserName] != undefined){
+            remarkName = (contacts[fromUserName])["RemarkName"]
+            nickName = (contacts[fromUserName])["NickName"]
+        }
+        // 获取有几条未读消息
+        let strUnread = $("div.ng-scope div [data-username='"+fromUserName+"'] i").text()
+        let unread = strUnread == '' ? 0 : parseInt(strUnread)
+        let type = MSG["MsgType"]
+        let content = MSG["MMDigest"]
+        let MSGID = MSG["MsgId"] 
+
+        return {"fromUserName":fromUserName,
+                "toUserName":toUserName,
+                "MSGID":MSGID,
+                "time":time,
+                "remarkName":remarkName,
+                "nickName":nickName,
+                "unread":unread,
+                "type":type,
+                "content":content
+                }
+
+
     }
 
 
@@ -67,24 +128,16 @@ window.onload = function () {
 
 
                     let newMSG = objSlide[objSlide.length-1]
-                    let content = newMSG["Content"]
-                    let fromUserName = newMSG["FromUserName"]
-                    let time = newMSG["MMDigestTime"]
-                    let remarkName =''
-                    let nickName = ''
-                    if(contacts[fromUserName] != undefined){
-                        remarkName = (contacts[fromUserName])["RemarkName"]
-                        nickName = (contacts[fromUserName])["NickName"]
-                    }
-                    // 获取有几条未读消息
-                    let strUnread = $("div.ng-scope div [data-username='"+fromUserName+"'] i").text()
-                    let unread = strUnread == '' ? 0 : parseInt(strUnread)
+                    let MSG = grepMSG(contacts,newMSG)
 
-                    console.log("ID :", fromUserName)
-                    console.log("Name :", nickName, remarkName)
-                    console.log("content :", content)
-                    console.log("time :", time)
-                    console.log("unread :", unread)                    
+
+                    console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
+                    console.log("type :", MSG.type)
+                    console.log("Name :", MSG.nickName, MSG.remarkName)
+                    console.log("type :", MSG.type)
+                    console.log("content :", MSG.content)
+                    console.log("time :", MSG.time)
+                    console.log("unread :", MSG.unread)               
 
             }
 
@@ -95,27 +148,15 @@ window.onload = function () {
                     console.log("----------------------")    
                     console.log("new MSG : ", typeof(newMSG))    
                     
-                    let content = newMSG["Content"]
-                    let fromUserName = newMSG["FromUserName"]
-                    let time = newMSG["MMDigestTime"]
+                    let MSG = grepMSG(contacts,newMSG)
+                    console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
+                    console.log("type :", MSG.type)
+                    console.log("Name :", MSG.nickName, MSG.remarkName)
+                    console.log("type :", MSG.type)
+                    console.log("content :", MSG.content)
+                    console.log("time :", MSG.time)
+                    console.log("unread :", MSG.unread)         
 
-                    let remarkName =''
-                    let nickName = ''
-                    if(contacts[fromUserName] != undefined){
-                        remarkName = (contacts[fromUserName])["RemarkName"]
-                        nickName = (contacts[fromUserName])["NickName"]
-                    }
-                    
-                    // 获取有几条未读消息
-                    let strUnread = $("div.ng-scope div [data-username='"+fromUserName+"'] i").text()
-                    let unread = strUnread == '' ? 0 : parseInt(strUnread)
-
-
-                    console.log("ID :", fromUserName)
-                    console.log("Name :", nickName, remarkName)
-                    console.log("content :", content)
-                    console.log("time :", time)
-                    console.log("unread :", unread)
 
 
                 }
@@ -132,6 +173,65 @@ window.onload = function () {
             console.log(title)
             console.log(ops)
         };
+
+        $("div.header").append("<button id='e-testButton'> test</button>")
+        $("#e-testButton").click(()=>{
+            
+                console.log("---获取用户聊天记录----")
+                // 下面开始模拟点击
+                let ID = 'filehelper'
+                // console.log($("div.ng-scope div [data-username='"+ID+"']"))
+                $("div.ng-scope div [data-username='"+ID+"']").click();
+            setTimeout(() => {
+                // 获取内容
+                let objSlide = chatContent[ID]
+                for (let indexMSG in objSlide){
+                    console.log(indexMSG,"---->")    
+                    // console.log(objSlide[indexMSG])
+                    let MSG = grepMSG(contacts, objSlide[indexMSG])
+    
+                    if(MSG.type == wechatMSGType.MSGTYPE_TEXT){
+                        // 正常输出
+                        console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
+                        console.log("type :", MSG.type)
+                        console.log("Name :", MSG.nickName, MSG.remarkName)
+                        console.log("type :", MSG.type)
+                        console.log("content :", MSG.content)
+                        console.log("time :", MSG.time)
+                        console.log("unread :", MSG.unread)                           
+                    }else if(MSG.type == wechatMSGType.MSGTYPE_IMAGE){
+                        // 缓存图片
+                        console.log($("div [data-cm*='"+MSG.MSGID+"'] img.msg-img"))
+    
+                        let options = {
+                            host: window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                          , path: $("div [data-cm*='"+MSG.MSGID+"'] img.msg-img").attr("src")
+                        }
+                        console.log(options)
+                        let request = http.get(options, function(res){
+                            let imagedata = ''
+                            res.setEncoding('binary')
+                        
+                            res.on('data', function(chunk){
+                                imagedata += chunk
+                            })
+                        
+                            res.on('end', function(){
+                                fs.writeFile('../cache/test.png', imagedata, 'binary', function(err){
+                                    if (err) throw err
+                                    console.log('File saved.')
+                                })
+                            })
+                        
+                        })                    
+    
+                    }
+                }                
+            }, 100);
+
+
+        })
+
 
     })
 
