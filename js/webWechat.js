@@ -77,11 +77,8 @@ window.onload = function () {
                         nickName = (contacts[fromUserName])["NickName"]
                     }
                     // 获取有几条未读消息
-                    
-                    let unread = parseInt($("div.ng-scope div [data-username='"+fromUserName+"'] i").text())
-                    if(unread == NaN){
-                        unread = 0
-                    }
+                    let strUnread = $("div.ng-scope div [data-username='"+fromUserName+"'] i").text()
+                    let unread = strUnread == '' ? 0 : parseInt(strUnread)
 
                     console.log("ID :", fromUserName)
                     console.log("Name :", nickName, remarkName)
@@ -110,11 +107,9 @@ window.onload = function () {
                     }
                     
                     // 获取有几条未读消息
-                    
-                    let unread = parseInt($("div.ng-scope div [data-username='"+fromUserName+"'] i").text())
-                    if(unread == NaN){
-                        unread = 0
-                    }
+                    let strUnread = $("div.ng-scope div [data-username='"+fromUserName+"'] i").text()
+                    let unread = strUnread == '' ? 0 : parseInt(strUnread)
+
 
                     console.log("ID :", fromUserName)
                     console.log("Name :", nickName, remarkName)
