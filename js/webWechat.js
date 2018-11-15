@@ -194,6 +194,13 @@ window.onload = function () {
                 console.log("debug : ", "time :", MSG.time)
                 console.log("debug : ", "unread :", MSG.unread)
 
+                // 向index发出新消息提醒
+                core.WebToHost({ "MSG-new": MSG }).then((res) => {
+                    console.log(res)
+                }).catch((error) => {
+                    throw error
+                });
+
             }
 
             watchJS.watch(objSlide, (prop, action, newMSG) => {
@@ -207,12 +214,16 @@ window.onload = function () {
                     console.log("debug : ", "ID :", MSG.fromUserName, "->", MSG.toUserName)
                     console.log("debug : ", "type :", MSG.type)
                     console.log("debug : ", "Name :", MSG.nickName, MSG.remarkName)
-                    console.log("debug : ", "type :", MSG.type)
                     console.log("debug : ", "content :", MSG.content)
                     console.log("debug : ", "time :", MSG.time)
                     console.log("debug : ", "unread :", MSG.unread)
 
-
+                    // 向index发出新消息提醒
+                    core.WebToHost({ "MSG-new": MSG }).then((res) => {
+                        console.log(res)
+                    }).catch((error) => {
+                        throw error
+                    });
 
                 }
 
@@ -221,13 +232,13 @@ window.onload = function () {
         }, false)
 
         // 尝试拦截notification
-        window.Notification = function (title, ops) {
-            // title is the title of the notifations, ops is the config object
+        // window.Notification = function (title, ops) {
+        //     // title is the title of the notifations, ops is the config object
 
-            console.log('-----notification------')
-            console.log(title)
-            console.log(ops)
-        };
+        //     console.log('-----notification------')
+        //     console.log(title)
+        //     console.log(ops)
+        // };
 
         $("div.header").append("<button id='e-testButton'> test</button>")
         $("#e-testButton").click(() => {
@@ -248,14 +259,6 @@ window.onload = function () {
                     if (MSG.type == wechatMSGType.MSGTYPE_TEXT) {
                         // 正常输出
 
-                        // console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
-                        // console.log("type :", MSG.type)
-                        // console.log("Name :", MSG.nickName, MSG.remarkName)
-                        // console.log("type :", MSG.type)
-                        // console.log("content :", MSG.content)
-                        // console.log("time :", MSG.time)
-                        // console.log("unread :", MSG.unread)
-
 
                     } else if (MSG.type == wechatMSGType.MSGTYPE_IMAGE) {
                         // 缓存图片
@@ -268,7 +271,7 @@ window.onload = function () {
                     }
 
 
-                    core.WebToHost({ "MSG": MSG }).then((res) => {
+                    core.WebToHost({ "MSG-Log": MSG }).then((res) => {
                         console.log(res)
                     }).catch((error) => {
                         throw error
@@ -324,7 +327,7 @@ window.onload = function () {
                             }
 
 
-                            core.WebToHost({ "MSG": MSG }).then((res) => {
+                            core.WebToHost({ "MSG-Log": MSG }).then((res) => {
                                 console.log(res)
                             }).catch((error) => {
                                 throw error

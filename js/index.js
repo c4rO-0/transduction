@@ -17,22 +17,47 @@ $(document).ready(function () {
     webWechat.addEventListener("dom-ready", function () { webWechat.openDevTools(); });
 
 
+    // ===========================接收消息===========================
+
     core.WinReplyWeb("webviewWechat", (key, arg) => {
         return new Promise((resolve, reject) => {
+            console.log("debug : ", "----------------------")
             console.log("debug : ", "MSG from wechat")
             // console.log(arg)
 
-            if ($("#insert #" + arg.MSGID).length == 0) {
-                if (arg.type == 3) {
-                    // 是图片
-                    $("#insert").append("<p id='" + arg.MSGID + "'> " + arg.time + "<img src='" + arg.content + "'></img></p>")
+            if (key == 'MSG-Log') {
+                // 获取某个用户聊天记录
+
+                // 检查消息是否已经存在
+                if ($("#insert #" + arg.MSGID).length == 0) {
+                    console.log("debug : ", "display MSG on index")
+                    if (arg.type == 3) {
+                        // 是图片
+                        $("#insert").append("<p id='" + arg.MSGID + "'> " + arg.time + "<img src='" + arg.content + "'></img></p>")
+                    } else {
+                        $("#insert").append("<p id='" + arg.MSGID + "'> " + arg.time + arg.content + "</p>")
+                    }
+
+
+                    resolve("copy that")
                 } else {
-                    $("#insert").append("<p id='" + arg.MSGID + "'> " + arg.time + arg.content + "</p>")
+                    resolve("existed")
                 }
+            } else if (key == 'MSG-new') {
+                // 有新消息来了
+                
+                console.log("debug : ", "new MSG")
+
+                console.log("debug : ", "ID :", arg.fromUserName, "->", arg.toUserName)
+                console.log("debug : ", "type :", arg.type)
+                console.log("debug : ", "Name :", arg.nickName, arg.remarkName)
+                console.log("debug : ", "content :", arg.content)
+                console.log("debug : ", "time :", arg.time)
+                console.log("debug : ", "unread :", arg.unread)
+
                 resolve("copy that")
-            } else {
-                resolve("existed")
             }
+
 
 
             setTimeout(() => {
@@ -42,13 +67,19 @@ $(document).ready(function () {
         })
     })
 
+
+    // ===========================发送消息===========================
     $("#wechatGet").click(() => {
-        core.HostSendToWeb("webviewWechat", { "get": "filehelper" }).then((res) => {
-            console.log(res)
-        }).catch((error) => {
-            throw error
-        });
+        $("#insert").empty()
+        if($("#userID").val() != ''){
+            core.HostSendToWeb("webviewWechat", { "get": $("#userID").val()}).then((res) => {
+                console.log(res)
+            }).catch((error) => {
+                throw error
+            });
+        }
+
     })
 })
 
-
+ 
