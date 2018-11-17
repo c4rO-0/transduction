@@ -85,59 +85,23 @@ window.onload = function () {
 
     }
 
-    // let cache = function (uri, filename, callback){
-    //     let request = new ClientRequest
-    //     request.head(uri, function(err, res, body){
-    //         console.log('content-type:', res.headers['content-type']);
-    //         console.log('content-length:', res.headers['content-length']);
-    //         console.log(uri)
-    //         request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
-    //     });
-    // };
+    var callbackContact = function (records) {
+        
+        if ($("#navContact").scrollTop() + $("#navContact")[0].clientHeight != $("#navContact")[0].scrollHeight) {
+            console.log("debug : ", "----------contact change----------")
+            $("#navContact").scrollTop(0)
+            $("#navContact").scrollTop($("#navContact")[0].scrollHeight)
 
+            // 更新联系人
+            contacts = window._contacts
+            // 更新对话
+            chatContent = window._chatContent
 
-    /**
-     * Promise based download file method
-     */
-    // function downloadFile(configuration) {
-    //     return new Promise(function (resolve, reject) {
-    //         // Save variable to know progress
-    //         var received_bytes = 0;
-    //         var total_bytes = 0;
+            // 临时放在这
+            // let username = getUsernameByRemarkName(remarkName)
 
-    //         var req = request({
-    //             method: 'GET',
-    //             uri: configuration.remoteFile
-    //         });
-
-    //         var out = fs.createWriteStream(configuration.localFile);
-    //         req.pipe(out);
-
-    //         req.on('response', function (data) {
-    //             // Change the total bytes value to get progress later.
-    //             total_bytes = parseInt(data.headers['content-length']);
-    //         });
-
-    //         // Get progress if callback exists
-    //         if (configuration.hasOwnProperty("onProgress")) {
-    //             req.on('data', function (chunk) {
-    //                 // Update the received bytes
-    //                 received_bytes += chunk.length;
-
-    //                 configuration.onProgress(received_bytes, total_bytes);
-    //             });
-    //         } else {
-    //             req.on('data', function (chunk) {
-    //                 // Update the received bytes
-    //                 received_bytes += chunk.length;
-    //             });
-    //         }
-
-    //         req.on('end', function () {
-    //             resolve();
-    //         });
-    //     });
-    // }
+        }
+    };
 
     $(document).ready(function () {
 
@@ -146,31 +110,12 @@ window.onload = function () {
 
         // let remarkName = "乐宏昊"
 
-        // 等待拉取联系人
-        core.waitForKeyElements("div.contact_item ", () => {
+         // 等待拉取联系人
+        var obsContact = new MutationObserver(callbackContact);
 
+        obsContact.observe($("#navContact")[0], { childList: true, subtree: true });
 
-            console.log("debug : ", "----------contact change----------")
-
-            // 联系人有变化
-            if ($("#navContact").scrollTop() + $("#navContact")[0].clientHeight != $("#navContact")[0].scrollHeight) {
-                $("#navContact").scrollTop(0)
-                $("#navContact").scrollTop($("#navContact")[0].scrollHeight)
-
-                // 更新联系人
-                contacts = window._contacts
-                // 更新对话
-                chatContent = window._chatContent
-
-                // 临时放在这
-                // let username = getUsernameByRemarkName(remarkName)
-
-            }
-
-
-        }, false)
-
-
+       
         core.waitForKeyElements("div.chat_item.slide-left.ng-scope", (chatSlide) => {
             console.log("debug : ", "chat slide added : ", $(chatSlide).attr("data-username"))
             let objSlide = chatContent[$(chatSlide).attr("data-username")]
