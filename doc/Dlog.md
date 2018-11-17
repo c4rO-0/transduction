@@ -10,6 +10,9 @@
 
 ## 日志
 
+### 2018Nov17: L
+- 从id找元素，左边 id="timelineComponent"，右边 id="chatComponent"
+
 ### 2018Nov13: L
 - 由于优秀的文件夹结构，和不同操作系统 process 变量的各向异性，决定推广相对路径
 

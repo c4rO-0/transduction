@@ -6,15 +6,41 @@ window.onload = function () {
     window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
     const core = require("../js/core")
 
-    core.waitForKeyElements("aside.sideContainer span.tileName", function () {
-        console.log("function is working...")
-        $("aside.sideContainer span.tileName").each(function (ele) {
-            console.log(ele)
-            console.log(this)
-        })
-    }, false)
+    let observer = new MutationObserver(function (list, obs) {
+        console.log("fire in the hole")
+        console.log(list)
+        // console.log(obs)
+        let from, lastMessage, count
+        for (let i in list) {
+            //判断是新增node，且不是白字Text，也就是实实在在地添加的网页元素
+            if (list[i].addedNodes.length != 0 && list[i].addedNodes[0].nodeType != 3) {
+                if (list[i].addedNodes[0].matches("a.recent.unread.message")) {
+                    console.log(list[i].addedNodes[0])
+                    console.log("from: " + list[i].addedNodes[0].querySelector("span.topic").innerText)
+                    console.log("said: " + list[i].addedNodes[0].querySelector("div.message > p").innerText)
+                } else if (list[i].addedNodes[0].matches("span.counter")) {
+                    console.log(list[i].addedNodes[0])
+                    console.log("total: " + list[i].addedNodes[0].querySelector("span.circle > p").innerText + " new")
+                } else if (list[i].addedNodes[0].matches("div.Avatar")) {
+                    console.log(list[i].addedNodes[0])
+                }
+            }
+        }
+    })
+
+    observer.observe(document.getElementById("timelineComponent"),
+        { childList: true, subtree: true })
+
+    // core.waitForKeyElements("aside.sideContainer span.tileName", function () {
+    //     console.log("function is working...")
+    //     $("aside.sideContainer span.tileName").each(function (ele) {
+    //         console.log(ele)
+    //         console.log(this)
+    //     })
+    // }, false)
 
 }
+
 // console.log("script working...")
 // console.log(document.querySelectorAll("aside.sideContainer span.tileName"))
 
