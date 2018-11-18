@@ -93,6 +93,7 @@ window.onload = function () {
         let time = $(obj).find("div.ext p.attr.ng-binding").text()
         let content = $(obj).find("div.info p.msg span.ng-binding[ng-bind-html='chatContact.MMDigest']").text()
         let nickName = $(obj).find("div.info h3.nickname span").text()
+        let userID = $(obj).attr("data-username")
         let host =
             window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
                 window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
@@ -129,9 +130,12 @@ window.onload = function () {
 
         }
 
+        
+
         // icon web_wechat_reddot ng-scope 一个小点
 
         return {
+            "userID" : userID,
             "time": time,
             "content": content,
             "nickName": nickName,
@@ -189,14 +193,14 @@ window.onload = function () {
         // console.log("debug : ", "------array:user-----")
         // console.log(arrayObjUser)
 
-        console.log("debug : ", "------array:MSG-----")
+        // console.log("debug : ", "------array:MSG-----")
         arrayObjUser.forEach((currentValue, index) => {
             // console.log("debug : ", index)
             arrayContent.push(grepNewMSG(currentValue))
         })
 
-        console.log("debug : ", "------array:MSG-----")
-        console.log(arrayContent)
+        // console.log("debug : ", "------array:MSG-----")
+        // console.log(arrayContent)
         arrayContent.forEach((currentValue, index) => {
             // 向index发出新消息提醒
             core.WebToHost({ "MSG-new": currentValue }).then((res) => {
