@@ -130,12 +130,12 @@ window.onload = function () {
 
         }
 
-        
+
 
         // icon web_wechat_reddot ng-scope 一个小点
 
         return {
-            "userID" : userID,
+            "userID": userID,
             "time": time,
             "content": content,
             "nickName": nickName,
@@ -237,167 +237,65 @@ window.onload = function () {
         });
 
 
-        // core.waitForKeyElements("div.chat_item.slide-left.ng-scope", (chatSlide) => {
-        //     console.log("debug : ", "chat slide added : ", $(chatSlide).attr("data-username"))
-        //     let objSlide = chatContent[$(chatSlide).attr("data-username")]
+        core.WebReply((key, arg) => {
+            return new Promise((resolve, reject) => {
+                if (key == 'get') {
 
-        //     console.log(objSlide)
-        //     if (objSlide.length > 0) {
-        //         // 新来消息
-        //         console.log("debug : ", "----------------------")
-        //         console.log("debug : ", "new MSG & User : ")
+                    console.log("debug : ", "---获取用户聊天记录----")
+                    // 下面开始模拟点击
+                    let ID = arg
 
+                    if ($("div.ng-scope div [data-username='" + ID + "']").length == 0) reject("user not existed")
 
-        //         let newMSG = objSlide[objSlide.length - 1]
-        //         let MSG = grepMSG(contacts, newMSG)
+                    $("div.ng-scope div [data-username='" + ID + "']").click();
 
+                    resolve("request received. MSG will send.")
 
-        //         console.log("debug : ", "ID :", MSG.fromUserName, "->", MSG.toUserName)
-        //         console.log("debug : ", "type :", MSG.type)
-        //         console.log("debug : ", "Name :", MSG.nickName, MSG.remarkName)
-        //         console.log("debug : ", "type :", MSG.type)
-        //         console.log("debug : ", "content :", MSG.content)
-        //         console.log("debug : ", "time :", MSG.time)
-        //         console.log("debug : ", "unread :", MSG.unread)
+                    setTimeout(() => {
+                        // 获取内容
+                        let objSlide = chatContent[ID]
+                        for (let indexMSG in objSlide) {
+                            console.log("debug : ", indexMSG, "---->")
+                            // console.log(objSlide[indexMSG])
+                            let MSG = grepMSG(contacts, objSlide[indexMSG])
 
-        //         // 向index发出新消息提醒
-        //         core.WebToHost({ "MSG-new": MSG }).then((res) => {
-        //             console.log(res)
-        //         }).catch((error) => {
-        //             throw error
-        //         });
+                            if (MSG.type == wechatMSGType.MSGTYPE_TEXT) {
+                                // 正常输出
 
-        //     }
-
-        //     watchJS.watch(objSlide, (prop, action, newMSG) => {
-
-        //         if (action == 'push') {
-        //             // 消息有更新
-        //             console.log("debug : ", "----------------------")
-        //             console.log("debug : ", "new MSG : ", typeof (newMSG))
-
-        //             let MSG = grepMSG(contacts, newMSG)
-        //             console.log("debug : ", "ID :", MSG.fromUserName, "->", MSG.toUserName)
-        //             console.log("debug : ", "type :", MSG.type)
-        //             console.log("debug : ", "Name :", MSG.nickName, MSG.remarkName)
-        //             console.log("debug : ", "content :", MSG.content)
-        //             console.log("debug : ", "time :", MSG.time)
-        //             console.log("debug : ", "unread :", MSG.unread)
-
-        //             // 向index发出新消息提醒
-        //             core.WebToHost({ "MSG-new": MSG }).then((res) => {
-        //                 console.log(res)
-        //             }).catch((error) => {
-        //                 throw error
-        //             });
-
-        //         }
+                                // console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
+                                // console.log("type :", MSG.type)
+                                // console.log("Name :", MSG.nickName, MSG.remarkName)
+                                // console.log("type :", MSG.type)
+                                // console.log("content :", MSG.content)
+                                // console.log("time :", MSG.time)
+                                // console.log("unread :", MSG.unread)
 
 
-        //     }, 0, true)
-        // }, false)
+                            } else if (MSG.type == wechatMSGType.MSGTYPE_IMAGE) {
+                                // 缓存图片
+                                // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
+                                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
+                                // 置换内容
+                                MSG.content = imgUrl
+                            } else {
+
+                            }
 
 
-        // $("div.header").append("<button id='e-testButton'> test</button>")
-        // $("#e-testButton").click(() => {
+                            core.WebToHost({ "MSG-Log": MSG }).then((res) => {
+                                console.log(res)
+                            }).catch((error) => {
+                                throw error
+                            });
+                        }
+                    }, 100);
+                } else {
+                    reject('unknown key')
+                }
 
-        //     console.log("debug : ", "---获取用户聊天记录----")
-        //     // 下面开始模拟点击
-        //     let ID = 'filehelper'
-        //     // console.log($("div.ng-scope div [data-username='"+ID+"']"))
-        //     $("div.ng-scope div [data-username='" + ID + "']").click();
-        //     setTimeout(() => {
-        //         // 获取内容
-        //         let objSlide = chatContent[ID]
-        //         for (let indexMSG in objSlide) {
-        //             console.log("debug : ", indexMSG, "---->")
-        //             // console.log(objSlide[indexMSG])
-        //             let MSG = grepMSG(contacts, objSlide[indexMSG])
+            })
 
-        //             if (MSG.type == wechatMSGType.MSGTYPE_TEXT) {
-        //                 // 正常输出
-
-
-        //             } else if (MSG.type == wechatMSGType.MSGTYPE_IMAGE) {
-        //                 // 缓存图片
-        //                 // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
-        //                 let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
-        //                 // 置换内容
-        //                 MSG.content = imgUrl
-        //             } else {
-
-        //             }
-
-
-        //             core.WebToHost({ "MSG-Log": MSG }).then((res) => {
-        //                 console.log(res)
-        //             }).catch((error) => {
-        //                 throw error
-        //             });
-        //         }
-        //     }, 100);
-
-        // })
-
-        // core.WebReply((key, arg) => {
-        //     return new Promise((resolve, reject) => {
-        //         if (key == 'get') {
-
-        //             console.log("debug : ", "---获取用户聊天记录----")
-        //             // 下面开始模拟点击
-        //             let ID = arg
-
-        //             if ($("div.ng-scope div [data-username='" + ID + "']").length == 0) reject("user not existed")
-
-        //             $("div.ng-scope div [data-username='" + ID + "']").click();
-
-        //             resolve("request received. MSG will send.")
-
-        //             setTimeout(() => {
-        //                 // 获取内容
-        //                 let objSlide = chatContent[ID]
-        //                 for (let indexMSG in objSlide) {
-        //                     console.log("debug : ", indexMSG, "---->")
-        //                     // console.log(objSlide[indexMSG])
-        //                     let MSG = grepMSG(contacts, objSlide[indexMSG])
-
-        //                     if (MSG.type == wechatMSGType.MSGTYPE_TEXT) {
-        //                         // 正常输出
-
-        //                         // console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
-        //                         // console.log("type :", MSG.type)
-        //                         // console.log("Name :", MSG.nickName, MSG.remarkName)
-        //                         // console.log("type :", MSG.type)
-        //                         // console.log("content :", MSG.content)
-        //                         // console.log("time :", MSG.time)
-        //                         // console.log("unread :", MSG.unread)
-
-
-        //                     } else if (MSG.type == wechatMSGType.MSGTYPE_IMAGE) {
-        //                         // 缓存图片
-        //                         // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
-        //                         let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
-        //                         // 置换内容
-        //                         MSG.content = imgUrl
-        //                     } else {
-
-        //                     }
-
-
-        //                     core.WebToHost({ "MSG-Log": MSG }).then((res) => {
-        //                         console.log(res)
-        //                     }).catch((error) => {
-        //                         throw error
-        //                     });
-        //                 }
-        //             }, 100);
-        //         } else {
-        //             reject('unknown key')
-        //         }
-
-        //     })
-
-        // })
+        })
 
 
     })
