@@ -90,7 +90,18 @@ window.onload = function () {
     function grepNewMSG(obj) {
 
 
-        let time = $(obj).find("div.ext p.attr.ng-binding").text()
+        let timeStr = $(obj).find("div.ext p.attr.ng-binding").text()
+        let time = undefined
+        if(timeStr!=""){
+            let now = new Date()
+            time = new Date(
+                now.getFullYear(), 
+                now.getMonth(), 
+                now.getDate(), 
+                parseInt( timeStr.substr(0,timeStr.indexOf(':')))+1,
+                parseInt(timeStr.substr(timeStr.indexOf(':')+1)))
+            
+        }
         let content = $(obj).find("div.info p.msg span.ng-binding[ng-bind-html='chatContact.MMDigest']").text()
         let nickName = $(obj).find("div.info h3.nickname span").text()
         let userID = $(obj).attr("data-username")
@@ -102,46 +113,76 @@ window.onload = function () {
 
         let avatar = host + $(obj).find("div.avatar img").attr("src")
 
-        let unread = 0
-        if ($(obj).find("div.ext p.attr.ng-scope[ng-if='chatContact.isMuted()']").length > 0) {
-            // 被静音了
-            if ($(obj).find("div.info p.msg span.ng-binding.ng-scope").length > 0) {
-                // 多条未读
-                let str_unread = $(obj).find("div.info p.msg span.ng-binding.ng-scope").text()
-                str_unread = str_unread.substr(1, str_unread.length - 3)
-                unread = parseInt(str_unread)
+
+        if($("div[data-username='"+userID+"']").length == 0){
+            // 元素被删除了
+            return {
+                "userID": userID,
+                "time": time,
+                "content": "",
+                "nickName": nickName,
+                "avatarUrl": avatar,
+                "counter": 0,
+                "action" : "r", 
+                "muted" : true,
+                "index": 0
+            }              
+        }else{
+            let counter = 0
+            let muted = false
+            let action = 'c'
+            if ($(obj).find("div.ext p.attr.ng-scope[ng-if='chatContact.isMuted()']").length > 0) {
+                // 被静音了
+                muted = true
+                if ($(obj).find("div.info p.msg span.ng-binding.ng-scope").length > 0) {
+                    // 多条未读
+                    let str_counter = $(obj).find("div.info p.msg span.ng-binding.ng-scope").text()
+                    str_counter = str_counter.substr(1, str_counter.length - 3)
+                    counter = parseInt(str_counter)
+                } else {
+                    if (content == '') {
+                        // 初始化
+                        counter = 0
+                        action = 'a'
+                    } else {
+                        // 一条未读
+                        counter = 1
+                    }
+    
+                }
             } else {
+                // 正常
+                if ($(obj).find("div.avatar i.web_wechat_reddot_middle").length > 0) {
+                    counter = $(obj).find("div.avatar i.web_wechat_reddot_middle").text()
+                } else {
+                    counter = 0
+                }
                 if (content == '') {
                     // 初始化
-                    unread = 0
-                } else {
-                    // 一条未读
-                    unread = 1
+                    action = 'a'
                 }
-
-            }
-        } else {
-            // 正常
-            if ($(obj).find("div.avatar i.web_wechat_reddot_middle").length > 0) {
-                unread = $(obj).find("div.avatar i.web_wechat_reddot_middle").text()
-            } else {
-                unread = 0
+    
             }
 
+            let index = $(".chat_item.slide-left.ng-scope").index(obj)
+    
+    
+    
+            // icon web_wechat_reddot ng-scope 一个小点
+    
+            return {
+                "userID": userID,
+                "time": time,
+                "content": content,
+                "nickName": nickName,
+                "avatarUrl": avatar,
+                "counter": counter,
+                "action":action,
+                "muted" : muted,
+                "index" : index
+            }            
         }
 
-
-
-        // icon web_wechat_reddot ng-scope 一个小点
-
-        return {
-            "userID": userID,
-            "time": time,
-            "content": content,
-            "nickName": nickName,
-            "avatarUrl": avatar,
-            "unread": unread
-        }
     }
 
     var callbackContact = function (records) {
@@ -171,21 +212,42 @@ window.onload = function () {
             // console.log("debug : ", "obs type : ", record.type)
             // console.log("debug : ", "obs target : ") 
             // console.log($(record.target))
-            // console.log("debug : ", "parent target : ") 
-            let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
-            // console.log( obj  )    
-            if (obj.length > 0) {
-                let existed = false
-                arrayObjUser.forEach((currentValue, index) => {
+            console.log("debug : ", "remove : ", $(record.removedNodes).length) 
+            // console.log($(record.removedNodes))
 
-                    if (!existed && currentValue.is(obj)) {
-                        existed = true
+            if($(record.removedNodes).length ==0){
+                // console.log("debug : ", "parent target : ") 
+                let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
+                // console.log( obj  )    
+                if (obj.length > 0) {
+                    let existed = false
+                    arrayObjUser.forEach((currentValue, index) => {
+
+                        if (!existed && $(currentValue).is(obj)) {
+                            existed = true
+                        }
+
+                    })
+                    if (!existed) {
+                        arrayObjUser.push(obj)
                     }
-
-                })
-                if (!existed) {
-                    arrayObjUser.push(obj)
                 }
+            }else{
+                $(record.removedNodes).toArray().forEach((currentValue, index) => {
+                    $(currentValue).children(".chat_item.slide-left.ng-scope").toArray().forEach((obj, idx) =>{
+                        let existed = false
+                        arrayObjUser.forEach((objIn) => {
+    
+                            if (!existed && $(objIn).is(obj)) {
+                                existed = true
+                            }
+    
+                        })
+                        if (!existed) {
+                            arrayObjUser.push(obj)
+                        }
+                    })
+                })
             }
 
         })

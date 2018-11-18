@@ -49,9 +49,12 @@ $(document).ready(function () {
                 console.log("debug : ", "new MSG")
                 console.log("debug : ", "Name :", arg.nickName)
                 console.log("debug : ", "ID : ", arg.userID)
+                console.log("debug : ", "index :", arg.index)
                 console.log("debug : ", "content :", arg.content)
                 console.log("debug : ", "time :", arg.time)
-                console.log("debug : ", "unread :", arg.unread)
+                console.log("debug : ", "counter :", arg.counter)
+                console.log("debug : ", "action :", arg.action)
+                console.log("debug : ", "muted :", arg.muted)
 
                 resolve("copy that")
             }
