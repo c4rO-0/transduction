@@ -6,7 +6,7 @@ window.onload = function () {
     const fs = require('fs')
     const { net } = require('electron').remote
 
-    
+
     // const request = require('request')
     // const setimmediate = require('setimmediate')
 
@@ -87,32 +87,61 @@ window.onload = function () {
 
     }
 
-    function grepNewMSG(obj){
+    function grepNewMSG(obj) {
 
 
         let time = $(obj).find("div.ext p.attr.ng-binding").text()
-        let content = $(obj).find("div.info p.msg span.ng-binding").text()
+        let content = $(obj).find("div.info p.msg span.ng-binding[ng-bind-html='chatContact.MMDigest']").text()
         let nickName = $(obj).find("div.info h3.nickname span").text()
-        let host = 
-        window.location.href.lastIndexOf('/') == window.location.href.length-1 ? 
-        window.location.href.substring(0, window.location.href.lastIndexOf('/')) : 
-        window.location.href
+        let host =
+            window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
+                window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
+                window.location.href
 
-        let avatar =  host+$(obj).find("div.avatar img").attr("src")
 
-        let unread = $(obj).find("div.avatar i.web_wechat_reddot_middle").text()
+        let avatar = host + $(obj).find("div.avatar img").attr("src")
+
+        let unread = 0
+        if ($(obj).find("div.ext p.attr.ng-scope[ng-if='chatContact.isMuted()']").length > 0) {
+            // 被静音了
+            if ($(obj).find("div.info p.msg span.ng-binding.ng-scope").length > 0) {
+                // 多条未读
+                let str_unread = $(obj).find("div.info p.msg span.ng-binding.ng-scope").text()
+                str_unread = str_unread.substr(1, str_unread.length - 3)
+                unread = parseInt(str_unread)
+            } else {
+                if (content == '') {
+                    // 初始化
+                    unread = 0
+                } else {
+                    // 一条未读
+                    unread = 1
+                }
+
+            }
+        } else {
+            // 正常
+            if ($(obj).find("div.avatar i.web_wechat_reddot_middle").length > 0) {
+                unread = $(obj).find("div.avatar i.web_wechat_reddot_middle").text()
+            } else {
+                unread = 0
+            }
+
+        }
+
+        // icon web_wechat_reddot ng-scope 一个小点
 
         return {
             "time": time,
-            "content":content,
-            "nickName":nickName,
+            "content": content,
+            "nickName": nickName,
             "avatarUrl": avatar,
-            "unread":unread
+            "unread": unread
         }
     }
 
     var callbackContact = function (records) {
-        
+
         if ($("#navContact").scrollTop() + $("#navContact")[0].clientHeight != $("#navContact")[0].scrollHeight) {
             console.log("debug : ", "----------contact change----------")
             $("#navContact").scrollTop(0)
@@ -133,7 +162,7 @@ window.onload = function () {
         console.log("debug : ===========chat changed============")
         let arrayObjUser = new Array();
         let arrayContent = new Array();
-        records.map(function(record){
+        records.map(function (record) {
             console.log("debug : ===========chat slide============")
             // console.log("debug : ", "obs type : ", record.type)
             // console.log("debug : ", "obs target : ") 
@@ -141,33 +170,41 @@ window.onload = function () {
             // console.log("debug : ", "parent target : ") 
             let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
             // console.log( obj  )    
-            if(obj.length > 0){
+            if (obj.length > 0) {
                 let existed = false
-                arrayObjUser.forEach((currentValue, index)=>{
-                    
-                    if(!existed && currentValue.is(obj)){
+                arrayObjUser.forEach((currentValue, index) => {
+
+                    if (!existed && currentValue.is(obj)) {
                         existed = true
                     }
-    
+
                 })
-                if(!existed){
+                if (!existed) {
                     arrayObjUser.push(obj)
                 }
             }
 
         })
-        
+
         // console.log("debug : ", "------array:user-----")
         // console.log(arrayObjUser)
 
         console.log("debug : ", "------array:MSG-----")
-        arrayObjUser.forEach((currentValue, index)=>{
+        arrayObjUser.forEach((currentValue, index) => {
             // console.log("debug : ", index)
             arrayContent.push(grepNewMSG(currentValue))
         })
 
-        // console.log("debug : ", "------array:MSG-----")
+        console.log("debug : ", "------array:MSG-----")
         console.log(arrayContent)
+        arrayContent.forEach((currentValue, index) => {
+            // 向index发出新消息提醒
+            core.WebToHost({ "MSG-new": currentValue }).then((res) => {
+                console.log(res)
+            }).catch((error) => {
+                throw error
+            });
+        })
 
     };
 
@@ -183,15 +220,17 @@ window.onload = function () {
 
         obsContact.observe($("#navContact")[0], { childList: true, subtree: true });
 
-    
-        
+
+
         // 截取新消息
         // 观察左侧消息变动
         let obsChat = new MutationObserver(callbackChat);
 
-        obsChat.observe($("#J_NavChatScrollBody")[0], {  childList: true, 
-                                                subtree: true,
-                                                characterData: true });
+        obsChat.observe($("#J_NavChatScrollBody")[0], {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
 
 
         // core.waitForKeyElements("div.chat_item.slide-left.ng-scope", (chatSlide) => {

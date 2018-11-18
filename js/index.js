@@ -47,18 +47,13 @@ $(document).ready(function () {
                 // 有新消息来了
                 
                 console.log("debug : ", "new MSG")
-
-                console.log("debug : ", "ID :", arg.fromUserName, "->", arg.toUserName)
-                console.log("debug : ", "type :", arg.type)
-                console.log("debug : ", "Name :", arg.nickName, arg.remarkName)
+                console.log("debug : ", "Name :", arg.nickName)
                 console.log("debug : ", "content :", arg.content)
                 console.log("debug : ", "time :", arg.time)
                 console.log("debug : ", "unread :", arg.unread)
 
                 resolve("copy that")
             }
-
-
 
             setTimeout(() => {
                 reject("time out")
