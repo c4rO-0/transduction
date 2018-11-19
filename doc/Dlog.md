@@ -10,7 +10,16 @@
 
 ## 日志
 
-### 2018Nov17: L
+### 2018Nov17-19: L
+- 头像的链接在刚被插入网页时并不是最终的结果。。。后续大概还需要被attributes捕捉
+    - 但是如果刚登录进去就有个新会话的话。。。又好像是一次成型的。。。研究机制也好麻烦啊
+- 哈哈哈啊哈哈哈，网页版的skype上的左边没有时间戳
+- 测试发现 skype 的
+    - 旧会话中的最新消息会触发 childList，替换一个 p
+    - 旧会话中的未读计数会触发 characterData，nodeName:"#text"
+        - 而这两个触发在{childList, subtree, characterData}的设定下，不在同一个list中
+        - 通常是 characterData 先触发
+    - online 和 away 的状态切换会触发 childList
 - 从id找元素，左边 id="timelineComponent"，右边 id="chatComponent"
 
 ### 2018Nov13: L
