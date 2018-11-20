@@ -10,15 +10,42 @@
 
 ## 日志
 
+### 2018Nov20: L
+- 考虑修改判断标准
+    - 新会话，在一个list中先有 span.counter 插入（可以不看），然后会有 span.circle > p 的 characterData 变化，从 1 变成 1
+        - 此时如果用户没有头像，可以从 img.Avatar-image 的 src 中读到用户 id
+        - 如果是无头用户，后续跟一个list只有一个元素是 attributes，修改 img.Avatar-image 的 src
+        - 其余信息向上爬父节点
+    - 旧会话新消息，只有 span.circle > p 的 characterData 变化，从 1 变成 2
+        - 后续跟一个list中 div.message > p.small 的 childList 插入，内容被替换成最新消息
+- 如何处理连续的两个list
+    - 第一个list时将必要信息（无头用户的id，连续标记）全部存在网页上，第二个list时爬取全部信息
+        - 未实验，隐患是网页操作本身可能会触发observer，如果修改事件发生在下一个list到达之后就惨了
+    - 第一个list时将信息（主要是目标节点）存在脚本里，作为全局变量让callback可以访问
+        - 已经实验可行，隐患是observer的callback是异步的，如果全局变量只给一个可能会数据竞争
+        - 如果给动态数组，感觉有点费事
+    - 第一个list时就地开一个新的observer，callback 结束时 disconnect
+        - 未实验，observer 的 callback 函数不能改，而且 callback 需要访问之前存下的 conversation，欸。。。好像可以没有全局变量
+        - 那么一个主observer一直存在，只需要 characterData，外加一个会话会有另外两个observer一个childList一个attributes，间歇性打开
+
+- 从 url 提取 id
+    - f https://avatar.skype.com/v1/avatars/live%3Ac4ro-0/public?returnDefaultImage=false&cacheHeaders=true
+    - t https://avatar.skype.com/v1/avatars/live%3Aruc.bs.plu?auth_key=-433087155&returnDefaultImage=false&cacheHeaders=true
+    - t https://swx.cdn.skype.com/v/1.125.40/assets/images/avatars/default-avatar-contact.svg
+    - t https://swx.cdn.skype.com/v/1.125.40/assets/images/avatars/default-avatar-group.svg
+    - t https://api.asm.skype.com/v1/objects/0-ea-d5-9a6333808267e69430ece7ca63129a1b/views/avatar_fullsize
+    - tf https://api.asm.skype.com/v1/objects/0-weu-d11-12d27192bc5c9967b18b43b8ebf1850c/views/avatar_fullsize
+        - 最后这一个是能看到的图片，但是图片src地址指向禁止访问403，很奇怪
+
 ### 2018Nov17-19: L
 - 头像的链接在刚被插入网页时并不是最终的结果。。。后续大概还需要被attributes捕捉
     - 但是如果刚登录进去就有个新会话的话。。。又好像是一次成型的。。。研究机制也好麻烦啊
 - 哈哈哈啊哈哈哈，网页版的skype上的左边没有时间戳
 - 测试发现 skype 的
-    - 旧会话中的最新消息会触发 childList，替换一个 p
-    - 旧会话中的未读计数会触发 characterData，nodeName:"#text"
+    - 旧会话中的最新消息会触发 childList，替换一个 p ，内容是最新的消息
+    - 旧会话中的未读计数会触发 characterData，nodeName:"#text"，内容是计数增加
         - 而这两个触发在{childList, subtree, characterData}的设定下，不在同一个list中
-        - 通常是 characterData 先触发
+        - 通常是 characterData 计数增加 先触发
     - online 和 away 的状态切换会触发 childList
 - 从id找元素，左边 id="timelineComponent"，右边 id="chatComponent"
 

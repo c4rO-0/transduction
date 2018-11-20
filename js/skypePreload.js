@@ -19,18 +19,36 @@ window.onload = function () {
             this.index = index
             this.muted = muted
         }
-        log() {
+        print() {
             for (let property in this) {
                 console.log(property + ": " + this[property])
             }
         }
     }
 
-    let nextTarget = {
-        targetNode: undefined,
+    let followupCheck = {
+        node: undefined,
         mutationType: undefined,
-        targetProperty: undefined,
-        targetConversation: undefined
+        property: undefined,
+        conversation: undefined,
+        stash(targetNode, mutationType, targetProperty, targetConversation) {
+            this.node = targetNode
+            this.mutationType = mutationType
+            this.property = targetProperty
+            this.conversation = targetConversation
+        },
+        pop() {
+            this.node = undefined
+            this.mutationType = undefined
+            this.property = undefined
+            this.conversation = undefined
+        },
+        print() {
+            for (let property in this) {
+                if (typeof this[property] !== 'function')
+                    console.log(property + ": " + this[property])
+            }
+        }
     }
 
     function isNewCVS(list) {
@@ -40,78 +58,66 @@ window.onload = function () {
             if (list[i].type == "childList" &&//增减事件
                 list[i].addedNodes.length != 0 &&//增事件
                 list[i].addedNodes[0].nodeType == 1) {//增的是一般元素
-                console.log(list[i])
                 if (list[i].addedNodes[0].matches("a.recent.unread.message")) {
+                    console.log("message and nickname hit at: " + i)
                     flag |= 0b001
                     conv.nickName = list[i].addedNodes[0].querySelector("span.topic").innerText
                     conv.message = list[i].addedNodes[0].querySelector("div.message > p").innerText
                 } else if (list[i].addedNodes[0].matches("span.counter")) {
+                    console.log("counter hit at: " + i)
                     flag |= 0b010
                     conv.counter = list[i].addedNodes[0].querySelector("span.circle > p").innerText
                 } else if (list[i].addedNodes[0].matches("div.Avatar")) {
+                    console.log("avatar and id hit at: " + i)
                     flag |= 0b100
-                    console.log("checking avatar url: "+ list[i].addedNodes[0].querySelector("img.Avatar-image").src)
+                    console.log("checking avatar url: " + list[i].addedNodes[0].querySelector("img.Avatar-image").src)
                     conv.avatar = "waiting for modification"
-                    nextTarget.targetNode = list[i].addedNodes[0].querySelector("img.Avatar-image")
-                    nextTarget.mutationType = "attributes"
-                    nextTarget.targetProperty = "src"
-                    nextTarget.targetConversation = conv
+                    followupCheck.stash(
+                        list[i].addedNodes[0].querySelector("img.Avatar-image"),
+                        "attributes",
+                        "src",
+                        conv)
+                    followupCheck.print()
                 }
             }
+            if (flag == 0b111) {
+                return conv
+            }
         }
-        if (flag == 0b111) {
-            return conv
-        } else {
-            return false
+        return false
+    }
+
+    function processFollowup(list) {
+        if (followupCheck.node !== undefined) {
+            followupCheck.print()
+            for (let i in list) {
+                if (list[i].type == followupCheck.mutationType &&
+                    list[i].attributeName == followupCheck.property &&
+                    list[i].target.isSameNode(followupCheck.node)) {
+                    followupCheck.conversation.avatar = followupCheck.node.src
+                    followupCheck.conversation.print()
+                    followupCheck.pop()
+                    return
+                }
+            }
         }
     }
 
     let observer = new MutationObserver(function (list, obs) {
         console.log("fire in the hole")
-        // console.log(list)
-        if (nextTarget.targetNode !== undefined) {
-            for (let i in list) {
-                if (list[i].type == "attributes" &&
-                    list[i].attributeName == "src" &&
-                    list[i].target.isSameNode(nextTarget.targetNode)) {
-                    // console.log("watch this:")
-                    // console.log(nextTarget.targetNode.src)
-                    nextTarget.targetConversation.avatar = nextTarget.targetNode.src
-                    nextTarget.targetConversation.log()
-                    nextTarget.targetNode = undefined
-                    nextTarget.mutationType = undefined
-                    nextTarget.targetProperty = undefined
-                    nextTarget.targetConversation = undefined
-                    break
-                }
-            }
-        }
+        console.log(list)
+
+        processFollowup(list)
 
         let conv = isNewCVS(list)
         if (conv) {
-            conv.log()
+            conv.print()
         }
 
-
-        // console.log(obs)
-        // for (let i in list) {
-        //     //判断是新增node，且不是白字Text，也就是实实在在地添加的网页元素
-        //     if (list[i].addedNodes.length != 0 && list[i].addedNodes[0].nodeType != 3) {
-        //         if (list[i].addedNodes[0].matches("a.recent.unread.message")) {
-        //             console.log(list[i].addedNodes[0])
-        //             console.log("from: " + list[i].addedNodes[0].querySelector("span.topic").innerText)
-        //             console.log("said: " + list[i].addedNodes[0].querySelector("div.message > p").innerText)
-        //         } else if (list[i].addedNodes[0].matches("span.counter")) {
-        //             console.log(list[i].addedNodes[0])
-        //             console.log("total: " + list[i].addedNodes[0].querySelector("span.circle > p").innerText + " new")
-        //         } else if (list[i].addedNodes[0].matches("div.Avatar")) {
-        //             console.log(list[i].addedNodes[0])
-        //         }
-        //     }
-        // }
     })
 
     observer.observe(document.getElementById("timelineComponent"),
-        { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["src"] })
+        { subtree: true, childList: true, characterData: true, attributes: true, 
+            attributeFilter: ["src"], attributeOldValue:true, characterDataOldValue:true })
 
 }
