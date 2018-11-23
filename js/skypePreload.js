@@ -25,6 +25,7 @@ window.onload = function () {
         }
         extract(aNode) {
             // this.action=
+            console.log(aNode)
             this.userID = aNode.dataset.userID
             this.nickName = aNode.querySelector('h4 > span.topic').title
             this.timestamp = new Date()
@@ -134,6 +135,7 @@ window.onload = function () {
             id = id.replace(/\/.+/, '')
             return id
         }
+        console.log('can not parse this url: ' + url)
         return false
     }
 
@@ -146,35 +148,52 @@ window.onload = function () {
         // if (conv) {
         //     conv.print()
         // }
-        let id, node
+        let id, node, convo, newConvoFlag = false
         for (let i in list) {
+            //初始化所有id，所有，新插入的也会被初始化
+            if (list[i].type === 'childList' &&
+                list[i].target.matches('swx-recent-item.list-selectable') &&
+                list[i].addedNodes.length !== 0 &&
+                list[i].addedNodes[0].nodeType === 1 &&
+                list[i].addedNodes[0].matches('a')) {
+                console.log("hit at: " + i + " initializing userID...")
+                // console.log(list[i].addedNodes[0])
+                list[i].addedNodes[0].dataset.userID =
+                    extractID(list[i].addedNodes[0].querySelector('img.Avatar-image').src)
+                newConvoFlag = true
+            }
+
             //检查小圈圈
-            if (list[i].type == 'characterData' && list[i].target.parentNode.matches('span.counter > span.circle > p')) {
-                console.log('new message')
+            if (list[i].type === 'characterData' && list[i].target.parentNode.matches('span.counter > span.circle > p')) {
+                console.log('hit at: ' + i + ' 检查小圈圈')
                 console.log(list[i].target.parentNode.closest('a').querySelector('img.Avatar-image').src)
                 node = list[i].target.parentNode.closest('a')
-                id = extractID(node.querySelector('img.Avatar-image').src)
-                node.dataset.userID = id
-                console.log('id: ' + id)
-                node.dataset.waitFor = 'avatarUrl'
-                // if (id) {
-                //     console.log('id: ' + id)
-                // } else {
-
-                // }
+                //如果是全新插入的第一条，初始化一下id，抓所有信息，完事
+                if (newConvoFlag) {
+                    convo = new conversation('a')
+                    convo.extract(node)
+                    convo.print()
+                    convo = undefined
+                    //如果是旧会话来新消息，抓
+                } else {
+                    convo = new conversation('c')
+                    convo.extract(node)
+                    convo.print()
+                    convo = undefined
+                }
             }
             //二次检查
-            if (list[i].type == 'attributes' && list[i].attributeName == 'src' && list[i].target.closest('a').dataset.waitFor == 'avatarUrl') {
-                list[i].target.closest('a').dataset.waitFor = 'nothing'
-                let convo = new conversation()
-                console.log('seconde check')
-                convo.extract(list[i].target.closest('a'))
-                convo.print()
-            }
+            // if (list[i].type == 'attributes' && list[i].attributeName == 'src' && list[i].target.closest('a').dataset.waitFor == 'avatarUrl') {
+            //     list[i].target.closest('a').dataset.waitFor = 'nothing'
+            //     let convo = new conversation()
+            //     console.log('seconde check')
+            //     convo.extract(list[i].target.closest('a'))
+            //     convo.print()
+            // }
         }
 
     })
-
+    //观察左边
     observer.observe(document.getElementById("timelineComponent"),
         {
             subtree: true, childList: true, characterData: true, attributes: true,
