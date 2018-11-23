@@ -272,7 +272,16 @@ document.body.appendChild(el);}")
             }
 
         })
-    },    
+    },
+    /**
+     * 返回一个以时间作为种子的唯一字符串.
+     * 目前被用在消息传递的时候创建一个独一无二的channel
+     * @returns {String} UniqueStr 
+     */
+    UniqueStr: function () {
+
+        return UniqueStr()
+    },
     /**
      * main process 处理消息并返回处理结果.
      * 例如 : 查询全部窗口的id
@@ -325,7 +334,7 @@ document.body.appendChild(el);}")
      * 要发送的信息, object.length必须为1
      * @returns {Promise} 
      * 对方通过调用WinReply返回回来的消息.
-     */    
+     */
     sendToWin: function (winID, msg) {
 
         return new Promise((resolve, reject) => {
@@ -381,7 +390,7 @@ document.body.appendChild(el);}")
      * @param {any} arg
      * 实际要传递的内容
      * return Promise
-     */      
+     */
     WinReply: function (fcnResponse) {
         ipcRender.on('msg-ipc-asy-to-win', function (event, uStr, arg) {
 
@@ -422,7 +431,7 @@ document.body.appendChild(el);}")
      * 要发送的信息, object.length必须为1
      * @returns {Promise} 
      * 对方通过调用WebReply返回的消息
-     */    
+     */
     HostSendToWeb: function (webviewID, msg) {
 
         return new Promise((resolve, reject) => {
@@ -482,7 +491,7 @@ document.body.appendChild(el);}")
      * @param {any} arg
      * 实际要传递的内容
      * return Promise
-     */         
+     */
     WebReply: function (fcnResponse) {
 
         ipcRender.on('msg-ipc-asy-from-host-to-web', function (event, uStr, arg) {
@@ -521,7 +530,7 @@ document.body.appendChild(el);}")
      * 要发送的信息, object.length必须为1
      * @returns {Promise} 
      * 对方通过调用WinReplyWeb返回回来的消息
-     */        
+     */
     WebToHost: function (msg) {
 
         return new Promise((resolve, reject) => {
@@ -579,7 +588,7 @@ document.body.appendChild(el);}")
      * @param {any} arg
      * 实际要传递的内容
      * return Promise
-     */     
+     */
     WinReplyWeb: function (webviewID, fcnResponse) {
         let web = document.getElementById(webviewID);
         web.addEventListener('ipc-message', (event) => {
@@ -589,8 +598,6 @@ document.body.appendChild(el);}")
                 let returnValue = new Object;
                 let uStr = event.args[0]
                 let arg = event.args[1]
-
-                let returnValue = new Object;
 
                 if (Object.keys(arg).length == 0) {
                     returnValue[":"] = "error : WinReplyWeb no opertion input"
@@ -617,6 +624,6 @@ document.body.appendChild(el);}")
 
         })
 
-    }      
+    }
 
 }
