@@ -590,8 +590,6 @@ document.body.appendChild(el);}")
                 let uStr = event.args[0]
                 let arg = event.args[1]
 
-                let returnValue = new Object;
-
                 if (Object.keys(arg).length == 0) {
                     returnValue[":"] = "error : WinReplyWeb no opertion input"
                     web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
