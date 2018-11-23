@@ -7,8 +7,7 @@ window.onload = function () {
     const core = require("../js/core")
 
     class conversation {
-        constructor(action = "default", userID = "default", nickName = "default", timestamp = 0,
-            avatar = "default", message = "default", counter = 0, index = 0, muted = false) {
+        constructor(action, userID, nickName, timestamp, avatar, message, counter, index, muted) {
             this.action = action
             this.userID = userID
             this.nickName = nickName
@@ -23,6 +22,20 @@ window.onload = function () {
             for (let property in this) {
                 console.log(property + ": " + this[property])
             }
+        }
+        extract(aNode) {
+            // this.action=
+            this.userID = aNode.dataset.userID
+            this.nickName = aNode.querySelector('h4 > span.topic').title
+            this.timestamp = new Date()
+            this.avatar = aNode.querySelector('img.Avatar-image').src
+            this.message = aNode.querySelector('div.message > p').innerText
+            this.counter = aNode.querySelector('span.circle > p').innerText
+            this.index = Array.prototype.indexOf.call(
+                aNode.closest('div.recents.scrollViewport-inner').querySelectorAll(
+                    'swx-recent-item.list-selectable'),
+                aNode.closest('swx-recent-item.list-selectable'))
+            // this.muted= 
         }
     }
 
@@ -103,21 +116,69 @@ window.onload = function () {
         }
     }
 
+    function extractID(url) {
+        // https://avatar.skype.com/v1/avatars/live%3Ac4ro-0/public?returnDefaultImage=false&cacheHeaders=true
+        // https://avatar.skype.com/v1/avatars/live%3Aruc.bs.plu?auth_key=-433087155&returnDefaultImage=false&cacheHeaders=true
+        // https://swx.cdn.skype.com/v/1.125.40/assets/images/avatars/default-avatar-contact.svg
+        // https://swx.cdn.skype.com/v/1.125.40/assets/images/avatars/default-avatar-group.svg
+        // https://api.asm.skype.com/v1/objects/0-ea-d5-9a6333808267e69430ece7ca63129a1b/views/avatar_fullsize
+        // https://api.asm.skype.com/v1/objects/0-weu-d11-12d27192bc5c9967b18b43b8ebf1850c/views/avatar_fullsize
+        let id
+        if (url.includes('https://avatar.skype.com/v1/avatars/')) {
+            id = url.replace('https://avatar.skype.com/v1/avatars/', '')
+            id = id.replace(/\/.+/, '')
+            id = id.replace(/\?auth.+/, '')
+            return id
+        } else if (url.includes('https://api.asm.skype.com/v1/objects/')) {
+            id = url.replace('https://api.asm.skype.com/v1/objects/', '')
+            id = id.replace(/\/.+/, '')
+            return id
+        }
+        return false
+    }
+
     let observer = new MutationObserver(function (list, obs) {
-        console.log("fire in the hole")
+        console.log("-------------------------fire in the hole--------------------------")
         console.log(list)
 
-        processFollowup(list)
+        // processFollowup(list)
+        // let conv = isNewCVS(list)
+        // if (conv) {
+        //     conv.print()
+        // }
+        let id, node
+        for (let i in list) {
+            //检查小圈圈
+            if (list[i].type == 'characterData' && list[i].target.parentNode.matches('span.counter > span.circle > p')) {
+                console.log('new message')
+                console.log(list[i].target.parentNode.closest('a').querySelector('img.Avatar-image').src)
+                node = list[i].target.parentNode.closest('a')
+                id = extractID(node.querySelector('img.Avatar-image').src)
+                node.dataset.userID = id
+                console.log('id: ' + id)
+                node.dataset.waitFor = 'avatarUrl'
+                // if (id) {
+                //     console.log('id: ' + id)
+                // } else {
 
-        let conv = isNewCVS(list)
-        if (conv) {
-            conv.print()
+                // }
+            }
+            //二次检查
+            if (list[i].type == 'attributes' && list[i].attributeName == 'src' && list[i].target.closest('a').dataset.waitFor == 'avatarUrl') {
+                list[i].target.closest('a').dataset.waitFor = 'nothing'
+                let convo = new conversation()
+                console.log('seconde check')
+                convo.extract(list[i].target.closest('a'))
+                convo.print()
+            }
         }
 
     })
 
     observer.observe(document.getElementById("timelineComponent"),
-        { subtree: true, childList: true, characterData: true, attributes: true, 
-            attributeFilter: ["src"], attributeOldValue:true, characterDataOldValue:true })
+        {
+            subtree: true, childList: true, characterData: true, attributes: true,
+            attributeFilter: ["src"], attributeOldValue: true, characterDataOldValue: true
+        })
 
 }

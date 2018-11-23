@@ -10,23 +10,37 @@
 
 ## 日志
 
+### 2018Nov23：L
+- 如何判断用户是否有头像：
+    - skype 默认都先放带 id 的 src，然后去 get 这个地址，如果 get 不到，报错，后面才会触发 mutation 修改成默认的头像
+    - 如此一来，我觉得 skype 这边就没必要做第二次检查，因为前台也是要去访问这 src，如果报错换成我们的默认头像就行了
+        - 但还是需要将userID记在html里，如果没头像的话，除了第一次加载，将来是没有机会获得id的
+    - 如果还是老思路的话，第一次检查是没办法判断是否有头像的（除非去 get src），那么就必定要安排第二次检查，但是第二次检查又不一定会触发，so
+
 ### 2018Nov20: L
 - 考虑修改判断标准
-    - 新会话，在一个list中先有 span.counter 插入（可以不看），然后会有 span.circle > p 的 characterData 变化，从 1 变成 1
+    - 新会话，或旧会话0-1，在一个list中先有 span.counter 插入（可以不看），然后会有 span.circle > p 的 characterData 变化，从 1 变成 1
         - 此时如果用户没有头像，可以从 img.Avatar-image 的 src 中读到用户 id
         - 如果是无头用户，后续跟一个list只有一个元素是 attributes，修改 img.Avatar-image 的 src
         - 其余信息向上爬父节点
-    - 旧会话新消息，只有 span.circle > p 的 characterData 变化，从 1 变成 2
+    - 旧会话新消息1-n，只有 span.circle > p 的 characterData 变化，从 1 变成 2
         - 后续跟一个list中 div.message > p.small 的 childList 插入，内容被替换成最新消息
+    - 会话已读，整个 span.counter 被删除，先一个list删子 span.counter 内的三个元素（target: span.counter），再一个list删父 div.unseenNotification（target: div.text）
+        - 其他终端的操作也会引发会话已读，不一定是鼠标点击引起，但是观察效果是一样的
+    - 会话删除，childList; target: div.recents.scrollViewport-inner; removedNode[0]:swx-recent-item.list-selectable
+    - ~~新群组会话，好像和用户是反的。。。src先放skype默认的，第二次才改成真实的。。。。王德发~~
+    - 昨天的群组会话来新消息，实际效果类似新会话，有新元素插入到靠上的区域，排序了，src本来就有，第一次就能读到，当然这两种是有头像的群组的情况
+    - ~~无头群组，直接skype默认头像，没有可以拿来当id的东西~~
 - 如何处理连续的两个list
     - 第一个list时将必要信息（无头用户的id，连续标记）全部存在网页上，第二个list时爬取全部信息
-        - 未实验，隐患是网页操作本身可能会触发observer，如果修改事件发生在下一个list到达之后就惨了
+        - 已实验可行，就这么办吧
     - 第一个list时将信息（主要是目标节点）存在脚本里，作为全局变量让callback可以访问
         - 已经实验可行，隐患是observer的callback是异步的，如果全局变量只给一个可能会数据竞争
         - 如果给动态数组，感觉有点费事
     - 第一个list时就地开一个新的observer，callback 结束时 disconnect
         - 未实验，observer 的 callback 函数不能改，而且 callback 需要访问之前存下的 conversation，欸。。。好像可以没有全局变量
         - 那么一个主observer一直存在，只需要 characterData，外加一个会话会有另外两个observer一个childList一个attributes，间歇性打开
+        - 隐患是，怕新开observer比后一个list反应慢
 
 - 从 url 提取 id
     - f https://avatar.skype.com/v1/avatars/live%3Ac4ro-0/public?returnDefaultImage=false&cacheHeaders=true
@@ -35,7 +49,7 @@
     - t https://swx.cdn.skype.com/v/1.125.40/assets/images/avatars/default-avatar-group.svg
     - t https://api.asm.skype.com/v1/objects/0-ea-d5-9a6333808267e69430ece7ca63129a1b/views/avatar_fullsize
     - tf https://api.asm.skype.com/v1/objects/0-weu-d11-12d27192bc5c9967b18b43b8ebf1850c/views/avatar_fullsize
-        - 最后这一个是能看到的图片，但是图片src地址指向禁止访问403，很奇怪
+        - 最后这一个是能看到的图片，但是图片src地址指向禁止访问403，很奇怪，难道因为是机器人
 
 ### 2018Nov17-19: L
 - 头像的链接在刚被插入网页时并不是最终的结果。。。后续大概还需要被attributes捕捉
