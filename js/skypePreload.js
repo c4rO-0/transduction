@@ -40,6 +40,11 @@ window.onload = function () {
         }
     }
 
+    function uniqueStr() {
+        return Math.random().toString().slice(2) + Date.now().toString()
+    }
+
+    // 弃用
     let followupCheck = {
         node: undefined,
         mutationType: undefined,
@@ -65,6 +70,7 @@ window.onload = function () {
         }
     }
 
+    // 弃用
     function isNewCVS(list) {
         let conv = new conversation("a")
         let flag = 0
@@ -101,6 +107,7 @@ window.onload = function () {
         return false
     }
 
+    // 弃用
     function processFollowup(list) {
         if (followupCheck.node !== undefined) {
             followupCheck.print()
@@ -117,13 +124,8 @@ window.onload = function () {
         }
     }
 
+    // 弃用
     function extractID(url) {
-        // https://avatar.skype.com/v1/avatars/live%3Ac4ro-0/public?returnDefaultImage=false&cacheHeaders=true
-        // https://avatar.skype.com/v1/avatars/live%3Aruc.bs.plu?auth_key=-433087155&returnDefaultImage=false&cacheHeaders=true
-        // https://swx.cdn.skype.com/v/1.125.40/assets/images/avatars/default-avatar-contact.svg
-        // https://swx.cdn.skype.com/v/1.125.40/assets/images/avatars/default-avatar-group.svg
-        // https://api.asm.skype.com/v1/objects/0-ea-d5-9a6333808267e69430ece7ca63129a1b/views/avatar_fullsize
-        // https://api.asm.skype.com/v1/objects/0-weu-d11-12d27192bc5c9967b18b43b8ebf1850c/views/avatar_fullsize
         let id
         if (url.includes('https://avatar.skype.com/v1/avatars/')) {
             id = url.replace('https://avatar.skype.com/v1/avatars/', '')
@@ -158,8 +160,7 @@ window.onload = function () {
                 list[i].addedNodes[0].matches('a')) {
                 console.log("hit at: " + i + " initializing userID...")
                 // console.log(list[i].addedNodes[0])
-                list[i].addedNodes[0].dataset.userID =
-                    extractID(list[i].addedNodes[0].querySelector('img.Avatar-image').src)
+                list[i].addedNodes[0].dataset.userID = uniqueStr()
                 newConvoFlag = true
             }
 
@@ -168,7 +169,6 @@ window.onload = function () {
                 console.log('hit at: ' + i + ' 检查小圈圈')
                 console.log(list[i].target.parentNode.closest('a').querySelector('img.Avatar-image').src)
                 node = list[i].target.parentNode.closest('a')
-                //如果是全新插入的第一条，初始化一下id，抓所有信息，完事
                 if (newConvoFlag) {
                     convo = new conversation('a')
                     convo.extract(node)
