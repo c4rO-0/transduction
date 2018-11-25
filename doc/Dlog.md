@@ -6,9 +6,37 @@
 ### JSDOC
 [JSDOC变量列表](http://usejsdoc.org/index.html)
 
+### request
+不要使用nodejs request module. 
+既不要在程序里使用require(request).
+原因是chrome里面集成的环境不全, 在preload会提示`setimmediate undefined`, 然后拿不到数据.
+
+使用`electron`里`net`模块替代
+``` javascript
+// main
+const { net } = require('electron')
+// render
+const { net } = require('electron').remote
+```
+
 ---
 
 ## 日志
+
+### 2018Nov15: BS
+程序结构(临时)
+在index统一显示消息内容.
+- 查询某个用户的消息
+index向webview发送请求
+``` javascript
+// 发送请求
+core.HostSendToWeb("webview ID", { "get": "userID" })
+// 接收返回消息
+core.WinReplyWeb("webview ID", (key, arg) => {
+})
+```
+`userID`替换为要查寻的用户对应号码.
+
 
 ### 2018Nov13: L
 - 由于优秀的文件夹结构，和不同操作系统 process 变量的各向异性，决定推广相对路径

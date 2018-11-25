@@ -18,5 +18,8 @@
   "author": "c4r",
   "devDependencies": {
     "electron": "^3.0.7"
+  },
+  "dependencies": {
+    "electron-store": "^2.0.0"
   }
 }
