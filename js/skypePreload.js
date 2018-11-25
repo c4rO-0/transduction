@@ -23,7 +23,7 @@ window.onload = function () {
                 console.log(property + ": " + this[property])
             }
         }
-        extract(aNode) {
+        extractAll(aNode) {
             // this.action=
             console.log(aNode)
             this.userID = aNode.dataset.userID
@@ -37,6 +37,17 @@ window.onload = function () {
                     'swx-recent-item.list-selectable'),
                 aNode.closest('swx-recent-item.list-selectable'))
             // this.muted= 
+        }
+        extract(aNode, property) {
+            console.log(aNode)
+            this.userID = aNode.dataset.userID
+            if (property === 'nickName') {
+                this.nickName = aNode.querySelector('h4 > span.topic').title
+            } else if (property === 'avatar') {
+                this.avatar = aNode.querySelector('img.Avatar-image').src
+            } else if (property === 'message') {
+                this.message = aNode.querySelector('div.message > p').innerText
+            }
         }
     }
 
@@ -165,31 +176,52 @@ window.onload = function () {
             }
 
             //检查小圈圈
-            if (list[i].type === 'characterData' && list[i].target.parentNode.matches('span.counter > span.circle > p')) {
+            if (list[i].type === 'characterData' &&
+                list[i].target.parentNode.matches('span.counter > span.circle > p')) {
                 console.log('hit at: ' + i + ' 检查小圈圈')
                 console.log(list[i].target.parentNode.closest('a').querySelector('img.Avatar-image').src)
                 node = list[i].target.parentNode.closest('a')
-                if (newConvoFlag) {
-                    convo = new conversation('a')
-                    convo.extract(node)
-                    convo.print()
-                    convo = undefined
-                    //如果是旧会话来新消息，抓
-                } else {
-                    convo = new conversation('c')
-                    convo.extract(node)
-                    convo.print()
-                    convo = undefined
-                }
+
+                convo = new conversation('a')
+                convo.extractAll(node)
+                convo.print()
+                convo = undefined
+                //如果是旧会话来新消息，抓
+
             }
-            //二次检查
-            // if (list[i].type == 'attributes' && list[i].attributeName == 'src' && list[i].target.closest('a').dataset.waitFor == 'avatarUrl') {
-            //     list[i].target.closest('a').dataset.waitFor = 'nothing'
-            //     let convo = new conversation()
-            //     console.log('seconde check')
-            //     convo.extract(list[i].target.closest('a'))
-            //     convo.print()
-            // }
+
+            //检查src
+            if (list[i].type === 'attributes' &&
+                list[i].attributeName === 'src' &&
+                list[i].target.matches('img.Avatar-image')) {
+                let convo = new conversation('c')
+                console.log('hit at: ' + i + ' 检查头像src')
+                convo.extract(list[i].target.closest('a'), 'avatar')
+                convo.print()
+                convo = undefined
+            }
+
+            //检查 p.small
+            if (list[i].type === 'childList' &&
+                list[i].target.matches('p.small') &&
+                list[i].addedNodes.length !== 0 &&
+                list[i].addedNodes[0].nodeType === 3) {
+                let convo = new conversation('c')
+                console.log('hit at: ' + i + ' 检查消息更新')
+                convo.extract(list[i].target.closest('a'), 'message')
+                convo.print()
+                convo = undefined
+            }
+
+            //检查 nickName
+            if (list[i].type === 'characterData' &&
+                list[i].target.parentNode.matches('span.tileName span.topic')) {
+                let convo = new conversation('c')
+                console.log('hit at: ' + i + ' 检查 nickName')
+                convo.extract(list[i].target.parentNode.closest('a'), 'nickName')
+                convo.print()
+                convo = undefined
+            }
         }
 
     })
