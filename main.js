@@ -1,10 +1,15 @@
 const { app, BrowserWindow } = require('electron')
+const Config = require('electron-store')
+const config = new Config()
 
 const debug = /--debug/.test(process.argv[2])
 
 
 function createWindow() {
-    win = new BrowserWindow({ width: 1000, height: 700 })
+
+    let opts = {}
+    Object.assign(opts, config.get('winBounds'))    
+    win = new BrowserWindow(opts)
     win.loadFile('./html/index.html')
     if (debug) {
         win.webContents.openDevTools()
@@ -14,6 +19,11 @@ function createWindow() {
         win.setMenu(null)
     }
 
+    win.on('close', () => {
+        config.set('winBounds', win.getBounds())
+    })
+
 }
 
 app.on('ready', createWindow)
+
