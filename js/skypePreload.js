@@ -1,5 +1,5 @@
 window.onload = function () {
-    console.log("runing skype preload")
+    console.log("running skype preload")
     console.log(process.versions.electron)
     console.log(process.env.PWD)
     console.log(process.cwd())
@@ -22,6 +22,17 @@ window.onload = function () {
             for (let property in this) {
                 console.log(property + ": " + this[property])
             }
+        }
+        /**
+         * 发送消息到Win
+         */
+        send() {
+            core.WebToHost({ "MSG-new": this }).then((res) => {
+                console.log("debug : ---Win reply---")
+                console.log(res)
+            }).catch((error) => {
+                throw error
+            });
         }
         extractAll(aNode) {
             // this.action=
@@ -79,6 +90,7 @@ window.onload = function () {
                 convo = new conversation('a')
                 convo.extractAll(list[i].target.parentNode.closest('a'))
                 convo.print()
+                convo.send()
                 convo = undefined
             }
 
@@ -90,6 +102,7 @@ window.onload = function () {
                 let convo = new conversation('c')
                 convo.extract(list[i].target.closest('a'), 'avatar')
                 convo.print()
+                convo.send()
                 convo = undefined
             }
 
@@ -102,6 +115,7 @@ window.onload = function () {
                 let convo = new conversation('c')
                 convo.extract(list[i].target.closest('a'), 'message')
                 convo.print()
+                convo.send()
                 convo = undefined
             }
 
@@ -112,6 +126,7 @@ window.onload = function () {
                 let convo = new conversation('c')
                 convo.extract(list[i].target.parentNode.closest('a'), 'nickName')
                 convo.print()
+                convo.send()
                 convo = undefined
             }
         }
@@ -123,5 +138,13 @@ window.onload = function () {
             subtree: true, childList: true, characterData: true, attributes: true,
             attributeFilter: ["src"], attributeOldValue: true, characterDataOldValue: true
         })
+
+
+    // 等待win发来消息
+    core.WebReply((key, arg) => {
+        return new Promise((resolve, reject) => {
+            //  收到消息进行处理
+        })
+    })
 
 }
