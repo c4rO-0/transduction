@@ -1,20 +1,20 @@
 const core = require("../js/core.js")
 console.log(process.versions.electron)
 let status = "webviewSkype"
-$(document).ready(function () {
-    $("#switch").on("click", function () {
-        if (status == "webviewSkype") {
-            $("#webviewSkype").hide()
-            $("#webviewWechat").show()
-            status = "webviewWechat"
-        } else if (status == "webviewWechat") {
-            $("#webviewSkype").show()
-            $("#webviewWechat").hide()
-            status = "webviewSkype"
+
+function toggleWebview() {
+    document.querySelectorAll('webview').forEach((e) => {
+        if (e.style.display === 'none') {
+            e.style.display = ''
+        } else {
+            e.style.display = 'none'
         }
     })
-    let webWechat = document.getElementById("webviewWechat");
-    webWechat.addEventListener("dom-ready", function () { webWechat.openDevTools(); });
+}
+
+$(document).ready(function () {
+    // let webWechat = document.getElementById("webviewWechat");
+    // webWechat.addEventListener("dom-ready", function () { webWechat.openDevTools(); });
 
 
     // ===========================接收消息===========================
@@ -45,7 +45,7 @@ $(document).ready(function () {
                 }
             } else if (key == 'MSG-new') {
                 // 有新消息来了
-                
+
                 console.log("debug : ", "new MSG")
                 console.log("debug : ", "Name :", arg.nickName)
                 console.log("debug : ", "ID : ", arg.userID)
@@ -70,8 +70,8 @@ $(document).ready(function () {
     // ===========================发送消息===========================
     $("#wechatGet").click(() => {
         $("#insert").empty()
-        if($("#userID").val() != ''){
-            core.HostSendToWeb("webviewWechat", { "get": $("#userID").val()}).then((res) => {
+        if ($("#userID").val() != '') {
+            core.HostSendToWeb("webviewWechat", { "get": $("#userID").val() }).then((res) => {
                 console.log(res)
             }).catch((error) => {
                 throw error
@@ -79,6 +79,8 @@ $(document).ready(function () {
         }
 
     })
+
+    toggleWebview()
 })
 
- 
+

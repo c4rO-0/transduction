@@ -1,8 +1,8 @@
 window.onload = function () {
     console.log("runing skype preload")
-    console.log(process.versions.electron)
-    console.log(process.env.PWD)
-    console.log(process.cwd())
+    // console.log(process.versions.electron)
+    // console.log(process.env.PWD)
+    // console.log(process.cwd())
     window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
     const core = require("../js/core")
 

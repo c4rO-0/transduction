@@ -9,3 +9,120 @@ body {
 webview {
     height: -webkit-fill-available;
 }
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+.col-left {
+    flex: 0 0 64px;
+    max-width: 64px;
+}
+
+.col-avatar {
+    flex: 0 0 64px;
+    max-width: 64px;
+    align-self: stretch;
+}
+
+.col-left, .col-avatar {
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+}
+
+.col-text, .col-timestamp {
+    display: none;
+    overflow: hidden;
+    align-self: stretch;
+}
+
+.col-text {
+    font-size: 15px;
+}
+
+.col-timestamp {
+    padding-top: 5px;
+    padding-right: 2px;
+    font-size: 12px;
+}
+
+.td-convo {
+    height: 56px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.td-counter {
+    position: absolute;
+    right: 5px;
+    top: 0px;
+    height: 16px;
+    width: 16px;
+    display: flex;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid aliceblue;
+    background-color: orangered;
+    color: aliceblue;
+    font-size: 10px;
+}
+
+.td-nickname {
+    /* font-size: 15px; */
+    /* padding-top: 5px; */
+    /* height: 1rem; */
+}
+
+.td-text {
+    color: dimgray;
+    /* padding-bottom: 5px; */
+    /* height: 1rem; */
+}
+
+.td-nickname, .td-text {
+    text-overflow: ellipsis;
+    word-break: break-all;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.td-font {
+    font-family: "Segoe UI", "Helvetica", "Arial", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+}
+
+.theme-skype {
+    background-color: #c7edfc;
+}
+
+.theme-skype:hover, .theme-skype:focus {
+    background-color: #a3d5e9;
+}
+
+.theme-wechat {
+    background-color: #91ED61;
+}
+
+.theme-wechat:hover, .theme-wechat:focus {
+    background-color: rgb(122, 218, 71);
+}
+
+.td-avatar {
+    background-size: cover;
+    background-position: center;
+    width: 40px;
+    height: 40px;
+    border-style: none;
+    border-radius: 20px;
+}
+
+@media (min-width: 576px) {
+    .col-left {
+        flex: 0 0 256px;
+        max-width: 256px;
+    }
+    .col-text, .col-timestamp {
+        display: flex;
+    }
+}
