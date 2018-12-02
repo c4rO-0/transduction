@@ -48,6 +48,7 @@ function respFuncWinReplyWeb(webTag, key, MSG){
             console.log("debug : ", "new MSG")
             console.log("debug : ", "Name :", MSG.nickName)
             console.log("debug : ", "ID : ", MSG.userID)
+            console.log("debug : ", "avatar : ", MSG.avatar)
             console.log("debug : ", "index :", MSG.index)
             console.log("debug : ", "content :", MSG.content)
             console.log("debug : ", "time :", MSG.time)
@@ -81,6 +82,7 @@ $(document).ready(function () {
     })
     let webWechat = document.getElementById("webviewWechat");
     webWechat.addEventListener("dom-ready", function () { webWechat.openDevTools(); });
+    webviewSkype.addEventListener("dom-ready", function () { webviewSkype.openDevTools(); });
 
 
     // ===========================接收消息===========================
