@@ -98,13 +98,13 @@ window.onload = function () {
 
 
         let timeStr = $(obj).find("div.ext p.attr.ng-binding").text()
-        let time = undefined
+        let time = new Date() // Now
         if (timeStr != "") {
-            let now = new Date()
+
             time = new Date(
-                now.getFullYear(),
-                now.getMonth(),
-                now.getDate(),
+                time.getFullYear(),
+                time.getMonth(),
+                time.getDate(),
                 parseInt(timeStr.substr(0, timeStr.indexOf(':'))) + 1,
                 parseInt(timeStr.substr(timeStr.indexOf(':') + 1)))
 
@@ -119,6 +119,7 @@ window.onload = function () {
 
 
         let avatar = host + $(obj).find("div.avatar img").attr("src")
+        
 
 
         if ($("div[data-username='" + userID + "']").length == 0) {
@@ -126,9 +127,9 @@ window.onload = function () {
             return {
                 "userID": userID,
                 "time": time,
-                "content": "",
+                "message": "",
                 "nickName": nickName,
-                "avatarUrl": avatar,
+                "avatar": avatar,
                 "counter": 0,
                 "action": "r",
                 "muted": true,
@@ -179,9 +180,9 @@ window.onload = function () {
             return {
                 "userID": userID,
                 "time": time,
-                "content": content,
+                "message": content,
                 "nickName": nickName,
-                "avatarUrl": avatar,
+                "avatar": avatar,
                 "counter": counter,
                 "action": action,
                 "muted": muted,
@@ -216,11 +217,11 @@ window.onload = function () {
         let arrayObjUser = new Array();
         let arrayContent = new Array();
         records.map(function (record) {
-            console.log("debug : ===========chat slide============")
+            // console.log("debug : ===========chat slide============")
             // console.log("debug : ", "obs type : ", record.type)
             // console.log("debug : ", "obs target : ") 
             // console.log($(record.target))
-            console.log("debug : ", "remove : ", $(record.removedNodes).length)
+            // console.log("debug : ", "remove : ", $(record.removedNodes).length)
             // console.log($(record.removedNodes))
 
             if ($(record.removedNodes).length == 0) {
@@ -273,7 +274,7 @@ window.onload = function () {
         // console.log(arrayContent)
         arrayContent.forEach((currentValue, index) => {
             // 向index发出新消息提醒
-            core.WebToHost({ "MSG-new": currentValue }).then((res) => {
+            core.WebToHost({ "Convo-new": currentValue }).then((res) => {
                 console.log(res)
             }).catch((error) => {
                 throw error

@@ -27,7 +27,7 @@ window.onload = function () {
          * 发送消息到Win
          */
         send() {
-            core.WebToHost({ "MSG-new": this }).then((res) => {
+            core.WebToHost({ "Convo-new": this }).then((res) => {
                 console.log("debug : ---Win reply---")
                 console.log(res)
             }).catch((error) => {

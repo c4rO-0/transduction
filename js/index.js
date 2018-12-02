@@ -12,29 +12,29 @@ let status = "webviewSkype"
  * @param {String} key MSG的类别 : 
  * MSG-Log : 收到右侧窗口聊天记录
  * MSG-new : 左侧提示有新消息
- * @param {Object} MSG 收到的具体消息
+ * @param {Object} Convo 收到的具体消息
  */
-function respFuncWinReplyWeb(webTag, key, MSG){
+function respFuncWinReplyWeb(webTag, key, Convo){
 
 
     return new Promise((resolve, reject) => {
 
 
         console.log("debug : ", "----------------------")
-        console.log("debug : ", "MSG from ", webTag)
+        console.log("debug : ", "Convo from ", webTag)
         // console.log(MSG)
 
         if (key == 'MSG-Log') {
             // 获取某个用户聊天记录
 
             // 检查消息是否已经存在
-            if ($("#insert #" + MSG.MSGID).length == 0) {
-                console.log("debug : ", "display MSG on index")
-                if (MSG.type == 3) {
+            if ($("#insert #" + Convo.MSGID).length == 0) {
+                console.log("debug : ", "display Convo on index")
+                if (Convo.type == 3) {
                     // 是图片
-                    $("#insert").append("<p id='" + MSG.MSGID + "'> " + MSG.time + "<img src='" + MSG.content + "'></img></p>")
+                    $("#insert").append("<p id='" + Convo.MSGID + "'> " + Convo.time + "<img src='" + Convo.content + "'></img></p>")
                 } else {
-                    $("#insert").append("<p id='" + MSG.MSGID + "'> " + MSG.time + MSG.content + "</p>")
+                    $("#insert").append("<p id='" + Convo.MSGID + "'> " + Convo.time + Convo.content + "</p>")
                 }
 
 
@@ -42,19 +42,19 @@ function respFuncWinReplyWeb(webTag, key, MSG){
             } else {
                 resolve("existed")
             }
-        } else if (key == 'MSG-new') {
+        } else if (key == 'Convo-new') {
             // 有新消息来了
             
-            console.log("debug : ", "new MSG")
-            console.log("debug : ", "Name :", MSG.nickName)
-            console.log("debug : ", "ID : ", MSG.userID)
-            console.log("debug : ", "avatar : ", MSG.avatar)
-            console.log("debug : ", "index :", MSG.index)
-            console.log("debug : ", "content :", MSG.content)
-            console.log("debug : ", "time :", MSG.time)
-            console.log("debug : ", "counter :", MSG.counter)
-            console.log("debug : ", "action :", MSG.action)
-            console.log("debug : ", "muted :", MSG.muted)
+            console.log("debug : ", "new Convo")
+            console.log("debug : ", "Name :", Convo.nickName)
+            console.log("debug : ", "ID : ", Convo.userID)
+            console.log("debug : ", "avatar : ", Convo.avatar)
+            console.log("debug : ", "index :", Convo.index)
+            console.log("debug : ", "message :", Convo.message)
+            console.log("debug : ", "time :", Convo.time)
+            console.log("debug : ", "counter :", Convo.counter)
+            console.log("debug : ", "action :", Convo.action)
+            console.log("debug : ", "muted :", Convo.muted)
 
             resolve("copy that")
         }
