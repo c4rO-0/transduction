@@ -107,11 +107,13 @@ webview {
 }
 
 .theme-transduction {
-    background-color: #ffede2;
+    /* background-color: #ffede2; */
+    background-color: #daffd1;
 }
 
 .theme-transduction:hover {
-    background-color: #ffdeca;
+    background-color: #baf0ac;
+    /* background-color: #ffdeca; */
 }
 
 .theme-skype {

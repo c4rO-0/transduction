@@ -8,52 +8,52 @@ class conversation {
         this.action = action
         this.userID = userID
         this.nickName = nickName
-        if(typeof(time) == "string"){
+        if (typeof (time) == "string") {
             this.time = new Date(time)
-        }else if(typeof(time) == "object"){
+        } else if (typeof (time) == "object") {
             this.time = time
-        }else{
-            console.log("error : conversation :  wrong type of time : ". type(time), time)
+        } else {
+            console.log("error : conversation :  wrong type of time : ", typeof (time), time)
             this.time = new Date()
         }
         this.avatar = avatar
         this.message = message
-        if(typeof(counter) == "number" ){
+        if (typeof (counter) == "number") {
             this.counter = counter
-        }else if(typeof(counter) == "string"){
+        } else if (typeof (counter) == "string") {
             this.counter = parseInt(counter)
-        }else{
-            console.log("error : conversation :  unknown counter typ : ", type(counter), counter)
+        } else {
+            console.log("error : conversation :  unknown counter typ : ", typeof (counter), counter)
             this.counter = undefined
         }
-        if(typeof(index) == "number" ){
+        if (typeof (index) == "number") {
             this.index = index
-        }else if(typeof(index) == "string"){
+        } else if (typeof (index) == "string") {
             this.index = parseInt(index)
-        }else{
-            console.log("error : conversation :  unknown index type : ", type(index), index)
+        } else {
+            console.log("error : conversation :  unknown index type : ", typeof (index), index)
             this.index = undefined
-        }        
-        if(typeof(muted) == "boolean" ){
+        }
+        if (typeof (muted) == "boolean") {
             this.muted = muted
-        }else if(typeof(muted) == "string"){
-            if(muted.toLowerCase == "false"){
+        } else if (typeof (muted) == "string") {
+            if (muted.toLowerCase == "false") {
                 this.muted = false
-            }else if(muted.toLowerCase == "true"){
+            } else if (muted.toLowerCase == "true") {
                 this.muted = true
-            }else{
-                console.log("error : conversation :  unknown muted value : ". muted)
-                this.muted = undefined                
+            } else {
+                console.log("error : conversation :  unknown muted value : ".muted)
+                this.muted = undefined
             }
-            
-        }else{
-            console.log("error : conversation :  unknown muted type : ", type(muted), muted)
+
+        } else {
+            console.log("error : conversation :  unknown muted type : ", typeof (muted), muted)
             this.muted = undefined
-        }   
+        }
         this.muted = muted
     }
 
-    print(){
+    print() {
         console.log("debug : ", "Name :", this.nickName)
         console.log("debug : ", "ID : ", this.userID)
         console.log("debug : ", "avatar : ", this.avatar)
@@ -133,22 +133,22 @@ function respFuncWinReplyWeb(webTag, key, Obj) {
             // 有新消息来了
 
             let Convo = new conversation(
-                Obj.action, 
-                Obj.userID, 
-                Obj.nickName, 
-                Obj.time, 
-                Obj.avatar, 
-                Obj.message, 
-                Obj.counter, 
-                Obj.index, 
+                Obj.action,
+                Obj.userID,
+                Obj.nickName,
+                Obj.time,
+                Obj.avatar,
+                Obj.message,
+                Obj.counter,
+                Obj.index,
                 Obj.muted)
             console.log("debug : ", "new Convo")
             Convo.print()
-            if(Convo.action==='a'){
+            if (Convo.action === 'a') {
                 console.log('going to insert html snippet')
-                console.log(typeof Convo.time)
-                console.log(convoHtml('skype', Convo))
-                // $('#td-left').prepend(convoHtml('skype', Convo))
+                // console.log(typeof Convo.time)
+                // console.log(convoHtml('skype', Convo))
+                $('#td-left').prepend(convoHtml('skype', Convo))
             }
 
             resolve("copy that")
@@ -161,6 +161,7 @@ function respFuncWinReplyWeb(webTag, key, Obj) {
     })
 
 }
+
 
 function toggleWebview() {
     document.querySelectorAll('webview').forEach((e) => {
