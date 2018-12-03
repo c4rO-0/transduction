@@ -2,6 +2,71 @@ const core = require("../js/core.js")
 console.log(process.versions.electron)
 let status = "webviewSkype"
 
+// =========================class===========================
+class conversation {
+    constructor(action, userID, nickName, time, avatar, message, counter, index, muted) {
+        this.action = action
+        this.userID = userID
+        this.nickName = nickName
+        if(typeof(time) == "string"){
+            this.time = new Date(time)
+        }else if(typeof(time) == "object"){
+            this.time = time
+        }else{
+            console.log("error : conversation :  wrong type of time : ". type(time), time)
+            this.time = new Date()
+        }
+        this.avatar = avatar
+        this.message = message
+        if(typeof(counter) == "number" ){
+            this.counter = counter
+        }else if(typeof(counter) == "string"){
+            this.counter = parseInt(counter)
+        }else{
+            console.log("error : conversation :  unknown counter typ : ", type(counter), counter)
+            this.counter = undefined
+        }
+        if(typeof(index) == "number" ){
+            this.index = index
+        }else if(typeof(index) == "string"){
+            this.index = parseInt(index)
+        }else{
+            console.log("error : conversation :  unknown index type : ", type(index), index)
+            this.index = undefined
+        }        
+        if(typeof(muted) == "boolean" ){
+            this.muted = muted
+        }else if(typeof(muted) == "string"){
+            if(muted.toLowerCase == "false"){
+                this.muted = false
+            }else if(muted.toLowerCase == "true"){
+                this.muted = true
+            }else{
+                console.log("error : conversation :  unknown muted value : ". muted)
+                this.muted = undefined                
+            }
+            
+        }else{
+            console.log("error : conversation :  unknown muted type : ", type(muted), muted)
+            this.muted = undefined
+        }   
+        this.muted = muted
+    }
+
+    print(){
+        console.log("debug : ", "Name :", this.nickName)
+        console.log("debug : ", "ID : ", this.userID)
+        console.log("debug : ", "avatar : ", this.avatar)
+        console.log("debug : ", "index :", this.index)
+        console.log("debug : ", "message :", this.message)
+        console.log("debug : ", "time :", this.time)
+        console.log("debug : ", "counter :", this.counter)
+        console.log("debug : ", "action :", this.action)
+        console.log("debug : ", "muted :", this.muted)
+    }
+
+}
+
 // ============================function===================
 //注意：24行，由于传来的time不是date类型，两个方法都不能调用
 function convoHtml(appName, convo) {
@@ -34,9 +99,9 @@ function convoHtml(appName, convo) {
  * @param {String} key MSG的类别 : 
  * MSG-Log : 收到右侧窗口聊天记录
  * MSG-new : 左侧提示有新消息
- * @param {Object} Convo 收到的具体消息
+ * @param {Object} Obj 收到的具体消息
  */
-function respFuncWinReplyWeb(webTag, key, Convo) {
+function respFuncWinReplyWeb(webTag, key, Obj) {
 
 
     return new Promise((resolve, reject) => {
@@ -50,13 +115,13 @@ function respFuncWinReplyWeb(webTag, key, Convo) {
             // 获取某个用户聊天记录
 
             // 检查消息是否已经存在
-            if ($("#insert #" + Convo.MSGID).length == 0) {
+            if ($("#insert #" + Obj.MSGID).length == 0) {
                 console.log("debug : ", "display Convo on index")
-                if (Convo.type == 3) {
+                if (Obj.type == 3) {
                     // 是图片
-                    $("#insert").append("<p id='" + Convo.MSGID + "'> " + Convo.time + "<img src='" + Convo.content + "'></img></p>")
+                    $("#insert").append("<p id='" + Obj.MSGID + "'> " + Obj.time + "<img src='" + Obj.content + "'></img></p>")
                 } else {
-                    $("#insert").append("<p id='" + Convo.MSGID + "'> " + Convo.time + Convo.content + "</p>")
+                    $("#insert").append("<p id='" + Obj.MSGID + "'> " + Obj.time + Obj.content + "</p>")
                 }
 
 
@@ -67,22 +132,25 @@ function respFuncWinReplyWeb(webTag, key, Convo) {
         } else if (key == 'Convo-new') {
             // 有新消息来了
 
+            let Convo = new conversation(
+                Obj.action, 
+                Obj.userID, 
+                Obj.nickName, 
+                Obj.time, 
+                Obj.avatar, 
+                Obj.message, 
+                Obj.counter, 
+                Obj.index, 
+                Obj.muted)
             console.log("debug : ", "new Convo")
-            console.log("debug : ", "Name :", Convo.nickName)
-            console.log("debug : ", "ID : ", Convo.userID)
-            console.log("debug : ", "avatar : ", Convo.avatar)
-            console.log("debug : ", "index :", Convo.index)
-            console.log("debug : ", "message :", Convo.message)
-            console.log("debug : ", "time :", Convo.time)
-            console.log("debug : ", "counter :", Convo.counter)
-            console.log("debug : ", "action :", Convo.action)
-            console.log("debug : ", "muted :", Convo.muted)
+            Convo.print()
             if(Convo.action==='a'){
                 console.log('going to insert html snippet')
                 console.log(typeof Convo.time)
                 console.log(convoHtml('skype', Convo))
                 // $('#td-left').prepend(convoHtml('skype', Convo))
             }
+
             resolve("copy that")
         }
 
