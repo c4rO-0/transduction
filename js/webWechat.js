@@ -50,7 +50,7 @@ window.onload = function () {
     }
 
     /**
-     * 
+     * 根据微信储存的变量_chatcontent读取消息
      * @param {Object} MSG 微信单条消息
      * @returns {Object} 拿到我们关系的内容
      */
@@ -87,20 +87,27 @@ window.onload = function () {
 
     }
 
+    // 
+    /**
+     * 通过左侧边栏读取消息
+     * @param {Object} obj 左侧边栏.chat_item.slide-left.ng-scope 元素
+     * @returns {Object} 返回"新消息"类型
+     * 
+     */
     function grepNewMSG(obj) {
 
 
         let timeStr = $(obj).find("div.ext p.attr.ng-binding").text()
-        let time = undefined
-        if(timeStr!=""){
-            let now = new Date()
+        let time = new Date() // Now
+        if (timeStr != "") {
+
             time = new Date(
-                now.getFullYear(), 
-                now.getMonth(), 
-                now.getDate(), 
-                parseInt( timeStr.substr(0,timeStr.indexOf(':')))+1,
-                parseInt(timeStr.substr(timeStr.indexOf(':')+1)))
-            
+                time.getFullYear(),
+                time.getMonth(),
+                time.getDate(),
+                parseInt(timeStr.substr(0, timeStr.indexOf(':'))) + 1,
+                parseInt(timeStr.substr(timeStr.indexOf(':') + 1)))
+
         }
         let content = $(obj).find("div.info p.msg span.ng-binding[ng-bind-html='chatContact.MMDigest']").text()
         let nickName = $(obj).find("div.info h3.nickname span").text()
@@ -112,25 +119,27 @@ window.onload = function () {
 
 
         let avatar = host + $(obj).find("div.avatar img").attr("src")
+        
 
 
-        if($("div[data-username='"+userID+"']").length == 0){
+        if ($("div[data-username='" + userID + "']").length == 0) {
             // 元素被删除了
             return {
                 "userID": userID,
                 "time": time,
-                "content": "",
+                "message": "",
                 "nickName": nickName,
-                "avatarUrl": avatar,
+                "avatar": avatar,
                 "counter": 0,
-                "action" : "r", 
-                "muted" : true,
+                "action": "r",
+                "muted": true,
                 "index": 0
-            }              
-        }else{
+            }
+        } else {
             let counter = 0
             let muted = false
-            let action = 'c'
+            // let action = 'c'
+            let action = 'a' //简单粗暴, 全部变成a
             if ($(obj).find("div.ext p.attr.ng-scope[ng-if='chatContact.isMuted()']").length > 0) {
                 // 被静音了
                 muted = true
@@ -148,7 +157,7 @@ window.onload = function () {
                         // 一条未读
                         counter = 1
                     }
-    
+
                 }
             } else {
                 // 正常
@@ -161,30 +170,29 @@ window.onload = function () {
                     // 初始化
                     action = 'a'
                 }
-    
+
             }
 
             let index = $(".chat_item.slide-left.ng-scope").index(obj)
-    
-    
-    
+
             // icon web_wechat_reddot ng-scope 一个小点
-    
+
             return {
                 "userID": userID,
                 "time": time,
-                "content": content,
+                "message": content,
                 "nickName": nickName,
-                "avatarUrl": avatar,
+                "avatar": avatar,
                 "counter": counter,
-                "action":action,
-                "muted" : muted,
-                "index" : index
-            }            
+                "action": action,
+                "muted": muted,
+                "index": index
+            }
         }
 
     }
 
+    // 联系人发生变更
     var callbackContact = function (records) {
 
         if ($("#navContact").scrollTop() + $("#navContact")[0].clientHeight != $("#navContact")[0].scrollHeight) {
@@ -203,19 +211,20 @@ window.onload = function () {
         }
     };
 
+    // 消息发生变更
     var callbackChat = function (records) {
         console.log("debug : ===========chat changed============")
         let arrayObjUser = new Array();
         let arrayContent = new Array();
         records.map(function (record) {
-            console.log("debug : ===========chat slide============")
+            // console.log("debug : ===========chat slide============")
             // console.log("debug : ", "obs type : ", record.type)
             // console.log("debug : ", "obs target : ") 
             // console.log($(record.target))
-            console.log("debug : ", "remove : ", $(record.removedNodes).length) 
+            // console.log("debug : ", "remove : ", $(record.removedNodes).length)
             // console.log($(record.removedNodes))
 
-            if($(record.removedNodes).length ==0){
+            if ($(record.removedNodes).length == 0) {
                 // console.log("debug : ", "parent target : ") 
                 let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
                 // console.log( obj  )    
@@ -232,16 +241,16 @@ window.onload = function () {
                         arrayObjUser.push(obj)
                     }
                 }
-            }else{
+            } else {
                 $(record.removedNodes).toArray().forEach((currentValue, index) => {
-                    $(currentValue).children(".chat_item.slide-left.ng-scope").toArray().forEach((obj, idx) =>{
+                    $(currentValue).children(".chat_item.slide-left.ng-scope").toArray().forEach((obj, idx) => {
                         let existed = false
                         arrayObjUser.forEach((objIn) => {
-    
+
                             if (!existed && $(objIn).is(obj)) {
                                 existed = true
                             }
-    
+
                         })
                         if (!existed) {
                             arrayObjUser.push(obj)
@@ -265,7 +274,7 @@ window.onload = function () {
         // console.log(arrayContent)
         arrayContent.forEach((currentValue, index) => {
             // 向index发出新消息提醒
-            core.WebToHost({ "MSG-new": currentValue }).then((res) => {
+            core.WebToHost({ "Convo-new": currentValue }).then((res) => {
                 console.log(res)
             }).catch((error) => {
                 throw error

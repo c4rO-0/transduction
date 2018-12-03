@@ -23,6 +23,30 @@ window.onload = function () {
                 console.log(property + ": " + this[property])
             }
         }
+        /**
+         * 发送消息到Win
+         */
+        send() {
+            core.WebToHost({ "Convo-new": 
+            {
+                "userID": this.userID,
+                "time": this.timestamp,
+                "message": this.message,
+                "nickName": this.nickName,
+                "avatar": this.avatar,
+                "counter": this.counter,
+                "action": this.action,
+                "muted": this.muted,
+                "index": this.index
+            }
+        
+        }).then((res) => {
+                console.log("debug : ---Win reply---")
+                console.log(res)
+            }).catch((error) => {
+                throw error
+            });
+        }
         extractAll(aNode) {
             // this.action=
             console.log(aNode)
@@ -79,6 +103,7 @@ window.onload = function () {
                 convo = new conversation('a')
                 convo.extractAll(list[i].target.parentNode.closest('a'))
                 convo.print()
+                convo.send()
                 convo = undefined
             }
 
@@ -90,6 +115,7 @@ window.onload = function () {
                 let convo = new conversation('c')
                 convo.extract(list[i].target.closest('a'), 'avatar')
                 convo.print()
+                convo.send()
                 convo = undefined
             }
 
@@ -102,6 +128,7 @@ window.onload = function () {
                 let convo = new conversation('c')
                 convo.extract(list[i].target.closest('a'), 'message')
                 convo.print()
+                convo.send()
                 convo = undefined
             }
 
@@ -112,6 +139,7 @@ window.onload = function () {
                 let convo = new conversation('c')
                 convo.extract(list[i].target.parentNode.closest('a'), 'nickName')
                 convo.print()
+                convo.send()
                 convo = undefined
             }
         }
@@ -123,5 +151,13 @@ window.onload = function () {
             subtree: true, childList: true, characterData: true, attributes: true,
             attributeFilter: ["src"], attributeOldValue: true, characterDataOldValue: true
         })
+
+
+    // 等待win发来消息
+    core.WebReply((key, arg) => {
+        return new Promise((resolve, reject) => {
+            //  收到消息进行处理
+        })
+    })
 
 }
