@@ -16,6 +16,28 @@ $(document).ready(function () {
     // let webWechat = document.getElementById("webviewWechat");
     // webWechat.addEventListener("dom-ready", function () { webWechat.openDevTools(); });
 
+    function convoHtml(appName, convo){
+        return '\
+        <div class="td-convo theme-transduction td-font data-user-i-d='+convo.userID+'">\
+            <div class="col-hint">\
+                <div class="row-hint theme-'+appName+'"></div>\
+            </div>\
+            <div class="col-avatar d-flex justify-content-center">\
+                <div class="td-avatar align-self-center" style="background-image: url('+convo.avatar+')"></div>\
+                <div class="td-counter">\
+                    <div style="align-self:center">'+convo.counter+'</div>\
+                </div>\
+            </div>\
+            <div class="col p-0 col-text flex-column justify-content-center">\
+                <div class="m-0 td-nickname">'+convo.nickName+'</div>\
+                <div class="m-0 td-text">'+convo.message+'</div>\
+            </div>\
+            <div class="col-auto pl-0 col-timestamp justify-content-end">\
+                '+convo.timestamp.getHours()+':'+convo.timestamp.getMinutes()+'\
+            </div>\
+        </div>'
+    }
+
 
     // ===========================接收消息===========================
 

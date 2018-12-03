@@ -15,17 +15,31 @@ webview {
 }
 
 .col-left {
-    flex: 0 0 64px;
-    max-width: 64px;
+    flex: 0 0 56px;
+    max-width: 56px;
+}
+
+.col-hint {
+    display: flex;
+    flex: 0 0 8px;
+    justify-content: flex-end;
+    align-items: center;
+    max-width: 8px;
+}
+
+.row-hint {
+    width: 6px;
+    height: 40px;
+    border-radius: 3px;
 }
 
 .col-avatar {
-    flex: 0 0 64px;
-    max-width: 64px;
-    align-self: stretch;
+    flex: 0 0 46px;
+    max-width: 46px;
+    /* align-self: stretch; */
 }
 
-.col-left, .col-avatar {
+.col-left, .col-hint, .col-avatar {
     position: relative;
     width: 100%;
     min-height: 1px;
@@ -56,7 +70,7 @@ webview {
 
 .td-counter {
     position: absolute;
-    right: 5px;
+    right: 0px;
     top: 0px;
     height: 16px;
     width: 16px;
@@ -92,20 +106,23 @@ webview {
     font-family: "Segoe UI", "Helvetica", "Arial", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
 }
 
-.theme-skype {
-    background-color: #c7edfc;
+.theme-transduction {
+    background-color: #ffede2;
 }
 
-.theme-skype:hover, .theme-skype:focus {
-    background-color: #a3d5e9;
+.theme-transduction:hover {
+    background-color: #ffdeca;
+}
+
+.theme-skype {
+    background-color: #00aff0;
+    /* background-color: #0078d7; */
 }
 
 .theme-wechat {
-    background-color: #91ED61;
-}
-
-.theme-wechat:hover, .theme-wechat:focus {
-    background-color: rgb(122, 218, 71);
+    background-color: #1aad19;
+    /* background-color: #2ba245; */
+    /* background-color: #91ed61; */
 }
 
 .td-avatar {
