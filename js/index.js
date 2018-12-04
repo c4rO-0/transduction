@@ -107,26 +107,67 @@ $(document).ready(function () {
     }
 
     // ============================function===================
-    function convoHtml(appName, convo) {
+    function AddConvoHtml(appName, convo) {
+        let displayCounter = "display: none;"
+        if (convo.counter) {
+            displayCounter = ""
+        }
+
         return '\
-        <div class="td-convo theme-transduction td-font data-user-i-d='+ convo.userID + '">\
+        <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' app-name=' + appName + '>\
             <div class="col-hint">\
                 <div class="row-hint theme-'+ appName + '"></div>\
             </div>\
             <div class="col-avatar d-flex justify-content-center">\
                 <div class="td-avatar align-self-center" style="background-image: url('+ convo.avatar + ')"></div>\
-                <div class="td-counter">\
-                    <div style="align-self:center">'+ convo.counter + '</div>\
+                <div class="td-counter" style="'+ displayCounter + '">\
+                    <div style="align-self:center;">'+ convo.counter + '</div>\
                 </div>\
-            </div>\
-            <div class="col col-text flex-column justify-content-center">\
+            </div >\
+        <div class="col col-text flex-column justify-content-center">\
                 <div class="m-0 td-nickname">'+ convo.nickName + '</div>\
                 <div class="m-0 td-text">'+ convo.message + '</div>\
             </div>\
-            <div class="col-auto pl-0 col-timestamp justify-content-end">\
-                '+ convo.time.toLocaleTimeString().replace(/:\d\d(?= )/gm, '') + '\
+        <div class="col-auto pl-0 col-timestamp justify-content-end">\
+            '+ convo.time.toLocaleTimeString().replace(/:\d\d(?= )/gm, '') + '\
             </div>\
-        </div>'
+        </div > '
+    }
+
+    function ChangeConvoHtml(appName, convo) {
+        let objConvo = $('#td-left [app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
+        if (objConvo.length) { // 检测存在
+            $('#td-left [app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').remove()
+            for (let key in convo) {
+                if (convo[key] != undefined) {
+                    switch (key) {
+                        case "avatar":
+                            $(objConvo).find("div.td-avatar").attr("style", 'background-image: url(' + convo.avatar + ')')
+                            break;
+                        case "counter":
+                            $(objConvo).find("div.td-counter div").text(convo.counter)
+                            if (convo.counter) {
+                                $(objConvo).find("div.td-counter").css("display", "")
+                            } else {
+                                $(objConvo).find("div.td-counter").css("display", "none")
+                            }
+                            break;
+                        case "nickName":
+                            $(objConvo).find("div.td-nickname").text(convo.nickName)
+                            break;
+                        case "message":
+                            $(objConvo).find("div.td-text").text(convo.message)
+                            break;
+                        case "time":
+                            $(objConvo).find("div.col-timestamp").text(convo.time.toLocaleTimeString().replace(/:\d\d(?= )/gm, ''))
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            $('#td-left').prepend(objConvo)
+        }
     }
 
     //------------------------
@@ -182,11 +223,17 @@ $(document).ready(function () {
                     Obj.muted)
                 console.log("debug : ", "new Convo")
                 Convo.print()
+
                 if (Convo.action === 'a') {
                     console.log('going to insert html snippet')
                     // console.log(typeof Convo.time)
                     // console.log(convoHtml('skype', Convo))
-                    $('#td-left').prepend(convoHtml('skype', Convo))
+                    // 覆盖消息
+                    $('#td-left [app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
+                    $('#td-left').prepend(AddConvoHtml(webTag, Convo))
+                } else if (Convo.action === 'c') {
+                    console.log('going to change html snippet')
+                    ChangeConvoHtml(webTag, Convo)
                 }
 
                 resolve("copy that")
