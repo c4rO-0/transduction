@@ -23,6 +23,12 @@ const { net } = require('electron').remote
 
 ## 日志
 
+### 2018Dec03：L
+- date 类型没有正确传到前台，得绕一下，建议传数字，就是毫秒数那个，好像很容易转回date
+- 主要需要改的地方：
+    - index.js r24
+    - index.js r82-r84
+
 ### 2018Nov15: BS
 程序结构(临时)
 在index统一显示消息内容.
