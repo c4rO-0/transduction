@@ -53,6 +53,7 @@ webview {
 
 .col-text {
     font-size: 15px;
+    padding: 0px 3px 0px 5px;
 }
 
 .col-timestamp {

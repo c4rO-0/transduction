@@ -8,7 +8,9 @@ class conversation {
         this.action = action
         this.userID = userID
         this.nickName = nickName
-        if (typeof (time) == "string") {
+        if (typeof time === 'number') {
+            this.time = new Date(time)
+        } else if (typeof (time) == "string") {
             this.time = new Date(time)
         } else if (typeof (time) == "object") {
             this.time = time
@@ -68,7 +70,6 @@ class conversation {
 }
 
 // ============================function===================
-//注意：24行，由于传来的time不是date类型，两个方法都不能调用
 function convoHtml(appName, convo) {
     return '\
     <div class="td-convo theme-transduction td-font data-user-i-d='+ convo.userID + '">\
@@ -81,12 +82,12 @@ function convoHtml(appName, convo) {
                 <div style="align-self:center">'+ convo.counter + '</div>\
             </div>\
         </div>\
-        <div class="col p-0 col-text flex-column justify-content-center">\
+        <div class="col col-text flex-column justify-content-center">\
             <div class="m-0 td-nickname">'+ convo.nickName + '</div>\
             <div class="m-0 td-text">'+ convo.message + '</div>\
         </div>\
         <div class="col-auto pl-0 col-timestamp justify-content-end">\
-            '+ convo.time.getHours() + ':' + convo.time.getMinutes() + '\
+            '+ convo.time.toLocaleTimeString().replace(/:\d\d(?= )/gm, '') + '\
         </div>\
     </div>'
 }

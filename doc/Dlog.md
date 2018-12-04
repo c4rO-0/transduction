@@ -23,7 +23,16 @@ const { net } = require('electron').remote
 
 ## 日志
 
-### 2018Dec03：L
+### 2018Dec03-04：L
+- skype 传到前台的 timestamp 改为 Date.now() 即一个 number 型，前台用 new Date(time) 即可转回 date 型
+    - index.js r11-r13
+    - skypePreload.js r56
+- skype 传到前台的 counter 改为 number 型
+    - skypePreload.js r59
+- 。。。。。。。的 message 已兼容表情符
+    -skypePreload.js r58
+- 前台 convo ui 微调
+
 - date 类型没有正确传到前台，得绕一下，建议传数字，就是毫秒数那个，好像很容易转回date
 - 主要需要改的地方：
     - index.js r24
