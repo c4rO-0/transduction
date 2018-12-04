@@ -1,8 +1,8 @@
 window.onload = function () {
-    console.log("running skype preload")
-    console.log(process.versions.electron)
-    console.log(process.env.PWD)
-    console.log(process.cwd())
+    console.log("runing skype preload")
+    // console.log(process.versions.electron)
+    // console.log(process.env.PWD)
+    // console.log(process.cwd())
     window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
     const core = require("../js/core")
 
@@ -27,20 +27,21 @@ window.onload = function () {
          * 发送消息到Win
          */
         send() {
-            core.WebToHost({ "Convo-new": 
-            {
-                "userID": this.userID,
-                "time": this.timestamp,
-                "message": this.message,
-                "nickName": this.nickName,
-                "avatar": this.avatar,
-                "counter": this.counter,
-                "action": this.action,
-                "muted": this.muted,
-                "index": this.index
-            }
-        
-        }).then((res) => {
+            core.WebToHost({
+                "Convo-new":
+                {
+                    "userID": this.userID,
+                    "time": this.timestamp,
+                    "message": this.message,
+                    "nickName": this.nickName,
+                    "avatar": this.avatar,
+                    "counter": this.counter,
+                    "action": this.action,
+                    "muted": this.muted,
+                    "index": this.index
+                }
+
+            }).then((res) => {
                 console.log("debug : ---Win reply---")
                 console.log(res)
             }).catch((error) => {
@@ -52,10 +53,10 @@ window.onload = function () {
             console.log(aNode)
             this.userID = aNode.dataset.userID
             this.nickName = aNode.querySelector('h4 > span.topic').title
-            this.timestamp = new Date()
+            this.timestamp = Date.now()
             this.avatar = aNode.querySelector('img.Avatar-image').src
-            this.message = aNode.querySelector('div.message > p').innerText
-            this.counter = aNode.querySelector('span.circle > p').innerText
+            this.message = aNode.querySelector('div.message > p').innerHTML.replace(/<[^<>]*>/gm, '')
+            this.counter = parseInt(aNode.querySelector('span.circle > p').innerText)
             this.index = Array.prototype.indexOf.call(
                 aNode.closest('div.recents.scrollViewport-inner').querySelectorAll(
                     'swx-recent-item.list-selectable'),
@@ -76,7 +77,7 @@ window.onload = function () {
     }
 
     function uniqueStr() {
-        return Math.random().toString().slice(2) + Date.now().toString()
+        return Math.random().toString().slice(2, 5) + Date.now().toString()
     }
 
     let observer = new MutationObserver(function (list, obs) {
