@@ -126,7 +126,7 @@ window.onload = function () {
             // 元素被删除了
             return {
                 "userID": userID,
-                "time": time,
+                "time": time.getTime(),
                 "message": "",
                 "nickName": nickName,
                 "avatar": avatar,
