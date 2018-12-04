@@ -27,7 +27,20 @@ window.onload = function () {
          * 发送消息到Win
          */
         send() {
-            core.WebToHost({ "MSG-new": this }).then((res) => {
+            core.WebToHost({ "Convo-new": 
+            {
+                "userID": this.userID,
+                "time": this.timestamp,
+                "message": this.message,
+                "nickName": this.nickName,
+                "avatar": this.avatar,
+                "counter": this.counter,
+                "action": this.action,
+                "muted": this.muted,
+                "index": this.index
+            }
+        
+        }).then((res) => {
                 console.log("debug : ---Win reply---")
                 console.log(res)
             }).catch((error) => {
