@@ -129,7 +129,7 @@ $(document).ready(function () {
                 <div class="m-0 td-text">'+ convo.message + '</div>\
             </div>\
         <div class="col-auto pl-0 col-timestamp justify-content-end">\
-            '+ convo.time.toLocaleTimeString().replace(/:\d\d(?= )/gm, '') + '\
+            '+ convo.time.toTimeString().slice(0, 5) + '\
             </div>\
         </div > '
     }
@@ -159,7 +159,7 @@ $(document).ready(function () {
                             $(objConvo).find("div.td-text").text(convo.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").text(convo.time.toLocaleTimeString().replace(/:\d\d(?= )/gm, ''))
+                            $(objConvo).find("div.col-timestamp").text(convo.time.toTimeString().slice(0, 5))
                             break;
                         default:
                             break;
