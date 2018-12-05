@@ -105,11 +105,47 @@ window.onload = function () {
                 time.getFullYear(),
                 time.getMonth(),
                 time.getDate(),
-                parseInt(timeStr.substr(0, timeStr.indexOf(':'))) + 1,
+                parseInt(timeStr.substr(0, timeStr.indexOf(':'))),
                 parseInt(timeStr.substr(timeStr.indexOf(':') + 1)))
 
         }
-        let content = $(obj).find("div.info p.msg span.ng-binding[ng-bind-html='chatContact.MMDigest']").text()
+
+        // 筛选消息内容
+        let contentObj = $(obj).find("div.info p.msg span.ng-binding[ng-bind-html='chatContact.MMDigest']")
+        // console.log(contentObj)
+        if ($(contentObj).length == 0) {
+            content = ''
+        } else {
+            content = ""
+            $(contentObj).contents().toArray().forEach((c, i) => {
+                // 将内容进行切割, 判断是否为img
+
+                // console.log(c, $(c).prop('nodeName'))
+                let nodeName = $(c).prop('nodeName')
+                if (nodeName == "IMG") {
+                    // 对左侧栏筛选字符表情
+                    if ($(c).hasClass("qqemoji")) {
+                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        let strEmoji = $(c).attr("text")
+                        console.log(strEmoji, strEmoji.substr(0, strEmoji.length - 4))
+                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
+                        content = content + strEmoji
+                    } else if ($(c).hasClass("emoji")) {
+                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        content = content + "[emoji]"
+                    } else {
+                        content = content + "[image]"
+                    }
+                }
+
+                // 链接文字
+                content = content + $(c).text()
+
+
+            })
+
+        }
+
         let nickName = $(obj).find("div.info h3.nickname span").text()
         let userID = $(obj).attr("data-username")
         let host =
@@ -119,14 +155,14 @@ window.onload = function () {
 
 
         let avatar = host + $(obj).find("div.avatar img").attr("src")
-        
+
 
 
         if ($("div[data-username='" + userID + "']").length == 0) {
             // 元素被删除了
             return {
                 "userID": userID,
-                "time": time,
+                "time": time.getTime(),
                 "message": "",
                 "nickName": nickName,
                 "avatar": avatar,
@@ -179,7 +215,7 @@ window.onload = function () {
 
             return {
                 "userID": userID,
-                "time": time,
+                "time": time.getTime(),
                 "message": content,
                 "nickName": nickName,
                 "avatar": avatar,
@@ -217,31 +253,32 @@ window.onload = function () {
         let arrayObjUser = new Array();
         let arrayContent = new Array();
         records.map(function (record) {
-            // console.log("debug : ===========chat slide============")
-            // console.log("debug : ", "obs type : ", record.type)
-            // console.log("debug : ", "obs target : ") 
-            // console.log($(record.target))
-            // console.log("debug : ", "remove : ", $(record.removedNodes).length)
-            // console.log($(record.removedNodes))
+            console.log("debug : ===========chat slide============")
+            console.log("debug : ", "obs type : ", record.type)
+            console.log("debug : ", "obs target : ")
+            console.log($(record.target))
+            console.log("debug : ", "remove : ", $(record.removedNodes).length)
+            console.log($(record.removedNodes))
 
-            if ($(record.removedNodes).length == 0) {
-                // console.log("debug : ", "parent target : ") 
-                let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
-                // console.log( obj  )    
-                if (obj.length > 0) {
-                    let existed = false
-                    arrayObjUser.forEach((currentValue, index) => {
 
-                        if (!existed && $(currentValue).is(obj)) {
-                            existed = true
-                        }
+            let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
+            // console.log( obj  )    
+            if (obj.length > 0) {
+                let existed = false
+                arrayObjUser.forEach((currentValue, index) => {
 
-                    })
-                    if (!existed) {
-                        arrayObjUser.push(obj)
+                    if (!existed && $(currentValue).is(obj)) {
+                        existed = true
                     }
+
+                })
+                if (!existed) {
+                    arrayObjUser.push(obj)
                 }
-            } else {
+            }
+
+
+            if ($(record.removedNodes).length != 0) {
                 $(record.removedNodes).toArray().forEach((currentValue, index) => {
                     $(currentValue).children(".chat_item.slide-left.ng-scope").toArray().forEach((obj, idx) => {
                         let existed = false
@@ -261,8 +298,8 @@ window.onload = function () {
 
         })
 
-        // console.log("debug : ", "------array:user-----")
-        // console.log(arrayObjUser)
+        console.log("debug : ", "------array:user-----")
+        console.log(arrayObjUser)
 
         // console.log("debug : ", "------array:MSG-----")
         arrayObjUser.forEach((currentValue, index) => {
