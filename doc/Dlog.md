@@ -23,6 +23,15 @@ const { net } = require('electron').remote
 
 ## 日志
 
+## 2018Dec04: BS
+- 实现插入convo, 并去掉重复
+    - convo html模板添加`app-name`, 方便查找
+    - counter添加display判断, 在counter为0时去掉小红点
+- 实现对change动作的处理
+- bug :
+    skype对于emoji反应迟缓一个消息.
+    例如连续发送emoji表情, 前台message只能收到前一个convo.message. 
+    
 ### 2018Dec03-04：L
 - skype 传到前台的 timestamp 改为 Date.now() 即一个 number 型，前台用 new Date(time) 即可转回 date 型
     - index.js r11-r13

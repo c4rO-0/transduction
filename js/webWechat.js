@@ -105,7 +105,7 @@ window.onload = function () {
                 time.getFullYear(),
                 time.getMonth(),
                 time.getDate(),
-                parseInt(timeStr.substr(0, timeStr.indexOf(':'))) + 1,
+                parseInt(timeStr.substr(0, timeStr.indexOf(':'))),
                 parseInt(timeStr.substr(timeStr.indexOf(':') + 1)))
 
         }

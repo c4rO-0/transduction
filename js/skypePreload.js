@@ -71,7 +71,7 @@ window.onload = function () {
             } else if (property === 'avatar') {
                 this.avatar = aNode.querySelector('img.Avatar-image').src
             } else if (property === 'message') {
-                this.message = aNode.querySelector('div.message > p').innerText
+                this.message = aNode.querySelector('div.message > p').innerHTML.replace(/<[^<>]*>/gm, '')
             }
         }
     }
@@ -108,6 +108,22 @@ window.onload = function () {
                 convo = undefined
             }
 
+            //检查小圈圈の消失
+            if (list[i].type === 'childList' &&
+                list[i].target.matches('div.text') &&
+                list[i].removedNodes.length !== 0 &&
+                list[i].removedNodes[0].nodeType === 1 &&
+                list[i].removedNodes[0].matches('div.unseenNotifications') &&
+                list[i].removedNodes[0].children.length === 1) {
+                console.log('hit at: ' + i + ' 小圈圈の消失')
+                convo = new conversation('c')
+                convo.extract(list[i].target.closest('a'), 'userID')
+                convo.counter = 0
+                convo.print()
+                convo.send()
+                convo = undefined
+            }
+
             //检查src
             if (list[i].type === 'attributes' &&
                 list[i].attributeName === 'src' &&
@@ -123,8 +139,7 @@ window.onload = function () {
             //检查 p.small
             if (list[i].type === 'childList' &&
                 list[i].target.matches('p.small') &&
-                list[i].addedNodes.length !== 0 &&
-                list[i].addedNodes[0].nodeType === 3) {
+                list[i].addedNodes.length !== 0) {
                 console.log('hit at: ' + i + ' 检查消息更新')
                 let convo = new conversation('c')
                 convo.extract(list[i].target.closest('a'), 'message')
@@ -144,7 +159,6 @@ window.onload = function () {
                 convo = undefined
             }
         }
-
     })
     //观察左边
     observer.observe(document.getElementById("timelineComponent"),
