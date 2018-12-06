@@ -172,6 +172,16 @@ window.onload = function () {
     core.WebReply((key, arg) => {
         return new Promise((resolve, reject) => {
             //  收到消息进行处理
+            if (key == 'queryDialog') {
+                // 查询Dialog
+                resolve("copy the query. Please wait...")
+                let userID =  arg.userID
+                console.log("debug : userID : ", userID)
+
+                // core.WebToHost
+            }else{
+                reject("unknown key : ", key)
+            }
         })
     })
 

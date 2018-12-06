@@ -344,14 +344,14 @@ window.onload = function () {
             characterData: true
         });
 
-
+        // 接收上层消息
         core.WebReply((key, arg) => {
             return new Promise((resolve, reject) => {
-                if (key == 'get') {
+                if (key == 'queryDialog') {
 
                     console.log("debug : ", "---获取用户聊天记录----")
                     // 下面开始模拟点击
-                    let ID = arg
+                    let ID = arg.userID
 
                     if ($("div.ng-scope div [data-username='" + ID + "']").length == 0) reject("user not existed")
 
@@ -362,6 +362,7 @@ window.onload = function () {
                     setTimeout(() => {
                         // 获取内容
                         let objSlide = chatContent[ID]
+                        let MSGList = new Array()
                         for (let indexMSG in objSlide) {
                             console.log("debug : ", indexMSG, "---->")
                             // console.log(objSlide[indexMSG])
@@ -389,13 +390,17 @@ window.onload = function () {
 
                             }
 
+                            MSGList.push(MSG)
 
-                            core.WebToHost({ "MSG-Log": MSG }).then((res) => {
-                                console.log(res)
-                            }).catch((error) => {
-                                throw error
-                            });
+
                         }
+
+
+                        core.WebToHost({ "Dialog": MSGList }).then((res) => {
+                            console.log(res)
+                        }).catch((error) => {
+                            throw error
+                        });                        
                     }, 100);
                 } else {
                     reject('unknown key')
