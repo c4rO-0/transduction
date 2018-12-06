@@ -266,13 +266,14 @@ document.body.appendChild(el);}")
                     ipcRender.removeListener('msg-ipc-asy-main-reply-' + uStr, handleMsg)
                     
 
-                }, 10000);
+                }, 5000);
             } else {
                 reject("sendToMain : two many msg")
             }
         }),
         new Promise((resolve, reject) => {
-            setTimeout(() => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
                 reject("sendToMain : time out")
             }, 5000);
         })])
@@ -379,7 +380,8 @@ document.body.appendChild(el);}")
 
         }),
         new Promise((resolve, reject) => {
-            setTimeout(() => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
                 reject("sendToWin : time out")
             }, 5000);
         })])
@@ -485,7 +487,8 @@ document.body.appendChild(el);}")
 
         }),
         new Promise((resolve, reject) => {
-            setTimeout(() => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
                 reject("HostSendToWeb : time out")
             }, 5000);
         })])
@@ -584,7 +587,8 @@ document.body.appendChild(el);}")
 
         }),
         new Promise((resolve, reject) => {
-            setTimeout(() => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
                 reject("WebToHost : time out")
             }, 5000);
         })])
