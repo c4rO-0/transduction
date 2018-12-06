@@ -230,7 +230,7 @@ document.body.appendChild(el);}")
     sendToMain: function (msg) {
         // console.log(UniqueStr())
 
-        return new Promise((resolve, reject) => {
+        return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
                 reject("sendToMain : no msg")
             } else if (Object.keys(msg).length == 1) {
@@ -264,14 +264,18 @@ document.body.appendChild(el);}")
                 setTimeout(() => {
 
                     ipcRender.removeListener('msg-ipc-asy-main-reply-' + uStr, handleMsg)
-                    reject("sendToMain : time out 10000")
+                    
 
                 }, 10000);
             } else {
                 reject("sendToMain : two many msg")
             }
-
-        })
+        }),
+        new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject("sendToMain : time out")
+            }, 5000);
+        })])
     },
     /**
      * 返回一个以时间作为种子的唯一字符串.
@@ -337,7 +341,7 @@ document.body.appendChild(el);}")
      */
     sendToWin: function (winID, msg) {
 
-        return new Promise((resolve, reject) => {
+        return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
                 reject("sendToWin : no msg")
             } else if (Object.keys(msg).length == 1) {
@@ -367,14 +371,18 @@ document.body.appendChild(el);}")
                 setTimeout(() => {
 
                     ipcRender.removeListener('msg-ipc-asy-win-reply-' + uStr, handleMsg)
-                    reject("sendToWin : time out")
-
-                }, 10000);
+                    
+                }, 5000);
             } else {
                 reject("sendToWin : two many msg")
             }
 
-        })
+        }),
+        new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject("sendToWin : time out")
+            }, 5000);
+        })])
     },
     /**
      * window 处理sendToWin函数发来的消息.
@@ -434,7 +442,7 @@ document.body.appendChild(el);}")
      */
     HostSendToWeb: function (webviewID, msg) {
 
-        return new Promise((resolve, reject) => {
+        return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
                 reject("HostSendToWeb no msg")
             } else if (Object.keys(msg).length == 1) {
@@ -468,14 +476,19 @@ document.body.appendChild(el);}")
                 } else {
                     web.send('msg-ipc-asy-from-host-to-web', uStr, msg)
                 }
+
                 web.addEventListener('ipc-message', handleMsg, { once: true })
                 setTimeout(() => {
                     web.removeEventListener('ipc-message', handleMsg)
-                    reject("HostSendToWeb : time out")
-                }, 5000);
+                }, 5000);                            
             }
 
-        })
+        }),
+        new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject("HostSendToWeb : time out")
+            }, 5000);
+        })])
     },
     /**
      * webview 处理HostSendToWeb函数发来的消息.
@@ -533,7 +546,7 @@ document.body.appendChild(el);}")
      */
     WebToHost: function (msg) {
 
-        return new Promise((resolve, reject) => {
+        return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
                 reject("WebToHost : no msg")
             } else if (Object.keys(msg).length == 1) {
@@ -563,14 +576,18 @@ document.body.appendChild(el);}")
                 setTimeout(() => {
 
                     ipcRender.removeListener('msg-ipc-asy-win-reply-web-' + uStr, handleMsg)
-                    reject("WebToHost : time out")
 
                 }, 5000);
             } else {
                 reject("WebToHost : two many msg")
             }
 
-        })
+        }),
+        new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject("WebToHost : time out")
+            }, 5000);
+        })])
     },
     /**
      * window 处理WebToHost函数发来的消息.
