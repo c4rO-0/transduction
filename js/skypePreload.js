@@ -108,6 +108,22 @@ window.onload = function () {
                 convo = undefined
             }
 
+            //检查小圈圈の消失
+            if (list[i].type === 'childList' &&
+                list[i].target.matches('div.text') &&
+                list[i].removedNodes.length !== 0 &&
+                list[i].removedNodes[0].nodeType === 1 &&
+                list[i].removedNodes[0].matches('div.unseenNotifications') &&
+                list[i].removedNodes[0].children.length === 1) {
+                console.log('hit at: ' + i + ' 小圈圈の消失')
+                convo = new conversation('c')
+                convo.extract(list[i].target.closest('a'), 'userID')
+                convo.counter = 0
+                convo.print()
+                convo.send()
+                convo = undefined
+            }
+
             //检查src
             if (list[i].type === 'attributes' &&
                 list[i].attributeName === 'src' &&
@@ -143,7 +159,6 @@ window.onload = function () {
                 convo = undefined
             }
         }
-
     })
     //观察左边
     observer.observe(document.getElementById("timelineComponent"),
