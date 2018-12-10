@@ -23,6 +23,15 @@ const { net } = require('electron').remote
 
 ## 日志
 
+## 2018Dec06: BS
+- 实现点击左侧convo获取dialog
+- core中, 超时用promise.race功能实现
+- 存在bug, 需要进一步调查
+在程序运行之后第一次点击convo之后, 后台会弹出 
+``` javascript
+index.html:1 Uncaught (in promise) HostSendToWeb : time out
+```
+
 ## 2018Dec04: BS
 - 实现插入convo, 并去掉重复
     - convo html模板添加`app-name`, 方便查找
