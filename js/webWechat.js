@@ -120,11 +120,11 @@ window.onload = function () {
             let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSGID + "'] img.msg-img").attr("src")
             // 置换内容
             content = imgUrl
-        } else if ( type == wechatMSGType.MSGTYPE_MICROVIDEO) {
+        } else if (type == wechatMSGType.MSGTYPE_MICROVIDEO) {
             // 小视频
             let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSGID + "'] img.msg-img").attr("src")
             // 置换内容
-            content = imgUrl            
+            content = imgUrl
         }
         else {
 
@@ -233,8 +233,11 @@ window.onload = function () {
         } else {
             let counter = 0
             let muted = false
-            // let action = 'c'
-            let action = 'a' //简单粗暴, 全部变成a
+            // 简单粗暴, 默认为add
+            // 微信初始会弹出最近联系人, 需要滤掉该部分convo, 将action设为c
+            // action为c: 使得没有消息的联系人不会在transduction上创建
+            // 特殊 : filehelper以及被置顶的联系人依然会被添加
+            let action = 'a'
             if ($(obj).find("div.ext p.attr.ng-scope[ng-if='chatContact.isMuted()']").length > 0) {
                 // 被静音了
                 muted = true
@@ -247,7 +250,13 @@ window.onload = function () {
                     if (content == '') {
                         // 初始化
                         counter = 0
-                        action = 'a'
+                        if (userID == "filehelper" || $(obj).hasClass("top")) {
+                            action = 'a'
+                        } else {
+                            action = 'c'
+                        }
+
+
                     } else {
                         // 一条未读
                         counter = 1
@@ -263,7 +272,12 @@ window.onload = function () {
                 }
                 if (content == '') {
                     // 初始化
-                    action = 'a'
+                    counter = 0
+                    if (userID == "filehelper" || $(obj).hasClass("top")) {
+                        action = 'a'
+                    } else {
+                        action = 'c'
+                    }
                 }
 
             }
@@ -434,7 +448,7 @@ window.onload = function () {
                             console.log(res)
                         }).catch((error) => {
                             throw error
-                        });                        
+                        });
                     }, 100);
                 } else {
                     reject('unknown key')
