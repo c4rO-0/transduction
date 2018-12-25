@@ -57,18 +57,27 @@ window.onload = function () {
     function grepMSG(contacts, MSG) {
 
         let fromUserName = MSG["FromUserName"]
-        let toUserName = MSG["ToUserName"]
-        let time = MSG["MMDigestTime"]
+        // let toUserName = MSG["ToUserName"]
+        let timeStr = MSG["MMDigestTime"]
+        let time = new Date() // Now
+        time = new Date(
+            time.getFullYear(),
+            time.getMonth(),
+            time.getDate(),
+            parseInt(timeStr.substr(0, timeStr.indexOf(':'))),
+            parseInt(timeStr.substr(timeStr.indexOf(':') + 1)))
+
+
+
         let remarkName = ''
-        let nickName = ''
         if (contacts[fromUserName] != undefined) {
             remarkName = (contacts[fromUserName])["RemarkName"]
             nickName = (contacts[fromUserName])["NickName"]
         }
         // 获取有几条未读消息
-        let strUnread = $("div.ng-scope div [data-username='" + fromUserName + "'] i").text()
-        let unread = strUnread == '' ? 0 : parseInt(strUnread)
-        let type = MSG["MsgType"]
+        // let strUnread = $("div.ng-scope div [data-username='" + fromUserName + "'] i").text()
+        // let unread = strUnread == '' ? 0 : parseInt(strUnread)
+        let type = ""
 
         let contentObj = jQuery.parseHTML(MSG["MMDigest"])
         let content = ""
@@ -101,44 +110,45 @@ window.onload = function () {
 
         let MSGID = MSG["MsgId"]
 
-
-        if (type == wechatMSGType.MSGTYPE_TEXT) {
+        let MSGObj = $("div[data-cm*='" + MSGID + "']")
+        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT) {
             // 正常输出
+            type = 'text'
 
-            // console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
-            // console.log("type :", MSG.type)
-            // console.log("Name :", MSG.nickName, MSG.remarkName)
-            // console.log("type :", MSG.type)
-            // console.log("content :", MSG.content)
-            // console.log("time :", MSG.time)
-            // console.log("unread :", MSG.unread)
+            // 判断是否为url
+            if ($(MSGObj).find("div.plain pre a").length > 0 && $(MSGObj).find("div.plain pre").contents().toArray().length == 1) {
+                type = "url"
+            }
 
-
-        } else if (type == wechatMSGType.MSGTYPE_IMAGE) {
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_IMAGE) {
             // 缓存图片
             // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
-            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSGID + "'] img.msg-img").attr("src")
+            type = 'img'
+            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
             // 置换内容
             content = imgUrl
-        } else if (type == wechatMSGType.MSGTYPE_MICROVIDEO) {
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
+            type = 'img'
             // 小视频
-            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSGID + "'] img.msg-img").attr("src")
+            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
             // 置换内容
             content = imgUrl
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP) {
+            // 文件
+            type = 'file'
+            let fileName = $(MSGObj).find("div.attach p[ng-bind*='message.FileName']").text()
+            let fileSize = $(MSGObj).find("div.attach span[ng-bind*='message.MMAppMsgFileSize']").text()
+            content = fileName
         }
         else {
 
         }
 
-
+        console.log(remarkName, MSGID, type, content)
         return {
-            "fromUserName": fromUserName,
-            "toUserName": toUserName,
+            "from": remarkName==''?nickName:remarkName,
             "MSGID": MSGID,
-            "time": time,
-            "remarkName": remarkName,
-            "nickName": nickName,
-            "unread": unread,
+            "time": time.getTime(),
             "type": type,
             "content": content
         }
