@@ -135,7 +135,7 @@ window.onload = function () {
             content = imgUrl
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP) {
             // 文件
-            type = 'file'
+            type = 'text'
             let fileName = $(MSGObj).find("div.attach p[ng-bind*='message.FileName']").text()
             let fileSize = $(MSGObj).find("div.attach span[ng-bind*='message.MMAppMsgFileSize']").text()
             content = fileName
@@ -147,7 +147,7 @@ window.onload = function () {
         console.log(remarkName, MSGID, type, content)
         return {
             "from": remarkName==''?nickName:remarkName,
-            "MSGID": MSGID,
+            "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
             "content": content
