@@ -76,6 +76,50 @@ window.onload = function () {
         }
     }
 
+    class chatLog {
+        constructor(type, msgID, from, time, message) {
+            this.type = type
+            this.msgID = msgID
+            this.from = from
+            this.time = time
+            this.message = message
+        }
+        extractAll(aNode) {
+            // 各种类型的信息应该都在div.content里，正常是p，图片是p.PictureSharing，
+            // 联系人是<span>+<div.contactslist>，文件是p.FileTransfer.扩展名
+            // 所以正确的逻辑应该是寻找div.content然后判断内部内容
+            // 来自对方的消息 swx-message.their 自己的消息 swx-message.me
+            // url是 div.messageTextWrapper>p.urlPreviewText>a
+            this.msgID = aNode.dataset.id
+            this.time = parseInt(aNode.dataset.id)
+            if (aNode.classList.contains('their')) {
+                this.from = aNode.querySelector('swx-name').innerHTML.replace(/<[^<>]*>/gm, '').trim()
+            } else {
+                this.from = undefined
+            }
+            if (aNode.classList.contains('picture') &&
+                aNode.querySelector('div.content > p.PictureSharing > a')) {
+                console.log('found img')
+                this.type = 'img'
+                this.message = aNode.querySelector('div.content > p.PictureSharing > a').href
+            } else if (aNode.classList.contains('urlPreview') &&
+                aNode.querySelector('div.content p.urlPreviewText > a')) {
+                console.log('found url')
+                this.type = 'url'
+                this.message = aNode.querySelector('div.content p.urlPreviewText > a').href
+            } else if (aNode.classList.contains('text') &&
+                aNode.querySelector('div.content > p')) {
+                console.log('found text')
+                this.type = 'text'
+                this.message = aNode.querySelector('div.content > p').innerHTML.replace(/<[^<>]*>/gm, '')
+            } else {
+                console.log('found unknown')
+                this.type = 'unknown'
+                this.message = aNode.querySelector('div.content').innerHTML.replace(/<!--[\s\S]*?-->/gm, '').replace(/<[^<>]*>/gm, '').trim()
+            }
+        }
+    }
+
     function uniqueStr() {
         return Math.random().toString().slice(2, 5) + Date.now().toString()
     }
@@ -175,11 +219,24 @@ window.onload = function () {
             if (key == 'queryDialog') {
                 // 查询Dialog
                 resolve("copy the query. Please wait...")
-                let userID =  arg.userID
+                let userID = arg.userID
                 console.log("debug : userID : ", userID)
-
+                document.querySelector('[data-user-i-d="' + userID + '"]').click()
+                console.log(document.querySelectorAll('swx-message.message'))
+                let msglog = []
+                document.querySelectorAll('swx-message.message').forEach((item, i) => {
+                    msglog[i] = new chatLog()
+                    msglog[i].extractAll(item)
+                })
+                console.log(msglog)
+                core.WebToHost({ 'Dialog': msglog }).then((res) => {
+                    console.log(res)
+                }).catch((error) => {
+                    throw error
+                })
+                msglog = undefined
                 // core.WebToHost
-            }else{
+            } else {
                 reject("unknown key : ", key)
             }
         })
