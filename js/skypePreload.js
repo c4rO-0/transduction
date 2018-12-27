@@ -92,7 +92,8 @@ window.onload = function () {
             // url是 div.messageTextWrapper>p.urlPreviewText>a
             this.msgID = aNode.dataset.id
             this.time = parseInt(aNode.dataset.id)
-            if (aNode.classList.contains('their')) {
+            if (aNode.classList.contains('their') &&
+                aNode.querySelector('swx-name')) {
                 this.from = aNode.querySelector('swx-name').innerHTML.replace(/<[^<>]*>/gm, '').trim()
             } else {
                 this.from = undefined
