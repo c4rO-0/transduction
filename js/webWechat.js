@@ -58,14 +58,7 @@ window.onload = function () {
 
         let fromUserName = MSG["FromUserName"]
         // let toUserName = MSG["ToUserName"]
-        let timeStr = MSG["MMDigestTime"]
-        let time = new Date() // Now
-        time = new Date(
-            time.getFullYear(),
-            time.getMonth(),
-            time.getDate(),
-            parseInt(timeStr.substr(0, timeStr.indexOf(':'))),
-            parseInt(timeStr.substr(timeStr.indexOf(':') + 1)))
+        let time = new Date(MSG["MMDisplayTime"]*1000)
 
 
 
@@ -144,7 +137,7 @@ window.onload = function () {
 
         }
 
-        console.log(remarkName, MSGID, type, content)
+        // console.log(remarkName, MSGID, type, content, time)
         return {
             "from": remarkName==''?nickName:remarkName,
             "msgID": MSGID,
@@ -166,18 +159,7 @@ window.onload = function () {
     function grepNewMSG(obj) {
 
 
-        let timeStr = $(obj).find("div.ext p.attr.ng-binding").text()
-        let time = new Date() // Now
-        if (timeStr != "") {
 
-            time = new Date(
-                time.getFullYear(),
-                time.getMonth(),
-                time.getDate(),
-                parseInt(timeStr.substr(0, timeStr.indexOf(':'))),
-                parseInt(timeStr.substr(timeStr.indexOf(':') + 1)))
-
-        }
 
         // 筛选消息内容
         let contentObj = $(obj).find("div.info p.msg span.ng-binding[ng-bind-html='chatContact.MMDigest']")
@@ -217,6 +199,14 @@ window.onload = function () {
 
         let nickName = $(obj).find("div.info h3.nickname span").text()
         let userID = $(obj).attr("data-username")
+        
+
+        let time = new Date() // Now
+        let chatObj = _chatContent[userID]
+        if(chatObj.length > 0) { // last MSG
+            time = new Date((chatObj[chatObj.length-1])["MMDisplayTime"]*1000) 
+        }
+     
         let host =
             window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
                 window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
