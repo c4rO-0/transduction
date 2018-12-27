@@ -139,7 +139,7 @@ window.onload = function () {
 
         // console.log(remarkName, MSGID, type, content, time)
         return {
-            "from": remarkName==''?nickName:remarkName,
+            "from": MSGObj.hasClass("right")? undefined : (remarkName==''?nickName:remarkName),
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
