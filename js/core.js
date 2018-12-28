@@ -435,14 +435,14 @@ document.body.appendChild(el);}")
     },
     /**
      * 窗口向该窗口下某个webview发送消息
-     * @param {String} winID 
-     * 要发送的窗口ID
+     * @param {String} webSelector
+     * webview的jq selecor 
      * @param {Object} msg 
      * 要发送的信息, object.length必须为1
      * @returns {Promise} 
      * 对方通过调用WebReply返回的消息
      */
-    HostSendToWeb: function (webviewID, msg) {
+    HostSendToWeb: function (webSelector, msg) {
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -474,9 +474,10 @@ document.body.appendChild(el);}")
 
                 let uStr = UniqueStr()
 
-                let web = document.getElementById(webviewID);
+                // let web = document.getElementById(webviewID);
+                let web = $(webSelector).get(0);
                 if (web == undefined) {
-                    reject("HostSendToWeb undefined webviewID")
+                    reject("HostSendToWeb undefined webSelector")
                 } else {
                     web.send('msg-ipc-asy-from-host-to-web', uStr, msg)
                 }
@@ -599,8 +600,8 @@ document.body.appendChild(el);}")
      * window 处理WebToHost函数发来的消息.
      * 该函数只负责给收到的信息进行分类和将处理结果返回给发送者.
      * 具体对消息进行响应的是fcnResponse
-     * @param {String} webviewID
-     * 响应具体的webview ID
+     * @param {String} webSelector
+     * webview jq selector
      * @param {Function} fcnResponse 
      * 实际处理的处理函数.
      * @returns {null}
@@ -612,8 +613,9 @@ document.body.appendChild(el);}")
      * 实际要传递的内容
      * return Promise
      */
-    WinReplyWeb: function (webviewID, fcnResponse) {
-        let web = document.getElementById(webviewID);
+    WinReplyWeb: function (webSelector, fcnResponse) {
+        // let web = document.getElementById(webviewID);
+        let web = $(webSelector).get(0);
         web.addEventListener('ipc-message', (event) => {
             console.log("webview-message-listen")
             // console.log(event)
