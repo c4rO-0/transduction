@@ -207,7 +207,7 @@ $(document).ready(function () {
     function respFuncWinReplyWeb(webTag, key, Obj) {
 
 
-        return new Promise((resolve, reject) => {
+        return Promise.race([new Promise((resolve, reject) => {
 
 
             console.log("debug : ", "----------------------")
@@ -250,12 +250,17 @@ $(document).ready(function () {
 
                 resolve("copy that")
             }
+            // }else if(key == 'focus'){
+            //     $("#"+)
+            // }
 
-            setTimeout(() => {
-                reject("time out")
-            }, 1000);
-
-        })
+        }),
+        new Promise((resolve, reject) => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
+                reject("respFuncWinReplyWeb : time out")
+            }, 5000);
+        })])
 
     }
 
@@ -299,7 +304,7 @@ $(document).ready(function () {
             console.log("userID : ", userID) 
         }else{
             
-            // console.log("debug : " + webTag + " click.")
+            console.log("debug : " + webTag2ID(webTag) + " click.")
             core.HostSendToWeb(webTag2ID(webTag), {"queryDialog":{"userID":userID}}).then((res) => {
                 console.log("queryDialog : webReply : ", res)
             }).catch((error) => {
