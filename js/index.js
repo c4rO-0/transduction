@@ -312,11 +312,13 @@ $(document).ready(function () {
         }else{
             
             console.log("debug : " + webTag2ID(webTag) + " click.")
+            $("#"+webTag2ID(webTag)).focus()
             core.HostSendToWeb(webTag2ID(webTag), {"queryDialog":{"userID":userID}}).then((res) => {
                 console.log("queryDialog : webReply : ", res)
             }).catch((error) => {
                 throw error
             })
+            
         }
     }); 
 
