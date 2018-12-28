@@ -69,8 +69,67 @@ window.onload = function () {
         let strUnread = $("div.ng-scope div [data-username='" + fromUserName + "'] i").text()
         let unread = strUnread == '' ? 0 : parseInt(strUnread)
         let type = MSG["MsgType"]
-        let content = MSG["MMDigest"]
+
+        let contentObj = jQuery.parseHTML(MSG["MMDigest"])
+        let content = ""
+        // 对content进行处理, 目前只发现emoji在里面
+        contentObj.forEach((c, i) => {
+            // 将内容进行切割, 判断是否为img emoji进行处理
+
+            let nodeName = $(c).prop('nodeName')
+            if (nodeName == "IMG") {
+                // 对左侧栏筛选字符表情
+                if ($(c).hasClass("qqemoji")) {
+                    // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                    let strEmoji = $(c).attr("text")
+                    console.log(strEmoji, strEmoji.substr(0, strEmoji.length - 4))
+                    strEmoji = strEmoji.substr(0, strEmoji.length - 4)
+                    content = content + strEmoji
+                } else if ($(c).hasClass("emoji")) {
+                    // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                    content = content + "[emoji]"
+                } else {
+                    content = content + "[image]"
+                }
+            }
+
+            // 链接文字
+            content = content + $(c).text()
+
+
+        })
+
         let MSGID = MSG["MsgId"]
+
+
+        if (type == wechatMSGType.MSGTYPE_TEXT) {
+            // 正常输出
+
+            // console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
+            // console.log("type :", MSG.type)
+            // console.log("Name :", MSG.nickName, MSG.remarkName)
+            // console.log("type :", MSG.type)
+            // console.log("content :", MSG.content)
+            // console.log("time :", MSG.time)
+            // console.log("unread :", MSG.unread)
+
+
+        } else if (type == wechatMSGType.MSGTYPE_IMAGE) {
+            // 缓存图片
+            // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
+            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSGID + "'] img.msg-img").attr("src")
+            // 置换内容
+            content = imgUrl
+        } else if (type == wechatMSGType.MSGTYPE_MICROVIDEO) {
+            // 小视频
+            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSGID + "'] img.msg-img").attr("src")
+            // 置换内容
+            content = imgUrl
+        }
+        else {
+
+        }
+
 
         return {
             "fromUserName": fromUserName,
@@ -174,8 +233,11 @@ window.onload = function () {
         } else {
             let counter = 0
             let muted = false
-            // let action = 'c'
-            let action = 'a' //简单粗暴, 全部变成a
+            // 简单粗暴, 默认为add
+            // 微信初始会弹出最近联系人, 需要滤掉该部分convo, 将action设为c
+            // action为c: 使得没有消息的联系人不会在transduction上创建
+            // 特殊 : filehelper以及被置顶的联系人依然会被添加
+            let action = 'a'
             if ($(obj).find("div.ext p.attr.ng-scope[ng-if='chatContact.isMuted()']").length > 0) {
                 // 被静音了
                 muted = true
@@ -188,7 +250,13 @@ window.onload = function () {
                     if (content == '') {
                         // 初始化
                         counter = 0
-                        action = 'a'
+                        if (userID == "filehelper" || $(obj).hasClass("top")) {
+                            action = 'a'
+                        } else {
+                            action = 'c'
+                        }
+
+
                     } else {
                         // 一条未读
                         counter = 1
@@ -204,7 +272,12 @@ window.onload = function () {
                 }
                 if (content == '') {
                     // 初始化
-                    action = 'a'
+                    counter = 0
+                    if (userID == "filehelper" || $(obj).hasClass("top")) {
+                        action = 'a'
+                    } else {
+                        action = 'c'
+                    }
                 }
 
             }
@@ -368,39 +441,14 @@ window.onload = function () {
                             // console.log(objSlide[indexMSG])
                             let MSG = grepMSG(contacts, objSlide[indexMSG])
 
-                            if (MSG.type == wechatMSGType.MSGTYPE_TEXT) {
-                                // 正常输出
-
-                                // console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
-                                // console.log("type :", MSG.type)
-                                // console.log("Name :", MSG.nickName, MSG.remarkName)
-                                // console.log("type :", MSG.type)
-                                // console.log("content :", MSG.content)
-                                // console.log("time :", MSG.time)
-                                // console.log("unread :", MSG.unread)
-
-
-                            } else if (MSG.type == wechatMSGType.MSGTYPE_IMAGE) {
-                                // 缓存图片
-                                // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
-                                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSG.MSGID + "'] img.msg-img").attr("src")
-                                // 置换内容
-                                MSG.content = imgUrl
-                            } else {
-
-                            }
-
                             MSGList.push(MSG)
-
-
                         }
-
 
                         core.WebToHost({ "Dialog": MSGList }).then((res) => {
                             console.log(res)
                         }).catch((error) => {
                             throw error
-                        });                        
+                        });
                     }, 100);
                 } else {
                     reject('unknown key')
