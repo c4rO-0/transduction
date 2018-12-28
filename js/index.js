@@ -209,6 +209,10 @@ $(document).ready(function () {
 
         return Promise.race([new Promise((resolve, reject) => {
 
+            if($("#"+webTag2ID(webTag)).length  == 0 ){
+                reject("respFuncWinReplyWeb : no " + webTag + "exist")
+                return
+            }
 
             console.log("debug : ", "----------------------")
             console.log("debug : ", "Convo from ", webTag)
@@ -251,15 +255,17 @@ $(document).ready(function () {
                 resolve("copy that")
             }else if(key == 'focus'){
                 $("#"+webTag2ID(webTag)).focus()
+                resolve("focus done")
             }else if(key == 'blur'){
                 $("#"+webTag2ID(webTag)).blur()
+                resolve("blur done")
             }
 
         }),
         new Promise((resolve, reject) => {
             let erTime = setTimeout(() => {
                 clearTimeout(erTime)
-                reject("respFuncWinReplyWeb : time out")
+                reject("respFuncWinReplyWeb : " + key + " time out"  )
             }, 5000);
         })])
 
