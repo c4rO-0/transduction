@@ -465,6 +465,8 @@ document.body.appendChild(el);}")
                         } else {
                             reject("HostSendToWeb : receive two many")
                         }
+
+                        web.removeEventListener('ipc-message', handleMsg)
                     }
 
 
@@ -479,7 +481,7 @@ document.body.appendChild(el);}")
                     web.send('msg-ipc-asy-from-host-to-web', uStr, msg)
                 }
 
-                web.addEventListener('ipc-message', handleMsg, { once: true })
+                web.addEventListener('ipc-message', handleMsg)
                 setTimeout(() => {
                     web.removeEventListener('ipc-message', handleMsg)
                 }, 5000);                            
