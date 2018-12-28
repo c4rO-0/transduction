@@ -249,10 +249,11 @@ $(document).ready(function () {
                 }
 
                 resolve("copy that")
+            }else if(key == 'focus'){
+                $("#"+webTag2ID(webTag)).focus()
+            }else if(key == 'blur'){
+                $("#"+webTag2ID(webTag)).blur()
             }
-            // }else if(key == 'focus'){
-            //     $("#"+)
-            // }
 
         }),
         new Promise((resolve, reject) => {
