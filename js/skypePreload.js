@@ -232,11 +232,11 @@ window.onload = function () {
                 console.log(msglog)
                 core.WebToHost({ 'Dialog': msglog }).then((res) => {
                     console.log(res)
-                    core.WebToHost({'focus':''}).then((res) =>{
-                        core.WebToHost({'blur':''})
-                    }).catch((error) =>{
-                        throw error
-                    })                    
+                    // core.WebToHost({'focus':''}).then((res) =>{
+                    //     core.WebToHost({'blur':''})
+                    // }).catch((error) =>{
+                    //     throw error
+                    // })                    
                 }).catch((error) => {
                     throw error
                 })
