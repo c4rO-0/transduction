@@ -113,6 +113,24 @@ $(document).ready(function () {
     }
 
     // ============================function===================
+    /**
+     * 将webviewTag转化为webviewID
+     * @param {String} webTag 传入Tag
+     * @returns {String} webviewID
+     */
+    function webTag2ID(webTag){
+        return "webview" + (webTag[0]).toUpperCase() + webTag.substr(1)
+    }
+    /**
+     * 
+     * @param {String} webID webview ID
+     * @returns {String} webTag
+     */
+    function webID2Tag(webID){
+        return (webID[6]).toLowerCase()+ webID.substr(7)
+    }
+
+
     function AddConvoHtml(appName, convo) {
         let displayCounter = "display: none;"
         if (convo.counter) {
@@ -189,7 +207,7 @@ $(document).ready(function () {
     function respFuncWinReplyWeb(webTag, key, Obj) {
 
 
-        return new Promise((resolve, reject) => {
+        return Promise.race([new Promise((resolve, reject) => {
 
 
             console.log("debug : ", "----------------------")
@@ -231,13 +249,19 @@ $(document).ready(function () {
                 }
 
                 resolve("copy that")
+            }else if(key == 'focus'){
+                $("#"+webTag2ID(webTag)).focus()
+            }else if(key == 'blur'){
+                $("#"+webTag2ID(webTag)).blur()
             }
 
-            setTimeout(() => {
-                reject("time out")
-            }, 1000);
-
-        })
+        }),
+        new Promise((resolve, reject) => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
+                reject("respFuncWinReplyWeb : time out")
+            }, 5000);
+        })])
 
     }
 
@@ -280,9 +304,9 @@ $(document).ready(function () {
             console.log("obj : ", this) 
             console.log("userID : ", userID) 
         }else{
-            webTag = "webview" + (webTag[0]).toUpperCase() + webTag.substr(1)
-            // console.log("debug : " + webTag + " click.")
-            core.HostSendToWeb(webTag, {"queryDialog":{"userID":userID}}).then((res) => {
+            
+            console.log("debug : " + webTag2ID(webTag) + " click.")
+            core.HostSendToWeb(webTag2ID(webTag), {"queryDialog":{"userID":userID}}).then((res) => {
                 console.log("queryDialog : webReply : ", res)
             }).catch((error) => {
                 throw error
