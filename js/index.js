@@ -20,8 +20,8 @@ function openDevtool(strID) {
     web.openDevTools();
 }
 
-function listWebviewID(){
-    $("webview").toArray().forEach((e,i) =>{
+function listWebviewID() {
+    $("webview").toArray().forEach((e, i) => {
         console.log($(e).attr('id'))
     })
 }
@@ -118,7 +118,7 @@ $(document).ready(function () {
      * @param {String} webTag 传入Tag
      * @returns {String} webviewID
      */
-    function webTag2ID(webTag){
+    function webTag2ID(webTag) {
         return "webview" + (webTag[0]).toUpperCase() + webTag.substr(1)
     }
     /**
@@ -126,8 +126,8 @@ $(document).ready(function () {
      * @param {String} webID webview ID
      * @returns {String} webTag
      */
-    function webID2Tag(webID){
-        return (webID[6]).toLowerCase()+ webID.substr(7)
+    function webID2Tag(webID) {
+        return (webID[6]).toLowerCase() + webID.substr(7)
     }
 
 
@@ -138,7 +138,10 @@ $(document).ready(function () {
         }
 
         return '\
-        <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' app-name=' + appName + '>\
+        <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + '>\
+            <div class="col-appLogo">\
+                <img src="../res/pic/'+ appName + '.png">\
+            </div>\
             <div class="col-hint">\
                 <div class="row-hint theme-'+ appName + '"></div>\
             </div>\
@@ -209,7 +212,7 @@ $(document).ready(function () {
 
         return Promise.race([new Promise((resolve, reject) => {
 
-            if($("#"+webTag2ID(webTag)).length  == 0 ){
+            if ($("#" + webTag2ID(webTag)).length == 0) {
                 reject("respFuncWinReplyWeb : no " + webTag + "exist")
                 return
             }
@@ -253,11 +256,11 @@ $(document).ready(function () {
                 }
 
                 resolve("copy that")
-            }else if(key == 'focus'){
-                $("#"+webTag2ID(webTag)).focus()
+            } else if (key == 'focus') {
+                $("#" + webTag2ID(webTag)).focus()
                 resolve("focus done")
-            }else if(key == 'blur'){
-                $("#"+webTag2ID(webTag)).blur()
+            } else if (key == 'blur') {
+                $("#" + webTag2ID(webTag)).blur()
                 resolve("blur done")
             }
 
@@ -265,7 +268,7 @@ $(document).ready(function () {
         new Promise((resolve, reject) => {
             let erTime = setTimeout(() => {
                 clearTimeout(erTime)
-                reject("respFuncWinReplyWeb : " + key + " time out"  )
+                reject("respFuncWinReplyWeb : " + key + " time out")
             }, 5000);
         })])
 
@@ -300,27 +303,27 @@ $(document).ready(function () {
     // })
 
     // 点击convo
-    $('#td-left').on('click', 'div.td-convo', function() {
+    $('#td-left').on('click', 'div.td-convo', function () {
         // 识别webtag
-        let webTag =  $(this).attr("app-name")
+        let webTag = $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
 
-        if(webTag == undefined || userID == undefined){
+        if (webTag == undefined || userID == undefined) {
             console.log("error : click obj error.")
-            console.log("obj : ", this) 
-            console.log("userID : ", userID) 
-        }else{
-            
+            console.log("obj : ", this)
+            console.log("userID : ", userID)
+        } else {
+
             console.log("debug : " + webTag2ID(webTag) + " click.")
             $("#"+webTag2ID(webTag)).focus()
-            core.HostSendToWeb(webTag2ID(webTag), {"queryDialog":{"userID":userID}}).then((res) => {
+            core.HostSendToWeb(webTag2ID(webTag), { "queryDialog": { "userID": userID } }).then((res) => {
                 console.log("queryDialog : webReply : ", res)
             }).catch((error) => {
                 throw error
             })
-            
+
         }
-    }); 
+    });
 
     console.log("toggle")
     toggleWebview()
