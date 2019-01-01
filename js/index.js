@@ -20,6 +20,12 @@ function openDevtool(strID) {
     web.openDevTools();
 }
 
+function listWebviewID(){
+    $("webview").toArray().forEach((e,i) =>{
+        console.log($(e).attr('id'))
+    })
+}
+
 $(document).ready(function () {
 
     const core = require("../js/core.js")
@@ -107,6 +113,24 @@ $(document).ready(function () {
     }
 
     // ============================function===================
+    /**
+     * 将webviewTag转化为webviewID
+     * @param {String} webTag 传入Tag
+     * @returns {String} webviewID
+     */
+    function webTag2ID(webTag){
+        return "webview" + (webTag[0]).toUpperCase() + webTag.substr(1)
+    }
+    /**
+     * 
+     * @param {String} webID webview ID
+     * @returns {String} webTag
+     */
+    function webID2Tag(webID){
+        return (webID[6]).toLowerCase()+ webID.substr(7)
+    }
+
+
     function AddConvoHtml(appName, convo) {
         let displayCounter = "display: none;"
         if (convo.counter) {
@@ -183,31 +207,23 @@ $(document).ready(function () {
     function respFuncWinReplyWeb(webTag, key, Obj) {
 
 
-        return new Promise((resolve, reject) => {
+        return Promise.race([new Promise((resolve, reject) => {
 
+            if($("#"+webTag2ID(webTag)).length  == 0 ){
+                reject("respFuncWinReplyWeb : no " + webTag + "exist")
+                return
+            }
 
             console.log("debug : ", "----------------------")
             console.log("debug : ", "Convo from ", webTag)
             // console.log(MSG)
 
-            if (key == 'MSG-Log') {
-                // 获取某个用户聊天记录
+            if (key == 'Dialog') {
+                // 收到某个用户聊天记录
+                console.log("debug : ", "==========Dialog============")
+                console.log(Obj)
 
-                // 检查消息是否已经存在
-                if ($("#insert #" + Obj.MSGID).length == 0) {
-                    console.log("debug : ", "display Convo on index")
-                    if (Obj.type == 3) {
-                        // 是图片
-                        $("#insert").append("<p id='" + Obj.MSGID + "'> " + Obj.time + "<img src='" + Obj.content + "'></img></p>")
-                    } else {
-                        $("#insert").append("<p id='" + Obj.MSGID + "'> " + Obj.time + Obj.content + "</p>")
-                    }
-
-
-                    resolve("copy that")
-                } else {
-                    resolve("existed")
-                }
+                resolve("copy that.")
             } else if (key == 'Convo-new') {
                 // 有新消息来了
 
@@ -237,13 +253,21 @@ $(document).ready(function () {
                 }
 
                 resolve("copy that")
+            }else if(key == 'focus'){
+                $("#"+webTag2ID(webTag)).focus()
+                resolve("focus done")
+            }else if(key == 'blur'){
+                $("#"+webTag2ID(webTag)).blur()
+                resolve("blur done")
             }
 
-            setTimeout(() => {
-                reject("time out")
-            }, 1000);
-
-        })
+        }),
+        new Promise((resolve, reject) => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
+                reject("respFuncWinReplyWeb : " + key + " time out"  )
+            }, 5000);
+        })])
 
     }
 
@@ -263,17 +287,41 @@ $(document).ready(function () {
     })
 
     // ===========================发送消息===========================
-    $("#wechatGet").click(() => {
-        $("#insert").empty()
-        if ($("#userID").val() != '') {
-            core.HostSendToWeb("webviewWechat", { "get": $("#userID").val() }).then((res) => {
-                console.log(res)
+    // $("#wechatGet").click(() => {
+    //     $("#insert").empty()
+    //     if ($("#userID").val() != '') {
+    //         core.HostSendToWeb("webviewWechat", { "get": $("#userID").val() }).then((res) => {
+    //             console.log(""res)
+    //         }).catch((error) => {
+    //             throw error
+    //         });
+    //     }
+
+    // })
+
+    // 点击convo
+    $('#td-left').on('click', 'div.td-convo', function() {
+        // 识别webtag
+        let webTag =  $(this).attr("app-name")
+        let userID = $(this).attr("data-user-i-d")
+
+        if(webTag == undefined || userID == undefined){
+            console.log("error : click obj error.")
+            console.log("obj : ", this) 
+            console.log("userID : ", userID) 
+        }else{
+            
+            console.log("debug : " + webTag2ID(webTag) + " click.")
+            $("#"+webTag2ID(webTag)).focus()
+            core.HostSendToWeb(webTag2ID(webTag), {"queryDialog":{"userID":userID}}).then((res) => {
+                console.log("queryDialog : webReply : ", res)
             }).catch((error) => {
                 throw error
-            });
+            })
+            
         }
+    }); 
 
-    })
     console.log("toggle")
     toggleWebview()
 })

@@ -23,6 +23,24 @@ const { net } = require('electron').remote
 
 ## 日志
 
+## 2018Dec09: BS
+对于非标准化的消息, 一律提示用户打开专有app(网页版或手机)进行查看
+index对于该消息以按钮形式呈现, 点击打开app网页版
+
+针对微信
+- 微信自己有一套emoji表情, 和国际标准不一样. 进行字符串替换
+- 微信语音无法显示, 要求用户打开微信app进行查看
+
+
+## 2018Dec06: BS
+- 实现点击左侧convo获取dialog
+- core中, 超时用promise.race功能实现
+- 存在bug, 需要进一步调查
+在程序运行之后第一次点击convo之后, 后台会弹出 
+``` javascript
+index.html:1 Uncaught (in promise) HostSendToWeb : time out
+```
+
 ## 2018Dec04: BS
 - 实现插入convo, 并去掉重复
     - convo html模板添加`app-name`, 方便查找
