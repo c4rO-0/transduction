@@ -13,16 +13,16 @@ function toggleWebview() {
 }
 /**
  * 打开webview Devtool
- * @param {string} strID 
+ * @param {string} appName
  */
-function openDevtool(strID) {
-    let web = document.getElementById(strID);
+function openDevtool(appName) {
+    let web = $("webview[app-name='" + appName + "']")[0];
     web.openDevTools();
 }
 
-function listWebviewID() {
+function listWebview() {
     $("webview").toArray().forEach((e, i) => {
-        console.log($(e).attr('id'))
+        console.log($(e).attr('app-name'))
     })
 }
 
@@ -114,22 +114,13 @@ $(document).ready(function () {
 
     // ============================function===================
     /**
-     * 将webviewTag转化为webviewID
-     * @param {String} webTag 传入Tag
-     * @returns {String} webviewID
-     */
-    function webTag2ID(webTag) {
-        return "webview" + (webTag[0]).toUpperCase() + webTag.substr(1)
-    }
-    /**
      * 
-     * @param {String} webID webview ID
-     * @returns {String} webTag
+     * @param {String} webTag slype, wechat...
+     * @returns {String} webview的selector
      */
-    function webID2Tag(webID) {
-        return (webID[6]).toLowerCase() + webID.substr(7)
+    function webTag2Selector(webTag) {
+        return "webview[app-name='" + webTag + "']"
     }
-
 
     function AddConvoHtml(appName, convo) {
         let displayCounter = "display: none;"
@@ -162,9 +153,9 @@ $(document).ready(function () {
     }
 
     function ChangeConvoHtml(appName, convo) {
-        let objConvo = $('#td-left [app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
+        let objConvo = $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
         if (objConvo.length) { // 检测存在
-            $('#td-left [app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').remove()
+            $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').remove()
             for (let key in convo) {
                 if (convo[key] != undefined) {
                     switch (key) {
@@ -212,7 +203,7 @@ $(document).ready(function () {
 
         return Promise.race([new Promise((resolve, reject) => {
 
-            if ($("#" + webTag2ID(webTag)).length == 0) {
+            if ($(webTag2Selector(webTag)).length == 0) {
                 reject("respFuncWinReplyWeb : no " + webTag + "exist")
                 return
             }
@@ -248,7 +239,7 @@ $(document).ready(function () {
                     // console.log(typeof Convo.time)
                     // console.log(convoHtml('skype', Convo))
                     // 覆盖消息
-                    $('#td-left [app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
+                    $('#td-left [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
                     $('#td-left').prepend(AddConvoHtml(webTag, Convo))
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
@@ -257,10 +248,10 @@ $(document).ready(function () {
 
                 resolve("copy that")
             } else if (key == 'focus') {
-                $("#" + webTag2ID(webTag)).focus()
+                $(webTag2Selector(webTag)).focus()
                 resolve("focus done")
             } else if (key == 'blur') {
-                $("#" + webTag2ID(webTag)).blur()
+                $(webTag2Selector(webTag)).blur()
                 resolve("blur done")
             }
 
@@ -280,32 +271,21 @@ $(document).ready(function () {
     // ===========================接收消息===========================
 
     // wechat
-    core.WinReplyWeb("webviewWechat", (key, arg) => {
+    core.WinReplyWeb(webTag2Selector("wechat"), (key, arg) => {
         return respFuncWinReplyWeb("wechat", key, arg)
     })
 
     // skype
-    core.WinReplyWeb("webviewSkype", (key, arg) => {
+    core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
         return respFuncWinReplyWeb("skype", key, arg)
     })
 
     // ===========================发送消息===========================
-    // $("#wechatGet").click(() => {
-    //     $("#insert").empty()
-    //     if ($("#userID").val() != '') {
-    //         core.HostSendToWeb("webviewWechat", { "get": $("#userID").val() }).then((res) => {
-    //             console.log(""res)
-    //         }).catch((error) => {
-    //             throw error
-    //         });
-    //     }
-
-    // })
 
     // 点击convo
     $('#td-left').on('click', 'div.td-convo', function () {
         // 识别webtag
-        let webTag = $(this).attr("data-app-name")
+        let webTag =  $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
 
         if (webTag == undefined || userID == undefined) {
@@ -314,9 +294,12 @@ $(document).ready(function () {
             console.log("userID : ", userID)
         } else {
 
-            console.log("debug : " + webTag2ID(webTag) + " click.")
-            $("#"+webTag2ID(webTag)).focus()
-            core.HostSendToWeb(webTag2ID(webTag), { "queryDialog": { "userID": userID } }).then((res) => {
+            $(webTag2Selector(webTag)).focus()
+
+            core.HostSendToWeb(
+                webTag2Selector(webTag),
+                { "queryDialog": { "userID": userID } }
+            ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
             }).catch((error) => {
                 throw error

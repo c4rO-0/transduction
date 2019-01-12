@@ -57,18 +57,20 @@ window.onload = function () {
     function grepMSG(contacts, MSG) {
 
         let fromUserName = MSG["FromUserName"]
-        let toUserName = MSG["ToUserName"]
-        let time = MSG["MMDigestTime"]
+        // let toUserName = MSG["ToUserName"]
+        let time = new Date(MSG["MMDisplayTime"]*1000)
+
+
+
         let remarkName = ''
-        let nickName = ''
         if (contacts[fromUserName] != undefined) {
             remarkName = (contacts[fromUserName])["RemarkName"]
             nickName = (contacts[fromUserName])["NickName"]
         }
         // 获取有几条未读消息
-        let strUnread = $("div.ng-scope div [data-username='" + fromUserName + "'] i").text()
-        let unread = strUnread == '' ? 0 : parseInt(strUnread)
-        let type = MSG["MsgType"]
+        // let strUnread = $("div.ng-scope div [data-username='" + fromUserName + "'] i").text()
+        // let unread = strUnread == '' ? 0 : parseInt(strUnread)
+        let type = ""
 
         let contentObj = jQuery.parseHTML(MSG["MMDigest"])
         let content = ""
@@ -101,44 +103,45 @@ window.onload = function () {
 
         let MSGID = MSG["MsgId"]
 
-
-        if (type == wechatMSGType.MSGTYPE_TEXT) {
+        let MSGObj = $("div[data-cm*='" + MSGID + "']")
+        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT) {
             // 正常输出
+            type = 'text'
 
-            // console.log("ID :", MSG.fromUserName, "->", MSG.toUserName)
-            // console.log("type :", MSG.type)
-            // console.log("Name :", MSG.nickName, MSG.remarkName)
-            // console.log("type :", MSG.type)
-            // console.log("content :", MSG.content)
-            // console.log("time :", MSG.time)
-            // console.log("unread :", MSG.unread)
+            // 判断是否为url
+            if ($(MSGObj).find("div.plain pre a").length > 0 && $(MSGObj).find("div.plain pre").contents().toArray().length == 1) {
+                type = "url"
+            }
 
-
-        } else if (type == wechatMSGType.MSGTYPE_IMAGE) {
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_IMAGE) {
             // 缓存图片
             // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
-            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSGID + "'] img.msg-img").attr("src")
+            type = 'img'
+            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
             // 置换内容
             content = imgUrl
-        } else if (type == wechatMSGType.MSGTYPE_MICROVIDEO) {
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
+            type = 'img'
             // 小视频
-            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $("div [data-cm*='" + MSGID + "'] img.msg-img").attr("src")
+            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
             // 置换内容
             content = imgUrl
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP) {
+            // 文件
+            type = 'text'
+            let fileName = $(MSGObj).find("div.attach p[ng-bind*='message.FileName']").text()
+            let fileSize = $(MSGObj).find("div.attach span[ng-bind*='message.MMAppMsgFileSize']").text()
+            content = fileName
         }
         else {
 
         }
 
-
+        // console.log(remarkName, MSGID, type, content, time)
         return {
-            "fromUserName": fromUserName,
-            "toUserName": toUserName,
-            "MSGID": MSGID,
-            "time": time,
-            "remarkName": remarkName,
-            "nickName": nickName,
-            "unread": unread,
+            "from": MSGObj.hasClass("right")? undefined : (remarkName==''?nickName:remarkName),
+            "msgID": MSGID,
+            "time": time.getTime(),
             "type": type,
             "content": content
         }
@@ -156,18 +159,7 @@ window.onload = function () {
     function grepNewMSG(obj) {
 
 
-        let timeStr = $(obj).find("div.ext p.attr.ng-binding").text()
-        let time = new Date() // Now
-        if (timeStr != "") {
 
-            time = new Date(
-                time.getFullYear(),
-                time.getMonth(),
-                time.getDate(),
-                parseInt(timeStr.substr(0, timeStr.indexOf(':'))),
-                parseInt(timeStr.substr(timeStr.indexOf(':') + 1)))
-
-        }
 
         // 筛选消息内容
         let contentObj = $(obj).find("div.info p.msg span.ng-binding[ng-bind-html='chatContact.MMDigest']")
@@ -207,6 +199,14 @@ window.onload = function () {
 
         let nickName = $(obj).find("div.info h3.nickname span").text()
         let userID = $(obj).attr("data-username")
+        
+
+        let time = new Date() // Now
+        let chatObj = _chatContent[userID]
+        if(chatObj.length > 0) { // last MSG
+            time = new Date((chatObj[chatObj.length-1])["MMDisplayTime"]*1000) 
+        }
+     
         let host =
             window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
                 window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
