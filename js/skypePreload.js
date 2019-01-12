@@ -225,9 +225,10 @@ window.onload = function () {
                 document.querySelector('[data-user-i-d="' + userID + '"]').click()
                 console.log(document.querySelectorAll('swx-message.message'))
                 let msglog = []
-                document.querySelectorAll('swx-message.message').forEach((item, i) => {
+                // document.querySelectorAll('swx-message.message').forEach((item, i) => {
+                $("div.fragment:not(.hide) swx-message.message").toArray().forEach((item, i) => {
                     msglog[i] = new chatLog()
-                    msglog[i].extractAll(item)
+                    msglog[i].extractAll($(item)[0])
                 })
                 console.log(msglog)
                 core.WebToHost({ 'Dialog': msglog }).then((res) => {
