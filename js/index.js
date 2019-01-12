@@ -138,7 +138,7 @@ $(document).ready(function () {
         }
 
         return '\
-        <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' app-name=' + appName + '>\
+        <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + '>\
             <div class="col-hint">\
                 <div class="row-hint theme-'+ appName + '"></div>\
             </div>\
@@ -159,9 +159,9 @@ $(document).ready(function () {
     }
 
     function ChangeConvoHtml(appName, convo) {
-        let objConvo = $('#td-left [app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
+        let objConvo = $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
         if (objConvo.length) { // 检测存在
-            $('#td-left [app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').remove()
+            $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').remove()
             for (let key in convo) {
                 if (convo[key] != undefined) {
                     switch (key) {
@@ -245,7 +245,7 @@ $(document).ready(function () {
                     // console.log(typeof Convo.time)
                     // console.log(convoHtml('skype', Convo))
                     // 覆盖消息
-                    $('#td-left [app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
+                    $('#td-left [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
                     $('#td-left').prepend(AddConvoHtml(webTag, Convo))
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
@@ -302,7 +302,7 @@ $(document).ready(function () {
     // 点击convo
     $('#td-left').on('click', 'div.td-convo', function() {
         // 识别webtag
-        let webTag =  $(this).attr("app-name")
+        let webTag =  $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
 
         if(webTag == undefined || userID == undefined){
