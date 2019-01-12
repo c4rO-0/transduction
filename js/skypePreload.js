@@ -223,27 +223,29 @@ window.onload = function () {
                 let userID = arg.userID
                 console.log("debug : userID : ", userID)
                 document.querySelector('[data-user-i-d="' + userID + '"]').click()
-                console.log(document.querySelectorAll('swx-message.message'))
-                let msglog = []
-                // document.querySelectorAll('swx-message.message').forEach((item, i) => {
-                $("div.fragment:not(.hide) swx-message.message").toArray().forEach((item, i) => {
-                    msglog[i] = new chatLog()
-                    msglog[i].extractAll($(item)[0])
-                })
-                console.log(msglog)
-                core.WebToHost({ 'Dialog': msglog }).then((res) => {
-                    console.log(res)
-                    // core.WebToHost({'focus':''}).then((res) =>{
-                    //     core.WebToHost({'blur':''})
-                    // }).catch((error) =>{
-                    //     throw error
-                    // })                    
-                }).catch((error) => {
-                    throw error
-                })
+                setTimeout(() => {
+                    console.log(document.querySelectorAll('swx-message.message'))
+                    let msglog = []
+                    // document.querySelectorAll('swx-message.message').forEach((item, i) => {
+                    $("div.fragment:not(.hide) swx-message.message").toArray().forEach((item, i) => {
+                        msglog[i] = new chatLog()
+                        msglog[i].extractAll($(item)[0])
+                    })
+                    console.log(msglog)
+                    core.WebToHost({ 'Dialog': msglog }).then((res) => {
+                        console.log(res)
+                        // core.WebToHost({'focus':''}).then((res) =>{
+                        //     core.WebToHost({'blur':''})
+                        // }).catch((error) =>{
+                        //     throw error
+                        // })                    
+                    }).catch((error) => {
+                        throw error
+                    })
 
 
-                msglog = undefined
+                    msglog = undefined
+                }, 500);
                 // core.WebToHost
             } else {
                 reject("unknown key : ", key)
