@@ -13,16 +13,16 @@ function toggleWebview() {
 }
 /**
  * 打开webview Devtool
- * @param {string} strID 
+ * @param {string} appName
  */
-function openDevtool(strID) {
-    let web = document.getElementById(strID);
+function openDevtool(appName) {
+    let web = $("webview[app-name='" + appName + "']")[0];
     web.openDevTools();
 }
 
-function listWebviewID() {
+function listWebview() {
     $("webview").toArray().forEach((e, i) => {
-        console.log($(e).attr('id'))
+        console.log($(e).attr('app-name'))
     })
 }
 
