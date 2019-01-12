@@ -7,7 +7,7 @@ const debug = /--debug/.test(process.argv[2])
 
 function createWindow() {
 
-    let opts = {icon:'./res/pic/ico.ico'}
+    let opts = {icon:'./res/pic/ico.png'}
     Object.assign(opts, config.get('winBounds'))  
     // console.log(opts)  
     win = new BrowserWindow(opts)
