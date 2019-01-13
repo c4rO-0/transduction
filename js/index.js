@@ -288,6 +288,8 @@ $(document).ready(function () {
         // 识别webtag
         let webTag = $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
+        $('#td-left div.td-convo').removeClass('theme-transduction-active')
+        $(this).addClass('theme-transduction-active')
 
         if (webTag == undefined || userID == undefined) {
             console.log("error : click obj error.")
