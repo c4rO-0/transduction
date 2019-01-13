@@ -291,13 +291,15 @@ $(document).ready(function () {
             console.log("userID : ", userID)
         } else {
 
-            $(webTag2Selector(webTag)).focus()
+            
 
             core.HostSendToWeb(
                 webTag2Selector(webTag),
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
+                // $(webTag2Selector(webTag)).blur()
+                $(webTag2Selector(webTag)).focus()
             }).catch((error) => {
                 throw error
             })
