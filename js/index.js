@@ -134,6 +134,9 @@ $(document).ready(function () {
 
         return '\
         <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + '>\
+            <div class="col-appLogo">\
+                <img src="../res/pic/'+ appName + '.png">\
+            </div>\
             <div class="col-hint">\
                 <div class="row-hint theme-'+ appName + '"></div>\
             </div>\
