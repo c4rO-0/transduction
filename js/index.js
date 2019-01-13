@@ -31,6 +31,10 @@ $(document).ready(function () {
     const core = require("../js/core.js")
     console.log(process.versions.electron)
     let status = "webviewSkype"
+    let debug_app_link_str = "#debug-app-link"
+    let debug_firefox_send_str = "#debug-firefox-send"
+    let debug_image_str = "#debug-image"
+    let debug_send_str = "#debug-send"
 
     // =========================class===========================
     class conversation {
@@ -282,7 +286,7 @@ $(document).ready(function () {
     // 点击convo
     $('#td-left').on('click', 'div.td-convo', function () {
         // 识别webtag
-        let webTag =  $(this).attr("data-app-name")
+        let webTag = $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
 
         if (webTag == undefined || userID == undefined) {
@@ -291,7 +295,7 @@ $(document).ready(function () {
             console.log("userID : ", userID)
         } else {
 
-            
+
 
             core.HostSendToWeb(
                 webTag2Selector(webTag),
