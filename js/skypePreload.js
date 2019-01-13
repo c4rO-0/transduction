@@ -126,7 +126,7 @@ window.onload = function () {
     }
 
     let observer = new MutationObserver(function (list, obs) {
-        console.log("-------------------------fire in the hole--------------------------")
+        console.log("-------------------------fire in the left hole--------------------------")
         console.log(list)
 
         let convo
@@ -213,6 +213,38 @@ window.onload = function () {
         })
 
 
+    // 观察右边
+    let callbackMSG = function (records) {
+        console.log("-------------------------fire in the right hole--------------------------")
+        console.log(document.querySelectorAll('swx-message.message'))
+        let msglog = []
+        // document.querySelectorAll('swx-message.message').forEach((item, i) => {
+        $("div.fragment:not(.hide) swx-message.message").toArray().forEach((item, i) => {
+            msglog[i] = new chatLog()
+            msglog[i].extractAll($(item)[0])
+        })
+        console.log(msglog)
+        if(msglog.length > 0){
+            core.WebToHost({ 'Dialog': msglog }).then((res) => {
+                console.log(res)
+                // core.WebToHost({'focus':''}).then((res) =>{
+                //     core.WebToHost({'blur':''})
+                // }).catch((error) =>{
+                //     throw error
+                // })                    
+            }).catch((error) => {
+                throw error
+            })
+        }
+        msglog = undefined
+    }
+    let obsMSG = new MutationObserver(callbackMSG);
+    obsMSG.observe($("#chatComponent")[0], {
+        subtree: true, childList: true, characterData: true, attributes: true,
+        attributeOldValue: true, characterDataOldValue: true
+    });
+
+
     // 等待win发来消息
     core.WebReply((key, arg) => {
         return new Promise((resolve, reject) => {
@@ -222,33 +254,15 @@ window.onload = function () {
                 resolve("copy the query. Please wait...")
                 let userID = arg.userID
                 console.log("debug : userID : ", userID)
+
                 document.querySelector('[data-user-i-d="' + userID + '"]').click()
-                console.log(document.querySelectorAll('swx-message.message'))
-                let msglog = []
-                // document.querySelectorAll('swx-message.message').forEach((item, i) => {
-                $("div.fragment:not(.hide) swx-message.message").toArray().forEach((item, i) => {
-                    msglog[i] = new chatLog()
-                    msglog[i].extractAll($(item)[0])
-                })
-                console.log(msglog)
-                core.WebToHost({ 'Dialog': msglog }).then((res) => {
-                    console.log(res)
-                    // core.WebToHost({'focus':''}).then((res) =>{
-                    //     core.WebToHost({'blur':''})
-                    // }).catch((error) =>{
-                    //     throw error
-                    // })                    
-                }).catch((error) => {
-                    throw error
-                })
 
-
-                msglog = undefined
-                // core.WebToHost
             } else {
                 reject("unknown key : ", key)
             }
         })
     })
+
+
 
 }
