@@ -251,11 +251,13 @@ window.onload = function () {
             //  收到消息进行处理
             if (key == 'queryDialog') {
                 // 查询Dialog
-                resolve("copy the query. Please wait...")
+                
                 let userID = arg.userID
                 console.log("debug : userID : ", userID)
 
                 document.querySelector('[data-user-i-d="' + userID + '"]').click()
+
+                resolve("copy the query. Please wait...")
 
             } else {
                 reject("unknown key : ", key)
