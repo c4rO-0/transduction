@@ -33,6 +33,20 @@ webview {
     border-radius: 3px;
 }
 
+.col-appLogo {
+    position: absolute;
+    left: 185px;
+    height: 56px;
+    width: 71px;
+    overflow: hidden;
+}
+
+.col-appLogo>img {
+    height: 66px;
+    width: 66px;
+    opacity: 0.3;
+}
+
 .col-avatar {
     flex: 0 0 46px;
     max-width: 46px;
@@ -112,7 +126,7 @@ webview {
     background-color: #daffd1;
 }
 
-.theme-transduction:hover {
+.theme-transduction:hover, .theme-transduction-active {
     background-color: #baf0ac;
     /* background-color: #ffdeca; */
 }

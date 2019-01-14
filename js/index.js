@@ -134,6 +134,9 @@ $(document).ready(function () {
 
         return '\
         <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + '>\
+            <div class="col-appLogo">\
+                <img src="../res/pic/'+ appName + '.png">\
+            </div>\
             <div class="col-hint">\
                 <div class="row-hint theme-'+ appName + '"></div>\
             </div>\
@@ -288,6 +291,8 @@ $(document).ready(function () {
         // 识别webtag
         let webTag = $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
+        $('#td-left div.td-convo').removeClass('theme-transduction-active')
+        $(this).addClass('theme-transduction-active')
 
         if (webTag == undefined || userID == undefined) {
             console.log("error : click obj error.")
