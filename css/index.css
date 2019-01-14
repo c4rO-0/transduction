@@ -34,6 +34,7 @@ webview {
 }
 
 .col-appLogo {
+    display: none;
     position: absolute;
     left: 185px;
     height: 56px;
@@ -158,5 +159,8 @@ webview {
     }
     .col-text, .col-timestamp {
         display: flex;
+    }
+    .col-appLogo {
+        display: block;
     }
 }
