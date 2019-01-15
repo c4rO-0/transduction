@@ -224,7 +224,11 @@ window.onload = function () {
             msglog[i].extractAll($(item)[0])
         })
         console.log(msglog)
-        if(msglog.length > 0){
+        if (msglog.length > 0) {
+
+            // 第一个MSG添加userID
+            (msglog[0])["userID"] = $("#timelineComponent swx-recent-item a.active").attr("data-user-i-d")
+
             core.WebToHost({ 'Dialog': msglog }).then((res) => {
                 console.log(res)
                 // core.WebToHost({'focus':''}).then((res) =>{
@@ -251,7 +255,7 @@ window.onload = function () {
             //  收到消息进行处理
             if (key == 'queryDialog') {
                 // 查询Dialog
-                
+
                 let userID = arg.userID
                 console.log("debug : userID : ", userID)
 
