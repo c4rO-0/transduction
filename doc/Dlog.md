@@ -23,6 +23,12 @@ const { net } = require('electron').remote
 
 ## 日志
 
+## 2019Jan02: L
+- 左侧加上appLogo以区分app
+- 目前我认为的appName的命名标准是全部小写，但是现在只有skype和wechat，理解成驼峰命名法也可
+- 可能出现分歧的app比如说WhatsApp，官方写法是第每个单词开头大写，驼峰写法whatsApp，全部小写whatsapp
+- appName的命名标准可能需要讨论
+
 ## 2018Dec09: BS
 对于非标准化的消息, 一律提示用户打开专有app(网页版或手机)进行查看
 index对于该消息以按钮形式呈现, 点击打开app网页版

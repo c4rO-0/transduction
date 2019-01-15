@@ -20,6 +20,9 @@
                     CONVERSATIONS
                 </h2>
                 <div class="td-convo theme-transduction td-font">
+                    <div class="col-appLogo">
+                        <img src="../res/pic/skype.png">
+                    </div>
                     <div class="col-hint">
                         <div class="row-hint theme-skype">
                         </div>
@@ -47,6 +50,9 @@
                 </div>
 
                 <div class="td-convo theme-transduction td-font">
+                    <div class="col-appLogo">
+                        <img src="../res/pic/wechat.png">
+                    </div>
                     <div class="col-hint">
                         <div class="row-hint theme-wechat">
                         </div>
@@ -74,6 +80,10 @@
                 <h2>
                     MESSAGES
                 </h2>
+                <button id="debug-app-link">debug-app-link</button>
+                <button id="debug-firefox-send">debug-firefox-send</button>
+                <button id="debug-image">debug-image</button>
+                <button id="debug-send">debug-send</button>
                 <div id="td-right"> </div>
             </div>
         </div>
@@ -81,8 +91,8 @@
 
     </div>
     <!-- id : webview[大写字母]名称-->
-    <webview id="webviewSkype" src="https://web.skype.com/en/" preload="../js/skypePreload.js"></webview>
-    <webview id="webviewWechat" preload="../js/webWechat.js" src="https://web.wechat.com/"></webview>
+    <webview app-name="skype" src="https://web.skype.com/en/" preload="../js/skypePreload.js"></webview>
+    <webview app-name="wechat" preload="../js/webWechat.js" src="https://web.wechat.com/"></webview>
 </body>
 
 </html>
