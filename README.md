@@ -149,12 +149,36 @@ core.WebToHost({key:content})
 
 ## 开发说明(transduction)
 
-### 变量名称规范
+### html结构
+分为 1.左侧 2.右侧窗口 3.隐藏webview
 
-#### 类声明
+####左侧 : 
+
+##### html : <div class="col-left" id="td-left">
+
+##### 内容和功能
+显示最近联系人(**convo**).
+**convo**的构成说明:
+``` javascript
+<div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + '>
+```
+
+data-user-i-d构成规则"appName1UserID appName2UserID"
+
+app名称+ userID + 空格 + app名称 + userID
+
+#### 右侧 : td-right
+
+#### webview : data-app-name 
+
+
+
+### 类声明
+
 - td****作为类的名字
 
 #### newConvo (conversation)
+
 - userID : str（实际上是convo的id）
 - nickName : str
 - time : ~~JS Date~~, number(Date.now())
@@ -168,27 +192,22 @@ core.WebToHost({key:content})
 add : 检测没有userID就添加会话, 有ID就进行覆盖
 change : 检测userID, 没有就忽略消息. 有的话, 刷新非undefined变量.
 
-#### dialog (对话** 描述右侧变量名称)
+#### dialog (对话描述右侧变量名称)
+
 例如dialog box 对话盒子.
 
-#### html ID
-- 左侧和右侧窗口ID
- - 左侧 : td-left
- - 右侧 : td-right
-
-- webview ID & Tag
 
 
-#### 各种类型：
+### 各种类型：
     - 手机上发消息，左边message变化，但是没有counter变化
     - 群组和机器人聊天中改头像，影响id获取
 
-#### 读取右半边消息
+### 读取右半边消息
 - 区分消息类别, 并给类别编码, 如图片, 语音, 视频等
 - 获取非文字信息的缩略图。 比如视频要显示一个截图
 - 点击缩略图做出响应。如点击图片加载大图，点击视频播放视频等
 
-#### 聊天内容格式规范
+### 聊天内容格式规范
 -  class chatLog
     - msgID（string）
     - type（类型：文字，图片，url，不支持）（string）
