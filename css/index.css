@@ -3,10 +3,15 @@ html {
 }
 
 body {
-    min-height: -webkit-fill-available;
+    /* min-height: -webkit-fill-available; */
+    height: -webkit-fill-available;
 }
 
 webview {
+    height: -webkit-fill-available;
+}
+
+.container-fluid {
     height: -webkit-fill-available;
 }
 
@@ -54,6 +59,39 @@ webview {
     /* align-self: stretch; */
 }
 
+#td-right {
+    display: flex;
+    flex-direction: column;
+}
+
+.td-chat-title {
+    height: 70px;
+    display: flex;
+    align-items: center;
+}
+
+.td-chat {
+    flex: 1;
+    display: flex;
+}
+
+.td-chatLog {
+    flex: 1;
+}
+
+.td-input {
+    max-height: 10rem;
+    min-height: 2rem;
+    height: auto;
+    flex: 0 0 auto;
+    display: flex;
+}
+
+.td-inputbox {
+    flex: 1;
+    overflow: auto;
+}
+
 .col-left, .col-hint, .col-avatar {
     position: relative;
     width: 100%;
@@ -99,7 +137,13 @@ webview {
     font-size: 10px;
 }
 
-.td-nickname {
+.td-toolbox {
+    width: 56px;
+    /* align-self: flex-end; */
+}
+
+.td-row {
+    display: flex;
     /* font-size: 15px; */
     /* padding-top: 5px; */
     /* height: 1rem; */
@@ -141,6 +185,15 @@ webview {
     background-color: #1aad19;
     /* background-color: #2ba245; */
     /* background-color: #91ed61; */
+}
+
+#td-right, .td-toolbox {
+    border-left: 1px solid #c0c0c0;
+}
+
+.td-chat {
+    border-bottom: 1px solid #c0c0c0;
+    border-top: 1px solid #c0c0c0;
 }
 
 .td-avatar {

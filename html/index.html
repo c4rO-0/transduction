@@ -14,11 +14,8 @@
 
 <body>
     <div class="container-fluid p-0">
-        <div class="row m-0">
+        <div class="row m-0" style="height: -webkit-fill-available">
             <div class="col-left" id="td-left">
-                <h2>
-                    CONVERSATIONS
-                </h2>
                 <div class="td-convo theme-transduction td-font">
                     <div class="col-appLogo">
                         <img src="../res/pic/skype.png">
@@ -76,15 +73,28 @@
                 </div>
 
             </div>
-            <div class="col p-0" id="right">
-                <h2>
-                    MESSAGES
-                </h2>
-                <button id="debug-app-link">debug-app-link</button>
-                <button id="debug-firefox-send">debug-firefox-send</button>
-                <button id="debug-image">debug-image</button>
-                <button id="debug-send">debug-send</button>
-                <div id="td-right"> </div>
+            <div class="col p-0" id="td-right">
+                <div class="td-chat-title">
+                    <h2>Sheng Bi</h2>
+                    <button id="debug-app-link">debug-app-link</button>
+                </div>
+                <div class="td-chat">
+                    <div class="td-chatLog">
+
+                    </div>
+                    <div class="td-toolbox">
+                        <button id="debug-firefox-send">debug-firefox-send</button>
+                    </div>
+                </div>
+                <div class="td-input">
+                    <div class="td-inputbox" contenteditable="true">
+
+                    </div>
+                    <div class="td-toolbox">
+                        <button id="debug-image">debug-image</button>
+                        <button id="debug-send">debug-send</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
