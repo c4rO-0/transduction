@@ -94,6 +94,72 @@ webview {
     flex: 1;
 }
 
+.td-bubble {
+    padding: 5px 10px 5px 10px;
+    /* background-color: #f0f0f0; */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.td-chatAvatar {
+    /* background-size: cover;
+    background-position: center; */
+    min-width: 4rem;
+    width: 4rem;
+    height: 4rem;
+    border-style: none;
+    border-radius: 2rem;
+    overflow: hidden;
+    position: relative;
+    margin-right: 1rem;
+}
+
+.td-chatAvatar>img{
+    width: 4rem;
+    height: 4rem;
+    opacity: 0.3;
+}
+
+.td-chatAvatar>p{
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%)
+}
+
+.td-chatText{
+    display: flex;
+    align-items: center;
+}
+
+.td-them {
+    margin: 0 40px 0 0;
+    background-color: #c0c0c0;
+    display: flex;
+    /* max-width: 100%; */
+    width: fit-content;
+    border-radius: 2rem;
+    padding-right: 2rem;
+    min-height: 4rem;
+}
+
+.td-me {
+    margin: 0 0 0 40px;
+    background-color: #c0c0c0;
+    width: fit-content;
+    border-radius: 2rem;
+    padding-left: 2rem; 
+    padding-right: 1rem; 
+    min-height: 4rem;
+    align-self: flex-end;
+    display: flex;
+}
+
+.td-me>p {
+    align-self: flex-end;
+}
+
 .td-input {
     max-height: 10rem;
     min-height: 2rem;
