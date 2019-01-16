@@ -47,10 +47,16 @@ webview {
     overflow: hidden;
 }
 
-.col-appLogo>img {
+.col-appLogo>img, .td-chat-title>img {
     height: 66px;
     width: 66px;
     opacity: 0.3;
+}
+
+.td-toolbox>img {
+    height: auto;
+    width: 100%;
+    padding: 5px;
 }
 
 .col-avatar {
@@ -73,6 +79,15 @@ webview {
 .td-chat {
     flex: 1;
     display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+#td-pin {
+    position: absolute;
+    bottom: 0;
+    height: 34px;
+    width: 34px;
 }
 
 .td-chatLog {
@@ -90,6 +105,21 @@ webview {
 .td-inputbox {
     flex: 1;
     overflow: auto;
+}
+
+.td-send {
+    height: 55px;
+    width: 55px;
+    position: relative;
+    border-top-left-radius: 55px;
+    background-color: #c0c0c0;
+}
+
+.td-send>b {
+    position: absolute;
+    left: 10px;
+    top: 15px;
+    transform: rotate(-45deg);
 }
 
 .col-left, .col-hint, .col-avatar {
@@ -139,7 +169,7 @@ webview {
 
 .td-toolbox {
     width: 56px;
-    /* align-self: flex-end; */
+    overflow: hidden;
 }
 
 .td-row {
@@ -168,11 +198,11 @@ webview {
 
 .theme-transduction {
     /* background-color: #ffede2; */
-    background-color: #daffd1;
+    background-color: #ffffff;
 }
 
 .theme-transduction:hover, .theme-transduction-active {
-    background-color: #baf0ac;
+    background-color: #e7e7e7;
     /* background-color: #ffdeca; */
 }
 

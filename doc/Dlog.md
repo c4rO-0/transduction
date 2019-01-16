@@ -23,8 +23,9 @@ const { net } = require('electron').remote
 
 ## 日志
 
-## 2019Jan16: L
-- 提醒自己，自己定义一套td-row, td-col
+## 2019Jan16-17: L
+- 灰色可能需要更深一点，如果想统一的改需要把pin，image都改成svg
+- 提醒自己，自己定义一套td-row, td-col，还有常用的类，比如transparency, position
 
 ## 2019Jan03: L
 - 似乎发现一个bug，运行主程序，不登录，不打开webview，等一段时间，再去打开webview登录
