@@ -23,11 +23,28 @@ const { net } = require('electron').remote
 
 ## 日志
 
+## 2019Jan16-17: L
+- 灰色可能需要更深一点，如果想统一的改需要把pin，image都改成svg
+- 提醒自己，自己定义一套td-row, td-col，还有常用的类，比如transparency, position
+
+## 2019Jan03: L
+- 似乎发现一个bug，运行主程序，不登录，不打开webview，等一段时间，再去打开webview登录
+    - npm ERR! code ELIFECYCLE
+    - npm ERR! errno 3221225477
+    - npm ERR! transduction@1.0.0 debug: `electron . --debug`
+    - npm ERR! Exit status 3221225477
+    - npm ERR!
+    - npm ERR! Failed at the transduction@1.0.0 debug script.
+    - npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+    - npm ERR! A complete log of this run can be found in:
+    - npm ERR!     C:\Users\walker\AppData\Roaming\npm-cache\_logs\2019-01-03T03_44_33_077Z-debug.log
+
 ## 2019Jan02: L
 - 左侧加上appLogo以区分app
 - 目前我认为的appName的命名标准是全部小写，但是现在只有skype和wechat，理解成驼峰命名法也可
 - 可能出现分歧的app比如说WhatsApp，官方写法是第每个单词开头大写，驼峰写法whatsApp，全部小写whatsapp
 - appName的命名标准可能需要讨论
+- 另外，appLogo的标准是，任意大小正方形的png图片，图形内容尽量占满正方形区域，底部的右侧可以留空，背景为透明
 
 ## 2018Dec09: BS
 对于非标准化的消息, 一律提示用户打开专有app(网页版或手机)进行查看

@@ -14,11 +14,8 @@
 
 <body>
     <div class="container-fluid p-0">
-        <div class="row m-0">
+        <div class="row m-0" style="height: -webkit-fill-available">
             <div class="col-left" id="td-left">
-                <h2>
-                    CONVERSATIONS
-                </h2>
                 <div class="td-convo theme-transduction td-font">
                     <div class="col-appLogo">
                         <img src="../res/pic/skype.png">
@@ -76,15 +73,55 @@
                 </div>
 
             </div>
-            <div class="col p-0" id="right">
-                <h2>
-                    MESSAGES
-                </h2>
-                <button id="debug-app-link">debug-app-link</button>
-                <button id="debug-firefox-send">debug-firefox-send</button>
-                <button id="debug-image">debug-image</button>
-                <button id="debug-send">debug-send</button>
-                <div id="td-right"> </div>
+            <div class="col p-0 td-font" id="td-right">
+                <div class="td-chat-title">
+                    <h2>Sheng Bi</h2>
+                    <img id="debug-app-link" src="../res/pic/skype.png">
+                </div>
+                <div class="td-chat">
+                    <img id="td-pin" src="../res/pic/pin.png">
+                    <div class="td-chatLog">
+                        <div class="td-bubble">
+                            <p class="m-0">猜猜我是谁</p>
+                            <div class="td-them">
+                                <div class="td-chatAvatar">
+                                    <img src="https://api.asm.skype.com/v1/objects/0-ea-d5-beb6f294abc5bdbd372f46002006dd6a/views/swx_avatar">
+                                    <p class="m-0">05:45</p>
+                                </div>
+                                <div class="td-chatText">
+                                    <!-- 奥拉奥拉 -->
+                                    噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈
+                                </div>
+                            </div>
+                        </div>
+                        <div class="td-bubble">
+                            <div class="td-me">
+                                <div class="td-chatText">
+                                    木大木大
+                                    <!-- 木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大 -->
+                                </div>
+                                <!-- <div class="td-chatAvatar"> -->
+                                <p class="m-0">06:23</p>
+                                <!-- </div> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="td-toolbox">
+                        <img id="debug-firefox-send" src="../res/pic/ffsend.png">
+                        <img src="../res/pic/ffsend.png">
+                    </div>
+                </div>
+                <div class="td-input">
+                    <div class="td-inputbox" contenteditable="true">
+
+                    </div>
+                    <div class="td-toolbox">
+                        <img id="debug-image" src="../res/pic/image.png">
+                        <div class="td-send" id="debug-send">
+                            <b class="m-0" style="color:white">Send</b>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
