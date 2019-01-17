@@ -220,6 +220,11 @@ $(document).ready(function () {
                 // 收到某个用户聊天记录
                 console.log("debug : ", "==========Dialog============")
                 console.log(Obj)
+                setTimeout(() => {
+                    console.log('bluring outttttttttttttttttttt')
+                    $(webTag2Selector('skype')).blur()
+                }, 2000)
+
 
                 resolve("copy that.")
             } else if (key == 'Convo-new') {
@@ -301,13 +306,17 @@ $(document).ready(function () {
         } else {
 
 
-
+            // $(webTag2Selector(webTag)).focus()
             core.HostSendToWeb(
                 webTag2Selector(webTag),
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
-                // $(webTag2Selector(webTag)).blur()
+                // setTimeout(() => {
+                //     console.log('bluring outtttttttttttttttttttttttt')
+                //     $(webTag2Selector(webTag)).blur()
+                // }, 1300)
+                console.log('focusing innnnnnnnnnnn')
                 $(webTag2Selector(webTag)).focus()
             }).catch((error) => {
                 throw error
@@ -318,4 +327,5 @@ $(document).ready(function () {
 
     console.log("toggle")
     toggleWebview()
+    openDevtool('skype')
 })
