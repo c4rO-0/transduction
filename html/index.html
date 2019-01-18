@@ -14,8 +14,8 @@
 
 <body>
     <div class="container-fluid p-0">
-        <div class="row m-0">
-        <!-- <div class="row m-0" style="height: -webkit-fill-available"> -->
+        <!-- <div class="row m-0"> -->
+        <div class="row m-0" style="height: -webkit-fill-available">
             <div class="col-left" id="td-left">
                 <div class="td-convo theme-transduction td-font">
                     <div class="col-appLogo">
@@ -129,8 +129,8 @@
 
     </div>
     <!-- id : webview[大写字母]名称-->
-    <webview app-name="skype" src="https://web.skype.com/en/" preload="../js/skypePreload.js"></webview>
-    <webview app-name="wechat" preload="../js/webWechat.js" src="https://web.wechat.com/"></webview>
+    <webview app-name="skype" src="https://web.skype.com/en/" preload="../js/skypePreload.js" tabindex="-1"></webview>
+    <webview app-name="wechat" preload="../js/webWechat.js" src="https://web.wechat.com/" tabindex="-1"></webview>
 </body>
 
 </html>

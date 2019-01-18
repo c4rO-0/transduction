@@ -12,7 +12,7 @@ webview {
 }
 
 .container-fluid {
-    /* height: -webkit-fill-available; */
+    height: -webkit-fill-available;
 }
 
 ::-webkit-scrollbar {

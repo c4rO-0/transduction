@@ -3,13 +3,18 @@
  * 开关webview
  */
 function toggleWebview() {
-    document.querySelectorAll('webview').forEach((e) => {
-        if (e.style.display === 'none') {
-            e.style.display = ''
-        } else {
-            e.style.display = 'none'
-        }
-    })
+    // document.querySelectorAll('webview').forEach((e) => {
+    //     if (e.style.display === 'none') {
+    //         e.style.display = ''
+    //     } else {
+    //         e.style.display = 'none'
+    //     }
+    // })
+    if (document.body.style.overflow === 'hidden') {
+        document.body.style.overflow = ''
+    } else {
+        document.body.style.overflow = 'hidden'
+    }
 }
 /**
  * 打开webview Devtool
@@ -220,10 +225,18 @@ $(document).ready(function () {
                 // 收到某个用户聊天记录
                 console.log("debug : ", "==========Dialog============")
                 console.log(Obj)
-                setTimeout(() => {
-                    console.log('bluring outttttttttttttttttttt')
-                    $(webTag2Selector('skype')).blur()
-                }, 2000)
+
+                console.log('focusing innnnnnnnnnnn')
+                $(webTag2Selector(webTag)).focus()
+                console.log(document.activeElement)
+                // document.querySelector('webview').focus()
+
+                // setTimeout(() => {
+                console.log('bluring outttttttttttttttttttt')
+                $(webTag2Selector(webTag)).blur()
+                console.log(document.activeElement)
+                // document.querySelector('webview').blur()
+                // }, 2000)
 
 
                 resolve("copy that.")
@@ -257,10 +270,14 @@ $(document).ready(function () {
 
                 resolve("copy that")
             } else if (key == 'focus') {
+                console.log('focusing innnnnnnnnnnn')
                 $(webTag2Selector(webTag)).focus()
+                console.log(document.activeElement)
                 resolve("focus done")
             } else if (key == 'blur') {
+                console.log('bluring outttttttttttttttttttt')
                 $(webTag2Selector(webTag)).blur()
+                console.log(document.activeElement)
                 resolve("blur done")
             }
 
@@ -316,8 +333,8 @@ $(document).ready(function () {
                 //     console.log('bluring outtttttttttttttttttttttttt')
                 //     $(webTag2Selector(webTag)).blur()
                 // }, 1300)
-                console.log('focusing innnnnnnnnnnn')
-                $(webTag2Selector(webTag)).focus()
+                // console.log('focusing innnnnnnnnnnn')
+                // $(webTag2Selector(webTag)).focus()
             }).catch((error) => {
                 throw error
             })
