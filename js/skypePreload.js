@@ -251,8 +251,13 @@ window.onload = function () {
         }).catch((error) => {
             throw error
         })
-        console.log('got this messages: ' + msglog)
+        console.log('msglog: ')
+        console.log(msglog)
         msglog = undefined
+        if (obs != undefined) {
+            console.log('disconnecting.........')
+            obs.disconnect()
+        }
     }
 
     let obsMSG = new MutationObserver(callbackMSG);
@@ -305,6 +310,7 @@ window.onload = function () {
                     console.log('chat log update finished?')
                     newInsertFragment = false
                     reportChatLog(obs)
+                    break
                 }
 
             }
