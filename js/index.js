@@ -346,4 +346,7 @@ $(document).ready(function () {
     console.log("toggle")
     toggleWebview()
     openDevtool('skype')
+    window.onresize = ()=>{
+        console.log("===window resize====")
+    }
 })
