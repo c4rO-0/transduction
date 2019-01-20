@@ -3,7 +3,7 @@
  * 开关webview
  */
 function toggleWebview() {
-    document.querySelectorAll('webview').forEach((e) => {
+    $("#webview-app webview").toArray().forEach((e) => {
         if (e.style.display === 'none') {
             e.style.display = ''
         } else {
@@ -269,6 +269,53 @@ $(document).ready(function () {
 
     }
 
+    /**
+     * 
+     * @param {String} webSelector 要插入的webview JQuery selector
+     * @param {String} extensionName 插件名称
+     * @param {String} strUrl 插件地址
+     * @param {String} strPathJS JS地址
+     * @returns {Boolean} 加载成功或失败
+     */
+    function loadExtension(webSelector, extensionName, strUrl, strPathJS){
+
+        // 检测selector
+        if($(webSelector).length == 0){
+            console.log("loadExtension : cannot find webview by "+webSelector)
+            return false
+        }else if($(webSelector).length > 1 ){
+            console.log("loadExtension : multiple webview found by "+webSelector)
+            return false            
+        }
+
+        // 检查文件路径
+        if(strPathJS.length > 0){
+            let JSexist = false
+            fs.stat(strPathJS, function(err, stat){
+                if(stat&&stat.isFile()) {
+                    JSexist = true
+                }
+            });
+            if(! JSexist){
+                console.log("loadExtension : cannot find JS file")
+                return false    
+            }
+
+            $(webSelector).attr('preload', strPathJS)
+        }
+
+
+        $(webSelector).attr("data-app-name", extensionName)
+
+        $(webSelector).attr('src', strUrl)
+
+
+
+        // $(webSelector).get(0).reload()
+
+
+    }
+
     // =============================程序主体=============================
 
 
@@ -318,4 +365,10 @@ $(document).ready(function () {
 
     console.log("toggle")
     toggleWebview()
+
+    // 3rd-app click
+    $(debug_firefox_send_str).on('click',()=>{
+        loadExtension("#modal-extension webview", "firefox-send", "https://send.firefox.com/", '')
+        $('#modal-extension').modal()
+    })
 })
