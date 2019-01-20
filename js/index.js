@@ -16,13 +16,13 @@ function toggleWebview() {
  * @param {string} appName
  */
 function openDevtool(appName) {
-    let web = $("webview[app-name='" + appName + "']")[0];
+    let web = $("webview[data-app-name='" + appName + "']")[0];
     web.openDevTools();
 }
 
 function listWebview() {
     $("webview").toArray().forEach((e, i) => {
-        console.log($(e).attr('app-name'))
+        console.log($(e).attr('data-app-name'))
     })
 }
 
@@ -123,7 +123,7 @@ $(document).ready(function () {
      * @returns {String} webview的selector
      */
     function webTag2Selector(webTag) {
-        return "webview[app-name='" + webTag + "']"
+        return "webview[data-app-name='" + webTag + "']"
     }
 
     function AddConvoHtml(appName, convo) {

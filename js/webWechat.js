@@ -443,12 +443,15 @@ window.onload = function () {
 
                             MSGList.push(MSG)
                         }
+                        if(MSGList.length > 0){
+                            (MSGList[0])["userID"] = ID
+                            core.WebToHost({ "Dialog": MSGList }).then((res) => {
+                                console.log(res)
+                            }).catch((error) => {
+                                throw error
+                            });
+                        }
 
-                        core.WebToHost({ "Dialog": MSGList }).then((res) => {
-                            console.log(res)
-                        }).catch((error) => {
-                            throw error
-                        });
                     }, 100);
                 } else {
                     reject('unknown key')
