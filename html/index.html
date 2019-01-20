@@ -126,10 +126,29 @@
         </div>
     </div>
 
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="3rd-app" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                </div>
+                <div class="modal-body">
+                    
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+
+        <webview app-name="firefox-send" src="https://send.firefox.com/" preload=""></webview>
     </div>
+
+
+
     <!-- id : webview[大写字母]名称-->
     <webview app-name="skype" src="https://web.skype.com/en/" preload="../js/skypePreload.js"></webview>
     <webview app-name="wechat" preload="../js/webWechat.js" src="https://web.wechat.com/"></webview>
+
 </body>
 
 </html>
