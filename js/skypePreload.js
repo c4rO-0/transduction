@@ -225,10 +225,6 @@ window.onload = function () {
         })
         console.log(msglog)
         if (msglog.length > 0) {
-
-            // 第一个MSG添加userID
-            (msglog[0])["userID"] = $("#timelineComponent swx-recent-item a.active").attr("data-user-i-d")
-
             core.WebToHost({ 'Dialog': msglog }).then((res) => {
                 console.log(res)
                 // core.WebToHost({'focus':''}).then((res) =>{
@@ -242,11 +238,84 @@ window.onload = function () {
         }
         msglog = undefined
     }
+
+    function reportChatLog(obs) {
+        console.log('gathering messages')
+        let msglog = []
+        document.querySelectorAll('div.fragment:not(.hide) swx-message.message').forEach((item, i) => {
+            msglog[i] = new chatLog()
+            msglog[i].extractAll(item)
+        })
+        core.WebToHost({ 'Dialog': msglog }).then((res) => {
+            console.log(res)
+        }).catch((error) => {
+            throw error
+        })
+        console.log('msglog: ')
+        console.log(msglog)
+        msglog = undefined
+        if (obs != undefined) {
+            console.log('disconnecting.........')
+            obs.disconnect()
+        }
+    }
+
     let obsMSG = new MutationObserver(callbackMSG);
     obsMSG.observe($("#chatComponent")[0], {
         subtree: true, childList: true, characterData: true, attributes: true,
         attributeOldValue: true, characterDataOldValue: true
     });
+    obsMSG.disconnect()
+    let newInsertFragment = false
+    let obsChatLog = new MutationObserver(function (list, obs) {
+        console.log('observing chatlog')
+        console.log(list)
+        console.log('newInsertFragment: ' + newInsertFragment)
+
+        if (list.length === 5 &&
+            list[0].type === 'childList' &&
+            list[1].type === 'childList' &&
+            list[2].type === 'childList' &&
+            list[3].type === 'attributes' &&
+            list[3].attributeName === 'class' &&
+            list[3].oldValue === 'fragment hide' &&
+            list[4].type === 'attributes' &&
+            list[4].attributeName === 'aria-hidden') {
+            console.log('type 1 full update')
+            newInsertFragment = true
+        }
+
+        if (list.length === 4 &&
+            list[0].type === 'attributes' &&
+            list[1].type === 'attributes' &&
+            list[2].type === 'attributes' &&
+            list[3].type === 'attributes' &&
+            list[0].attributeName === 'class' &&
+            list[1].attributeName === 'aria-hidden' &&
+            list[2].attributeName === 'class' &&
+            list[3].attributeName === 'aria-hidden' &&
+            list[0].oldValue === 'fragment' &&
+            list[2].oldValue === 'fragment hide') {
+            console.log('type 2 lite update')
+            newInsertFragment = false
+            reportChatLog(obs)
+        }
+
+        if (newInsertFragment && list.length < 50) {
+            for (let i in list) {
+                if (list[i].type === 'attributes' &&
+                    list[i].attributeName === 'class' &&
+                    list[i].oldValue.includes('swx-in-viewport') &&
+                    list[i].target.classList.contains('swx-in-viewport')) {
+                    console.log('chat log update finished?')
+                    newInsertFragment = false
+                    reportChatLog(obs)
+                    break
+                }
+
+            }
+        }
+    })
 
 
     // 等待win发来消息
@@ -255,14 +324,18 @@ window.onload = function () {
             //  收到消息进行处理
             if (key == 'queryDialog') {
                 // 查询Dialog
-
                 let userID = arg.userID
                 console.log("debug : userID : ", userID)
-
-                document.querySelector('[data-user-i-d="' + userID + '"]').click()
-
+                let target = document.querySelector('[data-user-i-d="' + userID + '"]')
+                if (target.classList.contains('active')) {
+                    reportChatLog(undefined)
+                } else {
+                    obsChatLog.observe(document.querySelector('.fragmentsContainer'), {
+                        subtree: true, childList: true, attributes: true, attributeOldValue: true
+                    })
+                    target.click()
+                }
                 resolve("copy the query. Please wait...")
-
             } else {
                 reject("unknown key : ", key)
             }

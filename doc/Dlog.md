@@ -23,6 +23,11 @@ const { net } = require('electron').remote
 
 ## 日志
 
+## 2019Jan18: L
+- 疑点，焦点总会莫名奇妙地跑回到webview上
+- 为什么skypePreload.js r250 总是执行两次
+- 目前的判断update结束的标准还不够稳定，可能出现点一下没反应的情况，多点一下
+
 ## 2019Jan16-17: L
 - 灰色可能需要更深一点，如果想统一的改需要把pin，image都改成svg
 - 提醒自己，自己定义一套td-row, td-col，还有常用的类，比如transparency, position
