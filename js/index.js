@@ -3,13 +3,19 @@
  * 开关webview
  */
 function toggleWebview() {
-    $("#webview-app webview").toArray().forEach((e) => {
-        if (e.style.display === 'none') {
-            e.style.display = ''
-        } else {
-            e.style.display = 'none'
-        }
-    })
+    // document.querySelectorAll('webview').forEach((e) => {
+    //     if (e.style.display === 'none') {
+    //         e.style.display = ''
+    //     } else {
+    //         e.style.display = 'none'
+    //     }
+    // })
+    if (document.body.style.overflow === 'hidden') {
+        document.body.style.overflow = ''
+    } else {
+        window.scrollTo(0, 0)
+        document.body.style.overflow = 'hidden'
+    }
 }
 /**
  * 打开webview Devtool
@@ -221,6 +227,19 @@ $(document).ready(function () {
                 console.log("debug : ", "==========Dialog============")
                 console.log(Obj)
 
+                console.log('focusing innnnnnnnnnnn')
+                $(webTag2Selector(webTag)).focus()
+                console.log(document.activeElement)
+                // document.querySelector('webview').focus()
+
+                // setTimeout(() => {
+                console.log('bluring outttttttttttttttttttt')
+                $(webTag2Selector(webTag)).blur()
+                console.log(document.activeElement)
+                // document.querySelector('webview').blur()
+                // }, 2000)
+
+
                 resolve("copy that.")
             } else if (key == 'Convo-new') {
                 // 有新消息来了
@@ -252,10 +271,14 @@ $(document).ready(function () {
 
                 resolve("copy that")
             } else if (key == 'focus') {
+                console.log('focusing innnnnnnnnnnn')
                 $(webTag2Selector(webTag)).focus()
+                console.log(document.activeElement)
                 resolve("focus done")
             } else if (key == 'blur') {
+                console.log('bluring outttttttttttttttttttt')
                 $(webTag2Selector(webTag)).blur()
+                console.log(document.activeElement)
                 resolve("blur done")
             }
 
@@ -348,14 +371,18 @@ $(document).ready(function () {
         } else {
 
 
-
+            // $(webTag2Selector(webTag)).focus()
             core.HostSendToWeb(
                 webTag2Selector(webTag),
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
-                // $(webTag2Selector(webTag)).blur()
-                $(webTag2Selector(webTag)).focus()
+                // setTimeout(() => {
+                //     console.log('bluring outtttttttttttttttttttttttt')
+                //     $(webTag2Selector(webTag)).blur()
+                // }, 1300)
+                // console.log('focusing innnnnnnnnnnn')
+                // $(webTag2Selector(webTag)).focus()
             }).catch((error) => {
                 throw error
             })
@@ -365,6 +392,10 @@ $(document).ready(function () {
 
     console.log("toggle")
     toggleWebview()
+    openDevtool('skype')
+    window.onresize = ()=>{
+        console.log("===window resize====")
+    }
 
     // 3rd-app click
     $(debug_firefox_send_str).on('click',()=>{
