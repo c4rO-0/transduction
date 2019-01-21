@@ -81,7 +81,7 @@
                 </div>
                 <div class="td-chat">
                     <img id="td-pin" src="../res/pic/pin.png">
-                    <div class="td-chatLog">
+                    <div class="td-chatLog" winType="chatLog">
                         <div class="td-bubble">
                             <p class="m-0">猜猜我是谁</p>
                             <div class="td-them">
@@ -107,9 +107,14 @@
                             </div>
                         </div>
                     </div>
+                    <div class="td-chatLog" winType="extension" style="display:none">
+                        <!-- 插入extension的地方 -->
+                        <!-- <webview data-extension-name="" src="" preload=""></webview> -->
+                    </div>
                     <div class="td-toolbox">
+                        <img id="debug-goBackChat" src="../res/pic/home.png">
                         <img id="debug-firefox-send" src="../res/pic/ffsend.png">
-                        <img src="../res/pic/ffsend.png">
+                        <img id="debug-latex2png" src="../res/pic/latex.png">
                     </div>
                 </div>
                 <div class="td-input">
@@ -127,33 +132,11 @@
         </div>
     </div>
 
-    <!-- 模态框（Modal） -->
-    <div id="modal-extension" class="modal fade" role="dialog">
-        <div class="modal-dialog">
 
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Title Here</h4>
-                </div>
-                <div class="modal-body">
-                    <!-- 插入 3rd-app的地方 -->
-                    <webview data-app-name="" src="" preload=""></webview>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- id : webview[大写字母]名称-->
+    <webview data-app-name="skype" src="https://web.skype.com/en/" preload="../js/skypePreload.js"></webview>
+    <webview data-app-name="wechat" preload="../js/webWechat.js" src="https://web.wechat.com/"></webview>
 
-
-    <div id='webview-app'>
-        <!-- id : webview[大写字母]名称-->
-        <webview data-app-name="skype" src="https://web.skype.com/en/" preload="../js/skypePreload.js"></webview>
-        <webview data-app-name="wechat" preload="../js/webWechat.js" src="https://web.wechat.com/"></webview>
-    </div>
 
 </body>
 
