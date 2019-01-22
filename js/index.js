@@ -496,7 +496,6 @@ $(document).ready(function () {
         event.preventDefault();
 
         let data = event.originalEvent.dataTransfer
-
         // console.log(data)
 
         if (data.items) {
@@ -543,6 +542,59 @@ $(document).ready(function () {
             }
         }
     })
+
+    // ===========paste================
+    $("div.td-inputbox").on("paste", async function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        let data = event.originalEvent.clipboardData
+
+        if (data.items) {
+            let items = data.items
+            console.log("---found items---", items.length)
+            // Use DataTransferItemList interface to access the file(s)
+
+            for (var i = 0; i < items.length; i++) {
+                console.log(i, "item", items[i].kind, items[i].type)
+                // If dropped items aren't files, reject them
+                if ((items[i].kind == 'string') &&
+                    (items[i].type.match('^text/plain'))) {
+                    // This item is the target node
+                    items[i].getAsString(function (s) {
+                        console.log("... Drop: text", s)
+                        // ev.target.appendChild(document.getElementById(s));
+                    });
+                } else if ((items[i].kind == 'string') &&
+                    (items[i].type.match('^text/html'))) {
+                    // Drag data item is HTML
+                    items[i].getAsString(function (s) {
+                        // console.log("... Drop: HTML", s)
+                        // ev.target.appendChild(document.getElementById(s));
+                    });
+                } else if ((items[i].kind == 'string') &&
+                    (items[i].type.match('^text/uri-list'))) {
+                    // Drag data item is URI
+                    items[i].getAsString(function (s) {
+                        console.log("... Drop: URI", s)
+                        // ev.target.appendChild(document.getElementById(s));
+                    });
+                } else if ((items[i].kind == 'file') &&
+                    (items[i].type.match('^image/'))) {
+                    // Drag data item is an image file
+                    var file = items[i].getAsFile();
+                    console.log(file)
+                    console.log('... name = ' + file.name + ' path = ' + file.path);
+                }
+            }
+        } else {
+            console.log("---found files---")
+            // Use DataTransfer interface to access the file(s)
+            for (var i = 0; i < data.files.length; i++) {
+                console.log('... file[' + i + '].name = ' + data.files[i].name);
+            }
+        }
+    });
 
 
 })
