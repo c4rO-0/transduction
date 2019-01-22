@@ -428,7 +428,7 @@ $(document).ready(function () {
 
     console.log("toggle")
     toggleWebview()
-    openDevtool('skype')
+    // openDevtool('skype')
     window.onresize = () => {
         console.log("===window resize====")
     }
@@ -458,4 +458,21 @@ $(document).ready(function () {
         $("#td-right div.td-chatLog[winType='extension']").hide()
 
     })
+
+    $("#td-right").on("dragenter", (event)=>{
+        $("#td-right").hide()
+        $("div[winType='dropFile']").show()
+    })
+    $("div[winType='dropFile']").on("dragleave", (event)=>{
+        $("div[winType='dropFile']").hide()             
+        $("#td-right").show()
+    })
+    $("div[winType='dropFile']").on("drop", (event)=>{
+        $("div[winType='dropFile']").hide()             
+        $("#td-right").show()
+        event.preventDefault()
+        console.log(event)
+    })   
+     
+
 })
