@@ -3,13 +3,19 @@
  * 开关webview
  */
 function toggleWebview() {
-    document.querySelectorAll('webview').forEach((e) => {
-        if (e.style.display === 'none') {
-            e.style.display = ''
-        } else {
-            e.style.display = 'none'
-        }
-    })
+    // document.querySelectorAll('webview').forEach((e) => {
+    //     if (e.style.display === 'none') {
+    //         e.style.display = ''
+    //     } else {
+    //         e.style.display = 'none'
+    //     }
+    // })
+    if (document.body.style.overflow === 'hidden') {
+        document.body.style.overflow = ''
+    } else {
+        window.scrollTo(0, 0)
+        document.body.style.overflow = 'hidden'
+    }
 }
 /**
  * 打开webview Devtool
@@ -35,6 +41,8 @@ $(document).ready(function () {
     let debug_firefox_send_str = "#debug-firefox-send"
     let debug_image_str = "#debug-image"
     let debug_send_str = "#debug-send"
+    let debug_latex_str = "#debug-latex2png"
+    let debug_goBackChat_str = "#debug-goBackChat"
 
     // =========================class===========================
     class conversation {
@@ -221,6 +229,19 @@ $(document).ready(function () {
                 console.log("debug : ", "==========Dialog============")
                 console.log(Obj)
 
+                console.log('focusing innnnnnnnnnnn')
+                $(webTag2Selector(webTag)).focus()
+                console.log(document.activeElement)
+                // document.querySelector('webview').focus()
+
+                // setTimeout(() => {
+                console.log('bluring outttttttttttttttttttt')
+                $(webTag2Selector(webTag)).blur()
+                console.log(document.activeElement)
+                // document.querySelector('webview').blur()
+                // }, 2000)
+
+
                 resolve("copy that.")
             } else if (key == 'Convo-new') {
                 // 有新消息来了
@@ -252,10 +273,14 @@ $(document).ready(function () {
 
                 resolve("copy that")
             } else if (key == 'focus') {
+                console.log('focusing innnnnnnnnnnn')
                 $(webTag2Selector(webTag)).focus()
+                console.log(document.activeElement)
                 resolve("focus done")
             } else if (key == 'blur') {
+                console.log('bluring outttttttttttttttttttt')
                 $(webTag2Selector(webTag)).blur()
+                console.log(document.activeElement)
                 resolve("blur done")
             }
 
@@ -267,6 +292,87 @@ $(document).ready(function () {
             }, 5000);
         })])
 
+    }
+
+    /**
+     * 
+     * @param {String} sectionSelector 要插入的webview 的父节点
+     * @param {String} extensionName 插件名称
+     * @param {String} strUrl 插件地址
+     * @param {String} strPathJS JS地址
+     * @returns {Boolean} 加载成功或失败
+     */
+    function loadExtension(sectionSelector, extensionName, strUrl, strPathJS) {
+
+        // 检测selector
+        if ($(sectionSelector).length == 0) {
+            console.log("loadExtension : cannot find section by " + sectionSelector)
+            return false
+        } else if ($(sectionSelector).length > 1) {
+            console.log("loadExtension : multiple sections found by " + sectionSelector)
+            return false
+        }
+
+        // 检查文件路径
+        if (strPathJS.length > 0) {
+            let JSexist = false
+            fs.stat(strPathJS, function (err, stat) {
+                if (stat && stat.isFile()) {
+                    JSexist = true
+                }
+            });
+            if (!JSexist) {
+                console.log("loadExtension : cannot find JS file")
+                return false
+            }
+
+
+        }
+
+
+
+        let webSelector = sectionSelector + " webview[data-extension-name='" + extensionName + "']"
+        if ($(webSelector).length == 0) {
+            console.log("loadExtension : create extension")
+            // 隐藏所有webview
+            $(sectionSelector + " webview").each(function (index) {
+                $(this).hide();
+            });            
+            $(sectionSelector).append("<webview data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
+
+            $(webSelector).attr("data-extension-name", extensionName)
+
+            $(webSelector).attr('src', strUrl)
+
+            $(webSelector).attr('preload', strPathJS)
+
+            $(webSelector).show()
+
+        }else{
+            if($(webSelector).css("display")=="none"){
+                console.log("loadExtension : display extension")
+                $(sectionSelector + " webview").each(function (index) {
+                    $(this).hide();
+                });      
+                $(webSelector).show()
+            }else{
+                // 隐藏所有webview
+                $(sectionSelector + " webview").each(function (index) {
+                    $(this).hide();
+                });                      
+                console.log("loadExtension : reload extension")
+
+                $(webSelector).attr("data-extension-name", extensionName)
+
+                $(webSelector).attr('src', strUrl)
+    
+                $(webSelector).attr('preload', strPathJS) 
+
+                $(webSelector).show()                 
+            }
+        }
+
+        return true
     }
 
     // =============================程序主体=============================
@@ -301,14 +407,18 @@ $(document).ready(function () {
         } else {
 
 
-
+            // $(webTag2Selector(webTag)).focus()
             core.HostSendToWeb(
                 webTag2Selector(webTag),
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
-                // $(webTag2Selector(webTag)).blur()
-                $(webTag2Selector(webTag)).focus()
+                // setTimeout(() => {
+                //     console.log('bluring outtttttttttttttttttttttttt')
+                //     $(webTag2Selector(webTag)).blur()
+                // }, 1300)
+                // console.log('focusing innnnnnnnnnnn')
+                // $(webTag2Selector(webTag)).focus()
             }).catch((error) => {
                 throw error
             })
@@ -318,4 +428,34 @@ $(document).ready(function () {
 
     console.log("toggle")
     toggleWebview()
+    openDevtool('skype')
+    window.onresize = () => {
+        console.log("===window resize====")
+    }
+
+    // extension click
+    $(debug_firefox_send_str).on('click', () => {
+        let extensionName = "firefox-send"
+        $("#td-right div.td-chatLog[winType='chatLog']").hide()
+        $("#td-right div.td-chatLog[winType='extension']").show()
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
+    })
+
+    $(debug_latex_str).on('click', () => {
+        let extensionName = "latex2png"
+        $("#td-right div.td-chatLog[winType='chatLog']").hide()
+        $("#td-right div.td-chatLog[winType='extension']").show()
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
+    })
+
+    // 隐藏extension
+    $(debug_goBackChat_str).on('click', ()=>{
+        $("#td-right div.td-chatLog[winType='chatLog']").show()
+        // webview隐藏, 防止再次点击刷新页面
+        $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
+            $(this).hide();
+        });      
+        $("#td-right div.td-chatLog[winType='extension']").hide()
+
+    })
 })

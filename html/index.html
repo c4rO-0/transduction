@@ -14,6 +14,7 @@
 
 <body>
     <div class="container-fluid p-0">
+        <!-- <div class="row m-0"> -->
         <div class="row m-0" style="height: -webkit-fill-available">
             <div class="col-left" id="td-left">
                 <div class="td-convo theme-transduction td-font">
@@ -80,7 +81,7 @@
                 </div>
                 <div class="td-chat">
                     <img id="td-pin" src="../res/pic/pin.png">
-                    <div class="td-chatLog">
+                    <div class="td-chatLog" winType="chatLog">
                         <div class="td-bubble">
                             <p class="m-0">猜猜我是谁</p>
                             <div class="td-them">
@@ -89,8 +90,8 @@
                                     <p class="m-0">05:45</p>
                                 </div>
                                 <div class="td-chatText">
-                                    <!-- 奥拉奥拉 -->
-                                    噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈
+                                    奥拉奥拉
+                                    <!-- 噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈 -->
                                 </div>
                             </div>
                         </div>
@@ -106,9 +107,14 @@
                             </div>
                         </div>
                     </div>
+                    <div class="td-chatLog" winType="extension" style="display:none">
+                        <!-- 插入extension的地方 -->
+                        <!-- <webview data-extension-name="" src="" preload=""></webview> -->
+                    </div>
                     <div class="td-toolbox">
+                        <img id="debug-goBackChat" src="../res/pic/home.png">
                         <img id="debug-firefox-send" src="../res/pic/ffsend.png">
-                        <img src="../res/pic/ffsend.png">
+                        <img id="debug-latex2png" src="../res/pic/latex.png">
                     </div>
                 </div>
                 <div class="td-input">
@@ -126,10 +132,12 @@
         </div>
     </div>
 
-    </div>
+
     <!-- id : webview[大写字母]名称-->
     <webview data-app-name="skype" src="https://web.skype.com/en/" preload="../js/skypePreload.js"></webview>
     <webview data-app-name="wechat" preload="../js/webWechat.js" src="https://web.wechat.com/"></webview>
+
+
 </body>
 
 </html>
