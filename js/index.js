@@ -337,7 +337,7 @@ $(document).ready(function () {
             // 隐藏所有webview
             $(sectionSelector + " webview").each(function (index) {
                 $(this).hide();
-            });            
+            });
             $(sectionSelector).append("<webview data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
 
             $(webSelector).attr("data-extension-name", extensionName)
@@ -348,27 +348,27 @@ $(document).ready(function () {
 
             $(webSelector).show()
 
-        }else{
-            if($(webSelector).css("display")=="none"){
+        } else {
+            if ($(webSelector).css("display") == "none") {
                 console.log("loadExtension : display extension")
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
-                });      
+                });
                 $(webSelector).show()
-            }else{
+            } else {
                 // 隐藏所有webview
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
-                });                      
+                });
                 console.log("loadExtension : reload extension")
 
                 $(webSelector).attr("data-extension-name", extensionName)
 
                 $(webSelector).attr('src', strUrl)
-    
-                $(webSelector).attr('preload', strPathJS) 
 
-                $(webSelector).show()                 
+                $(webSelector).attr('preload', strPathJS)
+
+                $(webSelector).show()
             }
         }
 
@@ -433,6 +433,8 @@ $(document).ready(function () {
         console.log("===window resize====")
     }
 
+
+    // =================extension click==================
     // extension click
     $(debug_firefox_send_str).on('click', () => {
         let extensionName = "firefox-send"
@@ -449,30 +451,98 @@ $(document).ready(function () {
     })
 
     // 隐藏extension
-    $(debug_goBackChat_str).on('click', ()=>{
+    $(debug_goBackChat_str).on('click', () => {
         $("#td-right div.td-chatLog[winType='chatLog']").show()
         // webview隐藏, 防止再次点击刷新页面
         $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
             $(this).hide();
-        });      
+        });
         $("#td-right div.td-chatLog[winType='extension']").hide()
 
     })
 
-    $("#td-right").on("dragenter", (event)=>{
-        $("#td-right").hide()
-        $("div[winType='dropFile']").show()
+    // ======================拖入东西==========================
+    // 检测到拖入到东西
+    // 当extension打开的时候, 只接受输入框位置拖入
+    $("#td-right").on("dragenter", (event) => {
+        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+
+        } else {
+            $("#td-right").hide()
+            $("div[winType='dropFile']").show()
+        }
     })
-    $("div[winType='dropFile']").on("dragleave", (event)=>{
-        $("div[winType='dropFile']").hide()             
+    $("div.td-inputbox").on("dragenter", (event) => {
+        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+            $("#td-right").hide()
+            $("div[winType='dropFile']").show()
+        } else {
+
+        }
+    })
+
+    // 拖出右侧还原
+    $("div[winType='dropFile']").on("dragleave", (event) => {
+        $("div[winType='dropFile']").hide()
         $("#td-right").show()
     })
-    $("div[winType='dropFile']").on("drop", (event)=>{
-        $("div[winType='dropFile']").hide()             
+
+    //识别到放下东西
+    $("div[winType='dropFile']").on("drop", (event) => {
+        console.log("drop")
+        $("div[winType='dropFile']").hide()
         $("#td-right").show()
-        event.preventDefault()
-        console.log(event)
-    })   
-     
+        // Prevent default behavior (Prevent file from being opened)
+        event.preventDefault();
+
+        let data = event.originalEvent.dataTransfer
+
+        // console.log(data)
+
+        if (data.items) {
+            let items = data.items
+            console.log("---found items---", items.length)
+            // Use DataTransferItemList interface to access the file(s)
+
+            for (var i = 0; i < items.length; i++) {
+                console.log(i, "item", items[i].kind)
+                // If dropped items aren't files, reject them
+                if ((items[i].kind == 'string') &&
+                    (items[i].type.match('^text/plain'))) {
+                    // This item is the target node
+                    items[i].getAsString(function (s) {
+                        console.log("... Drop: text", s)
+                        // ev.target.appendChild(document.getElementById(s));
+                    });
+                } else if ((items[i].kind == 'string') &&
+                    (items[i].type.match('^text/html'))) {
+                    // Drag data item is HTML
+                    items[i].getAsString(function (s) {
+                        // console.log("... Drop: HTML", s)
+                        // ev.target.appendChild(document.getElementById(s));
+                    });
+                } else if ((items[i].kind == 'string') &&
+                    (items[i].type.match('^text/uri-list'))) {
+                    // Drag data item is URI
+                    items[i].getAsString(function (s) {
+                        console.log("... Drop: URI", s)
+                        // ev.target.appendChild(document.getElementById(s));
+                    });
+                } else if ((items[i].kind == 'file') &&
+                    (items[i].type.match('^image/'))) {
+                    // Drag data item is an image file
+                    var file = items[i].getAsFile();
+                    console.log('... file[' + i + '].name = ' + file.name);
+                }
+            }
+        } else {
+            console.log("---found files---")
+            // Use DataTransfer interface to access the file(s)
+            for (var i = 0; i < data.files.length; i++) {
+                console.log('... file[' + i + '].name = ' + data.files[i].name);
+            }
+        }
+    })
+
 
 })
