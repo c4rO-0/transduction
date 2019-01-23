@@ -32,6 +32,8 @@ const { net } = require('electron').remote
 - 整体删除元素
   当用户拖入文件之后, 按backspace会把文件对应的html删除掉
 
+- input box回车会自动往里面插入<div>
+
 ## 2019Jan18: L
 - 疑点，焦点总会莫名奇妙地跑回到webview上
 - 为什么skypePreload.js r250 总是执行两次

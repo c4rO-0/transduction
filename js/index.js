@@ -666,9 +666,21 @@ $("div.td-inputbox").on("paste", function (event) {
     processDataTransfer(event.originalEvent.clipboardData).then(
         console.log("insert input done")
     )
-
-
 });
 
+
+// ==========send===============
+$(debug_send_str).on('click', event =>{
+    console.log("-----send-------")
+    let htmlInput = jQuery.parseHTML($('div.td-inputbox').html());
+    $.each(htmlInput, function( i, el ) {
+        console.log(el)
+        if($(el)[0].nodeName == '#text'){
+
+        }else{
+
+        }
+    })
+})
 
 })
