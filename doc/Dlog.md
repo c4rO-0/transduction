@@ -23,6 +23,15 @@ const { net } = require('electron').remote
 
 ## 日志
 
+## 2019Jan23: BS
+前台已经可以识别拖入文件, url. 和识别粘贴文件.
+前台还需要解决 :
+- inputbox渲染.
+  - 图片加载
+  - 文件加载
+- 整体删除元素
+  当用户拖入文件之后, 按backspace会把文件对应的html删除掉
+
 ## 2019Jan18: L
 - 疑点，焦点总会莫名奇妙地跑回到webview上
 - 为什么skypePreload.js r250 总是执行两次

@@ -37,6 +37,10 @@ $(document).ready(function () {
     const core = require("../js/core.js")
     // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
+
+    let fileList = {}; //临时储存file object
+
+
     let status = "webviewSkype"
     let debug_app_link_str = "#debug-app-link"
     let debug_firefox_send_str = "#debug-firefox-send"
@@ -398,6 +402,8 @@ $(document).ready(function () {
 
             let uniqueItem = new Array();
 
+            let arrayString = new Array()
+
 
             if (data.items) {
                 let items = data.items
@@ -416,7 +422,7 @@ $(document).ready(function () {
                                 items[i].getAsString(function (s) {
                                     // console.log("... Drop: text ", typeof (s), s)
                                     // ev.target.appendChild(document.getElementById(s));
-                                    resolve({'text':s})
+                                    resolve(s)
                                 });
                             }))
 
@@ -435,7 +441,8 @@ $(document).ready(function () {
                                 items[i].getAsString(function (s) {
                                     // console.log("... Drop: URI ", typeof (s), s)
                                     // ev.target.appendChild(document.getElementById(s));
-                                    resolve({'url':s})
+                                    arrayString.push(s)
+                                    resolve(s)
                                 });
                             }))
 
@@ -445,7 +452,7 @@ $(document).ready(function () {
                         arrayItem.push(new Promise(
                             (resolve, reject) => {
                                 // console.log("file")
-                                resolve({'file':items[i].getAsFile()});
+                                resolve(items[i].getAsFile());
                             }))
                         // console.log('... name = ' + file.name + ' path = ' + file.path);
                     }
@@ -457,7 +464,7 @@ $(document).ready(function () {
                 // Use DataTransfer interface to access the file(s)
                 for (var i = 0; i < data.files.length; i++) {
                     // console.log(data.files[i])
-                    arrayItem.push(new Promise.resolve({'file':data.files[i]}))
+                    arrayItem.push(new Promise.resolve(data.files[i]))
                 }
             }
 
@@ -465,38 +472,64 @@ $(document).ready(function () {
 
             Promise.all(arrayItem).then((valueItems) => {
                 // console.log("finish array")
-                // console.log(strValues)
-                let arrayString = new Array()
-                let arrayIndex = new Array()
-                for (let index=0; index < valueItems.length; index++){
-                    let el = valueItems[index];
-                    if(el.hasOwnProperty('file')){
-                        uniqueItem.push(el)
-                    }else if(el.hasOwnProperty('text')){
-                        if($.inArray(el['text'],arrayString) === -1){
-                            arrayString.push(el['text'])
-                            arrayIndex.push(uniqueItem.length)
-                            uniqueItem.push({'text':el['text']})
+                // console.log(arrayString.length)
+
+                uniqueItem = uniqueItem.concat(arrayString)
+
+                // console.log(uniqueItem)
+
+                valueItems.forEach((item, index) => {
+                    if (typeof (item) == "string") {
+                        // arrayString.push(item)
+                        let contains = false
+                        arrayString.forEach(iStr => {
+                            contains = (contains || iStr.includes(item))
+                        })
+                        if (!contains) {
+                            uniqueItem.push(item)
                         }
-                    }else if(el.hasOwnProperty('url')){
-                        if($.inArray(el['url'],arrayString) === -1){
-                            arrayString.push(el['url'])
-                            arrayIndex.push(uniqueItem.length)
-                            uniqueItem.push({'url':el['url']})
-                        }else{
-                            (uniqueItem[arrayIndex[arrayString.indexOf(el['url'])]])['url'] = el['url']
-                        }
+
+                    } else {
+                        uniqueItem.push(item)
                     }
-                }
+                })
 
                 resolve(uniqueItem)
 
-            }).catch(error =>{
-                reject({'string' : error})
+            }).catch(error => {
+                reject({ 'string': error })
             })
 
         })
     }
+
+    function processDataTransfer(data){
+
+        return new Promise((resolve, reject) => {
+
+            filterDataTransfer(data).then((items) =>{
+                console.log("start insert")
+                items.forEach((item)=>{
+                    console.log(item)
+                    if(typeof(item) == 'string'){
+                        // insert string
+                        $("div.td-inputbox").append("<p>" + item + "</p>")
+                    }else{
+                        // insert file
+                        let fileID = core.UniqueStr()
+                        fileList[fileID] = item
+                        //插入html
+                        $("div.td-inputbox").append("<p data-file-ID='"+fileID+"'>" + item.name + "</p>")
+                    }
+                })
+
+                resolve("")
+
+            }).catch(error =>{
+                reject(error)
+            })
+        })
+}
 
     // =============================程序主体=============================
 
@@ -549,93 +582,93 @@ $(document).ready(function () {
         }
     });
 
-    console.log("toggle")
-    toggleWebview()
-    // openDevtool('skype')
-    window.onresize = () => {
-        console.log("===window resize====")
-    }
+console.log("toggle")
+toggleWebview()
+// openDevtool('skype')
+window.onresize = () => {
+    console.log("===window resize====")
+}
 
 
-    // =================extension click==================
-    // extension click
-    $(debug_firefox_send_str).on('click', () => {
-        let extensionName = "firefox-send"
-        $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
-    })
+// =================extension click==================
+// extension click
+$(debug_firefox_send_str).on('click', () => {
+    let extensionName = "firefox-send"
+    $("#td-right div.td-chatLog[winType='chatLog']").hide()
+    $("#td-right div.td-chatLog[winType='extension']").show()
+    loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
+})
 
-    $(debug_latex_str).on('click', () => {
-        let extensionName = "latex2png"
-        $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
-    })
+$(debug_latex_str).on('click', () => {
+    let extensionName = "latex2png"
+    $("#td-right div.td-chatLog[winType='chatLog']").hide()
+    $("#td-right div.td-chatLog[winType='extension']").show()
+    loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
+})
 
-    // 隐藏extension
-    $(debug_goBackChat_str).on('click', () => {
-        $("#td-right div.td-chatLog[winType='chatLog']").show()
-        // webview隐藏, 防止再次点击刷新页面
-        $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
-            $(this).hide();
-        });
-        $("#td-right div.td-chatLog[winType='extension']").hide()
-
-    })
-
-    // ======================拖入东西==========================
-    // 检测到拖入到东西
-    // 当extension打开的时候, 只接受输入框位置拖入
-    $("#td-right").on("dragenter", (event) => {
-        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
-
-        } else {
-            $("#td-right").hide()
-            $("div[winType='dropFile']").show()
-        }
-    })
-    $("div.td-inputbox").on("dragenter", (event) => {
-        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
-            $("#td-right").hide()
-            $("div[winType='dropFile']").show()
-        } else {
-
-        }
-    })
-
-    // 拖出右侧还原
-    $("div[winType='dropFile']").on("dragleave", (event) => {
-        $("div[winType='dropFile']").hide()
-        $("#td-right").show()
-    })
-
-    //识别到放下东西
-    $("div[winType='dropFile']").on("drop", (event) => {
-        console.log("drop")
-        $("div[winType='dropFile']").hide()
-        $("#td-right").show()
-        // Prevent default behavior (Prevent file from being opened)
-        event.preventDefault();
-
-        filterDataTransfer(event.originalEvent.dataTransfer).then(items =>{
-            console.log(items)
-        })
-
-
-    })
-
-    // ===========paste================
-    $("div.td-inputbox").on("paste", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        filterDataTransfer(event.originalEvent.clipboardData).then(items =>{
-            console.log(items)
-        })
-
-
+// 隐藏extension
+$(debug_goBackChat_str).on('click', () => {
+    $("#td-right div.td-chatLog[winType='chatLog']").show()
+    // webview隐藏, 防止再次点击刷新页面
+    $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
+        $(this).hide();
     });
+    $("#td-right div.td-chatLog[winType='extension']").hide()
+
+})
+
+// ======================拖入东西==========================
+// 检测到拖入到东西
+// 当extension打开的时候, 只接受输入框位置拖入
+$("#td-right").on("dragenter", (event) => {
+    if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+
+    } else {
+        $("#td-right").hide()
+        $("div[winType='dropFile']").show()
+    }
+})
+$("div.td-inputbox").on("dragenter", (event) => {
+    if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+        $("#td-right").hide()
+        $("div[winType='dropFile']").show()
+    } else {
+
+    }
+})
+
+// 拖出右侧还原
+$("div[winType='dropFile']").on("dragleave", (event) => {
+    $("div[winType='dropFile']").hide()
+    $("#td-right").show()
+})
+
+//识别到放下东西
+$("div[winType='dropFile']").on("drop", (event) => {
+    console.log("drop")
+    $("div[winType='dropFile']").hide()
+    $("#td-right").show()
+    // Prevent default behavior (Prevent file from being opened)
+    event.preventDefault();
+
+    processDataTransfer(event.originalEvent.dataTransfer).then(
+        console.log("insert input done")
+    )
+
+
+})
+
+// ===========paste================
+$("div.td-inputbox").on("paste", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    processDataTransfer(event.originalEvent.clipboardData).then(
+        console.log("insert input done")
+    )
+
+
+});
 
 
 })
