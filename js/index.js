@@ -35,6 +35,7 @@ function listWebview() {
 $(document).ready(function () {
 
     const core = require("../js/core.js")
+    // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
     let status = "webviewSkype"
     let debug_app_link_str = "#debug-app-link"
@@ -43,6 +44,7 @@ $(document).ready(function () {
     let debug_send_str = "#debug-send"
     let debug_latex_str = "#debug-latex2png"
     let debug_goBackChat_str = "#debug-goBackChat"
+
 
     // =========================class===========================
     class conversation {
@@ -120,6 +122,12 @@ $(document).ready(function () {
             console.log("debug : ", "counter :", this.counter)
             console.log("debug : ", "action :", this.action)
             console.log("debug : ", "muted :", this.muted)
+        }
+
+    }
+
+    class dataItem {
+        constructor() {
         }
 
     }
@@ -376,56 +384,118 @@ $(document).ready(function () {
     }
 
     /**
-     * 
+     * 将拖拽到网页或者粘贴到网页的DataTransfer转化成array
+     * bug : 粘贴url时text和url不一致不能合并, 如papercomment.tech网址直接拖拽
      * @param {DataTransfer} data 
+     * @returns {Promise} 
+     *  arra[{'key':value},{}] 
+     *  key : file text url
      */
     function filterDataTransfer(data) {
 
-        if (data.items) {
-            let items = data.items
-            console.log("---found items---", items.length)
-            // Use DataTransferItemList interface to access the file(s)
+        return new Promise((resolve, reject) => {
+            let arrayItem = new Array();
 
-            for (var i = 0; i < items.length; i++) {
-                console.log(i, "item", items[i].kind, items[i].type)
-                // If dropped items aren't files, reject them
-                if ((items[i].kind == 'string') &&
-                    (items[i].type.match('^text/plain'))) {
-                    // This item is the target node
-                    items[i].getAsString(function (s) {
-                        console.log("... Drop: text", s)
-                        // ev.target.appendChild(document.getElementById(s));
-                    });
-                } else if ((items[i].kind == 'string') &&
-                    (items[i].type.match('^text/html'))) {
-                    // Drag data item is HTML
-                    items[i].getAsString(function (s) {
-                        // console.log("... Drop: HTML", s)
-                        // ev.target.appendChild(document.getElementById(s));
-                    });
-                } else if ((items[i].kind == 'string') &&
-                    (items[i].type.match('^text/uri-list'))) {
-                    // Drag data item is URI
-                    items[i].getAsString(function (s) {
-                        console.log("... Drop: URI", s)
-                        // ev.target.appendChild(document.getElementById(s));
-                    });
-                } else if ((items[i].kind == 'file') &&
-                    (items[i].type.match('^image/'))) {
-                    // Drag data item is an image file
-                    var file = items[i].getAsFile();
+            let uniqueItem = new Array();
 
-                    console.log(file)
-                    // console.log('... name = ' + file.name + ' path = ' + file.path);
+
+            if (data.items) {
+                let items = data.items
+
+                console.log("---found items---", items.length)
+                // Use DataTransferItemList interface to access the file(s)
+                for (var i = 0; i < items.length; i++) {
+                    console.log(i, "item", items[i].kind, items[i].type, items[i])
+                    // If dropped items aren't files, reject them
+                    if ((items[i].kind == 'string') &&
+                        (items[i].type.match('^text/plain'))) {
+                        // This item is the target node
+
+                        arrayItem.push(new Promise(
+                            (resolve, reject) => {
+                                items[i].getAsString(function (s) {
+                                    // console.log("... Drop: text ", typeof (s), s)
+                                    // ev.target.appendChild(document.getElementById(s));
+                                    resolve({'text':s})
+                                });
+                            }))
+
+                    } else if ((items[i].kind == 'string') &&
+                        (items[i].type.match('^text/html'))) {
+                        // Drag data item is HTML
+                        items[i].getAsString(function (s) {
+                            // console.log("... Drop: HTML", s)
+                            // ev.target.appendChild(document.getElementById(s));
+                        });
+                    } else if ((items[i].kind == 'string') &&
+                        (items[i].type.match('^text/uri-list'))) {
+                        // Drag data item is URI
+                        arrayItem.push(new Promise(
+                            (resolve, reject) => {
+                                items[i].getAsString(function (s) {
+                                    // console.log("... Drop: URI ", typeof (s), s)
+                                    // ev.target.appendChild(document.getElementById(s));
+                                    resolve({'url':s})
+                                });
+                            }))
+
+                    } else if ((items[i].kind == 'file') &&
+                        (items[i].type.match('^image/'))) {
+                        // Drag data item is an image file
+                        arrayItem.push(new Promise(
+                            (resolve, reject) => {
+                                // console.log("file")
+                                resolve({'file':items[i].getAsFile()});
+                            }))
+                        // console.log('... name = ' + file.name + ' path = ' + file.path);
+                    }
+                }
+
+
+            } else {
+                console.log("---found files---")
+                // Use DataTransfer interface to access the file(s)
+                for (var i = 0; i < data.files.length; i++) {
+                    // console.log(data.files[i])
+                    arrayItem.push(new Promise.resolve({'file':data.files[i]}))
                 }
             }
-        } else {
-            console.log("---found files---")
-            // Use DataTransfer interface to access the file(s)
-            for (var i = 0; i < data.files.length; i++) {
-                console.log(data.files[i])
-            }
-        }
+
+            // arrayString = uniqueString
+
+            Promise.all(arrayItem).then((valueItems) => {
+                // console.log("finish array")
+                // console.log(strValues)
+                let arrayString = new Array()
+                let arrayIndex = new Array()
+                for (let index=0; index < valueItems.length; index++){
+                    let el = valueItems[index];
+                    if(el.hasOwnProperty('file')){
+                        uniqueItem.push(el)
+                    }else if(el.hasOwnProperty('text')){
+                        if($.inArray(el['text'],arrayString) === -1){
+                            arrayString.push(el['text'])
+                            arrayIndex.push(uniqueItem.length)
+                            uniqueItem.push({'text':el['text']})
+                        }
+                    }else if(el.hasOwnProperty('url')){
+                        if($.inArray(el['url'],arrayString) === -1){
+                            arrayString.push(el['url'])
+                            arrayIndex.push(uniqueItem.length)
+                            uniqueItem.push({'url':el['url']})
+                        }else{
+                            (uniqueItem[arrayIndex[arrayString.indexOf(el['url'])]])['url'] = el['url']
+                        }
+                    }
+                }
+
+                resolve(uniqueItem)
+
+            }).catch(error =>{
+                reject({'string' : error})
+            })
+
+        })
     }
 
     // =============================程序主体=============================
@@ -548,7 +618,9 @@ $(document).ready(function () {
         // Prevent default behavior (Prevent file from being opened)
         event.preventDefault();
 
-        filterDataTransfer(event.originalEvent.dataTransfer)
+        filterDataTransfer(event.originalEvent.dataTransfer).then(items =>{
+            console.log(items)
+        })
 
 
     })
@@ -558,7 +630,9 @@ $(document).ready(function () {
         event.preventDefault();
         event.stopPropagation();
 
-        filterDataTransfer(event.originalEvent.clipboardData)
+        filterDataTransfer(event.originalEvent.clipboardData).then(items =>{
+            console.log(items)
+        })
 
 
     });
