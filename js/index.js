@@ -408,7 +408,7 @@ $(document).ready(function () {
             if (data.items) {
                 let items = data.items
 
-                console.log("---found items---", items.length)
+                // console.log("---found items---", items.length)
                 // Use DataTransferItemList interface to access the file(s)
                 for (var i = 0; i < items.length; i++) {
                     console.log(i, "item", items[i].kind, items[i].type, items[i])
@@ -460,7 +460,7 @@ $(document).ready(function () {
 
 
             } else {
-                console.log("---found files---")
+                // console.log("---found files---")
                 // Use DataTransfer interface to access the file(s)
                 for (var i = 0; i < data.files.length; i++) {
                     // console.log(data.files[i])
@@ -503,33 +503,82 @@ $(document).ready(function () {
         })
     }
 
-    function processDataTransfer(data){
+    function processDataTransfer(data) {
 
         return new Promise((resolve, reject) => {
 
-            filterDataTransfer(data).then((items) =>{
-                console.log("start insert")
-                items.forEach((item)=>{
-                    console.log(item)
-                    if(typeof(item) == 'string'){
+            filterDataTransfer(data).then((items) => {
+                // console.log("start insert")
+                items.forEach((item) => {
+                    // console.log(item)
+                    if (typeof (item) == 'string') {
                         // insert string
-                        $("div.td-inputbox").append("<p>" + item + "</p>")
-                    }else{
+                        pasteHtmlAtCaret("<div>" + item + "</div>", 'div.td-inputbox')
+                    } else {
                         // insert file
                         let fileID = core.UniqueStr()
-                        fileList[fileID] = item
                         //插入html
-                        $("div.td-inputbox").append("<p data-file-ID='"+fileID+"'>" + item.name + "</p>")
+                        if(pasteHtmlAtCaret("<p data-file-ID='" + fileID + "'>"+ item.name+ "</p>",'div.td-inputbox')){
+                            fileList[fileID] = item
+                        }
                     }
                 })
 
                 resolve("")
 
-            }).catch(error =>{
+            }).catch(error => {
                 reject(error)
             })
         })
-}
+    }
+
+    /**
+     * 在光标处插入代码 
+     * @param {String} html 
+     * @param {String} selector JQselector 确保插入到正确的位置
+     * @returns {boolean} 是否正确储存
+     */
+    function pasteHtmlAtCaret(html, selector=undefined) {
+        var sel, range;
+        if (window.getSelection) {
+            // IE9 and non-IE
+            sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
+                range = sel.getRangeAt(0);
+                range.deleteContents();
+    
+                var el = document.createElement("div");
+                el.innerHTML = html;
+                var frag = document.createDocumentFragment(), node, lastNode;
+                while ( (node = el.firstChild) ) {
+                    lastNode = frag.appendChild(node);
+                }
+
+                if(selector === undefined || $(range.startContainer).closest( selector ).length > 0){
+                    range.insertNode(frag);
+                
+                    // Preserve the selection
+                    if (lastNode) {
+                        range = range.cloneRange();
+                        range.setStartAfter(lastNode);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                    return true
+                }else{
+                    return false
+                }
+
+            }
+        }
+
+        return false
+        //  else if (document.selection && document.selection.type != "Control") {
+        //     // IE < 9
+        //     document.selection.createRange().pasteHTML(html);
+        // }
+    }
 
     // =============================程序主体=============================
 
@@ -582,105 +631,109 @@ $(document).ready(function () {
         }
     });
 
-console.log("toggle")
-toggleWebview()
-// openDevtool('skype')
-window.onresize = () => {
-    console.log("===window resize====")
-}
-
-
-// =================extension click==================
-// extension click
-$(debug_firefox_send_str).on('click', () => {
-    let extensionName = "firefox-send"
-    $("#td-right div.td-chatLog[winType='chatLog']").hide()
-    $("#td-right div.td-chatLog[winType='extension']").show()
-    loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
-})
-
-$(debug_latex_str).on('click', () => {
-    let extensionName = "latex2png"
-    $("#td-right div.td-chatLog[winType='chatLog']").hide()
-    $("#td-right div.td-chatLog[winType='extension']").show()
-    loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
-})
-
-// 隐藏extension
-$(debug_goBackChat_str).on('click', () => {
-    $("#td-right div.td-chatLog[winType='chatLog']").show()
-    // webview隐藏, 防止再次点击刷新页面
-    $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
-        $(this).hide();
-    });
-    $("#td-right div.td-chatLog[winType='extension']").hide()
-
-})
-
-// ======================拖入东西==========================
-// 检测到拖入到东西
-// 当extension打开的时候, 只接受输入框位置拖入
-$("#td-right").on("dragenter", (event) => {
-    if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
-
-    } else {
-        $("#td-right").hide()
-        $("div[winType='dropFile']").show()
+    console.log("toggle")
+    toggleWebview()
+    // openDevtool('skype')
+    window.onresize = () => {
+        console.log("===window resize====")
     }
-})
-$("div.td-inputbox").on("dragenter", (event) => {
-    if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
-        $("#td-right").hide()
-        $("div[winType='dropFile']").show()
-    } else {
-
-    }
-})
-
-// 拖出右侧还原
-$("div[winType='dropFile']").on("dragleave", (event) => {
-    $("div[winType='dropFile']").hide()
-    $("#td-right").show()
-})
-
-//识别到放下东西
-$("div[winType='dropFile']").on("drop", (event) => {
-    console.log("drop")
-    $("div[winType='dropFile']").hide()
-    $("#td-right").show()
-    // Prevent default behavior (Prevent file from being opened)
-    event.preventDefault();
-
-    processDataTransfer(event.originalEvent.dataTransfer).then(
-        console.log("insert input done")
-    )
 
 
-})
+    // =================extension click==================
+    // extension click
+    $(debug_firefox_send_str).on('click', () => {
+        let extensionName = "firefox-send"
+        $("#td-right div.td-chatLog[winType='chatLog']").hide()
+        $("#td-right div.td-chatLog[winType='extension']").show()
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
+    })
 
-// ===========paste================
-$("div.td-inputbox").on("paste", function (event) {
-    event.preventDefault();
-    event.stopPropagation();
+    $(debug_latex_str).on('click', () => {
+        let extensionName = "latex2png"
+        $("#td-right div.td-chatLog[winType='chatLog']").hide()
+        $("#td-right div.td-chatLog[winType='extension']").show()
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
+    })
 
-    processDataTransfer(event.originalEvent.clipboardData).then(
-        console.log("insert input done")
-    )
-});
+    // 隐藏extension
+    $(debug_goBackChat_str).on('click', () => {
+        $("#td-right div.td-chatLog[winType='chatLog']").show()
+        // webview隐藏, 防止再次点击刷新页面
+        $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
+            $(this).hide();
+        });
+        $("#td-right div.td-chatLog[winType='extension']").hide()
 
+    })
 
-// ==========send===============
-$(debug_send_str).on('click', event =>{
-    console.log("-----send-------")
-    let htmlInput = jQuery.parseHTML($('div.td-inputbox').html());
-    $.each(htmlInput, function( i, el ) {
-        console.log(el)
-        if($(el)[0].nodeName == '#text'){
+    // ======================拖入东西==========================
+    // 检测到拖入到东西
+    // 当extension打开的时候, 只接受输入框位置拖入
+    $("#td-right").on("dragenter", (event) => {
+        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
 
-        }else{
+        } else {
+            $("#td-right").hide()
+            $("div[winType='dropFile']").show()
+        }
+    })
+    $("div.td-inputbox").on("dragenter", (event) => {
+        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+            $("#td-right").hide()
+            $("div[winType='dropFile']").show()
+        } else {
 
         }
     })
-})
+
+    // 拖出右侧还原
+    $("div[winType='dropFile']").on("dragleave", (event) => {
+        $("div[winType='dropFile']").hide()
+        $("#td-right").show()
+    })
+
+    //识别到放下东西
+    $("div[winType='dropFile']").on("drop", (event) => {
+        console.log("drop")
+        $("div[winType='dropFile']").hide()
+        $("#td-right").show()
+        // Prevent default behavior (Prevent file from being opened)
+        event.preventDefault();
+
+        processDataTransfer(event.originalEvent.dataTransfer).then(
+            console.log("insert input done")
+        )
+
+
+    })
+
+    // ===========paste================
+    $("div.td-inputbox").on("paste", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        processDataTransfer(event.originalEvent.clipboardData).then(
+            console.log("insert input done")
+        )
+    });
+
+
+    // ==========send===============
+    $(debug_send_str).on('click', event => {
+        console.log("-----send-------")
+        let htmlInput = jQuery.parseHTML($('div.td-inputbox').html());
+
+        $.each(htmlInput, function (i, el) {
+            // console.log(el)
+            if ($(el)[0].nodeName == '#text') {
+                console.log("text : ", el)
+            } else if ($(el).attr("data-file-ID")) {
+                console.log("file : ", el)
+            } else {
+                console.log("innerText : ", $(el).text())
+            }
+        })
+    })
+
 
 })
