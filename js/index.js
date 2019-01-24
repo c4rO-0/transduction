@@ -518,9 +518,9 @@ $(document).ready(function () {
                         // insert file
                         let fileID = core.UniqueStr()
                         //插入html
-                        if(pasteHtmlAtCaret("<p data-file-ID='" + fileID + "'>"+ item.name+ "</p>",'div.td-inputbox')){
-                            fileList[fileID] = item
-                        }
+                        $("div[winType='uploadFile'").append("<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>")
+                        fileList[fileID] = item
+
                     }
                 })
 
@@ -538,7 +538,7 @@ $(document).ready(function () {
      * @param {String} selector JQselector 确保插入到正确的位置
      * @returns {boolean} 是否正确储存
      */
-    function pasteHtmlAtCaret(html, selector=undefined) {
+    function pasteHtmlAtCaret(html, selector = undefined) {
         var sel, range;
         if (window.getSelection) {
             // IE9 and non-IE
@@ -546,17 +546,17 @@ $(document).ready(function () {
             if (sel.getRangeAt && sel.rangeCount) {
                 range = sel.getRangeAt(0);
                 range.deleteContents();
-    
+
                 var el = document.createElement("div");
                 el.innerHTML = html;
                 var frag = document.createDocumentFragment(), node, lastNode;
-                while ( (node = el.firstChild) ) {
+                while ((node = el.firstChild)) {
                     lastNode = frag.appendChild(node);
                 }
 
-                if(selector === undefined || $(range.startContainer).closest( selector ).length > 0){
+                if (selector === undefined || $(range.startContainer).closest(selector).length > 0) {
                     range.insertNode(frag);
-                
+
                     // Preserve the selection
                     if (lastNode) {
                         range = range.cloneRange();
@@ -566,18 +566,22 @@ $(document).ready(function () {
                         sel.addRange(range);
                     }
                     return true
-                }else{
-                    return false
                 }
 
             }
         }
-
-        return false
         //  else if (document.selection && document.selection.type != "Control") {
         //     // IE < 9
         //     document.selection.createRange().pasteHTML(html);
         // }
+
+        if (selector != undefined && $(selector).length > 0) {
+            $(selector).append(html)
+            return true
+        }
+
+        return false
+
     }
 
     // =============================程序主体=============================
@@ -720,19 +724,25 @@ $(document).ready(function () {
 
     // ==========send===============
     $(debug_send_str).on('click', event => {
-        console.log("-----send-------")
+        
         let htmlInput = jQuery.parseHTML($('div.td-inputbox').html());
+
+        let sendStr = ''
 
         $.each(htmlInput, function (i, el) {
             // console.log(el)
             if ($(el)[0].nodeName == '#text') {
-                console.log("text : ", el)
-            } else if ($(el).attr("data-file-ID")) {
-                console.log("file : ", el)
+                // console.log(el)
+                // console.log('-------')
+                sendStr = sendStr + $(el).text() + '\n'
             } else {
-                console.log("innerText : ", $(el).text())
+                sendStr = sendStr + $(el).get(0).innerText + '\n'
+                // console.log($(el).get(0).innerText)
+                // console.log('-------')
             }
         })
+        console.log("-----send-------")
+        console.log(sendStr)
     })
 
 
