@@ -32,10 +32,17 @@ function listWebview() {
     })
 }
 
+
+
 $(document).ready(function () {
 
     const core = require("../js/core.js")
+    // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
+
+    let fileList = {}; //临时储存file object
+
+
     let status = "webviewSkype"
     let debug_app_link_str = "#debug-app-link"
     let debug_firefox_send_str = "#debug-firefox-send"
@@ -43,6 +50,7 @@ $(document).ready(function () {
     let debug_send_str = "#debug-send"
     let debug_latex_str = "#debug-latex2png"
     let debug_goBackChat_str = "#debug-goBackChat"
+
 
     // =========================class===========================
     class conversation {
@@ -120,6 +128,12 @@ $(document).ready(function () {
             console.log("debug : ", "counter :", this.counter)
             console.log("debug : ", "action :", this.action)
             console.log("debug : ", "muted :", this.muted)
+        }
+
+    }
+
+    class dataItem {
+        constructor() {
         }
 
     }
@@ -337,7 +351,7 @@ $(document).ready(function () {
             // 隐藏所有webview
             $(sectionSelector + " webview").each(function (index) {
                 $(this).hide();
-            });            
+            });
             $(sectionSelector).append("<webview data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
 
             $(webSelector).attr("data-extension-name", extensionName)
@@ -348,31 +362,282 @@ $(document).ready(function () {
 
             $(webSelector).show()
 
-        }else{
-            if($(webSelector).css("display")=="none"){
+        } else {
+            if ($(webSelector).css("display") == "none") {
                 console.log("loadExtension : display extension")
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
-                });      
+                });
                 $(webSelector).show()
-            }else{
+            } else {
                 // 隐藏所有webview
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
-                });                      
+                });
                 console.log("loadExtension : reload extension")
 
                 $(webSelector).attr("data-extension-name", extensionName)
 
                 $(webSelector).attr('src', strUrl)
-    
-                $(webSelector).attr('preload', strPathJS) 
 
-                $(webSelector).show()                 
+                $(webSelector).attr('preload', strPathJS)
+
+                $(webSelector).show()
             }
         }
 
         return true
+    }
+
+    /**
+     * 将拖拽到网页或者粘贴到网页的DataTransfer转化成array
+     * bug : 粘贴url时text和url不一致不能合并, 如papercomment.tech网址直接拖拽
+     * @param {DataTransfer} data 
+     * @returns {Promise} 
+     *  arra[{'key':value},{}] 
+     *  key : file text url
+     */
+    function filterDataTransfer(data) {
+
+        return new Promise((resolve, reject) => {
+            let arrayItem = new Array();
+
+            let uniqueItem = new Array();
+
+            let arrayString = new Array()
+
+
+            if (data.items) {
+                let items = data.items
+
+                // console.log("---found items---", items.length)
+                // Use DataTransferItemList interface to access the file(s)
+                for (var i = 0; i < items.length; i++) {
+                    console.log(i, "item", items[i].kind, items[i].type, items[i])
+                    // If dropped items aren't files, reject them
+                    if ((items[i].kind == 'string') &&
+                        (items[i].type.match('^text/plain'))) {
+                        // This item is the target node
+
+                        arrayItem.push(new Promise(
+                            (resolve, reject) => {
+                                items[i].getAsString(function (s) {
+                                    // console.log("... Drop: text ", typeof (s), s)
+                                    // ev.target.appendChild(document.getElementById(s));
+                                    resolve(s)
+                                });
+                            }))
+
+                    } else if ((items[i].kind == 'string') &&
+                        (items[i].type.match('^text/html'))) {
+                        // Drag data item is HTML
+                        items[i].getAsString(function (s) {
+                            // console.log("... Drop: HTML", s)
+                            // ev.target.appendChild(document.getElementById(s));
+                        });
+                    } else if ((items[i].kind == 'string') &&
+                        (items[i].type.match('^text/uri-list'))) {
+                        // Drag data item is URI
+                        arrayItem.push(new Promise(
+                            (resolve, reject) => {
+                                items[i].getAsString(function (s) {
+                                    // console.log("... Drop: URI ", typeof (s), s)
+                                    // ev.target.appendChild(document.getElementById(s));
+                                    arrayString.push(s)
+                                    resolve(s)
+                                });
+                            }))
+
+                    } else if ((items[i].kind == 'file') &&
+                        (items[i].type.match('^image/'))) {
+                        // Drag data item is an image file
+                        arrayItem.push(new Promise(
+                            (resolve, reject) => {
+                                // console.log("file")
+                                resolve(items[i].getAsFile());
+                            }))
+                        // console.log('... name = ' + file.name + ' path = ' + file.path);
+                    }
+                }
+
+
+            } else {
+                // console.log("---found files---")
+                // Use DataTransfer interface to access the file(s)
+                for (var i = 0; i < data.files.length; i++) {
+                    // console.log(data.files[i])
+                    arrayItem.push(new Promise.resolve(data.files[i]))
+                }
+            }
+
+            // arrayString = uniqueString
+
+            Promise.all(arrayItem).then((valueItems) => {
+                // console.log("finish array")
+                // console.log(arrayString.length)
+
+                uniqueItem = uniqueItem.concat(arrayString)
+
+                // console.log(uniqueItem)
+
+                valueItems.forEach((item, index) => {
+                    if (typeof (item) == "string") {
+                        // arrayString.push(item)
+                        let contains = false
+                        arrayString.forEach(iStr => {
+                            contains = (contains || iStr.includes(item))
+                        })
+                        if (!contains) {
+                            uniqueItem.push(item)
+                        }
+
+                    } else {
+                        uniqueItem.push(item)
+                    }
+                })
+
+                resolve(uniqueItem)
+
+            }).catch(error => {
+                reject({ 'string': error })
+            })
+
+        })
+    }
+
+    function processDataTransfer(data) {
+
+        return new Promise((resolve, reject) => {
+
+            filterDataTransfer(data).then((items) => {
+                // console.log("start insert")
+                items.forEach((item) => {
+                    // console.log(item)
+                    if (typeof (item) == 'string') {
+                        // insert string
+                        pasteHtmlAtCaret("<div>" + item + "</div>", 'div.td-inputbox')
+                    } else {
+                        // insert file
+                        let fileID = core.UniqueStr()
+                        //插入html
+                        // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
+                        if (pasteHtmlAtCaret("<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>", 'div.td-inputbox')) {
+                            fileList[fileID] = item
+                        }
+                    }
+                })
+
+                resolve("")
+
+            }).catch(error => {
+                reject(error)
+            })
+        })
+    }
+
+    /**
+     * 在光标处插入代码 
+     * @param {String} html 
+     * @param {String} selector JQselector 确保插入到正确的位置
+     * @returns {boolean} 是否正确储存
+     */
+    function pasteHtmlAtCaret(html, selector = undefined) {
+        var sel, range;
+        if (window.getSelection) {
+            // IE9 and non-IE
+            sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
+                range = sel.getRangeAt(0);
+                range.deleteContents();
+
+                var el = document.createElement("div");
+                el.innerHTML = html;
+                var frag = document.createDocumentFragment(), node, lastNode;
+                while ((node = el.firstChild)) {
+                    lastNode = frag.appendChild(node);
+                }
+
+                if (selector === undefined || $(range.startContainer).closest(selector).length > 0) {
+                    range.insertNode(frag);
+
+                    // Preserve the selection
+                    if (lastNode) {
+                        range = range.cloneRange();
+                        range.setStartAfter(lastNode);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                    return true
+                }
+
+            }
+        }
+        //  else if (document.selection && document.selection.type != "Control") {
+        //     // IE < 9
+        //     document.selection.createRange().pasteHTML(html);
+        // }
+
+        if (selector != undefined && $(selector).length > 0) {
+            $(selector).append(html)
+            return true
+        }
+
+        return false
+
+    }
+
+    /**
+     * 去掉input html中的tag
+     * getInput函数调用该函数
+     * @param {String} HTML 
+     * @returns {Array} 数组只包含string和File, 并按照input中顺序排列
+     */
+    function simpleInput(HTML) {
+        let arrayHTML = jQuery.parseHTML(HTML);
+
+        let sendStr = new Array()
+
+        $.each(arrayHTML, function (i, el) {
+            // console.log(el)
+            if ($(el)[0].nodeName == '#text') {
+                sendStr.push($(el).text())
+            } else if ($(el)[0].nodeName == 'A') {
+                let fileID = $(el).attr('data-file-ID')
+                sendStr.push(fileList[fileID])
+            } else {
+                sendStr = sendStr.concat(simpleInput($(el).html()))
+            }
+        })
+
+        return sendStr
+    }
+
+    /**
+     * 获取input中的内容
+     * @param {String} selector 
+     * @returns {Array} 以数组形式储存, 只含有string和File. 
+     */
+    function getInput(selector) {
+        let arrayInput = simpleInput($(selector).get(0).innerHTML)
+        let arraySimpleInput = new Array()
+
+
+        let fileIndex = -1
+        let strInput = ''
+        arrayInput.forEach((value, index) => {
+            if (typeof (value) != 'string') {
+                strInput = arrayInput.slice(fileIndex + 1, index).join('')
+                if (strInput.length > 0) arraySimpleInput.push(strInput)
+                arraySimpleInput.push(value)
+                fileIndex = index
+            }
+        })
+
+        strInput = arrayInput.slice(fileIndex + 1).join('')
+        if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+        return arraySimpleInput
     }
 
     // =============================程序主体=============================
@@ -428,11 +693,13 @@ $(document).ready(function () {
 
     console.log("toggle")
     toggleWebview()
-    openDevtool('skype')
+    // openDevtool('skype')
     window.onresize = () => {
         console.log("===window resize====")
     }
 
+
+    // =================extension click==================
     // extension click
     $(debug_firefox_send_str).on('click', () => {
         let extensionName = "firefox-send"
@@ -449,13 +716,76 @@ $(document).ready(function () {
     })
 
     // 隐藏extension
-    $(debug_goBackChat_str).on('click', ()=>{
+    $(debug_goBackChat_str).on('click', () => {
         $("#td-right div.td-chatLog[winType='chatLog']").show()
         // webview隐藏, 防止再次点击刷新页面
         $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
             $(this).hide();
-        });      
+        });
         $("#td-right div.td-chatLog[winType='extension']").hide()
 
     })
+
+    // ======================拖入东西==========================
+    // 检测到拖入到东西
+    // 当extension打开的时候, 只接受输入框位置拖入
+    $("#td-right").on("dragenter", (event) => {
+        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+
+        } else {
+            $("#td-right").hide()
+            $("div[winType='dropFile']").show()
+        }
+    })
+    $("div.td-inputbox").on("dragenter", (event) => {
+        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+            $("#td-right").hide()
+            $("div[winType='dropFile']").show()
+        } else {
+
+        }
+    })
+
+    // 拖出右侧还原
+    $("div[winType='dropFile']").on("dragleave", (event) => {
+        $("div[winType='dropFile']").hide()
+        $("#td-right").show()
+    })
+
+    //识别到放下东西
+    $("div[winType='dropFile']").on("drop", (event) => {
+        console.log("drop")
+        $("div[winType='dropFile']").hide()
+        $("#td-right").show()
+        // Prevent default behavior (Prevent file from being opened)
+        event.preventDefault();
+
+        processDataTransfer(event.originalEvent.dataTransfer).then(
+            console.log("insert input done")
+        )
+
+
+    })
+
+    // ===========paste================
+    $("div.td-inputbox").on("paste", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        processDataTransfer(event.originalEvent.clipboardData).then(
+            console.log("insert input done")
+        )
+    });
+
+
+    // ==========send===============
+    $(debug_send_str).on('click', event => {
+
+
+        let arraySend = getInput('div.td-inputbox')
+        console.log('-----send-----')
+        console.log(arraySend)
+    })
+
+
 })
