@@ -32,6 +32,8 @@ function listWebview() {
     })
 }
 
+
+
 $(document).ready(function () {
 
     const core = require("../js/core.js")
@@ -518,9 +520,10 @@ $(document).ready(function () {
                         // insert file
                         let fileID = core.UniqueStr()
                         //插入html
-                        $("div[winType='uploadFile'").append("<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>")
-                        fileList[fileID] = item
-
+                        // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
+                        if (pasteHtmlAtCaret("<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>", 'div.td-inputbox')) {
+                            fileList[fileID] = item
+                        }
                     }
                 })
 
@@ -582,6 +585,59 @@ $(document).ready(function () {
 
         return false
 
+    }
+
+    /**
+     * 去掉input html中的tag
+     * getInput函数调用该函数
+     * @param {String} HTML 
+     * @returns {Array} 数组只包含string和File, 并按照input中顺序排列
+     */
+    function simpleInput(HTML) {
+        let arrayHTML = jQuery.parseHTML(HTML);
+
+        let sendStr = new Array()
+
+        $.each(arrayHTML, function (i, el) {
+            // console.log(el)
+            if ($(el)[0].nodeName == '#text') {
+                sendStr.push($(el).text())
+            } else if ($(el)[0].nodeName == 'A') {
+                let fileID = $(el).attr('data-file-ID')
+                sendStr.push(fileList[fileID])
+            } else {
+                sendStr = sendStr.concat(simpleInput($(el).html()))
+            }
+        })
+
+        return sendStr
+    }
+
+    /**
+     * 获取input中的内容
+     * @param {String} selector 
+     * @returns {Array} 以数组形式储存, 只含有string和File. 
+     */
+    function getInput(selector) {
+        let arrayInput = simpleInput($(selector).get(0).innerHTML)
+        let arraySimpleInput = new Array()
+
+
+        let fileIndex = -1
+        let strInput = ''
+        arrayInput.forEach((value, index) => {
+            if (typeof (value) != 'string') {
+                strInput = arrayInput.slice(fileIndex + 1, index).join('')
+                if (strInput.length > 0) arraySimpleInput.push(strInput)
+                arraySimpleInput.push(value)
+                fileIndex = index
+            }
+        })
+
+        strInput = arrayInput.slice(fileIndex + 1).join('')
+        if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+        return arraySimpleInput
     }
 
     // =============================程序主体=============================
@@ -724,25 +780,11 @@ $(document).ready(function () {
 
     // ==========send===============
     $(debug_send_str).on('click', event => {
-        
-        let htmlInput = jQuery.parseHTML($('div.td-inputbox').html());
 
-        let sendStr = ''
 
-        $.each(htmlInput, function (i, el) {
-            // console.log(el)
-            if ($(el)[0].nodeName == '#text') {
-                // console.log(el)
-                // console.log('-------')
-                sendStr = sendStr + $(el).text() + '\n'
-            } else {
-                sendStr = sendStr + $(el).get(0).innerText + '\n'
-                // console.log($(el).get(0).innerText)
-                // console.log('-------')
-            }
-        })
-        console.log("-----send-------")
-        console.log(sendStr)
+        let arraySend = getInput('div.td-inputbox')
+        console.log('-----send-----')
+        console.log(arraySend)
     })
 
 
