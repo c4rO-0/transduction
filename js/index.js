@@ -37,6 +37,7 @@ function listWebview() {
 $(document).ready(function () {
 
     const core = require("../js/core.js")
+    const { nativeImage } = require('electron').remote
     // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
 
@@ -128,12 +129,6 @@ $(document).ready(function () {
             console.log("debug : ", "counter :", this.counter)
             console.log("debug : ", "action :", this.action)
             console.log("debug : ", "muted :", this.muted)
-        }
-
-    }
-
-    class dataItem {
-        constructor() {
         }
 
     }
@@ -389,6 +384,10 @@ $(document).ready(function () {
         return true
     }
 
+    function getFileNameFromUrl(url) {
+        return url.split('/').pop().split('#')[0].split('?')[0];
+    }
+
     /**
      * 将拖拽到网页或者粘贴到网页的DataTransfer转化成array
      * bug : 粘贴url时text和url不一致不能合并, 如papercomment.tech网址直接拖拽
@@ -406,69 +405,152 @@ $(document).ready(function () {
 
             let arrayString = new Array()
 
+            let objHTML = data.getData('text/html') // 拖拽的是一个含有链接的东西, html, 在线img, 文件
+            let strURL = data.getData('URL')
+            console.log('--------objHTML-----------')
+            console.log(objHTML)
+            console.log('--------strURL-----------')
+            console.log(strURL)
+            if (objHTML && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
+                console.log("发现图片")
+                let pathR = $(objHTML).attr('src')
+                let pathFile = undefined
 
-            if (data.items) {
-                let items = data.items
+                if (pathR.length >= 8 && pathR.substring(0, 7) == 'file://') {
 
-                // console.log("---found items---", items.length)
-                // Use DataTransferItemList interface to access the file(s)
-                for (var i = 0; i < items.length; i++) {
-                    console.log(i, "item", items[i].kind, items[i].type, items[i])
-                    // If dropped items aren't files, reject them
-                    if ((items[i].kind == 'string') &&
-                        (items[i].type.match('^text/plain'))) {
-                        // This item is the target node
+                    pathFile = pathR.substring(7)
+                    // console.log("本地文件", pathFile)
+                    let img = nativeImage.createFromPath(pathFile)
+                    arrayItem.push(new Promise(
+                        (resolve, reject) => {
+
+                            if (img.isEmpty()) {
+                                reject('filterDataTransfer : img not access')
+                            } else {
+                                let imgSend = new core.fileSend(getFileNameFromUrl(pathFile), pathFile, '', undefined, img.toDataURL())
+                                resolve(imgSend)
+                            }
+                        }))
+                } else if ((pathR.length > 9 && pathR.substring(0, 8) == 'https://') || (pathR.length > 8 && pathR.substring(0, 7) == 'http://')) {
+                    arrayItem.push(new Promise(
+                        (resolve, reject) => {
+                            var request = require('request').defaults({ encoding: null });
+
+                            request.get(pathR, function (error, response, body) {
+                                if (!error && response.statusCode == 200) {
+                                    let strRequest = new Buffer(body).toString('base64')
+                                    let urldata = "data:" + response.headers["content-type"] + ";base64," + strRequest;
+                                    // console.log("------request-----")
+                                    // console.log(strRequest)
+                                    if (strRequest) {
+                                        let imgSend = new core.fileSend(getFileNameFromUrl(pathR), '', pathR, undefined, urldata)
+                                        resolve(imgSend)
+                                    } else {
+                                        reject('filterDataTransfer : img not access')
+                                    }
+
+
+                                }
+
+                            });
+
+
+                        }))
+                }
+
+                // console.log(img.getSize())
+
+            } else if (strURL) {
+                console.log("发现网址")
+                arrayItem.push(Promise.resolve(strURL))
+            } else {
+                if (data.items) {
+                    let items = data.items
+
+                    console.log("---found items---", items.length)
+                    // Use DataTransferItemList interface to access the file(s)
+                    for (var i = 0; i < items.length; i++) {
+                        console.log(i, "item", items[i].kind, items[i].type, items[i])
+                        // If dropped items aren't files, reject them
+                        if ((items[i].kind == 'string') &&
+                            (items[i].type.match('^text/plain'))) {
+                            // This item is the target node
+
+                            arrayItem.push(new Promise(
+                                (resolve, reject) => {
+                                    items[i].getAsString(function (s) {
+                                        // console.log("... Drop: text ", typeof (s), s)
+                                        // ev.target.appendChild(document.getElementById(s));
+                                        resolve(s)
+                                    });
+                                }))
+
+                        } else if ((items[i].kind == 'string') &&
+                            (items[i].type.match('^text/html'))) {
+                            // Drag data item is HTML
+                            items[i].getAsString(function (s) {
+                                // console.log("... Drop: HTML", s)
+                                // ev.target.appendChild(document.getElementById(s));
+                            });
+                        } else if ((items[i].kind == 'string') &&
+                            (items[i].type.match('^text/uri-list'))) {
+                            // Drag data item is URI
+                            // arrayItem.push(new Promise(
+                            //     (resolve, reject) => {
+
+                            //         items[i].getAsString(function (s) {
+                            //             // console.log("... Drop: URI ", typeof (s), s)
+                            //             // ev.target.appendChild(document.getElementById(s));
+                            //             arrayString.push(s)
+                            //             resolve(s)
+                            //         });
+                            //     }))
+
+                        } else if ((items[i].kind == 'file') &&
+                            (items[i].type.match('^image/'))) {
+                            // Drag data item is an image file
+                            arrayItem.push(new Promise(
+                                (resolve, reject) => {
+
+                                    // console.log("file")
+                                    let file = items[i].getAsFile()
+                                    let imgSend = new core.fileSend(file.name, file.path, '')
+                                    let reader = new FileReader();
+                                    reader.onload = function (e) {
+                                        imgSend.addDataUrl(reader.result)
+                                        resolve(imgSend)
+                                    }
+                                    reader.readAsDataURL(file)
+
+                                }))
+                            // console.log('... name = ' + file.name + ' path = ' + file.path);
+                        }
+                    }
+
+                } else {
+                    console.log("---found files---")
+                    // Use DataTransfer interface to access the file(s)
+                    for (var i = 0; i < data.files.length; i++) {
+                        // console.log(data.files[i])
+                        let file = data.files[i]
 
                         arrayItem.push(new Promise(
                             (resolve, reject) => {
-                                items[i].getAsString(function (s) {
-                                    // console.log("... Drop: text ", typeof (s), s)
-                                    // ev.target.appendChild(document.getElementById(s));
-                                    resolve(s)
-                                });
+                                let imgSend = new core.fileSend(file.name, file.path, '')
+                                let reader = new FileReader();
+                                reader.onload = function (e) {
+                                    imgSend.addDataUrl(reader.result)
+                                    resolve(imgSend)
+                                }
+                                reader.readAsDataURL(file)
                             }))
 
-                    } else if ((items[i].kind == 'string') &&
-                        (items[i].type.match('^text/html'))) {
-                        // Drag data item is HTML
-                        items[i].getAsString(function (s) {
-                            // console.log("... Drop: HTML", s)
-                            // ev.target.appendChild(document.getElementById(s));
-                        });
-                    } else if ((items[i].kind == 'string') &&
-                        (items[i].type.match('^text/uri-list'))) {
-                        // Drag data item is URI
-                        arrayItem.push(new Promise(
-                            (resolve, reject) => {
-                                items[i].getAsString(function (s) {
-                                    // console.log("... Drop: URI ", typeof (s), s)
-                                    // ev.target.appendChild(document.getElementById(s));
-                                    arrayString.push(s)
-                                    resolve(s)
-                                });
-                            }))
 
-                    } else if ((items[i].kind == 'file') &&
-                        (items[i].type.match('^image/'))) {
-                        // Drag data item is an image file
-                        arrayItem.push(new Promise(
-                            (resolve, reject) => {
-                                // console.log("file")
-                                resolve(items[i].getAsFile());
-                            }))
-                        // console.log('... name = ' + file.name + ' path = ' + file.path);
                     }
                 }
-
-
-            } else {
-                // console.log("---found files---")
-                // Use DataTransfer interface to access the file(s)
-                for (var i = 0; i < data.files.length; i++) {
-                    // console.log(data.files[i])
-                    arrayItem.push(new Promise.resolve(data.files[i]))
-                }
             }
+
+
 
             // arrayString = uniqueString
 
@@ -496,6 +578,9 @@ $(document).ready(function () {
                     }
                 })
 
+                console.log('-----uniqueItem-------')
+                console.log(uniqueItem)
+
                 resolve(uniqueItem)
 
             }).catch(error => {
@@ -518,11 +603,11 @@ $(document).ready(function () {
                         pasteHtmlAtCaret("<div>" + item + "</div>", 'div.td-inputbox')
                     } else {
                         // insert file
-                        let fileID = core.UniqueStr()
+                        item.addFileID(core.UniqueStr())
                         //插入html
                         // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
-                        if (pasteHtmlAtCaret("<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>", 'div.td-inputbox')) {
-                            fileList[fileID] = item
+                        if (pasteHtmlAtCaret("<a data-file-ID='" + item.fileID + "' contenteditable=false> " + item.name + " </a>", 'div.td-inputbox')) {
+                            fileList[item.fileID] = item
                         }
                     }
                 })
@@ -629,6 +714,7 @@ $(document).ready(function () {
             if (typeof (value) != 'string') {
                 strInput = arrayInput.slice(fileIndex + 1, index).join('')
                 if (strInput.length > 0) arraySimpleInput.push(strInput)
+
                 arraySimpleInput.push(value)
                 fileIndex = index
             }
@@ -760,6 +846,7 @@ $(document).ready(function () {
         // Prevent default behavior (Prevent file from being opened)
         event.preventDefault();
 
+
         processDataTransfer(event.originalEvent.dataTransfer).then(
             console.log("insert input done")
         )
@@ -784,7 +871,15 @@ $(document).ready(function () {
 
         let arraySend = getInput('div.td-inputbox')
         console.log('-----send-----')
+
+
+        // let arraySend = new Array()
+        // arraySend.push(nativeImage.createFromPath('/home/bsplu/workspace/transduction/res/pic/ffsend.png'))
         console.log(arraySend)
+
+        core.HostSendToWeb(webTag2Selector('skype'), { 'sendDialog': arraySend })
+
+
     })
 
 
