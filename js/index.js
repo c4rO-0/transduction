@@ -41,7 +41,7 @@ $(document).ready(function () {
     // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
 
-    let fileList = {}; //临时储存file object
+    // let fileList = {}; //临时储存file object
 
 
     let status = "webviewSkype"
@@ -606,8 +606,8 @@ $(document).ready(function () {
                         item.addFileID(core.UniqueStr())
                         //插入html
                         // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
-                        if (pasteHtmlAtCaret("<a data-file-ID='" + item.fileID + "' contenteditable=false> " + item.name + " </a>", 'div.td-inputbox')) {
-                            fileList[item.fileID] = item
+                        if (pasteHtmlAtCaret("<img data-file-ID='" + item.fileID + "' contenteditable=false src='"+item.dataUrl+"'>", 'div.td-inputbox')) {
+                            // fileList[item.fileID] = item
                         }
                     }
                 })
@@ -687,9 +687,11 @@ $(document).ready(function () {
             // console.log(el)
             if ($(el)[0].nodeName == '#text') {
                 sendStr.push($(el).text())
-            } else if ($(el)[0].nodeName == 'A') {
-                let fileID = $(el).attr('data-file-ID')
-                sendStr.push(fileList[fileID])
+            } else if ($(el)[0].nodeName == 'IMG') {
+                // let fileID = $(el).attr('data-file-ID')
+                let dataUrl = $(el).attr('src')
+                // sendStr.push(fileList[fileID])
+                sendStr.push(dataUrl)
             } else {
                 sendStr = sendStr.concat(simpleInput($(el).html()))
             }
