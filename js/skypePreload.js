@@ -342,10 +342,27 @@ window.onload = function () {
 
                 arg.forEach((value,index)=>{
                     if(typeof(value) == 'string'){
-                        console.log(value)
+                        // console.log(value)
+                        $('#chatInputAreaWithQuotes').val(value)
+
+                        let e = $.Event( "keydown", { keyCode: 64 } ); //64没有对应按键
+                        $( "#chatInputAreaWithQuotes" ).trigger( e );
+                        
+                        let obsSend = new MutationObserver(()=>{
+                            $('div.send-button-holder button').click()
+
+                            obsSend.disconnect() 
+                        });
+                        obsSend.observe($('div.send-button-holder button')[0], {
+                            subtree: false, childList: false, characterData: false, attributes: true,
+                            attributeOldValue: false, characterDataOldValue:  false
+                        });
+
+
                     }else{
                         // let file = File(value)
-                        console.log(value)
+                        // console.log(value)
+                        // $('input.fileInput').val(value)
                     }
                 })
                 // console.log(arg)
