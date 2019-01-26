@@ -5,6 +5,8 @@ window.onload = function () {
     // console.log(process.cwd())
     window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
     const core = require("../js/core")
+    const { nativeImage } = require('electron').remote
+
 
     class conversation {
         constructor(action, userID, nickName, timestamp, avatar, message, counter, index, muted) {
@@ -336,12 +338,22 @@ window.onload = function () {
                     target.click()
                 }
                 resolve("copy the query. Please wait...")
-            } else {
+            } else if(key == 'sendDialog'){
+
+                arg.forEach((value,index)=>{
+                    if(typeof(value) == 'string'){
+                        console.log(value)
+                    }else{
+                        // let file = File(value)
+                        console.log(value)
+                    }
+                })
+                // console.log(arg)
+
+                resolve("Dialog send")
+            }else {
                 reject("unknown key : ", key)
             }
         })
     })
-
-
-
 }

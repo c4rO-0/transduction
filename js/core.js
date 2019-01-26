@@ -125,6 +125,37 @@ function UniqueStr() {
  * core Module Function
  */
 module.exports = {
+
+    fileSend: class {
+        constructor(name, path, webkitRelativePath, fileID='', dataUrl= undefined){
+            this.name = name
+            this.path = path
+            this.webkitRelativePath = webkitRelativePath
+            // this.size = size
+            // this.type = type
+            this.fileID = fileID
+            this.dataUrl = dataUrl
+        }
+        convertFile(file) {
+            this.name = file.name
+            this.path = file.path
+            this.webkitRelativePath = file.webkitRelativePath
+            // this.size = file.size
+            // this.type = file.type    
+
+        }
+        addFileID(fileID){
+            this.fileID = fileID
+        }
+        addDataUrl(dataUrl){
+            this.dataUrl = dataUrl
+        }
+        print(){
+            console.log('------output File property--------')
+            console.log(this)
+        }
+
+    },
     /**
      * A utility function that detects and handles AJAXed content. 
      * @author BrockA
