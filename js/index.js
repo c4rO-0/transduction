@@ -600,7 +600,7 @@ $(document).ready(function () {
                     // console.log(item)
                     if (typeof (item) == 'string') {
                         // insert string
-                        pasteHtmlAtCaret("<div>" + item + "</div>", 'div.td-inputbox')
+                        pasteHtmlAtCaret( $($("<div> </div>").text(item)).html(), 'div.td-inputbox')
                     } else {
                         // insert file
                         item.addFileID(core.UniqueStr())
