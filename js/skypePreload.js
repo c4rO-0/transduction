@@ -347,10 +347,10 @@ window.onload = function () {
                         let e = $.Event( "keydown", { keyCode: 64 } ); //64没有对应按键
                         $( "#chatInputAreaWithQuotes" ).trigger( e );
                         
-                        let obsSend = new MutationObserver(()=>{
+                        let obsSend = new MutationObserver((mutationList, observer)=>{
                             $('div.send-button-holder button').click()
 
-                            obsSend.disconnect() 
+                            observer.disconnect() 
                         });
                         obsSend.observe($('div.send-button-holder button')[0], {
                             subtree: false, childList: false, characterData: false, attributes: true,

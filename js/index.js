@@ -41,7 +41,10 @@ $(document).ready(function () {
     // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
 
-    // let fileList = {}; //临时储存file object
+    let fileList = {}; //临时储存file object
+
+    let inputImgHeightLimit = 100
+    let inputImgWeightLimit = 600
 
 
     let status = "webviewSkype"
@@ -590,6 +593,34 @@ $(document).ready(function () {
         })
     }
 
+
+    function compressImg(dataUrl, widthLimit, heightLimit) {
+        // 准备压缩图片
+        let nImg = nativeImage.createFromDataURL(dataUrl)
+        let size = nImg.getSize()
+
+        let scaleFactorHeight = 1.0
+        let scaleFactorWeight = 1.0
+
+        if (heightLimit > 0) {
+            scaleFactorHeight = heightLimit / size.height
+        }
+
+        if (widthLimit > 0) {
+            scaleFactorWeight = widthLimit / size.weight
+        }
+
+        let scaleFactor = scaleFactorHeight > scaleFactorWeight ? scaleFactorWeight : scaleFactorHeight
+
+        // console.log("scale : ", scaleFactor)
+        let newDataUrl = nImg.toDataURL({'scaleFactor' : scaleFactor})
+        // console.log('resize : ', dataUrl.length , '->', newDataUrl.length)
+
+        return newDataUrl
+
+    }
+
+
     function processDataTransfer(data) {
 
         return new Promise((resolve, reject) => {
@@ -600,14 +631,22 @@ $(document).ready(function () {
                     // console.log(item)
                     if (typeof (item) == 'string') {
                         // insert string
-                        pasteHtmlAtCaret( $($("<div> </div>").text(item)).html(), 'div.td-inputbox')
+                        pasteHtmlAtCaret($($("<div> </div>").text(item)).html(), 'div.td-inputbox')
                     } else {
                         // insert file
                         item.addFileID(core.UniqueStr())
                         //插入html
                         // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
-                        if (pasteHtmlAtCaret("<img data-file-ID='" + item.fileID + "' contenteditable=false src='"+item.dataUrl+"'>", 'div.td-inputbox')) {
-                            // fileList[item.fileID] = item
+
+
+                        if (pasteHtmlAtCaret(
+                            "<img data-file-ID='"
+                            + item.fileID
+                            + "' contenteditable=false src='"
+                            + compressImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
+                            + "'>", 'div.td-inputbox')) {
+
+                            fileList[item.fileID] = item
                         }
                     }
                 })
