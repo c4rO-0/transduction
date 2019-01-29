@@ -646,6 +646,10 @@ document.body.appendChild(el);}")
      */
     WinReplyWeb: function (webSelector, fcnResponse) {
         // let web = document.getElementById(webviewID);
+
+        if($(webSelector).length == 0){
+            return
+        }
         let web = $(webSelector).get(0);
         web.addEventListener('ipc-message', (event) => {
             console.log("webview-message-listen")
