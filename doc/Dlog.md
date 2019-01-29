@@ -23,6 +23,33 @@ const { net } = require('electron').remote
 
 ## 日志
 
+
+## 2019Jan29: BS
+尝试调研网页权限
+### 在当前架构不改变的前提下
+- 创建test.html testPreload.js test.js
+    test.js是在test.html在声明
+    testPreload.js是在index.html <webview>中声明
+
+- test.html不能执行<script>window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")</script>
+    需要换成<script src="../toolkit/jquery-3.3.1.min.js"></script>
+- 直接在test.html添加<script src="../js/core.js"></script>, test的后台输出
+    ```
+    Uncaught ReferenceError: require is not defined
+    at core.js:10
+    Uncaught ReferenceError: $ is not defined
+    at window.onload (/home/shengbi/workspace/transduction/js/testPreload.js:11)    
+    ```
+- test.js不能使用process
+- test.js需要在开头添加`window.$ = window.jQuery`才能使用$
+
+
+- 在preload添加nodeintegration.
+    - test.html可以加载<script src="../js/core.js"></script>
+    - test.html可以执行<script>window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")</script>
+    - test.js可以require(fs), 可以读~目录下任意文件
+
+
 ## 2019Jan23: BS
 前台已经可以识别拖入文件, url. 和识别粘贴文件.
 前台还需要解决 :
