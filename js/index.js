@@ -294,6 +294,10 @@ $(document).ready(function () {
                 $(webTag2Selector(webTag)).blur()
                 console.log(document.activeElement)
                 resolve("blur done")
+            } else if(key == 'test'){
+                console.log("revieve test from ", webTag)
+                console.log(Obj)
+                resolve("recieve test from index. attached : ",Obj )                
             }
 
         }),
@@ -782,6 +786,10 @@ $(document).ready(function () {
         return respFuncWinReplyWeb("skype", key, arg)
     })
 
+    //
+    core.WinReplyWeb(webTag2Selector("test"), (key, arg) => {
+        return respFuncWinReplyWeb("test", key, arg)
+    })
     // ===========================发送消息===========================
 
     // 点击convo
@@ -819,8 +827,8 @@ $(document).ready(function () {
     });
 
     console.log("toggle")
-    toggleWebview()
-    // openDevtool('skype')
+    // toggleWebview()
+    openDevtool('test')
     window.onresize = () => {
         console.log("===window resize====")
     }
