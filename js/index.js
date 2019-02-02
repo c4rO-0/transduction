@@ -613,7 +613,7 @@ $(document).ready(function () {
         let scaleFactor = scaleFactorHeight > scaleFactorWeight ? scaleFactorWeight : scaleFactorHeight
 
         // console.log("scale : ", scaleFactor)
-        let newDataUrl = nImg.toDataURL({'scaleFactor' : scaleFactor})
+        let newDataUrl = nImg.toDataURL({ 'scaleFactor': scaleFactor })
         // console.log('resize : ', dataUrl.length , '->', newDataUrl.length)
 
         return newDataUrl
@@ -767,6 +767,35 @@ $(document).ready(function () {
         return arraySimpleInput
     }
 
+
+    function attachInputFile(webSelector, inputSelector, dataUrl) {
+        let wc = $(webSelector).get(0).getWebContents();
+
+        try {
+            wc.debugger.attach("1.1");
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+
+        wc.once('did-finish-load', () => {
+            console.log(inputSelector)
+            wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
+                wc.debugger.sendCommand("DOM.querySelector", {
+                    nodeId: res.root.nodeId,
+                    selector: inputSelector  // CSS selector of input[type=file] element                                        
+                }, function (err, res) {
+                    wc.debugger.sendCommand("DOM.setFileInputFiles", {
+                        nodeId: res.nodeId,
+                        files: ['/home/bsplu/workspace/transduction/res/pic/home.png']  // Actual list of paths                                                        
+                    }, function (err, res) {
+                        wc.debugger.detach();
+                    });
+                });
+
+            });
+
+        });
+    }
     // =============================程序主体=============================
 
 
@@ -918,8 +947,9 @@ $(document).ready(function () {
         // arraySend.push(nativeImage.createFromPath('/home/bsplu/workspace/transduction/res/pic/ffsend.png'))
         console.log(arraySend)
 
-        core.HostSendToWeb(webTag2Selector('skype'), { 'sendDialog': arraySend })
+        // core.HostSendToWeb(webTag2Selector('skype'), { 'sendDialog': arraySend })
 
+        attachInputFile(webTag2Selector("skype"), "input.fileInput","")
 
     })
 
