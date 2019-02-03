@@ -632,6 +632,8 @@ $(document).ready(function () {
                     if (typeof (item) == 'string') {
                         // insert string
                         pasteHtmlAtCaret($($("<div> </div>").text(item)).html(), 'div.td-inputbox')
+
+                        resolve("")
                     } else {
                         // insert file
                         item.addFileID(core.UniqueStr())
@@ -646,12 +648,23 @@ $(document).ready(function () {
                             + compressImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
                             + "'>", 'div.td-inputbox')) {
 
-                            fileList[item.fileID] = item
+
+                            item.localSave().then(()=>{
+                                fileList[item.fileID] = item
+                                resolve("")
+                            }).catch((err)=>{
+                                console.log("error : processDataTransfer : localSave " )
+                                console.log(err)
+                                reject(err)
+                            })
+                            
+                        }else{
+                            reject("error : processDataTransfer : pasteHtmlAtCaret")
                         }
                     }
                 })
 
-                resolve("")
+                
 
             }).catch(error => {
                 reject(error)
@@ -768,40 +781,43 @@ $(document).ready(function () {
     }
 
 
-    function attachInputFile(webSelector, inputSelector, dataUrl) {
+    function attachInputFile(webSelector, inputSelector, file) {
+
+
+
         let wc = $(webSelector).get(0).getWebContents();
-        let deg = wc.debugger;
+
         console.log("---attachInputFile----")
         try {
-            if(! wc.debugger.isAttached()){
+            if (!wc.debugger.isAttached()) {
                 wc.debugger.attach("1.1");
             }
         } catch (err) {
             console.error("Debugger attach failed : ", err);
         };
 
-        // wc.once('did-finish-load', () => {
-            console.log(inputSelector)
-            wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
-                console.log("Id : ", res.root.nodeId)
-                console.log("selector : ", inputSelector)
-                wc.debugger.sendCommand("DOM.querySelector", {
-                    nodeId: res.root.nodeId,
-                    selector: inputSelector  // CSS selector of input[type=file] element                                        
-                }, function (err, res) {
-                    console.log("Id2 : ", res.nodeId)
+
+
+        wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
+            wc.debugger.sendCommand("DOM.querySelector", {
+                nodeId: res.root.nodeId,
+                selector: inputSelector  // CSS selector of input[type=file] element                                        
+            }, function (err, res) {
+                if (res) { // 防止不存在inputSelector
                     wc.debugger.sendCommand("DOM.setFileInputFiles", {
                         nodeId: res.nodeId,
                         files: ['/home/bsplu/workspace/transduction/res/pic/home.png']  // Actual list of paths                                                        
                     }, function (err, res) {
-                        console.log("detach : ", res, err)
+
                         wc.debugger.detach();
                     });
-                });
-
+                } else {
+                    console.log("error : attachInputFile : inputSelector : '", inputSelector, "' not exist.")
+                }
             });
 
-        // });
+        });
+
     }
     // =============================程序主体=============================
 
@@ -956,7 +972,8 @@ $(document).ready(function () {
 
         // core.HostSendToWeb(webTag2Selector('skype'), { 'sendDialog': arraySend })
 
-        attachInputFile(webTag2Selector("skype"), "input.fileInput","")
+        // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
+        // console.log(fileList)
 
     })
 
