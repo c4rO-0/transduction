@@ -600,21 +600,21 @@ $(document).ready(function () {
         let size = nImg.getSize()
 
         let scaleFactorHeight = 1.0
-        let scaleFactorWeight = 1.0
+        let scaleFactorWidth = 1.0
 
         if (heightLimit > 0) {
             scaleFactorHeight = heightLimit / size.height
         }
 
         if (widthLimit > 0) {
-            scaleFactorWeight = widthLimit / size.weight
+            scaleFactorWidth = widthLimit / size.width
         }
 
-        let scaleFactor = scaleFactorHeight > scaleFactorWeight ? scaleFactorWeight : scaleFactorHeight
+        let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
 
         // console.log("scale : ", scaleFactor)
         let newDataUrl = nImg.toDataURL({ 'scaleFactor': scaleFactor })
-        // console.log('resize : ', dataUrl.length , '->', newDataUrl.length)
+        console.log('resize : ', dataUrl.length , '->', newDataUrl.length)
 
         return newDataUrl
 
