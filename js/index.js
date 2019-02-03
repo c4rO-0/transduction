@@ -612,9 +612,14 @@ $(document).ready(function () {
 
         let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
 
-        // console.log("scale : ", scaleFactor)
+        // let nPng = nativeImage.createFromBuffer(nImg.toPNG(),
+        // {"width":Math.round(size.width*scaleFactor),
+        // 'height':Math.round(size.height*scaleFactor) }) 
+
+        console.log("scale : ", scaleFactor)
+        // let newDataUrl = nPng.toDataURL({ 'scaleFactor': scaleFactor })
         let newDataUrl = nImg.toDataURL({ 'scaleFactor': scaleFactor })
-        console.log('resize : ', dataUrl.length , '->', newDataUrl.length)
+        console.log('resize : ', nImg.toDataURL().length , '->', newDataUrl.length)
 
         return newDataUrl
 
