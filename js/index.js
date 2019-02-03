@@ -770,31 +770,38 @@ $(document).ready(function () {
 
     function attachInputFile(webSelector, inputSelector, dataUrl) {
         let wc = $(webSelector).get(0).getWebContents();
-
+        let deg = wc.debugger;
+        console.log("---attachInputFile----")
         try {
-            wc.debugger.attach("1.1");
+            if(! wc.debugger.isAttached()){
+                wc.debugger.attach("1.1");
+            }
         } catch (err) {
             console.error("Debugger attach failed : ", err);
         };
 
-        wc.once('did-finish-load', () => {
+        // wc.once('did-finish-load', () => {
             console.log(inputSelector)
             wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
+                console.log("Id : ", res.root.nodeId)
+                console.log("selector : ", inputSelector)
                 wc.debugger.sendCommand("DOM.querySelector", {
                     nodeId: res.root.nodeId,
                     selector: inputSelector  // CSS selector of input[type=file] element                                        
                 }, function (err, res) {
+                    console.log("Id2 : ", res.nodeId)
                     wc.debugger.sendCommand("DOM.setFileInputFiles", {
                         nodeId: res.nodeId,
                         files: ['/home/bsplu/workspace/transduction/res/pic/home.png']  // Actual list of paths                                                        
                     }, function (err, res) {
+                        console.log("detach : ", res, err)
                         wc.debugger.detach();
                     });
                 });
 
             });
 
-        });
+        // });
     }
     // =============================程序主体=============================
 
