@@ -23,6 +23,15 @@ const { net } = require('electron').remote
 
 ## 日志
 
+## 2019Feb4: BS
+### input
+使用chrome remote debug功能解决, 但是要求webview devTool窗口不能打开
+
+### 图片压缩
+目前使用的nativeImage自带的的压缩功能, 但是好像只对png有效
+
+### 加载Dialog头像
+目前头像从左侧拉取, 如果是群组聊天, 左侧没有该用户头像, 程序将会出错.
 
 ## 2019Jan29: BS
 尝试调研网页权限

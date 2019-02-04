@@ -360,12 +360,8 @@ window.onload = function () {
                             subtree: false, childList: false, characterData: false, attributes: true,
                             attributeOldValue: false, characterDataOldValue:  false
                         });
-
-
                     }else{
-                        // let file = File(value)
-                        // console.log(value)
-                        // $('input.fileInput').val(value)
+                        core.WebToHost({"attachFile":{"selector":"input.fileInput","file":value}})
                     }
                 })
                 // console.log(arg)

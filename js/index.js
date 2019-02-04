@@ -371,6 +371,12 @@ $(document).ready(function () {
                 $(webTag2Selector(webTag)).blur()
                 console.log(document.activeElement)
                 resolve("blur done")
+            } else if(key == 'attachFile'){
+                /* obj
+                    "selector": str 
+                    "file" : obj file
+                */
+                attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
             }
 
         }),
@@ -822,10 +828,10 @@ $(document).ready(function () {
             if ($(el)[0].nodeName == '#text') {
                 sendStr.push($(el).text())
             } else if ($(el)[0].nodeName == 'IMG') {
-                // let fileID = $(el).attr('data-file-ID')
-                let dataUrl = $(el).attr('src')
-                // sendStr.push(fileList[fileID])
-                sendStr.push(dataUrl)
+                let fileID = $(el).attr('data-file-ID')
+                // let dataUrl = $(el).attr('data-file-id')
+                sendStr.push(fileList[fileID])
+                // sendStr.push(dataUrl)
             } else {
                 sendStr = sendStr.concat(simpleInput($(el).html()))
             }
@@ -847,6 +853,8 @@ $(document).ready(function () {
         let fileIndex = -1
         let strInput = ''
         arrayInput.forEach((value, index) => {
+            // console.log(index, typeof (value), '----')
+            // console.log(value)
             if (typeof (value) != 'string') {
                 strInput = arrayInput.slice(fileIndex + 1, index).join('')
                 if (strInput.length > 0) arraySimpleInput.push(strInput)
@@ -863,7 +871,7 @@ $(document).ready(function () {
     }
 
 
-    function attachInputFile(webSelector, inputSelector, file) {
+    function attachInputFile(webSelector, inputSelector, filePath) {
 
 
 
@@ -888,7 +896,7 @@ $(document).ready(function () {
                 if (res) { // 防止不存在inputSelector
                     wc.debugger.sendCommand("DOM.setFileInputFiles", {
                         nodeId: res.nodeId,
-                        files: ['/home/bsplu/workspace/transduction/res/pic/home.png']  // Actual list of paths                                                        
+                        files: [filePath]  // Actual list of paths                                                        
                     }, function (err, res) {
 
                         wc.debugger.detach();
@@ -1068,11 +1076,10 @@ $(document).ready(function () {
         // arraySend.push(nativeImage.createFromPath('/home/bsplu/workspace/transduction/res/pic/ffsend.png'))
         console.log(arraySend)
 
-        // core.HostSendToWeb(webTag2Selector('skype'), { 'sendDialog': arraySend })
+        core.HostSendToWeb(webTag2Selector('skype'), { 'sendDialog': arraySend })
 
         // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
         // console.log(fileList)
-
     })
 
 
