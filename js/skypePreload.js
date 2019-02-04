@@ -248,7 +248,7 @@ window.onload = function () {
             msglog[i].extractAll(item)
         })
         // 获取userID
-        if(msglog.length > 0){
+        if (msglog.length > 0) {
             (msglog[0])["userID"] = $("a.active[data-user-i-d]").attr("data-user-i-d")
         }
         core.WebToHost({ 'Dialog': msglog }).then((res) => {
@@ -341,33 +341,75 @@ window.onload = function () {
                     target.click()
                 }
                 resolve("copy the query. Please wait...")
-            } else if(key == 'sendDialog'){
+            } else if (key == 'sendDialog') {
 
-                arg.forEach((value,index)=>{
-                    if(typeof(value) == 'string'){
+
+                console.log("--------sendDialog---")
+                function send(arrayValue, index) {
+
+                    console.log("index : ", index)
+                    if (index == arrayValue.length) {
+                        resolve("Dialog send")
+                        return
+                    }
+
+                    value = arrayValue[index]
+                    if (typeof (value) == 'string') {
                         // console.log(value)
+
                         $('#chatInputAreaWithQuotes').val(value)
 
-                        let e = $.Event( "keydown", { keyCode: 64 } ); //64没有对应按键
-                        $( "#chatInputAreaWithQuotes" ).trigger( e );
-                        
-                        let obsSend = new MutationObserver((mutationList, observer)=>{
+                        let e = $.Event("keydown", { keyCode: 64 }); //64没有对应按键
+                        $("#chatInputAreaWithQuotes").trigger(e);
+
+                        let obsSend = new MutationObserver((mutationList, observer) => {
                             $('div.send-button-holder button').click()
 
-                            observer.disconnect() 
+                            // 等待发送完成
+                            setTimeout(()=>{
+                                let obsFinished = new MutationObserver((mList, obs) => {
+                                    console.log("DeliveryStatus update : ", $('swx-message.me span.DeliveryStatus-status').last().text() )
+                                    if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
+                                        obs.disconnect()
+                                        send(arrayValue, index + 1)
+                                    }
+                                })
+                                console.log($('swx-message.me span.DeliveryStatus-status').last().text())
+                                obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
+                                    subtree: false, childList: false, characterData: true, attributes: true,
+                                    attributeOldValue: false, characterDataOldValue: false
+                                });
+                            },10)
+                            observer.disconnect()
                         });
                         obsSend.observe($('div.send-button-holder button')[0], {
                             subtree: false, childList: false, characterData: false, attributes: true,
-                            attributeOldValue: false, characterDataOldValue:  false
+                            attributeOldValue: false, characterDataOldValue: false
                         });
-                    }else{
-                        core.WebToHost({"attachFile":{"selector":"input.fileInput","file":value}})
-                    }
-                })
-                // console.log(arg)
 
-                resolve("Dialog send")
-            }else {
+                    } else {
+                        core.WebToHost({ "attachFile": { "selector": "input.fileInput", "file": value } }).then((resHost) => {
+                            // 等待发送完成
+                            let obsFinished = new MutationObserver((mList, obs) => {
+                                if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
+                                    obs.disconnect()
+                                    send(arrayValue, index + 1)
+                                }
+                            })
+                            obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
+                                subtree: false, childList: false, characterData: true, attributes: false,
+                                attributeOldValue: false, characterDataOldValue: false
+                            });
+                        })
+                    }
+
+                }
+
+
+                send(arg, 0)
+                    
+                
+            } else {
                 reject("unknown key : ", key)
             }
         })

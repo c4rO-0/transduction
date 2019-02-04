@@ -377,6 +377,8 @@ $(document).ready(function () {
                     "file" : obj file
                 */
                 attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
+
+                resolve("attached")
             }
 
         }),
