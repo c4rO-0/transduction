@@ -247,6 +247,10 @@ window.onload = function () {
             msglog[i] = new chatLog()
             msglog[i].extractAll(item)
         })
+        // 获取userID
+        if(msglog.length > 0){
+            (msglog[0])["userID"] = $("a.active[data-user-i-d]").attr("data-user-i-d")
+        }
         core.WebToHost({ 'Dialog': msglog }).then((res) => {
             console.log(res)
         }).catch((error) => {
