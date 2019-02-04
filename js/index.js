@@ -176,6 +176,60 @@ $(document).ready(function () {
         </div > '
     }
 
+    function AddDialogHtml(dialog) {
+
+        let strHtml = ''
+
+        let timeObj = undefined
+
+        if (typeof (dialog["time"]) === 'number') {
+            timeObj = new Date(dialog["time"])
+        } else if (typeof (dialog["time"]) == "string") {
+            timeObj = new Date(dialog["time"])
+        } else if (typeof (dialog["time"]) == "object") {
+            timeObj = dialog["time"]
+        } else {
+            timeObj = new Date()
+        }
+        let time = timeObj.toTimeString().slice(0, 5)
+
+        if (dialog["from"]) {
+            let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+            let appName = $("#td-right div.td-chat-title").attr("data-app-name")
+            let avatarUrl = $("#td-left \
+            div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
+            div.td-avatar")
+            .css('background-image')
+            .slice(5, -2)
+
+            strHtml =
+                '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
+                    <p class="m-0">'+dialog["from"]+'</p>\
+                    <div class="td-them">\
+                        <div class="td-chatAvatar">\
+                            <img src="'+ avatarUrl + '">\
+                            <p class="m-0">'+ time + '</p>\
+                        </div>\
+                        <div class="td-chatText">' + dialog['message'] +
+                        '</div>\
+                    </div>\
+                </div>'
+
+
+        } else {
+            strHtml =
+                '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
+                    <div class="td-me">\
+                        <div class="td-chatText">' + dialog['message'] +
+                        '</div>\
+                        <p class="m-0">'+ time + '</p>\
+                    </div>\
+                </div>' 
+        }
+
+        return strHtml
+    }
+
     function ChangeConvoHtml(appName, convo) {
         let objConvo = $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
         if (objConvo.length) { // 检测存在
@@ -239,7 +293,30 @@ $(document).ready(function () {
             if (key == 'Dialog') {
                 // 收到某个用户聊天记录
                 console.log("debug : ", "==========Dialog============")
-                console.log(Obj)
+                if (Obj.length == 0) {
+                    reject("error : respFuncWinReplyWeb : no Dialog")
+                    return
+                }
+                // console.log(Obj)
+                let userID = (Obj[0])["userID"]
+                if (!userID) {
+                    reject("error : respFuncWinReplyWeb : no userID")
+                    return
+                }
+                if (webTag != $("#td-right div.td-chat-title").attr('data-app-name')) {
+                    resolve("nothing change")
+                    return
+                }
+                if (userID != $("#td-right div.td-chat-title").attr('data-user-i-d')) {
+                    resolve("nothing change")
+                    return
+                }
+
+                // 附加到右边
+                Obj.forEach((value, index) => {
+                    $("#td-right div.td-chatLog[wintype='chatLog']").append(AddDialogHtml(value))
+                })
+
 
                 console.log('focusing innnnnnnnnnnn')
                 $(webTag2Selector(webTag)).focus()
@@ -619,7 +696,7 @@ $(document).ready(function () {
         console.log("scale : ", scaleFactor)
         // let newDataUrl = nPng.toDataURL({ 'scaleFactor': scaleFactor })
         let newDataUrl = nImg.toDataURL({ 'scaleFactor': scaleFactor })
-        console.log('resize : ', nImg.toDataURL().length , '->', newDataUrl.length)
+        console.log('resize : ', nImg.toDataURL().length, '->', newDataUrl.length)
 
         return newDataUrl
 
@@ -654,22 +731,22 @@ $(document).ready(function () {
                             + "'>", 'div.td-inputbox')) {
 
 
-                            item.localSave().then(()=>{
+                            item.localSave().then(() => {
                                 fileList[item.fileID] = item
                                 resolve("")
-                            }).catch((err)=>{
-                                console.log("error : processDataTransfer : localSave " )
+                            }).catch((err) => {
+                                console.log("error : processDataTransfer : localSave ")
                                 console.log(err)
                                 reject(err)
                             })
-                            
-                        }else{
+
+                        } else {
                             reject("error : processDataTransfer : pasteHtmlAtCaret")
                         }
                     }
                 })
 
-                
+
 
             }).catch(error => {
                 reject(error)
@@ -844,16 +921,26 @@ $(document).ready(function () {
     // 点击convo
     $('#td-left').on('click', 'div.td-convo', function () {
         // 识别webtag
+        // console.log($(this).find("div.td-nickname").text())        
         let webTag = $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
+        let nickName = $(this).find("div.td-nickname").text()
+
         $('#td-left div.td-convo').removeClass('theme-transduction-active')
         $(this).addClass('theme-transduction-active')
+
 
         if (webTag == undefined || userID == undefined) {
             console.log("error : click obj error.")
             console.log("obj : ", this)
             console.log("userID : ", userID)
         } else {
+            // ---------右侧标题-----------
+            $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
+            $("#td-right div.td-chat-title").attr("data-app-name", webTag)
+            $("#td-right div.td-chat-title h2").text(nickName)
+            $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
+            $("#td-right div.td-chatLog[wintype='chatLog']").empty()
 
 
             // $(webTag2Selector(webTag)).focus()
@@ -862,18 +949,24 @@ $(document).ready(function () {
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
+
                 // setTimeout(() => {
                 //     console.log('bluring outtttttttttttttttttttttttt')
                 //     $(webTag2Selector(webTag)).blur()
                 // }, 1300)
                 // console.log('focusing innnnnnnnnnnn')
                 // $(webTag2Selector(webTag)).focus()
+
+
             }).catch((error) => {
                 throw error
             })
-
         }
+
+
+
     });
+
 
     console.log("toggle")
     toggleWebview()
