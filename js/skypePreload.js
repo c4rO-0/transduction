@@ -345,10 +345,13 @@ window.onload = function () {
 
 
                 console.log("--------sendDialog---")
-                function send(arrayValue, index) {
+
+
+                function send(arrayValue, index=0) {
 
                     console.log("index : ", index)
                     if (index == arrayValue.length) {
+                        console.log("sendDialog finished")
                         resolve("Dialog send")
                         return
                     }
@@ -365,21 +368,9 @@ window.onload = function () {
                         let obsSend = new MutationObserver((mutationList, observer) => {
                             $('div.send-button-holder button').click()
 
-                            // 等待发送完成
-                            setTimeout(()=>{
-                                let obsFinished = new MutationObserver((mList, obs) => {
-                                    console.log("DeliveryStatus update : ", $('swx-message.me span.DeliveryStatus-status').last().text() )
-                                    if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
-                                        obs.disconnect()
-                                        send(arrayValue, index + 1)
-                                    }
-                                })
-                                console.log($('swx-message.me span.DeliveryStatus-status').last().text())
-                                obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
-                                    subtree: false, childList: false, characterData: true, attributes: true,
-                                    attributeOldValue: false, characterDataOldValue: false
-                                });
-                            },10)
+                            console.log("---text---")
+                            waitSend(arrayValue, index)
+
                             observer.disconnect()
                         });
                         obsSend.observe($('div.send-button-holder button')[0], {
@@ -389,26 +380,54 @@ window.onload = function () {
 
                     } else {
                         core.WebToHost({ "attachFile": { "selector": "input.fileInput", "file": value } }).then((resHost) => {
-                            // 等待发送完成
-                            let obsFinished = new MutationObserver((mList, obs) => {
-                                if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
-                                    obs.disconnect()
-                                    send(arrayValue, index + 1)
-                                }
-                            })
-                            obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
-                                subtree: false, childList: false, characterData: true, attributes: false,
-                                attributeOldValue: false, characterDataOldValue: false
-                            });
+                            console.log("---file---")
+                            waitSend(arrayValue, index)
                         })
                     }
 
                 }
 
+                function waitSend(arrayValue, index) {
+                    // 等待发送完成
+                    let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
 
-                send(arg, 0)
-                    
-                
+                        mutationList.forEach((mutation, nodeIndex) => {
+                            let addedNodes = mutation.addedNodes
+                            console.log(addedNodes)
+                            if (addedNodes && addedNodes[0].nodeName == "SWX-MESSAGE") {
+                                console.log('---addedNodes----')
+                                observer.disconnect()
+
+                                let obsFinished = new MutationObserver((mList, obs) => {
+                                    console.log('-------obs update--------')
+                                    console.log(mList)
+                                    console.log("DeliveryStatus update : ", $('swx-message.me span.DeliveryStatus-status').last().text())
+                                    if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
+                                        obs.disconnect()
+                                        send(arrayValue, index + 1)
+                                    }
+                                })
+
+                                obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
+                                    // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                    subtree: true, childList: true, characterData: true, attributes: true,
+                                    attributeOldValue: false, characterDataOldValue: false
+                                });
+
+                            }
+                        })
+
+                    })
+                    obsSwxUpdated.observe($("div.messageHistory")[0], {
+                        subtree: false, childList: true, characterData: false, attributes: false,
+                        attributeOldValue: false, characterDataOldValue: false
+                    })
+
+                }
+
+                // 开始发送消息
+                send(arg)
+
             } else {
                 reject("unknown key : ", key)
             }
