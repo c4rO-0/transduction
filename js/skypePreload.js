@@ -247,6 +247,10 @@ window.onload = function () {
             msglog[i] = new chatLog()
             msglog[i].extractAll(item)
         })
+        // 获取userID
+        if (msglog.length > 0) {
+            (msglog[0])["userID"] = $("a.active[data-user-i-d]").attr("data-user-i-d")
+        }
         core.WebToHost({ 'Dialog': msglog }).then((res) => {
             console.log(res)
         }).catch((error) => {
@@ -337,37 +341,94 @@ window.onload = function () {
                     target.click()
                 }
                 resolve("copy the query. Please wait...")
-            } else if(key == 'sendDialog'){
+            } else if (key == 'sendDialog') {
 
-                arg.forEach((value,index)=>{
-                    if(typeof(value) == 'string'){
+
+                console.log("--------sendDialog---")
+
+
+                function send(arrayValue, index=0) {
+
+                    console.log("index : ", index)
+                    if (index == arrayValue.length) {
+                        console.log("sendDialog finished")
+                        resolve("Dialog send")
+                        return
+                    }
+
+                    value = arrayValue[index]
+                    if (typeof (value) == 'string') {
                         // console.log(value)
+
                         $('#chatInputAreaWithQuotes').val(value)
 
-                        let e = $.Event( "keydown", { keyCode: 64 } ); //64没有对应按键
-                        $( "#chatInputAreaWithQuotes" ).trigger( e );
-                        
-                        let obsSend = new MutationObserver((mutationList, observer)=>{
+                        let e = $.Event("keydown", { keyCode: 64 }); //64没有对应按键
+                        $("#chatInputAreaWithQuotes").trigger(e);
+
+                        let obsSend = new MutationObserver((mutationList, observer) => {
                             $('div.send-button-holder button').click()
 
-                            observer.disconnect() 
+                            console.log("---text---")
+                            waitSend(arrayValue, index)
+
+                            observer.disconnect()
                         });
                         obsSend.observe($('div.send-button-holder button')[0], {
                             subtree: false, childList: false, characterData: false, attributes: true,
-                            attributeOldValue: false, characterDataOldValue:  false
+                            attributeOldValue: false, characterDataOldValue: false
                         });
 
-
-                    }else{
-                        // let file = File(value)
-                        // console.log(value)
-                        // $('input.fileInput').val(value)
+                    } else {
+                        core.WebToHost({ "attachFile": { "selector": "input.fileInput", "file": value } }).then((resHost) => {
+                            console.log("---file---")
+                            waitSend(arrayValue, index)
+                        })
                     }
-                })
-                // console.log(arg)
 
-                resolve("Dialog send")
-            }else {
+                }
+
+                function waitSend(arrayValue, index) {
+                    // 等待发送完成
+                    let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
+
+                        mutationList.forEach((mutation, nodeIndex) => {
+                            let addedNodes = mutation.addedNodes
+                            console.log(addedNodes)
+                            if (addedNodes && addedNodes[0].nodeName == "SWX-MESSAGE") {
+                                console.log('---addedNodes----')
+                                observer.disconnect()
+
+                                let obsFinished = new MutationObserver((mList, obs) => {
+                                    console.log('-------obs update--------')
+                                    console.log(mList)
+                                    console.log("DeliveryStatus update : ", $('swx-message.me span.DeliveryStatus-status').last().text())
+                                    if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
+                                        obs.disconnect()
+                                        send(arrayValue, index + 1)
+                                    }
+                                })
+
+                                obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
+                                    // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                    subtree: true, childList: true, characterData: true, attributes: true,
+                                    attributeOldValue: false, characterDataOldValue: false
+                                });
+
+                            }
+                        })
+
+                    })
+                    obsSwxUpdated.observe($("div.messageHistory")[0], {
+                        subtree: false, childList: true, characterData: false, attributes: false,
+                        attributeOldValue: false, characterDataOldValue: false
+                    })
+
+                }
+
+                // 开始发送消息
+                send(arg)
+
+            } else {
                 reject("unknown key : ", key)
             }
         })

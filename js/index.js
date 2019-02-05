@@ -176,6 +176,60 @@ $(document).ready(function () {
         </div > '
     }
 
+    function AddDialogHtml(dialog) {
+
+        let strHtml = ''
+
+        let timeObj = undefined
+
+        if (typeof (dialog["time"]) === 'number') {
+            timeObj = new Date(dialog["time"])
+        } else if (typeof (dialog["time"]) == "string") {
+            timeObj = new Date(dialog["time"])
+        } else if (typeof (dialog["time"]) == "object") {
+            timeObj = dialog["time"]
+        } else {
+            timeObj = new Date()
+        }
+        let time = timeObj.toTimeString().slice(0, 5)
+
+        if (dialog["from"]) {
+            let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+            let appName = $("#td-right div.td-chat-title").attr("data-app-name")
+            let avatarUrl = $("#td-left \
+            div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
+            div.td-avatar")
+            .css('background-image')
+            .slice(5, -2)
+
+            strHtml =
+                '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
+                    <p class="m-0">'+dialog["from"]+'</p>\
+                    <div class="td-them">\
+                        <div class="td-chatAvatar">\
+                            <img src="'+ avatarUrl + '">\
+                            <p class="m-0">'+ time + '</p>\
+                        </div>\
+                        <div class="td-chatText">' + dialog['message'] +
+                        '</div>\
+                    </div>\
+                </div>'
+
+
+        } else {
+            strHtml =
+                '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
+                    <div class="td-me">\
+                        <div class="td-chatText">' + dialog['message'] +
+                        '</div>\
+                        <p class="m-0">'+ time + '</p>\
+                    </div>\
+                </div>' 
+        }
+
+        return strHtml
+    }
+
     function ChangeConvoHtml(appName, convo) {
         let objConvo = $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
         if (objConvo.length) { // 检测存在
@@ -239,7 +293,30 @@ $(document).ready(function () {
             if (key == 'Dialog') {
                 // 收到某个用户聊天记录
                 console.log("debug : ", "==========Dialog============")
-                console.log(Obj)
+                if (Obj.length == 0) {
+                    reject("error : respFuncWinReplyWeb : no Dialog")
+                    return
+                }
+                // console.log(Obj)
+                let userID = (Obj[0])["userID"]
+                if (!userID) {
+                    reject("error : respFuncWinReplyWeb : no userID")
+                    return
+                }
+                if (webTag != $("#td-right div.td-chat-title").attr('data-app-name')) {
+                    resolve("nothing change")
+                    return
+                }
+                if (userID != $("#td-right div.td-chat-title").attr('data-user-i-d')) {
+                    resolve("nothing change")
+                    return
+                }
+
+                // 附加到右边
+                Obj.forEach((value, index) => {
+                    $("#td-right div.td-chatLog[wintype='chatLog']").append(AddDialogHtml(value))
+                })
+
 
                 console.log('focusing innnnnnnnnnnn')
                 $(webTag2Selector(webTag)).focus()
@@ -294,6 +371,14 @@ $(document).ready(function () {
                 $(webTag2Selector(webTag)).blur()
                 console.log(document.activeElement)
                 resolve("blur done")
+            } else if(key == 'attachFile'){
+                /* obj
+                    "selector": str 
+                    "file" : obj file
+                */
+                attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
+
+                resolve("attached")
             }
 
         }),
@@ -600,21 +685,26 @@ $(document).ready(function () {
         let size = nImg.getSize()
 
         let scaleFactorHeight = 1.0
-        let scaleFactorWeight = 1.0
+        let scaleFactorWidth = 1.0
 
         if (heightLimit > 0) {
             scaleFactorHeight = heightLimit / size.height
         }
 
         if (widthLimit > 0) {
-            scaleFactorWeight = widthLimit / size.weight
+            scaleFactorWidth = widthLimit / size.width
         }
 
-        let scaleFactor = scaleFactorHeight > scaleFactorWeight ? scaleFactorWeight : scaleFactorHeight
+        let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
 
-        // console.log("scale : ", scaleFactor)
-        let newDataUrl = nImg.toDataURL({'scaleFactor' : scaleFactor})
-        // console.log('resize : ', dataUrl.length , '->', newDataUrl.length)
+        // let nPng = nativeImage.createFromBuffer(nImg.toPNG(),
+        // {"width":Math.round(size.width*scaleFactor),
+        // 'height':Math.round(size.height*scaleFactor) }) 
+
+        console.log("scale : ", scaleFactor)
+        // let newDataUrl = nPng.toDataURL({ 'scaleFactor': scaleFactor })
+        let newDataUrl = nImg.toDataURL({ 'scaleFactor': scaleFactor })
+        console.log('resize : ', nImg.toDataURL().length, '->', newDataUrl.length)
 
         return newDataUrl
 
@@ -632,6 +722,8 @@ $(document).ready(function () {
                     if (typeof (item) == 'string') {
                         // insert string
                         pasteHtmlAtCaret($($("<div> </div>").text(item)).html(), 'div.td-inputbox')
+
+                        resolve("")
                     } else {
                         // insert file
                         item.addFileID(core.UniqueStr())
@@ -646,12 +738,23 @@ $(document).ready(function () {
                             + compressImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
                             + "'>", 'div.td-inputbox')) {
 
-                            fileList[item.fileID] = item
+
+                            item.localSave().then(() => {
+                                fileList[item.fileID] = item
+                                resolve("")
+                            }).catch((err) => {
+                                console.log("error : processDataTransfer : localSave ")
+                                console.log(err)
+                                reject(err)
+                            })
+
+                        } else {
+                            reject("error : processDataTransfer : pasteHtmlAtCaret")
                         }
                     }
                 })
 
-                resolve("")
+
 
             }).catch(error => {
                 reject(error)
@@ -727,10 +830,10 @@ $(document).ready(function () {
             if ($(el)[0].nodeName == '#text') {
                 sendStr.push($(el).text())
             } else if ($(el)[0].nodeName == 'IMG') {
-                // let fileID = $(el).attr('data-file-ID')
-                let dataUrl = $(el).attr('src')
-                // sendStr.push(fileList[fileID])
-                sendStr.push(dataUrl)
+                let fileID = $(el).attr('data-file-ID')
+                // let dataUrl = $(el).attr('data-file-id')
+                sendStr.push(fileList[fileID])
+                // sendStr.push(dataUrl)
             } else {
                 sendStr = sendStr.concat(simpleInput($(el).html()))
             }
@@ -752,6 +855,8 @@ $(document).ready(function () {
         let fileIndex = -1
         let strInput = ''
         arrayInput.forEach((value, index) => {
+            // console.log(index, typeof (value), '----')
+            // console.log(value)
             if (typeof (value) != 'string') {
                 strInput = arrayInput.slice(fileIndex + 1, index).join('')
                 if (strInput.length > 0) arraySimpleInput.push(strInput)
@@ -767,6 +872,45 @@ $(document).ready(function () {
         return arraySimpleInput
     }
 
+
+    function attachInputFile(webSelector, inputSelector, filePath) {
+
+
+
+        let wc = $(webSelector).get(0).getWebContents();
+
+        console.log("---attachInputFile----")
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.1");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+
+
+
+        wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
+            wc.debugger.sendCommand("DOM.querySelector", {
+                nodeId: res.root.nodeId,
+                selector: inputSelector  // CSS selector of input[type=file] element                                        
+            }, function (err, res) {
+                if (res) { // 防止不存在inputSelector
+                    wc.debugger.sendCommand("DOM.setFileInputFiles", {
+                        nodeId: res.nodeId,
+                        files: [filePath]  // Actual list of paths                                                        
+                    }, function (err, res) {
+
+                        wc.debugger.detach();
+                    });
+                } else {
+                    console.log("error : attachInputFile : inputSelector : '", inputSelector, "' not exist.")
+                }
+            });
+
+        });
+
+    }
     // =============================程序主体=============================
 
 
@@ -787,16 +931,26 @@ $(document).ready(function () {
     // 点击convo
     $('#td-left').on('click', 'div.td-convo', function () {
         // 识别webtag
+        // console.log($(this).find("div.td-nickname").text())        
         let webTag = $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
+        let nickName = $(this).find("div.td-nickname").text()
+
         $('#td-left div.td-convo').removeClass('theme-transduction-active')
         $(this).addClass('theme-transduction-active')
+
 
         if (webTag == undefined || userID == undefined) {
             console.log("error : click obj error.")
             console.log("obj : ", this)
             console.log("userID : ", userID)
         } else {
+            // ---------右侧标题-----------
+            $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
+            $("#td-right div.td-chat-title").attr("data-app-name", webTag)
+            $("#td-right div.td-chat-title h2").text(nickName)
+            $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
+            $("#td-right div.td-chatLog[wintype='chatLog']").empty()
 
 
             // $(webTag2Selector(webTag)).focus()
@@ -805,18 +959,24 @@ $(document).ready(function () {
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
+
                 // setTimeout(() => {
                 //     console.log('bluring outtttttttttttttttttttttttt')
                 //     $(webTag2Selector(webTag)).blur()
                 // }, 1300)
                 // console.log('focusing innnnnnnnnnnn')
                 // $(webTag2Selector(webTag)).focus()
+
+
             }).catch((error) => {
                 throw error
             })
-
         }
+
+
+
     });
+
 
     console.log("toggle")
     toggleWebview()
@@ -920,7 +1080,8 @@ $(document).ready(function () {
 
         core.HostSendToWeb(webTag2Selector('skype'), { 'sendDialog': arraySend })
 
-
+        // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
+        // console.log(fileList)
     })
 
 

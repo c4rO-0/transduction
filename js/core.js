@@ -15,6 +15,13 @@ const fs = require('fs');
 // 声明Jquery
 const $ = require('../toolkit/jquery-3.3.1.min.js')
 
+const os = require('os');
+
+const path = require('path');
+
+const mkdirp = require('mkdirp');
+
+
 // =============================
 // local Function
 // 库函数需要的一些局域函数
@@ -120,6 +127,9 @@ function UniqueStr() {
     return (Date.now() + Math.random()).toString()
 }
 
+
+
+
 // ====================================
 /**
  * core Module Function
@@ -127,7 +137,7 @@ function UniqueStr() {
 module.exports = {
 
     fileSend: class {
-        constructor(name, path, webkitRelativePath, fileID='', dataUrl= undefined){
+        constructor(name, path, webkitRelativePath, fileID = '', dataUrl = undefined) {
             this.name = name
             this.path = path
             this.webkitRelativePath = webkitRelativePath
@@ -144,15 +154,80 @@ module.exports = {
             // this.type = file.type    
 
         }
-        addFileID(fileID){
+        addFileID(fileID) {
             this.fileID = fileID
         }
-        addDataUrl(dataUrl){
+        addDataUrl(dataUrl) {
             this.dataUrl = dataUrl
         }
-        print(){
+        print() {
             console.log('------output File property--------')
             console.log(this)
+        }
+        localSave() {
+            // if (this.path == "") {
+
+            return new Promise((resolve, reject) => {
+                function decodeBase64Image(dataString) {
+                    var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+                    var response = {};
+
+                    if (matches.length !== 3) {
+                        return new Error('Invalid input string');
+                    }
+
+                    response.type = matches[1];
+                    response.data = Buffer.from(matches[2], 'base64');
+
+                    return response;
+                }
+
+                // Regular expression for image type:
+                // This regular image extracts the "jpeg" from "image/jpeg"
+                var imageTypeRegularExpression = /\/(.*?)$/;
+
+                var base64Data = this.dataUrl;
+
+                var imageBuffer = decodeBase64Image(base64Data);
+                var userUploadedFeedMessagesLocation = os.tmpdir();
+
+                // This variable is actually an array which has 5 values,
+                // The [1] value is the real image extension
+                var imageTypeDetected = imageBuffer
+                    .type
+                    .match(imageTypeRegularExpression);
+
+                var userUploadedImagePath = path.join(
+                    userUploadedFeedMessagesLocation,
+                    'transduction', 'img', this.fileID,
+                    this.name);
+
+                // console.log(userUploadedImagePath)
+                // Save decoded binary image to disk
+                try {
+                    mkdirp(path.dirname(userUploadedImagePath), (errMK) => {
+                        if (errMK) {
+                            throw (errMK)
+                        }
+                        fs.writeFile(userUploadedImagePath, imageBuffer.data,
+                            function () {
+                                console.log('DEBUG : Saved image to :', userUploadedImagePath);
+                            });
+
+                    })
+
+                }
+                catch (error) {
+                    console.log('ERROR:', error);
+                    reject('error : localSave')
+                }
+
+                this.path = userUploadedImagePath
+                this.dataUrl = ''
+                resolve('')
+                // }
+            })
+
         }
 
     },
@@ -295,7 +370,7 @@ document.body.appendChild(el);}")
                 setTimeout(() => {
 
                     ipcRender.removeListener('msg-ipc-asy-main-reply-' + uStr, handleMsg)
-                    
+
 
                 }, 5000);
             } else {
@@ -403,7 +478,7 @@ document.body.appendChild(el);}")
                 setTimeout(() => {
 
                     ipcRender.removeListener('msg-ipc-asy-win-reply-' + uStr, handleMsg)
-                    
+
                 }, 5000);
             } else {
                 reject("sendToWin : two many msg")
@@ -516,7 +591,7 @@ document.body.appendChild(el);}")
                 web.addEventListener('ipc-message', handleMsg)
                 setTimeout(() => {
                     web.removeEventListener('ipc-message', handleMsg)
-                }, 5000);                            
+                }, 5000);
             }
 
         }),
@@ -646,6 +721,10 @@ document.body.appendChild(el);}")
      */
     WinReplyWeb: function (webSelector, fcnResponse) {
         // let web = document.getElementById(webviewID);
+
+        if ($(webSelector).length == 0) {
+            return
+        }
         let web = $(webSelector).get(0);
         web.addEventListener('ipc-message', (event) => {
             console.log("webview-message-listen")
