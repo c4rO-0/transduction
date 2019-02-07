@@ -58,7 +58,7 @@ window.onload = function () {
 
         let fromUserName = MSG["FromUserName"]
         // let toUserName = MSG["ToUserName"]
-        let time = new Date(MSG["MMDisplayTime"]*1000)
+        let time = new Date(MSG["MMDisplayTime"] * 1000)
 
 
 
@@ -139,7 +139,7 @@ window.onload = function () {
 
         // console.log(remarkName, MSGID, type, content, time)
         return {
-            "from": MSGObj.hasClass("right")? undefined : (remarkName==''?nickName:remarkName),
+            "from": MSGObj.hasClass("right") ? undefined : (remarkName == '' ? nickName : remarkName),
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
@@ -199,14 +199,14 @@ window.onload = function () {
 
         let nickName = $(obj).find("div.info h3.nickname span").text()
         let userID = $(obj).attr("data-username")
-        
+
 
         let time = new Date() // Now
         let chatObj = _chatContent[userID]
-        if(chatObj.length > 0) { // last MSG
-            time = new Date((chatObj[chatObj.length-1])["MMDisplayTime"]*1000) 
+        if (chatObj.length > 0) { // last MSG
+            time = new Date((chatObj[chatObj.length - 1])["MMDisplayTime"] * 1000)
         }
-     
+
         let host =
             window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
                 window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
@@ -443,7 +443,7 @@ window.onload = function () {
 
                             MSGList.push(MSG)
                         }
-                        if(MSGList.length > 0){
+                        if (MSGList.length > 0) {
                             (MSGList[0])["userID"] = ID
                             core.WebToHost({ "Dialog": MSGList }).then((res) => {
                                 console.log(res)
@@ -453,6 +453,93 @@ window.onload = function () {
                         }
 
                     }, 100);
+                } else if (key == 'sendDialog') {
+                    console.log("--------sendDialog---")
+                    function send(arrayValue, index = 0) {
+
+                        console.log("index : ", index)
+                        if (index == arrayValue.length) {
+                            console.log("sendDialog finished")
+                            resolve("Dialog send")
+                            return
+                        }
+
+                        value = arrayValue[index]
+                        if (typeof (value) == 'string') {
+                            // console.log(value)
+
+                            // $('#editArea').text(value)
+                            angular.element('pre:last').scope().editAreaCtn = value
+
+                            // let e = $.Event("keydown", { keyCode: 64 }); //64没有对应按键
+                            // $("#chatInputAreaWithQuotes").trigger(e);
+
+                            // let obsSend = new MutationObserver((mutationList, observer) => {
+                                // $('a[ng-click="sendTextMessage()"]').click()
+                                angular.element('pre:last').scope().sendTextMessage();
+
+                                console.log("---text---")
+                                waitSend(arrayValue, index)
+
+                                // observer.disconnect()
+                            // });
+                            // obsSend.observe($('div.send-button-holder button')[0], {
+                            //     subtree: false, childList: false, characterData: false, attributes: true,
+                            //     attributeOldValue: false, characterDataOldValue: false
+                            // });
+
+                        } else {
+                            core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
+                                console.log("---file---")
+                                waitSend(arrayValue, index)
+                            })
+                        }
+
+                    }
+
+                    function waitSend(arrayValue, index) {
+                        // 等待发送完成
+                        let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
+    
+                            mutationList.forEach((mutation, nodeIndex) => {
+                                let addedNodes = mutation.addedNodes
+                                console.log(addedNodes)
+                                if (addedNodes && $(addedNodes[0]).attr("ng-repeat") && $(addedNodes[0]).attr("ng-repeat") == "message in chatContent") {
+                                    console.log('---addedNodes----')
+                                    observer.disconnect()
+    
+                                    let obsFinished = new MutationObserver((mList, obs) => {
+                                        console.log('-------obs update--------')
+                                        console.log(mList)
+                                        if ($("div[ng-switch-default].me")
+                                        .last()
+                                        .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                                        .is(':hidden')) {
+                                            obs.disconnect()
+                                            send(arrayValue, index + 1)
+                                        }
+                                    })
+    
+                                    obsFinished.observe($("div[ng-switch-default].me")
+                                    .last().find("div.bubble_cont.ng-scope")[0], { 
+                                        // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                        subtree: true, childList: true, characterData: true, attributes: true,
+                                        attributeOldValue: false, characterDataOldValue: false
+                                    });
+    
+                                }
+                            })
+    
+                        })
+                        obsSwxUpdated.observe($("div[mm-repeat='message in chatContent']")[0], {
+                            subtree: false, childList: true, characterData: false, attributes: false,
+                            attributeOldValue: false, characterDataOldValue: false
+                        })
+    
+                    }
+
+                    // 开始发送消息
+                    send(arg)
                 } else {
                     reject('unknown key')
                 }

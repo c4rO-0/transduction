@@ -1077,8 +1077,8 @@ $(document).ready(function () {
         // let arraySend = new Array()
         // arraySend.push(nativeImage.createFromPath('/home/bsplu/workspace/transduction/res/pic/ffsend.png'))
         console.log(arraySend)
-
-        core.HostSendToWeb(webTag2Selector('skype'), { 'sendDialog': arraySend })
+        $(webTag2Selector('wechat')).focus()
+        core.HostSendToWeb(webTag2Selector('wechat'), { 'sendDialog': arraySend })
 
         // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
         // console.log(fileList)
