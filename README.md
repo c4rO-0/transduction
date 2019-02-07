@@ -137,7 +137,7 @@ core.WebToHost({key:content})
     // Str | 消息类型 | "text","img", "url", unknown
 	"type": type,
     // Str | 消息内容 | 
-	"content": content
+	"message": message
 }
 ```
 

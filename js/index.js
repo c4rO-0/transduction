@@ -926,7 +926,6 @@ $(document).ready(function () {
         return respFuncWinReplyWeb("skype", key, arg)
     })
 
-    // ===========================发送消息===========================
 
     // 点击convo
     $('#td-left').on('click', 'div.td-convo', function () {
@@ -1066,19 +1065,24 @@ $(document).ready(function () {
     });
 
 
-    // ==========send===============
+
+    // ===========================发送消息===========================
     $(debug_send_str).on('click', event => {
 
+        // 获取appname
+        let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+        let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
 
-        let arraySend = getInput('div.td-inputbox')
-        console.log('-----send-----')
+        if( userID && webTag){
+            let arraySend = getInput('div.td-inputbox')
+            // console.log('-----send-----')
+            if(arraySend.length > 0){
+                arraySend.unshift(userID)
+                $(webTag2Selector(webTag)).focus()
+                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend })
+            }
+        }
 
-
-        // let arraySend = new Array()
-        // arraySend.push(nativeImage.createFromPath('/home/bsplu/workspace/transduction/res/pic/ffsend.png'))
-        console.log(arraySend)
-
-        core.HostSendToWeb(webTag2Selector('skype'), { 'sendDialog': arraySend })
 
         // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
         // console.log(fileList)
