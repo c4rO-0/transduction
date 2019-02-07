@@ -455,6 +455,14 @@ window.onload = function () {
                     }, 100);
                 } else if (key == 'sendDialog') {
                     console.log("--------sendDialog---")
+                    // 检查
+                    if(! $("div.chat_item[data-username='"+arg[0]+"']").hasClass("active")){
+
+                        reject("user not active")
+                        return
+                    }
+                    
+
                     function send(arrayValue, index = 0) {
 
                         console.log("index : ", index)
@@ -539,7 +547,7 @@ window.onload = function () {
                     }
 
                     // 开始发送消息
-                    send(arg)
+                    send(arg,1)
                 } else {
                     reject('unknown key')
                 }

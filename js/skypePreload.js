@@ -345,7 +345,12 @@ window.onload = function () {
 
 
                 console.log("--------sendDialog---")
+                //检查
+                if(! $("a[data-user-i-d='"+arg[0]+ "']").hasClass("active")){
 
+                    reject("user not active")
+                    return
+                }
 
                 function send(arrayValue, index=0) {
 
@@ -426,7 +431,7 @@ window.onload = function () {
                 }
 
                 // 开始发送消息
-                send(arg)
+                send(arg,1)
 
             } else {
                 reject("unknown key : ", key)
