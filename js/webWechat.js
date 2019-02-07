@@ -143,7 +143,7 @@ window.onload = function () {
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
-            "content": content
+            "message": content
         }
 
 
@@ -437,14 +437,18 @@ window.onload = function () {
                         let objSlide = chatContent[ID]
                         let MSGList = new Array()
                         for (let indexMSG in objSlide) {
-                            console.log("debug : ", indexMSG, "---->")
+                            // console.log("debug : ", indexMSG, "---->")
                             // console.log(objSlide[indexMSG])
                             let MSG = grepMSG(contacts, objSlide[indexMSG])
 
                             MSGList.push(MSG)
                         }
                         if (MSGList.length > 0) {
-                            (MSGList[0])["userID"] = ID
+                            console.log("debug : dialog-----------");
+                            (MSGList[0])["userID"] = ID;
+                            // console.log(MSGList[0])
+                            // console.log(ID)
+                            // console.log(typeof(ID))
                             core.WebToHost({ "Dialog": MSGList }).then((res) => {
                                 console.log(res)
                             }).catch((error) => {
@@ -453,6 +457,7 @@ window.onload = function () {
                         }
 
                     }, 100);
+
                 } else if (key == 'sendDialog') {
                     console.log("--------sendDialog---")
                     // 检查
