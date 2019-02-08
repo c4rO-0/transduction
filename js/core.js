@@ -184,34 +184,33 @@ module.exports = {
 
                 // Regular expression for image type:
                 // This regular image extracts the "jpeg" from "image/jpeg"
-                var imageTypeRegularExpression = /\/(.*?)$/;
+                var imageExpression = /\/(.*?)$/;
 
                 var base64Data = this.dataUrl;
 
                 var imageBuffer = decodeBase64Image(base64Data);
-                var userUploadedFeedMessagesLocation = os.tmpdir();
+                var tempDir = os.tmpdir();
 
                 // This variable is actually an array which has 5 values,
                 // The [1] value is the real image extension
                 var imageTypeDetected = imageBuffer
                     .type
-                    .match(imageTypeRegularExpression);
+                    .match(imageExpression);
 
-                var userUploadedImagePath = path.join(
-                    userUploadedFeedMessagesLocation,
+                var uploadedImagePath = path.join(
+                    tempDir,
                     'transduction', 'img', this.fileID,
                     this.name);
 
-                // console.log(userUploadedImagePath)
                 // Save decoded binary image to disk
                 try {
-                    mkdirp(path.dirname(userUploadedImagePath), (errMK) => {
+                    mkdirp(path.dirname(uploadedImagePath), (errMK) => {
                         if (errMK) {
                             throw (errMK)
                         }
-                        fs.writeFile(userUploadedImagePath, imageBuffer.data,
+                        fs.writeFile(uploadedImagePath, imageBuffer.data,
                             function () {
-                                console.log('DEBUG : Saved image to :', userUploadedImagePath);
+                                console.log('DEBUG : Saved image to :', uploadedImagePath);
                             });
 
                     })
@@ -222,11 +221,34 @@ module.exports = {
                     reject('error : localSave')
                 }
 
-                this.path = userUploadedImagePath
+                this.path = uploadedImagePath
+                this.pathRoot = path.join(
+                    tempDir,
+                    'transduction', 'img')
                 this.dataUrl = ''
                 resolve('')
                 // }
             })
+
+        }
+        clear() {
+            function removeDir(dir) {
+                let files = fs.readdirSync(dir)
+                for (var i = 0; i < files.length; i++) {
+                    let childPath = path.join(dir, files[i]);
+                    let stat = fs.statSync(childPath)
+                    if (stat.isDirectory()) {
+                        // 递归
+                        removeDir(childPath);
+                    } else {
+                        //删除文件
+                        fs.unlinkSync(childPath);
+                    }
+                }
+                fs.rmdirSync(dir)
+            }
+
+            removeDir(path.join(this.pathRoot, this.fileID))
 
         }
 
