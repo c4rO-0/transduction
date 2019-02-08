@@ -1079,7 +1079,20 @@ $(document).ready(function () {
             if(arraySend.length > 0){
                 arraySend.unshift(userID)
                 $(webTag2Selector(webTag)).focus()
-                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend })
+                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }).then(()=>{
+                    // 清理消息
+                    $("div.td-inputbox").empty()
+
+                    //删除File list
+                    arraySend.forEach((value, index)=>{
+                        console.log(index, typeof(value))
+                        if(typeof(value) != 'string'){
+                            console.log("file : ", value.fileID)
+                            fileList[value.fileID].clear()
+                            delete fileList[value.fileID]
+                        }
+                    })
+                })
             }
         }
 
