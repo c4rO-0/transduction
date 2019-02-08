@@ -199,19 +199,19 @@ $(document).ready(function () {
             let avatarUrl = $("#td-left \
             div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
             div.td-avatar")
-            .css('background-image')
-            .slice(5, -2)
+                .css('background-image')
+                .slice(5, -2)
 
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
-                    <p class="m-0">'+dialog["from"]+'</p>\
+                    <p class="m-0">'+ dialog["from"] + '</p>\
                     <div class="td-them">\
                         <div class="td-chatAvatar">\
                             <img src="'+ avatarUrl + '">\
                             <p class="m-0">'+ time + '</p>\
                         </div>\
                         <div class="td-chatText">' + dialog['message'] +
-                        '</div>\
+                '</div>\
                     </div>\
                 </div>'
 
@@ -221,10 +221,10 @@ $(document).ready(function () {
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
                     <div class="td-me">\
                         <div class="td-chatText">' + dialog['message'] +
-                        '</div>\
+                '</div>\
                         <p class="m-0">'+ time + '</p>\
                     </div>\
-                </div>' 
+                </div>'
         }
 
         return strHtml
@@ -312,12 +312,22 @@ $(document).ready(function () {
                     return
                 }
 
+                let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+                // let scroll = true
+
+                // if ($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight != $(dialogSelector)[0].scrollHeight) {
+                //     //  不要滑动
+                //     scroll = false
+                // }                
+
                 // 附加到右边
                 Obj.forEach((value, index) => {
-                    $("#td-right div.td-chatLog[wintype='chatLog']").append(AddDialogHtml(value))
+                    $(dialogSelector).append(AddDialogHtml(value))
                 })
 
-
+                // if(scroll){
+                $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                // }
                 console.log('focusing innnnnnnnnnnn')
                 $(webTag2Selector(webTag)).focus()
                 console.log(document.activeElement)
@@ -371,7 +381,7 @@ $(document).ready(function () {
                 $(webTag2Selector(webTag)).blur()
                 console.log(document.activeElement)
                 resolve("blur done")
-            } else if(key == 'attachFile'){
+            } else if (key == 'attachFile') {
                 /* obj
                     "selector": str 
                     "file" : obj file
@@ -1073,20 +1083,20 @@ $(document).ready(function () {
         let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
         let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
 
-        if( userID && webTag){
+        if (userID && webTag) {
             let arraySend = getInput('div.td-inputbox')
             // console.log('-----send-----')
-            if(arraySend.length > 0){
+            if (arraySend.length > 0) {
                 arraySend.unshift(userID)
                 $(webTag2Selector(webTag)).focus()
-                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }).then(()=>{
+                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }).then(() => {
                     // 清理消息
                     $("div.td-inputbox").empty()
 
                     //删除File list
-                    arraySend.forEach((value, index)=>{
-                        console.log(index, typeof(value))
-                        if(typeof(value) != 'string'){
+                    arraySend.forEach((value, index) => {
+                        console.log(index, typeof (value))
+                        if (typeof (value) != 'string') {
                             console.log("file : ", value.fileID)
                             fileList[value.fileID].clear()
                             delete fileList[value.fileID]
