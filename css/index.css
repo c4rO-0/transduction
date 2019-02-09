@@ -92,6 +92,7 @@ webview {
 
 .td-chatLog {
     flex: 1;
+    overflow: auto;
 }
 
 .td-bubble {

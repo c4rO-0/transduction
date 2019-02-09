@@ -79,9 +79,9 @@
                     <h2>Sheng Bi</h2>
                     <img id="debug-app-link" src="../res/pic/skype.png">
                 </div>
-                <div class="td-chat">
+                <div class="td-chat" winType="td-chat">
                     <img id="td-pin" src="../res/pic/pin.png">
-                    <div class="td-chatLog">
+                    <div class="td-chatLog" winType="chatLog">
                         <div class="td-bubble">
                             <p class="m-0">猜猜我是谁</p>
                             <div class="td-them">
@@ -107,15 +107,19 @@
                             </div>
                         </div>
                     </div>
+                    <div class="td-chatLog" winType="extension" style="display:none">
+                        <!-- 插入extension的地方 -->
+                        <!-- <webview data-extension-name="" src="" preload=""></webview> -->
+                    </div>
                     <div class="td-toolbox">
+                        <img id="debug-goBackChat" src="../res/pic/home.png">
                         <img id="debug-firefox-send" src="../res/pic/ffsend.png">
-                        <img src="../res/pic/ffsend.png">
+                        <img id="debug-latex2png" src="../res/pic/latex.png">
                     </div>
                 </div>
+                
                 <div class="td-input">
-                    <div class="td-inputbox" contenteditable="true">
-
-                    </div>
+                    <div class="td-inputbox" contenteditable="true"></div>
                     <div class="td-toolbox">
                         <img id="debug-image" src="../res/pic/image.png">
                         <div class="td-send" id="debug-send">
@@ -124,13 +128,20 @@
                     </div>
                 </div>
             </div>
+            <div class="col p-0 td-font" winType="dropFile" style="display:none;" contenteditable="true">
+                <p align="center" style="margin-left: auto; margin-right: auto;">
+                    <font size="10" color="red">松手啊</font>
+                </p>
+            </div>
         </div>
     </div>
 
-    </div>
+
     <!-- id : webview[大写字母]名称-->
-    <webview app-name="skype" src="https://web.skype.com/en/" preload="../js/skypePreload.js" tabindex="-1"></webview>
-    <webview app-name="wechat" preload="../js/webWechat.js" src="https://web.wechat.com/" tabindex="-1"></webview>
+    <webview data-app-name="skype" src="https://web.skype.com/en/" preload="../js/skypePreload.js"></webview>
+    <webview data-app-name="wechat" preload="../js/webWechat.js" src="https://web.wechat.com/"></webview>
+
+
 </body>
 
 </html>

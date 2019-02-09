@@ -22,25 +22,39 @@ function toggleWebview() {
  * @param {string} appName
  */
 function openDevtool(appName) {
-    let web = $("webview[app-name='" + appName + "']")[0];
+    let web = $("webview[data-app-name='" + appName + "']")[0];
     web.openDevTools();
 }
 
 function listWebview() {
     $("webview").toArray().forEach((e, i) => {
-        console.log($(e).attr('app-name'))
+        console.log($(e).attr('data-app-name'))
     })
 }
+
+
 
 $(document).ready(function () {
 
     const core = require("../js/core.js")
+    const { nativeImage } = require('electron').remote
+    // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
+
+    let fileList = {}; //临时储存file object
+
+    let inputImgHeightLimit = 100
+    let inputImgWeightLimit = 600
+
+
     let status = "webviewSkype"
     let debug_app_link_str = "#debug-app-link"
     let debug_firefox_send_str = "#debug-firefox-send"
     let debug_image_str = "#debug-image"
     let debug_send_str = "#debug-send"
+    let debug_latex_str = "#debug-latex2png"
+    let debug_goBackChat_str = "#debug-goBackChat"
+
 
     // =========================class===========================
     class conversation {
@@ -129,7 +143,7 @@ $(document).ready(function () {
      * @returns {String} webview的selector
      */
     function webTag2Selector(webTag) {
-        return "webview[app-name='" + webTag + "']"
+        return "webview[data-app-name='" + webTag + "']"
     }
 
     function AddConvoHtml(appName, convo) {
@@ -160,6 +174,60 @@ $(document).ready(function () {
             '+ convo.time.toTimeString().slice(0, 5) + '\
             </div>\
         </div > '
+    }
+
+    function AddDialogHtml(dialog) {
+
+        let strHtml = ''
+
+        let timeObj = undefined
+
+        if (typeof (dialog["time"]) === 'number') {
+            timeObj = new Date(dialog["time"])
+        } else if (typeof (dialog["time"]) == "string") {
+            timeObj = new Date(dialog["time"])
+        } else if (typeof (dialog["time"]) == "object") {
+            timeObj = dialog["time"]
+        } else {
+            timeObj = new Date()
+        }
+        let time = timeObj.toTimeString().slice(0, 5)
+
+        if (dialog["from"]) {
+            let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+            let appName = $("#td-right div.td-chat-title").attr("data-app-name")
+            let avatarUrl = $("#td-left \
+            div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
+            div.td-avatar")
+                .css('background-image')
+                .slice(5, -2)
+
+            strHtml =
+                '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
+                    <p class="m-0">'+ dialog["from"] + '</p>\
+                    <div class="td-them">\
+                        <div class="td-chatAvatar">\
+                            <img src="'+ avatarUrl + '">\
+                            <p class="m-0">'+ time + '</p>\
+                        </div>\
+                        <div class="td-chatText">' + dialog['message'] +
+                '</div>\
+                    </div>\
+                </div>'
+
+
+        } else {
+            strHtml =
+                '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
+                    <div class="td-me">\
+                        <div class="td-chatText">' + dialog['message'] +
+                '</div>\
+                        <p class="m-0">'+ time + '</p>\
+                    </div>\
+                </div>'
+        }
+
+        return strHtml
     }
 
     function ChangeConvoHtml(appName, convo) {
@@ -225,8 +293,41 @@ $(document).ready(function () {
             if (key == 'Dialog') {
                 // 收到某个用户聊天记录
                 console.log("debug : ", "==========Dialog============")
-                console.log(Obj)
+                if (Obj.length == 0) {
+                    reject("error : respFuncWinReplyWeb : no Dialog")
+                    return
+                }
+                // console.log(Obj)
+                let userID = (Obj[0])["userID"]
+                if (!userID) {
+                    reject("error : respFuncWinReplyWeb : no userID")
+                    return
+                }
+                if (webTag != $("#td-right div.td-chat-title").attr('data-app-name')) {
+                    resolve("nothing change")
+                    return
+                }
+                if (userID != $("#td-right div.td-chat-title").attr('data-user-i-d')) {
+                    resolve("nothing change")
+                    return
+                }
 
+                let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+                // let scroll = true
+
+                // if ($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight != $(dialogSelector)[0].scrollHeight) {
+                //     //  不要滑动
+                //     scroll = false
+                // }                
+
+                // 附加到右边
+                Obj.forEach((value, index) => {
+                    $(dialogSelector).append(AddDialogHtml(value))
+                })
+
+                // if(scroll){
+                $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                // }
                 console.log('focusing innnnnnnnnnnn')
                 $(webTag2Selector(webTag)).focus()
                 console.log(document.activeElement)
@@ -280,6 +381,14 @@ $(document).ready(function () {
                 $(webTag2Selector(webTag)).blur()
                 console.log(document.activeElement)
                 resolve("blur done")
+            } else if (key == 'attachFile') {
+                /* obj
+                    "selector": str 
+                    "file" : obj file
+                */
+                attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
+
+                resolve("attached")
             }
 
         }),
@@ -292,6 +401,526 @@ $(document).ready(function () {
 
     }
 
+    /**
+     * 
+     * @param {String} sectionSelector 要插入的webview 的父节点
+     * @param {String} extensionName 插件名称
+     * @param {String} strUrl 插件地址
+     * @param {String} strPathJS JS地址
+     * @returns {Boolean} 加载成功或失败
+     */
+    function loadExtension(sectionSelector, extensionName, strUrl, strPathJS) {
+
+        // 检测selector
+        if ($(sectionSelector).length == 0) {
+            console.log("loadExtension : cannot find section by " + sectionSelector)
+            return false
+        } else if ($(sectionSelector).length > 1) {
+            console.log("loadExtension : multiple sections found by " + sectionSelector)
+            return false
+        }
+
+        // 检查文件路径
+        if (strPathJS.length > 0) {
+            let JSexist = false
+            fs.stat(strPathJS, function (err, stat) {
+                if (stat && stat.isFile()) {
+                    JSexist = true
+                }
+            });
+            if (!JSexist) {
+                console.log("loadExtension : cannot find JS file")
+                return false
+            }
+
+
+        }
+
+
+
+        let webSelector = sectionSelector + " webview[data-extension-name='" + extensionName + "']"
+        if ($(webSelector).length == 0) {
+            console.log("loadExtension : create extension")
+            // 隐藏所有webview
+            $(sectionSelector + " webview").each(function (index) {
+                $(this).hide();
+            });
+            $(sectionSelector).append("<webview data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
+
+            $(webSelector).attr("data-extension-name", extensionName)
+
+            $(webSelector).attr('src', strUrl)
+
+            $(webSelector).attr('preload', strPathJS)
+
+            $(webSelector).show()
+
+        } else {
+            if ($(webSelector).css("display") == "none") {
+                console.log("loadExtension : display extension")
+                $(sectionSelector + " webview").each(function (index) {
+                    $(this).hide();
+                });
+                $(webSelector).show()
+            } else {
+                // 隐藏所有webview
+                $(sectionSelector + " webview").each(function (index) {
+                    $(this).hide();
+                });
+                console.log("loadExtension : reload extension")
+
+                $(webSelector).attr("data-extension-name", extensionName)
+
+                $(webSelector).attr('src', strUrl)
+
+                $(webSelector).attr('preload', strPathJS)
+
+                $(webSelector).show()
+            }
+        }
+
+        return true
+    }
+
+    function getFileNameFromUrl(url) {
+        return url.split('/').pop().split('#')[0].split('?')[0];
+    }
+
+    /**
+     * 将拖拽到网页或者粘贴到网页的DataTransfer转化成array
+     * bug : 粘贴url时text和url不一致不能合并, 如papercomment.tech网址直接拖拽
+     * @param {DataTransfer} data 
+     * @returns {Promise} 
+     *  arra[{'key':value},{}] 
+     *  key : file text url
+     */
+    function filterDataTransfer(data) {
+
+        return new Promise((resolve, reject) => {
+            let arrayItem = new Array();
+
+            let uniqueItem = new Array();
+
+            let arrayString = new Array()
+
+            let objHTML = data.getData('text/html') // 拖拽的是一个含有链接的东西, html, 在线img, 文件
+            let strURL = data.getData('URL')
+            console.log('--------objHTML-----------')
+            console.log(objHTML)
+            console.log('--------strURL-----------')
+            console.log(strURL)
+            if (objHTML && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
+                console.log("发现图片")
+                let pathR = $(objHTML).attr('src')
+                let pathFile = undefined
+
+                if (pathR.length >= 8 && pathR.substring(0, 7) == 'file://') {
+
+                    pathFile = pathR.substring(7)
+                    // console.log("本地文件", pathFile)
+                    let img = nativeImage.createFromPath(pathFile)
+                    arrayItem.push(new Promise(
+                        (resolve, reject) => {
+
+                            if (img.isEmpty()) {
+                                reject('filterDataTransfer : img not access')
+                            } else {
+                                let imgSend = new core.fileSend(getFileNameFromUrl(pathFile), pathFile, '', undefined, img.toDataURL())
+                                resolve(imgSend)
+                            }
+                        }))
+                } else if ((pathR.length > 9 && pathR.substring(0, 8) == 'https://') || (pathR.length > 8 && pathR.substring(0, 7) == 'http://')) {
+                    arrayItem.push(new Promise(
+                        (resolve, reject) => {
+                            var request = require('request').defaults({ encoding: null });
+
+                            request.get(pathR, function (error, response, body) {
+                                if (!error && response.statusCode == 200) {
+                                    let strRequest = new Buffer(body).toString('base64')
+                                    let urldata = "data:" + response.headers["content-type"] + ";base64," + strRequest;
+                                    // console.log("------request-----")
+                                    // console.log(strRequest)
+                                    if (strRequest) {
+                                        let imgSend = new core.fileSend(getFileNameFromUrl(pathR), '', pathR, undefined, urldata)
+                                        resolve(imgSend)
+                                    } else {
+                                        reject('filterDataTransfer : img not access')
+                                    }
+
+
+                                }
+
+                            });
+
+
+                        }))
+                }
+
+                // console.log(img.getSize())
+
+            } else if (strURL) {
+                console.log("发现网址")
+                arrayItem.push(Promise.resolve(strURL))
+            } else {
+                if (data.items) {
+                    let items = data.items
+
+                    console.log("---found items---", items.length)
+                    // Use DataTransferItemList interface to access the file(s)
+                    for (var i = 0; i < items.length; i++) {
+                        console.log(i, "item", items[i].kind, items[i].type, items[i])
+                        // If dropped items aren't files, reject them
+                        if ((items[i].kind == 'string') &&
+                            (items[i].type.match('^text/plain'))) {
+                            // This item is the target node
+
+                            arrayItem.push(new Promise(
+                                (resolve, reject) => {
+                                    items[i].getAsString(function (s) {
+                                        // console.log("... Drop: text ", typeof (s), s)
+                                        // ev.target.appendChild(document.getElementById(s));
+                                        resolve(s)
+                                    });
+                                }))
+
+                        } else if ((items[i].kind == 'string') &&
+                            (items[i].type.match('^text/html'))) {
+                            // Drag data item is HTML
+                            items[i].getAsString(function (s) {
+                                // console.log("... Drop: HTML", s)
+                                // ev.target.appendChild(document.getElementById(s));
+                            });
+                        } else if ((items[i].kind == 'string') &&
+                            (items[i].type.match('^text/uri-list'))) {
+                            // Drag data item is URI
+                            // arrayItem.push(new Promise(
+                            //     (resolve, reject) => {
+
+                            //         items[i].getAsString(function (s) {
+                            //             // console.log("... Drop: URI ", typeof (s), s)
+                            //             // ev.target.appendChild(document.getElementById(s));
+                            //             arrayString.push(s)
+                            //             resolve(s)
+                            //         });
+                            //     }))
+
+                        } else if ((items[i].kind == 'file') &&
+                            (items[i].type.match('^image/'))) {
+                            // Drag data item is an image file
+                            arrayItem.push(new Promise(
+                                (resolve, reject) => {
+
+                                    // console.log("file")
+                                    let file = items[i].getAsFile()
+                                    let imgSend = new core.fileSend(file.name, file.path, '')
+                                    let reader = new FileReader();
+                                    reader.onload = function (e) {
+                                        imgSend.addDataUrl(reader.result)
+                                        resolve(imgSend)
+                                    }
+                                    reader.readAsDataURL(file)
+
+                                }))
+                            // console.log('... name = ' + file.name + ' path = ' + file.path);
+                        }
+                    }
+
+                } else {
+                    console.log("---found files---")
+                    // Use DataTransfer interface to access the file(s)
+                    for (var i = 0; i < data.files.length; i++) {
+                        // console.log(data.files[i])
+                        let file = data.files[i]
+
+                        arrayItem.push(new Promise(
+                            (resolve, reject) => {
+                                let imgSend = new core.fileSend(file.name, file.path, '')
+                                let reader = new FileReader();
+                                reader.onload = function (e) {
+                                    imgSend.addDataUrl(reader.result)
+                                    resolve(imgSend)
+                                }
+                                reader.readAsDataURL(file)
+                            }))
+
+
+                    }
+                }
+            }
+
+
+
+            // arrayString = uniqueString
+
+            Promise.all(arrayItem).then((valueItems) => {
+                // console.log("finish array")
+                // console.log(arrayString.length)
+
+                uniqueItem = uniqueItem.concat(arrayString)
+
+                // console.log(uniqueItem)
+
+                valueItems.forEach((item, index) => {
+                    if (typeof (item) == "string") {
+                        // arrayString.push(item)
+                        let contains = false
+                        arrayString.forEach(iStr => {
+                            contains = (contains || iStr.includes(item))
+                        })
+                        if (!contains) {
+                            uniqueItem.push(item)
+                        }
+
+                    } else {
+                        uniqueItem.push(item)
+                    }
+                })
+
+                console.log('-----uniqueItem-------')
+                console.log(uniqueItem)
+
+                resolve(uniqueItem)
+
+            }).catch(error => {
+                reject({ 'string': error })
+            })
+
+        })
+    }
+
+
+    function compressImg(dataUrl, widthLimit, heightLimit) {
+        // 准备压缩图片
+        let nImg = nativeImage.createFromDataURL(dataUrl)
+        let size = nImg.getSize()
+
+        let scaleFactorHeight = 1.0
+        let scaleFactorWidth = 1.0
+
+        if (heightLimit > 0) {
+            scaleFactorHeight = heightLimit / size.height
+        }
+
+        if (widthLimit > 0) {
+            scaleFactorWidth = widthLimit / size.width
+        }
+
+        let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
+
+        // let nPng = nativeImage.createFromBuffer(nImg.toPNG(),
+        // {"width":Math.round(size.width*scaleFactor),
+        // 'height':Math.round(size.height*scaleFactor) }) 
+
+        console.log("scale : ", scaleFactor)
+        // let newDataUrl = nPng.toDataURL({ 'scaleFactor': scaleFactor })
+        let newDataUrl = nImg.toDataURL({ 'scaleFactor': scaleFactor })
+        console.log('resize : ', nImg.toDataURL().length, '->', newDataUrl.length)
+
+        return newDataUrl
+
+    }
+
+
+    function processDataTransfer(data) {
+
+        return new Promise((resolve, reject) => {
+
+            filterDataTransfer(data).then((items) => {
+                // console.log("start insert")
+                items.forEach((item) => {
+                    // console.log(item)
+                    if (typeof (item) == 'string') {
+                        // insert string
+                        pasteHtmlAtCaret($($("<div> </div>").text(item)).html(), 'div.td-inputbox')
+
+                        resolve("")
+                    } else {
+                        // insert file
+                        item.addFileID(core.UniqueStr())
+                        //插入html
+                        // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
+
+
+                        if (pasteHtmlAtCaret(
+                            "<img data-file-ID='"
+                            + item.fileID
+                            + "' contenteditable=false src='"
+                            + compressImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
+                            + "'>", 'div.td-inputbox')) {
+
+
+                            item.localSave().then(() => {
+                                fileList[item.fileID] = item
+                                resolve("")
+                            }).catch((err) => {
+                                console.log("error : processDataTransfer : localSave ")
+                                console.log(err)
+                                reject(err)
+                            })
+
+                        } else {
+                            reject("error : processDataTransfer : pasteHtmlAtCaret")
+                        }
+                    }
+                })
+
+
+
+            }).catch(error => {
+                reject(error)
+            })
+        })
+    }
+
+    /**
+     * 在光标处插入代码 
+     * @param {String} html 
+     * @param {String} selector JQselector 确保插入到正确的位置
+     * @returns {boolean} 是否正确储存
+     */
+    function pasteHtmlAtCaret(html, selector = undefined) {
+        var sel, range;
+        if (window.getSelection) {
+            // IE9 and non-IE
+            sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
+                range = sel.getRangeAt(0);
+                range.deleteContents();
+
+                var el = document.createElement("div");
+                el.innerHTML = html;
+                var frag = document.createDocumentFragment(), node, lastNode;
+                while ((node = el.firstChild)) {
+                    lastNode = frag.appendChild(node);
+                }
+
+                if (selector === undefined || $(range.startContainer).closest(selector).length > 0) {
+                    range.insertNode(frag);
+
+                    // Preserve the selection
+                    if (lastNode) {
+                        range = range.cloneRange();
+                        range.setStartAfter(lastNode);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                    return true
+                }
+
+            }
+        }
+        //  else if (document.selection && document.selection.type != "Control") {
+        //     // IE < 9
+        //     document.selection.createRange().pasteHTML(html);
+        // }
+
+        if (selector != undefined && $(selector).length > 0) {
+            $(selector).append(html)
+            return true
+        }
+
+        return false
+
+    }
+
+    /**
+     * 去掉input html中的tag
+     * getInput函数调用该函数
+     * @param {String} HTML 
+     * @returns {Array} 数组只包含string和File, 并按照input中顺序排列
+     */
+    function simpleInput(HTML) {
+        let arrayHTML = jQuery.parseHTML(HTML);
+
+        let sendStr = new Array()
+
+        $.each(arrayHTML, function (i, el) {
+            // console.log(el)
+            if ($(el)[0].nodeName == '#text') {
+                sendStr.push($(el).text())
+            } else if ($(el)[0].nodeName == 'IMG') {
+                let fileID = $(el).attr('data-file-ID')
+                // let dataUrl = $(el).attr('data-file-id')
+                sendStr.push(fileList[fileID])
+                // sendStr.push(dataUrl)
+            } else {
+                sendStr = sendStr.concat(simpleInput($(el).html()))
+            }
+        })
+
+        return sendStr
+    }
+
+    /**
+     * 获取input中的内容
+     * @param {String} selector 
+     * @returns {Array} 以数组形式储存, 只含有string和File. 
+     */
+    function getInput(selector) {
+        let arrayInput = simpleInput($(selector).get(0).innerHTML)
+        let arraySimpleInput = new Array()
+
+
+        let fileIndex = -1
+        let strInput = ''
+        arrayInput.forEach((value, index) => {
+            // console.log(index, typeof (value), '----')
+            // console.log(value)
+            if (typeof (value) != 'string') {
+                strInput = arrayInput.slice(fileIndex + 1, index).join('')
+                if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+                arraySimpleInput.push(value)
+                fileIndex = index
+            }
+        })
+
+        strInput = arrayInput.slice(fileIndex + 1).join('')
+        if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+        return arraySimpleInput
+    }
+
+
+    function attachInputFile(webSelector, inputSelector, filePath) {
+
+
+
+        let wc = $(webSelector).get(0).getWebContents();
+
+        console.log("---attachInputFile----")
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.1");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+
+
+
+        wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
+            wc.debugger.sendCommand("DOM.querySelector", {
+                nodeId: res.root.nodeId,
+                selector: inputSelector  // CSS selector of input[type=file] element                                        
+            }, function (err, res) {
+                if (res) { // 防止不存在inputSelector
+                    wc.debugger.sendCommand("DOM.setFileInputFiles", {
+                        nodeId: res.nodeId,
+                        files: [filePath]  // Actual list of paths                                                        
+                    }, function (err, res) {
+
+                        wc.debugger.detach();
+                    });
+                } else {
+                    console.log("error : attachInputFile : inputSelector : '", inputSelector, "' not exist.")
+                }
+            });
+
+        });
+
+    }
     // =============================程序主体=============================
 
 
@@ -307,21 +936,30 @@ $(document).ready(function () {
         return respFuncWinReplyWeb("skype", key, arg)
     })
 
-    // ===========================发送消息===========================
 
     // 点击convo
     $('#td-left').on('click', 'div.td-convo', function () {
         // 识别webtag
+        // console.log($(this).find("div.td-nickname").text())        
         let webTag = $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
+        let nickName = $(this).find("div.td-nickname").text()
+
         $('#td-left div.td-convo').removeClass('theme-transduction-active')
         $(this).addClass('theme-transduction-active')
+
 
         if (webTag == undefined || userID == undefined) {
             console.log("error : click obj error.")
             console.log("obj : ", this)
             console.log("userID : ", userID)
         } else {
+            // ---------右侧标题-----------
+            $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
+            $("#td-right div.td-chat-title").attr("data-app-name", webTag)
+            $("#td-right div.td-chat-title h2").text(nickName)
+            $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
+            $("#td-right div.td-chatLog[wintype='chatLog']").empty()
 
 
             // $(webTag2Selector(webTag)).focus()
@@ -330,23 +968,148 @@ $(document).ready(function () {
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
+
                 // setTimeout(() => {
                 //     console.log('bluring outtttttttttttttttttttttttt')
                 //     $(webTag2Selector(webTag)).blur()
                 // }, 1300)
                 // console.log('focusing innnnnnnnnnnn')
                 // $(webTag2Selector(webTag)).focus()
+
+
             }).catch((error) => {
                 throw error
             })
-
         }
+
+
+
     });
+
 
     console.log("toggle")
     toggleWebview()
-    openDevtool('skype')
-    window.onresize = ()=>{
+    // openDevtool('skype')
+    window.onresize = () => {
         console.log("===window resize====")
     }
+
+
+    // =================extension click==================
+    // extension click
+    $(debug_firefox_send_str).on('click', () => {
+        let extensionName = "firefox-send"
+        $("#td-right div.td-chatLog[winType='chatLog']").hide()
+        $("#td-right div.td-chatLog[winType='extension']").show()
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
+    })
+
+    $(debug_latex_str).on('click', () => {
+        let extensionName = "latex2png"
+        $("#td-right div.td-chatLog[winType='chatLog']").hide()
+        $("#td-right div.td-chatLog[winType='extension']").show()
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
+    })
+
+    // 隐藏extension
+    $(debug_goBackChat_str).on('click', () => {
+        $("#td-right div.td-chatLog[winType='chatLog']").show()
+        // webview隐藏, 防止再次点击刷新页面
+        $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
+            $(this).hide();
+        });
+        $("#td-right div.td-chatLog[winType='extension']").hide()
+
+    })
+
+    // ======================拖入东西==========================
+    // 检测到拖入到东西
+    // 当extension打开的时候, 只接受输入框位置拖入
+    $("#td-right").on("dragenter", (event) => {
+        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+
+        } else {
+            $("#td-right").hide()
+            $("div[winType='dropFile']").show()
+        }
+    })
+    $("div.td-inputbox").on("dragenter", (event) => {
+        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+            $("#td-right").hide()
+            $("div[winType='dropFile']").show()
+        } else {
+
+        }
+    })
+
+    // 拖出右侧还原
+    $("div[winType='dropFile']").on("dragleave", (event) => {
+        $("div[winType='dropFile']").hide()
+        $("#td-right").show()
+    })
+
+    //识别到放下东西
+    $("div[winType='dropFile']").on("drop", (event) => {
+        console.log("drop")
+        $("div[winType='dropFile']").hide()
+        $("#td-right").show()
+        // Prevent default behavior (Prevent file from being opened)
+        event.preventDefault();
+
+
+        processDataTransfer(event.originalEvent.dataTransfer).then(
+            console.log("insert input done")
+        )
+
+
+    })
+
+    // ===========paste================
+    $("div.td-inputbox").on("paste", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        processDataTransfer(event.originalEvent.clipboardData).then(
+            console.log("insert input done")
+        )
+    });
+
+
+
+    // ===========================发送消息===========================
+    $(debug_send_str).on('click', event => {
+
+        // 获取appname
+        let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+        let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
+
+        if (userID && webTag) {
+            let arraySend = getInput('div.td-inputbox')
+            // console.log('-----send-----')
+            if (arraySend.length > 0) {
+                arraySend.unshift(userID)
+                $(webTag2Selector(webTag)).focus()
+                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }).then(() => {
+                    // 清理消息
+                    $("div.td-inputbox").empty()
+
+                    //删除File list
+                    arraySend.forEach((value, index) => {
+                        console.log(index, typeof (value))
+                        if (typeof (value) != 'string') {
+                            console.log("file : ", value.fileID)
+                            fileList[value.fileID].clear()
+                            delete fileList[value.fileID]
+                        }
+                    })
+                })
+            }
+        }
+
+
+        // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
+        // console.log(fileList)
+    })
+
+
 })
