@@ -193,6 +193,21 @@ $(document).ready(function () {
         }
         let time = timeObj.toTimeString().slice(0, 5)
 
+        let content =''
+        if(dialog['type'] == 'text'){
+            content = '<div class="td-chatText">' + dialog['message'] +
+                '</div>'
+        }else if(dialog['type'] == 'img'){
+            content = '<div class="td-chatImg"> <img src="'+dialog['message']+'"></img></div>'            
+        }else if(dialog['type'] == 'url'){
+            content = '<div class="td-chatText">' + dialog['message'] +
+                '</div>' 
+        }else{
+            content = '<div class="td-chatText">' + dialog['message'] +
+                '</div>'             
+        }
+
+
         if (dialog["from"]) {
             let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
             let appName = $("#td-right div.td-chat-title").attr("data-app-name")
@@ -202,6 +217,8 @@ $(document).ready(function () {
                 .css('background-image')
                 .slice(5, -2)
 
+
+
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
                     <p class="m-0">'+ dialog["from"] + '</p>\
@@ -209,20 +226,18 @@ $(document).ready(function () {
                         <div class="td-chatAvatar">\
                             <img src="'+ avatarUrl + '">\
                             <p class="m-0">'+ time + '</p>\
-                        </div>\
-                        <div class="td-chatText">' + dialog['message'] +
-                '</div>\
-                    </div>\
+                        </div>' +
+                        content +
+                    '</div>\
                 </div>'
 
 
         } else {
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
-                    <div class="td-me">\
-                        <div class="td-chatText">' + dialog['message'] +
-                '</div>\
-                        <p class="m-0">'+ time + '</p>\
+                    <div class="td-me">' 
+                        + content +
+                        '<p class="m-0">'+ time + '</p>\
                     </div>\
                 </div>'
         }
