@@ -109,6 +109,11 @@ window.onload = function () {
                 console.log('found url')
                 this.type = 'url'
                 this.message = aNode.querySelector('div.content p.urlPreviewText > a').href
+            } else if (aNode.classList.contains('urlPreview') &&
+                aNode.querySelector('div.content a.thumbnail')) {
+                console.log('found url')
+                this.type = 'url'
+                this.message = aNode.querySelector('div.content a.thumbnail').href
             } else if (aNode.classList.contains('text') &&
                 aNode.querySelector('div.content > p')) {
                 console.log('found text')
@@ -346,13 +351,13 @@ window.onload = function () {
 
                 console.log("--------sendDialog---")
                 //检查
-                if(! $("a[data-user-i-d='"+arg[0]+ "']").hasClass("active")){
+                if (!$("a[data-user-i-d='" + arg[0] + "']").hasClass("active")) {
 
                     reject("user not active")
                     return
                 }
 
-                function send(arrayValue, index=0) {
+                function send(arrayValue, index = 0) {
 
                     console.log("index : ", index)
                     if (index == arrayValue.length) {
@@ -431,7 +436,7 @@ window.onload = function () {
                 }
 
                 // 开始发送消息
-                send(arg,1)
+                send(arg, 1)
 
             } else {
                 reject("unknown key : ", key)
