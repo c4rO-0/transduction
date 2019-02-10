@@ -1077,8 +1077,11 @@ $(document).ready(function () {
         let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
         let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
 
+
         if (userID && webTag) {
             let arraySend = getInput('div.td-inputbox')
+            // 清理消息
+            $("div.td-inputbox").empty()            
             // console.log('-----send-----')
             if (arraySend.length > 0) {
                 arraySend.unshift(userID)
