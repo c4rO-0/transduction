@@ -193,6 +193,21 @@ $(document).ready(function () {
         }
         let time = timeObj.toTimeString().slice(0, 5)
 
+        let content =''
+        if(dialog['type'] == 'text'){
+            content = '<div class="td-chatText">' + dialog['message'] +
+                '</div>'
+        }else if(dialog['type'] == 'img'){
+            content = '<div class="td-chatImg"> <img src="'+dialog['message']+'"></img></div>'            
+        }else if(dialog['type'] == 'url'){
+            content = '<div class="td-chatText">' + dialog['message'] +
+                '</div>' 
+        }else{
+            content = '<div class="td-chatText">' + dialog['message'] +
+                '</div>'             
+        }
+
+
         if (dialog["from"]) {
             let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
             let appName = $("#td-right div.td-chat-title").attr("data-app-name")
@@ -202,6 +217,8 @@ $(document).ready(function () {
                 .css('background-image')
                 .slice(5, -2)
 
+
+
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
                     <p class="m-0">'+ dialog["from"] + '</p>\
@@ -209,20 +226,18 @@ $(document).ready(function () {
                         <div class="td-chatAvatar">\
                             <img src="'+ avatarUrl + '">\
                             <p class="m-0">'+ time + '</p>\
-                        </div>\
-                        <div class="td-chatText">' + dialog['message'] +
-                '</div>\
-                    </div>\
+                        </div>' +
+                        content +
+                    '</div>\
                 </div>'
 
 
         } else {
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
-                    <div class="td-me">\
-                        <div class="td-chatText">' + dialog['message'] +
-                '</div>\
-                        <p class="m-0">'+ time + '</p>\
+                    <div class="td-me">' 
+                        + content +
+                        '<p class="m-0">'+ time + '</p>\
                     </div>\
                 </div>'
         }
@@ -689,7 +704,7 @@ $(document).ready(function () {
     }
 
 
-    function compressImg(dataUrl, widthLimit, heightLimit) {
+    function autoSizeImg(dataUrl, widthLimit, heightLimit) {
         // 准备压缩图片
         let nImg = nativeImage.createFromDataURL(dataUrl)
         let size = nImg.getSize()
@@ -711,15 +726,9 @@ $(document).ready(function () {
         // {"width":Math.round(size.width*scaleFactor),
         // 'height':Math.round(size.height*scaleFactor) }) 
 
-        console.log("scale : ", scaleFactor)
-        // let newDataUrl = nPng.toDataURL({ 'scaleFactor': scaleFactor })
-        let newDataUrl = nImg.toDataURL({ 'scaleFactor': scaleFactor })
-        console.log('resize : ', nImg.toDataURL().length, '->', newDataUrl.length)
-
-        return newDataUrl
+        return {"height":size.height*scaleFactor, "width":size.width*scaleFactor}
 
     }
-
 
     function processDataTransfer(data) {
 
@@ -740,13 +749,13 @@ $(document).ready(function () {
                         //插入html
                         // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
 
-
+                        let newSize = autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
                         if (pasteHtmlAtCaret(
                             "<img data-file-ID='"
                             + item.fileID
                             + "' contenteditable=false src='"
-                            + compressImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
-                            + "'>", 'div.td-inputbox')) {
+                            + item.path
+                            + "' height='"+newSize.height+"' width='"+newSize.width+"' >", 'div.td-inputbox')) {
 
 
                             item.localSave().then(() => {
@@ -1083,15 +1092,16 @@ $(document).ready(function () {
         let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
         let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
 
+
         if (userID && webTag) {
             let arraySend = getInput('div.td-inputbox')
+            // 清理消息
+            $("div.td-inputbox").empty()            
             // console.log('-----send-----')
             if (arraySend.length > 0) {
                 arraySend.unshift(userID)
                 $(webTag2Selector(webTag)).focus()
                 core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }).then(() => {
-                    // 清理消息
-                    $("div.td-inputbox").empty()
 
                     //删除File list
                     arraySend.forEach((value, index) => {
@@ -1102,6 +1112,8 @@ $(document).ready(function () {
                             delete fileList[value.fileID]
                         }
                     })
+                }).catch((leftArraySend)=>{
+                    
                 })
             }
         }

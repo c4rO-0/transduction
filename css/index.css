@@ -134,6 +134,17 @@ webview {
     align-items: center;
 }
 
+.td-chatImg{
+    width: 8rem;
+    height: 8rem;
+}
+
+.td-chatImg>img{
+    height: 100%;
+    width: 100%;
+    object-fit: scale-down;
+}
+
 .td-them {
     margin: 0 40px 0 0;
     background-color: #c0c0c0;
