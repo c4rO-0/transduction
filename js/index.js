@@ -689,7 +689,7 @@ $(document).ready(function () {
     }
 
 
-    function compressImg(dataUrl, widthLimit, heightLimit) {
+    function autoSizeImg(dataUrl, widthLimit, heightLimit) {
         // 准备压缩图片
         let nImg = nativeImage.createFromDataURL(dataUrl)
         let size = nImg.getSize()
@@ -711,15 +711,9 @@ $(document).ready(function () {
         // {"width":Math.round(size.width*scaleFactor),
         // 'height':Math.round(size.height*scaleFactor) }) 
 
-        console.log("scale : ", scaleFactor)
-        // let newDataUrl = nPng.toDataURL({ 'scaleFactor': scaleFactor })
-        let newDataUrl = nImg.toDataURL({ 'scaleFactor': scaleFactor })
-        console.log('resize : ', nImg.toDataURL().length, '->', newDataUrl.length)
-
-        return newDataUrl
+        return {"height":size.height*scaleFactor, "width":size.width*scaleFactor}
 
     }
-
 
     function processDataTransfer(data) {
 
@@ -740,13 +734,13 @@ $(document).ready(function () {
                         //插入html
                         // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
 
-
+                        let newSize = autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
                         if (pasteHtmlAtCaret(
                             "<img data-file-ID='"
                             + item.fileID
                             + "' contenteditable=false src='"
-                            + compressImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
-                            + "'>", 'div.td-inputbox')) {
+                            + item.path
+                            + "' height='"+newSize.height+"' width='"+newSize.width+"' >", 'div.td-inputbox')) {
 
 
                             item.localSave().then(() => {
@@ -1090,8 +1084,6 @@ $(document).ready(function () {
                 arraySend.unshift(userID)
                 $(webTag2Selector(webTag)).focus()
                 core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }).then(() => {
-                    // 清理消息
-                    $("div.td-inputbox").empty()
 
                     //删除File list
                     arraySend.forEach((value, index) => {
@@ -1102,6 +1094,8 @@ $(document).ready(function () {
                             delete fileList[value.fileID]
                         }
                     })
+                }).catch((leftArraySend)=>{
+                    
                 })
             }
         }
