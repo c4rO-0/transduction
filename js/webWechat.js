@@ -397,15 +397,15 @@ window.onload = function () {
     $(document).ready(function () {
 
         // 观察到微信登录或者注销登录页面会刷新
-        if($("div.login").length > 0){
+        if ($("div.login").length > 0) {
             // console.log("********************offline***************************************")
             logStatus.status = "offline"
-            core.WebToHost({"logStatus":logStatus})   
-        }else{
+            core.WebToHost({ "logStatus": logStatus })
+        } else {
             logStatus.status = "online"
             // console.log("=======================online=====================================")
             // console.log($("div.login"))
-            core.WebToHost({"logStatus":logStatus})                
+            core.WebToHost({ "logStatus": logStatus })
         }
 
 
@@ -515,7 +515,7 @@ window.onload = function () {
                             //     attributeOldValue: false, characterDataOldValue: false
                             // });
 
-                        } else {
+                        }else {
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---")
                                 waitSend(arrayValue, index)
@@ -567,6 +567,8 @@ window.onload = function () {
 
                     // 开始发送消息
                     send(arg, 1)
+                } else if (key == 'queryLogStatus') {
+                    resolve({ "logStatus": logStatus })
                 } else {
                     reject('unknown key')
                 }

@@ -397,8 +397,6 @@ window.onload = function () {
                             attributeOldValue: false, characterDataOldValue: false
                         });
 
-                    } else if (key == 'queryLogStatus') {
-                        resolve({"logStatus":logStatus})
                     } else {
                         core.WebToHost({ "attachFile": { "selector": "input.fileInput", "file": value } }).then((resHost) => {
                             console.log("---file---")
@@ -449,6 +447,8 @@ window.onload = function () {
                 // 开始发送消息
                 send(arg, 1)
 
+            } else if (key == 'queryLogStatus') {
+                resolve({ "logStatus": logStatus })
             } else {
                 reject("unknown key : ", key)
             }
