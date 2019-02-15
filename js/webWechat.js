@@ -6,7 +6,7 @@ window.onload = function () {
     const fs = require('fs')
     const { net } = require('electron').remote
 
-    let logStatus = {"status" : "offline"}
+    let logStatus = { "status": "offline" }
 
     // const request = require('request')
     // const setimmediate = require('setimmediate')
@@ -394,14 +394,20 @@ window.onload = function () {
 
     };
 
-
     $(document).ready(function () {
-        
-        // if(document.getElementsByClassName("login_box")){
-        //     logStatus.status = "offline"
-        //     console.log("============================================================")
-        //     core.WebToHost({"logStatus":logStatus})
-        // }
+
+        // 观察到微信登录或者注销登录页面会刷新
+        if($("div.login").length > 0){
+            // console.log("********************offline***************************************")
+            logStatus.status = "offline"
+            core.WebToHost({"logStatus":logStatus})   
+        }else{
+            logStatus.status = "online"
+            // console.log("=======================online=====================================")
+            // console.log($("div.login"))
+            core.WebToHost({"logStatus":logStatus})                
+        }
+
 
         let contacts = window._contacts
         let chatContent = window._chatContent
@@ -469,12 +475,12 @@ window.onload = function () {
                 } else if (key == 'sendDialog') {
                     console.log("--------sendDialog---")
                     // 检查
-                    if(! $("div.chat_item[data-username='"+arg[0]+"']").hasClass("active")){
+                    if (!$("div.chat_item[data-username='" + arg[0] + "']").hasClass("active")) {
 
                         reject("user not active")
                         return
                     }
-                    
+
 
                     function send(arrayValue, index = 0) {
 
@@ -496,13 +502,13 @@ window.onload = function () {
                             // $("#chatInputAreaWithQuotes").trigger(e);
 
                             // let obsSend = new MutationObserver((mutationList, observer) => {
-                                // $('a[ng-click="sendTextMessage()"]').click()
-                                angular.element('pre:last').scope().sendTextMessage();
+                            // $('a[ng-click="sendTextMessage()"]').click()
+                            angular.element('pre:last').scope().sendTextMessage();
 
-                                console.log("---text---")
-                                waitSend(arrayValue, index)
+                            console.log("---text---")
+                            waitSend(arrayValue, index)
 
-                                // observer.disconnect()
+                            // observer.disconnect()
                             // });
                             // obsSend.observe($('div.send-button-holder button')[0], {
                             //     subtree: false, childList: false, characterData: false, attributes: true,
@@ -521,46 +527,46 @@ window.onload = function () {
                     function waitSend(arrayValue, index) {
                         // 等待发送完成
                         let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
-    
+
                             mutationList.forEach((mutation, nodeIndex) => {
                                 let addedNodes = mutation.addedNodes
                                 console.log(addedNodes)
                                 if (addedNodes && $(addedNodes[0]).attr("ng-repeat") && $(addedNodes[0]).attr("ng-repeat") == "message in chatContent") {
                                     console.log('---addedNodes----')
                                     observer.disconnect()
-    
+
                                     let obsFinished = new MutationObserver((mList, obs) => {
                                         console.log('-------obs update--------')
                                         console.log(mList)
                                         if ($("div[ng-switch-default].me")
-                                        .last()
-                                        .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                                        .is(':hidden')) {
+                                            .last()
+                                            .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                                            .is(':hidden')) {
                                             obs.disconnect()
                                             send(arrayValue, index + 1)
                                         }
                                     })
-    
+
                                     obsFinished.observe($("div[ng-switch-default].me")
-                                    .last().find("div.bubble_cont.ng-scope")[0], { 
-                                        // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
-                                        subtree: true, childList: true, characterData: true, attributes: true,
-                                        attributeOldValue: false, characterDataOldValue: false
-                                    });
-    
+                                        .last().find("div.bubble_cont.ng-scope")[0], {
+                                            // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                            subtree: true, childList: true, characterData: true, attributes: true,
+                                            attributeOldValue: false, characterDataOldValue: false
+                                        });
+
                                 }
                             })
-    
+
                         })
                         obsSwxUpdated.observe($("div[mm-repeat='message in chatContent']")[0], {
                             subtree: false, childList: true, characterData: false, attributes: false,
                             attributeOldValue: false, characterDataOldValue: false
                         })
-    
+
                     }
 
                     // 开始发送消息
-                    send(arg,1)
+                    send(arg, 1)
                 } else {
                     reject('unknown key')
                 }
