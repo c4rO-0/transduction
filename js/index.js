@@ -193,18 +193,18 @@ $(document).ready(function () {
         }
         let time = timeObj.toTimeString().slice(0, 5)
 
-        let content =''
-        if(dialog['type'] == 'text'){
+        let content = ''
+        if (dialog['type'] == 'text') {
             content = '<div class="td-chatText">' + dialog['message'] +
                 '</div>'
-        }else if(dialog['type'] == 'img'){
-            content = '<div class="td-chatImg"> <img src="'+dialog['message']+'"></img></div>'            
-        }else if(dialog['type'] == 'url'){
+        } else if (dialog['type'] == 'img') {
+            content = '<div class="td-chatImg"> <img src="' + dialog['message'] + '"></img></div>'
+        } else if (dialog['type'] == 'url') {
             content = '<div class="td-chatText">' + dialog['message'] +
-                '</div>' 
-        }else{
+                '</div>'
+        } else {
             content = '<div class="td-chatText">' + dialog['message'] +
-                '</div>'             
+                '</div>'
         }
 
 
@@ -227,17 +227,17 @@ $(document).ready(function () {
                             <img src="'+ avatarUrl + '">\
                             <p class="m-0">'+ time + '</p>\
                         </div>' +
-                        content +
-                    '</div>\
+                content +
+                '</div>\
                 </div>'
 
 
         } else {
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
-                    <div class="td-me">' 
-                        + content +
-                        '<p class="m-0">'+ time + '</p>\
+                    <div class="td-me">'
+                + content +
+                '<p class="m-0">' + time + '</p>\
                     </div>\
                 </div>'
         }
@@ -397,6 +397,7 @@ $(document).ready(function () {
                 console.log(document.activeElement)
                 resolve("blur done")
             } else if (key == 'attachFile') {
+                // 上传文件
                 /* obj
                     "selector": str 
                     "file" : obj file
@@ -404,6 +405,33 @@ $(document).ready(function () {
                 attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
 
                 resolve("attached")
+            } else if (key == 'logStatus') {
+                // 登录状态
+                // console.log("============================================================")
+                if (Obj.status) {
+                    let color = 'red'
+
+                    if (Obj.status == 'offline') {
+                        console.log(webTag + " not log yet.")
+                    } else if (Obj.status == 'online') {
+                        console.log(webTag + " is logged already.")
+                        color = 'green'
+                    } else if (Obj.status == 'failure') {
+                        console.log(webTag + " log failed")
+                    }
+
+                    // 修改登录状态
+                    let selector = "#test-2 p[data-app-name='" + webTag + "']"
+                    if ($(selector).length == 0) {
+                        $("#test-2").append(
+                            "<p data-app-name='" + webTag + "'>" + webTag + " : " + Obj.status + "</p>")
+                        $(selector).css("background-color", color);
+                    } else {
+                        $(selector).text(webTag + " : " + Obj.status)
+                        $(selector).css("background-color", color);
+                    }
+                }
+
             }
 
         }),
@@ -726,7 +754,7 @@ $(document).ready(function () {
         // {"width":Math.round(size.width*scaleFactor),
         // 'height':Math.round(size.height*scaleFactor) }) 
 
-        return {"height":size.height*scaleFactor, "width":size.width*scaleFactor}
+        return { "height": size.height * scaleFactor, "width": size.width * scaleFactor }
 
     }
 
@@ -755,7 +783,7 @@ $(document).ready(function () {
                             + item.fileID
                             + "' contenteditable=false src='"
                             + item.path
-                            + "' height='"+newSize.height+"' width='"+newSize.width+"' >", 'div.td-inputbox')) {
+                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
 
 
                             item.localSave().then(() => {
@@ -1096,7 +1124,7 @@ $(document).ready(function () {
         if (userID && webTag) {
             let arraySend = getInput('div.td-inputbox')
             // 清理消息
-            $("div.td-inputbox").empty()            
+            $("div.td-inputbox").empty()
             // console.log('-----send-----')
             if (arraySend.length > 0) {
                 arraySend.unshift(userID)
@@ -1112,8 +1140,8 @@ $(document).ready(function () {
                             delete fileList[value.fileID]
                         }
                     })
-                }).catch((leftArraySend)=>{
-                    
+                }).catch((leftArraySend) => {
+
                 })
             }
         }
@@ -1121,6 +1149,41 @@ $(document).ready(function () {
 
         // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
         // console.log(fileList)
+    })
+
+    // ===查询后台登录情况===
+    $("#test-1").on("click", () => {
+        console.log("====query logStatus=====")
+        $("webview[data-app-name]").each((index, el) => {
+            let webTag = $(el).attr("data-app-name")
+            console.log()
+            core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
+                let color = 'red'
+                obj.logStatus = logStatus
+                if (logStatus.status == 'offline') {
+                    console.log(webTag + " not log yet.")
+                } else if (logStatus.status == 'online') {
+                    console.log(webTag + " is logged already.")
+                    color = 'green'
+                } else if (logStatus.status == 'failure') {
+                    console.log(webTag + " log failed")
+                }
+
+                // 修改登录状态
+                let selector = "#test-2 p[data-app-name='" + webTag + "']"
+                if ($(selector).length == 0) {
+                    $("#test-2").append(
+                        "<p data-app-name='" + webTag + "'>" + webTag + " : " + logStatus.status + "</p>")
+                    $(selector).css("background-color", color);
+                } else {
+                    $(selector).text(webTag + " : " + logStatus.status)
+                    $(selector).css("background-color", color);
+                }
+            }).catch((err) => {
+                console.log(webTag, "no response")
+            })
+        })
+
     })
 
 

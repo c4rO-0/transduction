@@ -6,6 +6,15 @@ window.onload = function () {
     window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
     const core = require("../js/core")
 
+    let logStatus = { "status": "offline" }
+
+    // 检查登录状态
+    if (document.getElementById("timelineComponent")) {
+        logStatus.status = "online"
+        // console.log("============================================================")
+        core.WebToHost({ "logStatus": logStatus })
+    }
+
 
     class conversation {
         constructor(action, userID, nickName, timestamp, avatar, message, counter, index, muted) {
@@ -438,6 +447,8 @@ window.onload = function () {
                 // 开始发送消息
                 send(arg, 1)
 
+            } else if (key == 'queryLogStatus') {
+                resolve({ "logStatus": logStatus })
             } else {
                 reject("unknown key : ", key)
             }
