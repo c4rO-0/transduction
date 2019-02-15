@@ -397,6 +397,7 @@ $(document).ready(function () {
                 console.log(document.activeElement)
                 resolve("blur done")
             } else if (key == 'attachFile') {
+                // 上传文件
                 /* obj
                     "selector": str 
                     "file" : obj file
@@ -404,6 +405,19 @@ $(document).ready(function () {
                 attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
 
                 resolve("attached")
+            } else if (key == 'logStatus'){
+                // 登录状态
+                // console.log("============================================================")
+                if(Obj.status){
+                    if(Obj.status == 'offline'){
+                        console.log(webTag+" not log yet.")
+                    }else if(Obj.status == 'online'){
+                        console.log(webTag+" is logged already.")
+                    }else if(Obj.status == 'failure'){
+                        console.log(webTag+" log failed")
+                    }
+                }
+                
             }
 
         }),

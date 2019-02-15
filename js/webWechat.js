@@ -6,6 +6,7 @@ window.onload = function () {
     const fs = require('fs')
     const { net } = require('electron').remote
 
+    let logStatus = {"status" : "offline"}
 
     // const request = require('request')
     // const setimmediate = require('setimmediate')
@@ -393,7 +394,14 @@ window.onload = function () {
 
     };
 
+
     $(document).ready(function () {
+        
+        // if(document.getElementsByClassName("login_box")){
+        //     logStatus.status = "offline"
+        //     console.log("============================================================")
+        //     core.WebToHost({"logStatus":logStatus})
+        // }
 
         let contacts = window._contacts
         let chatContent = window._chatContent
