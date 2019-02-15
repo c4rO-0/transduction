@@ -11,9 +11,18 @@ window.onload = function () {
     // 检查登录状态
     if (document.getElementById("timelineComponent")) {
         logStatus.status = "online"
-        // console.log("============================================================")
+        console.log("=======================online=====================================")
         core.WebToHost({ "logStatus": logStatus })
     }
+
+    $(document).ready(function () {
+        console.log(document.getElementById("forgotUsername"))
+        if (document.getElementById("forgotUsername")) {
+            logStatus.status = "offline"
+            console.log("********************offline***************************************")
+            core.WebToHost({ "logStatus": logStatus })
+        }
+    })
 
 
     class conversation {
@@ -448,7 +457,7 @@ window.onload = function () {
                 send(arg, 1)
 
             } else if (key == 'queryLogStatus') {
-                resolve({ "logStatus": logStatus })
+                resolve(logStatus )
             } else {
                 reject("unknown key : ", key)
             }

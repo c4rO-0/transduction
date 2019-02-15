@@ -687,7 +687,7 @@ document.body.appendChild(el);}")
 
                 // 为了removeListener需要单独封装
                 function handleMsg(event, arg) {
-                    // console.log("win asy reply : ", arg)
+                    console.log("win asy reply : ", arg)
                     if (Object.keys(arg).length == 0) {
                         reject("WebToHost : receive nothing")
                     } else if (Object.keys(arg).length == 1) {
