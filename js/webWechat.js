@@ -398,12 +398,12 @@ window.onload = function () {
 
         // 观察到微信登录或者注销登录页面会刷新
         if ($("div.login").length > 0) {
-            // console.log("********************offline***************************************")
+            console.log("********************offline***************************************")
             logStatus.status = "offline"
             core.WebToHost({ "logStatus": logStatus })
         } else {
             logStatus.status = "online"
-            // console.log("=======================online=====================================")
+            console.log("=======================online=====================================")
             // console.log($("div.login"))
             core.WebToHost({ "logStatus": logStatus })
         }
@@ -568,7 +568,8 @@ window.onload = function () {
                     // 开始发送消息
                     send(arg, 1)
                 } else if (key == 'queryLogStatus') {
-                    resolve({ "logStatus": logStatus })
+                    console.log("resolve back")
+                    resolve(logStatus )
                 } else {
                     reject('unknown key')
                 }

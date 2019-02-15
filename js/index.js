@@ -1156,10 +1156,11 @@ $(document).ready(function () {
         console.log("====query logStatus=====")
         $("webview[data-app-name]").each((index, el) => {
             let webTag = $(el).attr("data-app-name")
-            console.log()
+            // console.log()
             core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
                 let color = 'red'
-                obj.logStatus = logStatus
+                // console.log((obj['queryLogStatus'+":"+""]))
+                let logStatus = (obj['queryLogStatus'+":"+""])
                 if (logStatus.status == 'offline') {
                     console.log(webTag + " not log yet.")
                 } else if (logStatus.status == 'online') {
@@ -1180,7 +1181,7 @@ $(document).ready(function () {
                     $(selector).css("background-color", color);
                 }
             }).catch((err) => {
-                console.log(webTag, "no response")
+                console.log(webTag, "no response", err)
             })
         })
 
