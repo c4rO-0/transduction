@@ -193,18 +193,18 @@ $(document).ready(function () {
         }
         let time = timeObj.toTimeString().slice(0, 5)
 
-        let content =''
-        if(dialog['type'] == 'text'){
+        let content = ''
+        if (dialog['type'] == 'text') {
             content = '<div class="td-chatText">' + dialog['message'] +
                 '</div>'
-        }else if(dialog['type'] == 'img'){
-            content = '<div class="td-chatImg"> <img src="'+dialog['message']+'"></img></div>'            
-        }else if(dialog['type'] == 'url'){
+        } else if (dialog['type'] == 'img') {
+            content = '<div class="td-chatImg"> <img src="' + dialog['message'] + '"></img></div>'
+        } else if (dialog['type'] == 'url') {
             content = '<div class="td-chatText">' + dialog['message'] +
-                '</div>' 
-        }else{
+                '</div>'
+        } else {
             content = '<div class="td-chatText">' + dialog['message'] +
-                '</div>'             
+                '</div>'
         }
 
 
@@ -227,17 +227,17 @@ $(document).ready(function () {
                             <img src="'+ avatarUrl + '">\
                             <p class="m-0">'+ time + '</p>\
                         </div>' +
-                        content +
-                    '</div>\
+                content +
+                '</div>\
                 </div>'
 
 
         } else {
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
-                    <div class="td-me">' 
-                        + content +
-                        '<p class="m-0">'+ time + '</p>\
+                    <div class="td-me">'
+                + content +
+                '<p class="m-0">' + time + '</p>\
                     </div>\
                 </div>'
         }
@@ -726,7 +726,7 @@ $(document).ready(function () {
         // {"width":Math.round(size.width*scaleFactor),
         // 'height':Math.round(size.height*scaleFactor) }) 
 
-        return {"height":size.height*scaleFactor, "width":size.width*scaleFactor}
+        return { "height": size.height * scaleFactor, "width": size.width * scaleFactor }
 
     }
 
@@ -755,7 +755,7 @@ $(document).ready(function () {
                             + item.fileID
                             + "' contenteditable=false src='"
                             + item.path
-                            + "' height='"+newSize.height+"' width='"+newSize.width+"' >", 'div.td-inputbox')) {
+                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
 
 
                             item.localSave().then(() => {
@@ -1006,14 +1006,19 @@ $(document).ready(function () {
 
     // =================extension click==================
     // extension click
-    $(debug_firefox_send_str).on('click', () => {
+    $(debug_firefox_send_str).on('click', (e) => {
+        $('.td-toolbox > img').removeClass('theme-transduction-active')
+        $(e.target).addClass('theme-transduction-active')
         let extensionName = "firefox-send"
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
         $("#td-right div.td-chatLog[winType='extension']").show()
         loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
     })
 
-    $(debug_latex_str).on('click', () => {
+    $(debug_latex_str).on('click', (e) => {
+        $('.td-toolbox > img').removeClass('theme-transduction-active')
+        $(e.target).addClass('theme-transduction-active')
+
         let extensionName = "latex2png"
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
         $("#td-right div.td-chatLog[winType='extension']").show()
@@ -1022,6 +1027,8 @@ $(document).ready(function () {
 
     // 隐藏extension
     $(debug_goBackChat_str).on('click', () => {
+        $('.td-toolbox > img').removeClass('theme-transduction-active')
+
         $("#td-right div.td-chatLog[winType='chatLog']").show()
         // webview隐藏, 防止再次点击刷新页面
         $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
@@ -1034,44 +1041,60 @@ $(document).ready(function () {
     // ======================拖入东西==========================
     // 检测到拖入到东西
     // 当extension打开的时候, 只接受输入框位置拖入
-    $("#td-right").on("dragenter", (event) => {
-        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+    // $("#td-right").on("dragenter", (event) => {
+    //     if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
 
-        } else {
-            $("#td-right").hide()
-            $("div[winType='dropFile']").show()
-        }
+    //     } else {
+    //         $("#td-right").hide()
+    //         $("div[winType='dropFile']").show()
+    //     }
+    // })
+    $('#td-right').on('dragenter', (event) => {
+        // $('.td-dropFile').show()
+        $('.td-dropFile').removeClass('hide')
     })
-    $("div.td-inputbox").on("dragenter", (event) => {
-        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
-            $("#td-right").hide()
-            $("div[winType='dropFile']").show()
-        } else {
+    // $("div.td-inputbox").on("dragenter", (event) => {
+    //     if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+    //         $("#td-right").hide()
+    //         $("div[winType='dropFile']").show()
+    //     } else {
 
-        }
+    //     }
+    // })
+    $('div.td-inputbox').on('dragenter', (event) => {
+        $('.td-dropFile').removeClass('hide')
     })
 
     // 拖出右侧还原
-    $("div[winType='dropFile']").on("dragleave", (event) => {
-        $("div[winType='dropFile']").hide()
-        $("#td-right").show()
+    // $("div[winType='dropFile']").on("dragleave", (event) => {
+    //     $("div[winType='dropFile']").hide()
+    //     $("#td-right").show()
+    // })
+    $('.td-dropFile').on('dragleave', (event) => {
+        $('.td-dropFile').addClass('hide')
     })
 
+
     //识别到放下东西
-    $("div[winType='dropFile']").on("drop", (event) => {
-        console.log("drop")
-        $("div[winType='dropFile']").hide()
-        $("#td-right").show()
-        // Prevent default behavior (Prevent file from being opened)
+    // $("div[winType='dropFile']").on("drop", (event) => {
+    //     console.log("drop")
+    //     $("div[winType='dropFile']").hide()
+    //     $("#td-right").show()
+    //     // Prevent default behavior (Prevent file from being opened)
+    //     event.preventDefault();
+    //     processDataTransfer(event.originalEvent.dataTransfer).then(
+    //         console.log("insert input done")
+    //     )
+    // })
+    $('.td-dropFile').on('drop', (event) => {
+        console.log('drop')
+        $('.td-dropFile').addClass('hide')
         event.preventDefault();
-
-
         processDataTransfer(event.originalEvent.dataTransfer).then(
             console.log("insert input done")
         )
-
-
     })
+
 
     // ===========paste================
     $("div.td-inputbox").on("paste", function (event) {
@@ -1096,7 +1119,7 @@ $(document).ready(function () {
         if (userID && webTag) {
             let arraySend = getInput('div.td-inputbox')
             // 清理消息
-            $("div.td-inputbox").empty()            
+            $("div.td-inputbox").empty()
             // console.log('-----send-----')
             if (arraySend.length > 0) {
                 arraySend.unshift(userID)
@@ -1112,8 +1135,8 @@ $(document).ready(function () {
                             delete fileList[value.fileID]
                         }
                     })
-                }).catch((leftArraySend)=>{
-                    
+                }).catch((leftArraySend) => {
+
                 })
             }
         }
