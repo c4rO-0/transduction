@@ -432,6 +432,20 @@ $(document).ready(function () {
                     }
                 }
 
+            } else if (key == 'queryToggleStatus') {
+                // webview查询自己是打开还是关闭的
+
+            } else if (key == 'show') {
+                // 显示对应webview
+                // Obj里应该储存要定位的位置
+                console.log(webTag + "说 : 我要显摆我自己~")
+                $("#test-"+webTag+"-toggle").text("快打开"+webTag)
+                $("#test-"+webTag+"-toggle").css("background-color",'#ffc107')
+            } else if (key == 'hide') {
+                // 隐藏webview
+                console.log(webTag + "说 : 快把我关掉!")
+                $("#test-"+webTag+"-toggle").text("快关上"+webTag)
+                $("#test-"+webTag+"-toggle").css("background-color",'#866606')                
             }
 
         }),

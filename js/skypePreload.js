@@ -13,6 +13,7 @@ window.onload = function () {
         logStatus.status = "online"
         console.log("=======================online=====================================")
         core.WebToHost({ "logStatus": logStatus })
+        core.WebToHost({ "hide": {} })
     }
 
     $(document).ready(function () {
@@ -21,6 +22,7 @@ window.onload = function () {
             logStatus.status = "offline"
             console.log("********************offline***************************************")
             core.WebToHost({ "logStatus": logStatus })
+            core.WebToHost({ "show": {} })
         }
     })
 

@@ -401,11 +401,13 @@ window.onload = function () {
             console.log("********************offline***************************************")
             logStatus.status = "offline"
             core.WebToHost({ "logStatus": logStatus })
+            core.WebToHost({ "show": {} })
         } else {
             logStatus.status = "online"
             console.log("=======================online=====================================")
             // console.log($("div.login"))
             core.WebToHost({ "logStatus": logStatus })
+            core.WebToHost({ "hide": {} })
         }
 
 
