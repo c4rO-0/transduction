@@ -745,46 +745,67 @@ $(document).ready(function () {
         })
     }
 
-
+    /**
+     * get  image height and width from dataUrl
+     * @param {dataUrl} dataUrl 
+     * @returns {Promise} { width: , height:  }
+     */
     function getImageSizeFromDataurl(dataUrl) {
         return new Promise(function (resolved, rejected) {
             var i = new Image()
             i.onload = function () {
                 resolved({ width: i.width, height: i.height })
             };
-            i.src = file
+            i.src = dataUrl
         })
     }
 
+    /**
+     * 图片根据最大宽度和高度, 按比例调整后的高宽. 该程序不对图片本身改变
+     * @param {dataUrl} dataUrl 
+     * @param {int} widthLimit 最大宽度
+     * @param {int} heightLimit 最大高度
+     * @returns {Promise} { "height":  , "width":  }
+     */
     function autoSizeImg(dataUrl, widthLimit, heightLimit) {
-
+        return new Promise(function (resolved, rejected) {
             // 准备压缩图片
             // let nImg = nativeImage.createFromDataURL(dataUrl)
             // let size = nImg.getSize()
-            let size = await getImageSizeFromDataurl(dataUrl)
+            let size = getImageSizeFromDataurl(dataUrl).then((size)=>{
 
-            let scaleFactorHeight = 1.0
-            let scaleFactorWidth = 1.0
+                let scaleFactorHeight = 1.0
+                let scaleFactorWidth = 1.0
+    
+                if (heightLimit > 0) {
+                    scaleFactorHeight = heightLimit / size.height
+                }
+    
+                if (widthLimit > 0) {
+                    scaleFactorWidth = widthLimit / size.width
+                }
+    
+                let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
+    
+                // let nPng = nativeImage.createFromBuffer(nImg.toPNG(),
+                // {"width":Math.round(size.width*scaleFactor),
+                // 'height':Math.round(size.height*scaleFactor) }) 
+    
+                // console.log("autoSizeImg : ", size.height, size.width, scaleFactor)
+    
+                resolved({ "height": size.height * scaleFactor, "width": size.width * scaleFactor })
+            }).catch((err)=>{
+                rejected(err)
+            })
 
-            if (heightLimit > 0) {
-                scaleFactorHeight = heightLimit / size.height
-            }
-
-            if (widthLimit > 0) {
-                scaleFactorWidth = widthLimit / size.width
-            }
-
-            let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
-
-            // let nPng = nativeImage.createFromBuffer(nImg.toPNG(),
-            // {"width":Math.round(size.width*scaleFactor),
-            // 'height':Math.round(size.height*scaleFactor) }) 
-
-            return { "height": size.height * scaleFactor, "width": size.width * scaleFactor }
-
+        })
 
     }
 
+    /**
+     * 将data数据转化为Html附加到页面上
+     * @param {dataTransfer} data 
+     */
     function processDataTransfer(data) {
 
         return new Promise((resolve, reject) => {
@@ -804,31 +825,32 @@ $(document).ready(function () {
                         //插入html
                         // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
 
-                        let newSize = autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
-                        // if (pasteHtmlAtCaret(
-                        //     "<img data-file-ID='"
-                        //     + item.fileID
-                        //     + "' contenteditable=false src='"
-                        //     + item.path
-                        //     + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
+                        autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit).then((newSize) => {
+                            if (pasteHtmlAtCaret(
+                                "<img data-file-ID='"
+                                + item.fileID
+                                + "' contenteditable=false src='"
+                                + item.path
+                                + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
 
 
-                        //     item.localSave().then(() => {
-                        //         fileList[item.fileID] = item
-                        //         resolve("")
-                        //     }).catch((err) => {
-                        //         console.log("error : processDataTransfer : localSave ")
-                        //         console.log(err)
-                        //         reject(err)
-                        //     })
+                                item.localSave().then(() => {
+                                    fileList[item.fileID] = item
+                                    resolve("")
+                                }).catch((err) => {
+                                    console.log("error : processDataTransfer : localSave ")
+                                    console.log(err)
+                                    reject(err)
+                                })
+                            } else {
+                                reject("error : processDataTransfer : pasteHtmlAtCaret")
+                            }
+                        }).catch((err)=>{
+                            reject("error : processDataTransfer : autoSizeImg")
+                        })
 
-                        // } else {
-                        //     reject("error : processDataTransfer : pasteHtmlAtCaret")
-                        // }
                     }
                 })
-
-
 
             }).catch(error => {
                 reject(error)
