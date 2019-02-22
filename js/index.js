@@ -439,13 +439,13 @@ $(document).ready(function () {
                 // 显示对应webview
                 // Obj里应该储存要定位的位置
                 console.log(webTag + "说 : 我要显摆我自己~")
-                $("#test-"+webTag+"-toggle").text("快打开"+webTag)
-                $("#test-"+webTag+"-toggle").css("background-color",'#ffc107')
+                $("#test-" + webTag + "-toggle").text("快打开" + webTag)
+                $("#test-" + webTag + "-toggle").css("background-color", '#ffc107')
             } else if (key == 'hide') {
                 // 隐藏webview
                 console.log(webTag + "说 : 快把我关掉!")
-                $("#test-"+webTag+"-toggle").text("快关上"+webTag)
-                $("#test-"+webTag+"-toggle").css("background-color",'#866606')                
+                $("#test-" + webTag + "-toggle").text("快关上" + webTag)
+                $("#test-" + webTag + "-toggle").css("background-color", '#866606')
             }
 
         }),
@@ -746,29 +746,42 @@ $(document).ready(function () {
     }
 
 
+    function getImageSizeFromDataurl(dataUrl) {
+        return new Promise(function (resolved, rejected) {
+            var i = new Image()
+            i.onload = function () {
+                resolved({ width: i.width, height: i.height })
+            };
+            i.src = file
+        })
+    }
+
     function autoSizeImg(dataUrl, widthLimit, heightLimit) {
-        // 准备压缩图片
-        let nImg = nativeImage.createFromDataURL(dataUrl)
-        let size = nImg.getSize()
 
-        let scaleFactorHeight = 1.0
-        let scaleFactorWidth = 1.0
+            // 准备压缩图片
+            // let nImg = nativeImage.createFromDataURL(dataUrl)
+            // let size = nImg.getSize()
+            let size = await getImageSizeFromDataurl(dataUrl)
 
-        if (heightLimit > 0) {
-            scaleFactorHeight = heightLimit / size.height
-        }
+            let scaleFactorHeight = 1.0
+            let scaleFactorWidth = 1.0
 
-        if (widthLimit > 0) {
-            scaleFactorWidth = widthLimit / size.width
-        }
+            if (heightLimit > 0) {
+                scaleFactorHeight = heightLimit / size.height
+            }
 
-        let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
+            if (widthLimit > 0) {
+                scaleFactorWidth = widthLimit / size.width
+            }
 
-        // let nPng = nativeImage.createFromBuffer(nImg.toPNG(),
-        // {"width":Math.round(size.width*scaleFactor),
-        // 'height':Math.round(size.height*scaleFactor) }) 
+            let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
 
-        return { "height": size.height * scaleFactor, "width": size.width * scaleFactor }
+            // let nPng = nativeImage.createFromBuffer(nImg.toPNG(),
+            // {"width":Math.round(size.width*scaleFactor),
+            // 'height':Math.round(size.height*scaleFactor) }) 
+
+            return { "height": size.height * scaleFactor, "width": size.width * scaleFactor }
+
 
     }
 
@@ -792,26 +805,26 @@ $(document).ready(function () {
                         // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
 
                         let newSize = autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit)
-                        if (pasteHtmlAtCaret(
-                            "<img data-file-ID='"
-                            + item.fileID
-                            + "' contenteditable=false src='"
-                            + item.path
-                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
+                        // if (pasteHtmlAtCaret(
+                        //     "<img data-file-ID='"
+                        //     + item.fileID
+                        //     + "' contenteditable=false src='"
+                        //     + item.path
+                        //     + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
 
 
-                            item.localSave().then(() => {
-                                fileList[item.fileID] = item
-                                resolve("")
-                            }).catch((err) => {
-                                console.log("error : processDataTransfer : localSave ")
-                                console.log(err)
-                                reject(err)
-                            })
+                        //     item.localSave().then(() => {
+                        //         fileList[item.fileID] = item
+                        //         resolve("")
+                        //     }).catch((err) => {
+                        //         console.log("error : processDataTransfer : localSave ")
+                        //         console.log(err)
+                        //         reject(err)
+                        //     })
 
-                        } else {
-                            reject("error : processDataTransfer : pasteHtmlAtCaret")
-                        }
+                        // } else {
+                        //     reject("error : processDataTransfer : pasteHtmlAtCaret")
+                        // }
                     }
                 })
 
@@ -1174,7 +1187,7 @@ $(document).ready(function () {
             core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
                 let color = 'red'
                 // console.log((obj['queryLogStatus'+":"+""]))
-                let logStatus = (obj['queryLogStatus'+":"+""])
+                let logStatus = (obj['queryLogStatus' + ":" + ""])
                 if (logStatus.status == 'offline') {
                     console.log(webTag + " not log yet.")
                 } else if (logStatus.status == 'online') {
