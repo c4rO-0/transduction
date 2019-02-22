@@ -1153,7 +1153,7 @@ $(document).ready(function () {
     // ===========paste================
     $("div.td-inputbox").on("paste", function (event) {
         event.preventDefault();
-        event.stopPropagation();
+        // event.stopPropagation();
 
         processDataTransfer(event.originalEvent.clipboardData).then(
             console.log("insert input done")
