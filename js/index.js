@@ -38,6 +38,7 @@ $(document).ready(function () {
 
     const core = require("../js/core.js")
     const { nativeImage } = require('electron').remote
+    const shell = require('electron').shell;
     // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
 
@@ -146,6 +147,11 @@ $(document).ready(function () {
         return "webview[data-app-name='" + webTag + "']"
     }
 
+    /**
+     * 添加左侧
+     * @param {*} appName 
+     * @param {*} convo 
+     */
     function AddConvoHtml(appName, convo) {
         let displayCounter = "display: none;"
         if (convo.counter) {
@@ -176,6 +182,10 @@ $(document).ready(function () {
         </div > '
     }
 
+    /**
+     * 添加右侧
+     * @param {*} dialog 
+     */
     function AddDialogHtml(dialog) {
 
         let strHtml = ''
@@ -200,8 +210,8 @@ $(document).ready(function () {
         } else if (dialog['type'] == 'img') {
             content = '<div class="td-chatImg"> <img src="' + dialog['message'] + '"></img></div>'
         } else if (dialog['type'] == 'url') {
-            content = '<div class="td-chatText">' + dialog['message'] +
-                '</div>'
+            content = '<div class="td-chatText""><a  href="' + dialog['message'] + '>' + dialog['message'] +
+                '</a></div>'
         } else {
             content = '<div class="td-chatText">' + dialog['message'] +
                 '</div>'
@@ -772,29 +782,29 @@ $(document).ready(function () {
             // 准备压缩图片
             // let nImg = nativeImage.createFromDataURL(dataUrl)
             // let size = nImg.getSize()
-            let size = getImageSizeFromDataurl(dataUrl).then((size)=>{
+            let size = getImageSizeFromDataurl(dataUrl).then((size) => {
 
                 let scaleFactorHeight = 1.0
                 let scaleFactorWidth = 1.0
-    
+
                 if (heightLimit > 0) {
                     scaleFactorHeight = heightLimit / size.height
                 }
-    
+
                 if (widthLimit > 0) {
                     scaleFactorWidth = widthLimit / size.width
                 }
-    
+
                 let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
-    
+
                 // let nPng = nativeImage.createFromBuffer(nImg.toPNG(),
                 // {"width":Math.round(size.width*scaleFactor),
                 // 'height':Math.round(size.height*scaleFactor) }) 
-    
+
                 // console.log("autoSizeImg : ", size.height, size.width, scaleFactor)
-    
+
                 resolved({ "height": size.height * scaleFactor, "width": size.width * scaleFactor })
-            }).catch((err)=>{
+            }).catch((err) => {
                 rejected(err)
             })
 
@@ -845,7 +855,7 @@ $(document).ready(function () {
                             } else {
                                 reject("error : processDataTransfer : pasteHtmlAtCaret")
                             }
-                        }).catch((err)=>{
+                        }).catch((err) => {
                             reject("error : processDataTransfer : autoSizeImg")
                         })
 
@@ -1236,5 +1246,15 @@ $(document).ready(function () {
 
     })
 
+    // 阻拦全部链接点击
+    $(document).on('click', 'a[href]', function (event) {
 
+        event.preventDefault();
+        event.stopPropagation();
+        // console.log(this.href.substring(0,4))
+        if(this.href.substring(0,4) == 'http'){
+            shell.openExternal(this.href);
+        }
+        
+    });
 })

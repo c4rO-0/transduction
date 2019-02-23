@@ -7,11 +7,12 @@ const debug = /--debug/.test(process.argv[2])
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
+const URL = require('url').URL
 
 function createWindow() {
 
-    let opts = {icon:'./res/pic/ico.png'}
-    Object.assign(opts, config.get('winBounds'))  
+    let opts = { icon: './res/pic/ico.png' }
+    Object.assign(opts, config.get('winBounds'))
     // console.log(opts)  
     win = new BrowserWindow(opts)
     win.loadFile('./html/index.html')
@@ -45,9 +46,9 @@ function createWindow() {
 
         }
 
-        console.log(path.join(os.tmpdir(),'transduction'))
-        removeDir(path.join(os.tmpdir(),'transduction'))
-        
+        console.log(path.join(os.tmpdir(), 'transduction'))
+        removeDir(path.join(os.tmpdir(), 'transduction'))
+
         // 储存窗口位置
         console.log("saving configurations...")
         config.set('winBounds', win.getBounds())
@@ -57,3 +58,18 @@ function createWindow() {
 
 app.on('ready', createWindow)
 
+
+// 尝试禁止mainWindow加载url
+// app.on('web-contents-created', (event, contents) => {
+
+//     contents.on('will-navigate', (event, navigationUrl, isInPlace, isMainFrame) => {
+
+//         const parsedUrl = new URL(navigationUrl)
+
+//         if (parsedUrl.origin !== './html') {
+//             event.preventDefault()
+//         }
+
+//     })
+
+// })
