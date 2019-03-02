@@ -210,7 +210,7 @@ $(document).ready(function () {
         } else if (dialog['type'] == 'img') {
             content = '<div class="td-chatImg"> <img src="' + dialog['message'] + '"></img></div>'
         } else if (dialog['type'] == 'url') {
-            content = '<div class="td-chatText""><a  href="' + dialog['message'] + '>' + dialog['message'] +
+            content = '<div class="td-chatText"><a  href="' + dialog['message'] + '">' + dialog['message'] +
                 '</a></div>'
         } else {
             content = '<div class="td-chatText">' + dialog['message'] +
