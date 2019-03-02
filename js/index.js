@@ -352,8 +352,9 @@ $(document).ready(function () {
                     // 判断当前用户是否在看最后一条
 
                     let atBottom = false
-
-                    if($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight){
+                    // console.log("滑条 : ",$(dialogSelector).scrollTop() , $(dialogSelector)[0].clientHeight , $(dialogSelector)[0].scrollHeight )
+                    if ($(dialogSelector).is(":visible") &&
+                        $(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight) {
                         atBottom = true
                     }
 
@@ -415,10 +416,10 @@ $(document).ready(function () {
                     })
 
                     // 判断用户当前所在位置, 如果用户在阅读之前的bubble就不应该滚动滑条
-                    if(atBottom){
+                    if (atBottom) {
                         // 滑动到最下面
                         $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
-                    }else{
+                    } else {
 
                         // 未完, 需要一个显示有新消息的机制
                         console.log("dialog updated. new bubble(s) not display...")
@@ -456,6 +457,35 @@ $(document).ready(function () {
                     Obj.muted)
                 console.log("debug : ", "new Convo")
                 Convo.print()
+
+                // 判断右侧窗口是否为当前convo
+
+                let DialogUserID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+                let DialogWebTag = $("#td-right div.td-chat-title").attr("data-app-name")
+                if (DialogUserID && DialogWebTag
+                    && DialogUserID == Convo.userID
+                    && DialogWebTag == webTag) {
+                    // 判断窗口是否显示状态(可能打开的是extension), 并且滑条在最下面
+                    let strDialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+                    if ($(strDialogSelector).is(":visible") &&
+                        $(strDialogSelector).scrollTop() + $(strDialogSelector)[0].clientHeight == $(strDialogSelector)[0].scrollHeight) {
+                        
+                        // 取消新消息未读, 和声音提示
+                        Convo.counter = 0
+                    }
+
+                    // 刷新dialog
+                    core.HostSendToWeb(
+                        webTag2Selector(webTag),
+                        { "queryDialog": { "userID": Convo.userID } }
+                    ).then((res) => {
+                        console.log("queryDialog : webReply : ", res)
+            
+                    }).catch((error) => {
+                        throw error
+                    })                    
+
+                }
 
                 if (Convo.action === 'a') {
                     console.log('going to insert html snippet')
@@ -1091,6 +1121,10 @@ $(document).ready(function () {
         });
 
     }
+
+
+
+
     // =============================程序主体=============================
 
 
@@ -1286,10 +1320,10 @@ $(document).ready(function () {
                         { "queryDialog": { "userID": userID } }
                     ).then((res) => {
                         console.log("queryDialog : webReply : ", res)
-        
+
                     }).catch((error) => {
                         throw error
-                    })                    
+                    })
 
                     //删除File list
                     arraySend.forEach((value, index) => {
