@@ -1280,6 +1280,17 @@ $(document).ready(function () {
                 $(webTag2Selector(webTag)).focus()
                 core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }).then(() => {
 
+                    // 索取新的dialog
+                    core.HostSendToWeb(
+                        webTag2Selector(webTag),
+                        { "queryDialog": { "userID": userID } }
+                    ).then((res) => {
+                        console.log("queryDialog : webReply : ", res)
+        
+                    }).catch((error) => {
+                        throw error
+                    })                    
+
                     //删除File list
                     arraySend.forEach((value, index) => {
                         console.log(index, typeof (value))
