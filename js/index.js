@@ -37,8 +37,8 @@ function listWebview() {
 $(document).ready(function () {
 
     const core = require("../js/core.js")
-    const { nativeImage } = require('electron').remote
-    const shell = require('electron').shell;
+    const { nativeImage,dialog, shell } = require('electron').remote
+    // const  = require('electron').shell;
     // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
 
@@ -211,7 +211,7 @@ $(document).ready(function () {
             content = '<div class="td-chatImg"> <img src="' + dialog['message'] + '"></img></div>'
         } else if (dialog['type'] == 'url') {
             content = '<div class="td-chatText"><a  href="' + dialog['message'] + '">' + dialog['message'] +
-                '</a></div>'
+                '</a><p></p></div>'
         } else {
             content = '<div class="td-chatText">' + dialog['message'] +
                 '</div>'
@@ -1254,6 +1254,25 @@ $(document).ready(function () {
         // console.log(this.href.substring(0,4))
         if(this.href.substring(0,4) == 'http'){
             shell.openExternal(this.href);
+            // let options = {
+            //     type: 'info',
+            //     buttons: ['OK'],
+            //     defaultId: 2,
+            //     title: 'Question',
+            //     message: 'The link is opened in the default browser.',
+            //     // detail: 'It does not really matter',
+            //     // checkboxLabel: 'Remember my answer',
+            //     // checkboxChecked: true,
+            //   };
+            //   dialog.showMessageBox(null, options, (response, checkboxChecked) => {
+            //     console.log(response);
+            //     // console.log(checkboxChecked);
+            //   });
+            console.log(this)
+            let objBubble = $(this).closest("div.td-bubble")
+            if($(objBubble).length > 0){
+                $(objBubble).find("div.td-chatText p").text("opened in default browser.")
+            }
         }
         
     });
