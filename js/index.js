@@ -346,9 +346,16 @@ $(document).ready(function () {
                     })
 
                     // 滑动到最下面
-
                     $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
                 } else {
+
+                    // 判断当前用户是否在看最后一条
+
+                    let atBottom = false
+
+                    if($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight){
+                        atBottom = true
+                    }
 
                     // 拿到已有bubble的时间, 并且按照顺序储存
                     let arrayExistBubble = new Array()
@@ -406,6 +413,16 @@ $(document).ready(function () {
 
 
                     })
+
+                    // 判断用户当前所在位置, 如果用户在阅读之前的bubble就不应该滚动滑条
+                    if(atBottom){
+                        // 滑动到最下面
+                        $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                    }else{
+
+                        // 未完, 需要一个显示有新消息的机制
+                        console.log("dialog updated. new bubble(s) not display...")
+                    }
 
                 }
 
