@@ -940,25 +940,26 @@ $(document).ready(function () {
                         // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
 
                         autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit).then((newSize) => {
-                            if (pasteHtmlAtCaret(
-                                "<img data-file-ID='"
-                                + item.fileID
-                                + "' contenteditable=false src='"
-                                + item.path
-                                + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
 
-
-                                item.localSave().then(() => {
-                                    fileList[item.fileID] = item
+                            item.localSave().then(() => {
+                                console.log("debug : path : ", item.path, "-----------------------------------")
+                                fileList[item.fileID] = item
+                                if (pasteHtmlAtCaret(
+                                    "<img data-file-ID='"
+                                    + item.fileID
+                                    + "' contenteditable=false src='"
+                                    + item.path
+                                    + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
                                     resolve("")
-                                }).catch((err) => {
-                                    console.log("error : processDataTransfer : localSave ")
-                                    console.log(err)
-                                    reject(err)
-                                })
-                            } else {
-                                reject("error : processDataTransfer : pasteHtmlAtCaret")
-                            }
+                                } else {
+                                    reject("error : processDataTransfer : pasteHtmlAtCaret")
+                                }
+                            }).catch((err) => {
+                                console.log("error : processDataTransfer : localSave ")
+                                console.log(err)
+                                reject(err)
+                            })
+
                         }).catch((err) => {
                             reject("error : processDataTransfer : autoSizeImg")
                         })

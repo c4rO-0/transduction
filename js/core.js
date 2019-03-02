@@ -221,6 +221,12 @@ module.exports = {
                     'transduction', 'img', this.fileID,
                     this.name);
 
+                this.path = uploadedImagePath
+                this.pathRoot = path.join(
+                    tempDir,
+                    'transduction', 'img')
+                this.dataUrl = ''
+
                 // Save decoded binary image to disk
                 try {
                     mkdirp(path.dirname(uploadedImagePath), (errMK) => {
@@ -230,6 +236,7 @@ module.exports = {
                         fs.writeFile(uploadedImagePath, imageBuffer.data,
                             function () {
                                 console.log('DEBUG : Saved image to :', uploadedImagePath);
+                                resolve('')
                             });
 
                     })
@@ -240,12 +247,6 @@ module.exports = {
                     reject('error : localSave')
                 }
 
-                this.path = uploadedImagePath
-                this.pathRoot = path.join(
-                    tempDir,
-                    'transduction', 'img')
-                this.dataUrl = ''
-                resolve('')
                 // }
             })
 
