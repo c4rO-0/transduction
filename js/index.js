@@ -37,7 +37,7 @@ function listWebview() {
 $(document).ready(function () {
 
     const core = require("../js/core.js")
-    const { nativeImage,dialog, shell } = require('electron').remote
+    const { nativeImage, dialog, shell } = require('electron').remote
     // const  = require('electron').shell;
     // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
@@ -230,7 +230,7 @@ $(document).ready(function () {
 
 
             strHtml =
-                '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
+                '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
                     <p class="m-0">'+ dialog["from"] + '</p>\
                     <div class="td-them">\
                         <div class="td-chatAvatar">\
@@ -244,7 +244,7 @@ $(document).ready(function () {
 
         } else {
             strHtml =
-                '<div class="td-bubble" msgID="' + dialog['msgID'] + '">\
+                '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
                     <div class="td-me">'
                 + content +
                 '<p class="m-0">' + time + '</p>\
@@ -338,21 +338,78 @@ $(document).ready(function () {
                 }
 
                 let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
-                // let scroll = true
-
-                // if ($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight != $(dialogSelector)[0].scrollHeight) {
-                //     //  不要滑动
-                //     scroll = false
-                // }                
-
                 // 附加到右边
-                Obj.forEach((value, index) => {
-                    $(dialogSelector).append(AddDialogHtml(value))
-                })
+                if ($(dialogSelector + " div.td-bubble").length == 0) {
+                    // 窗口已被清空, 直接附加
+                    Obj.forEach((value, index) => {
+                        $(dialogSelector).append(AddDialogHtml(value))
+                    })
 
-                // if(scroll){
-                $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
-                // }
+                    // 滑动到最下面
+
+                    $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                } else {
+
+                    // 拿到已有bubble的时间, 并且按照顺序储存
+                    let arrayExistBubble = new Array()
+                    $(dialogSelector + " div.td-bubble").each((index, element) => {
+                        let msgTimeStr = $(element).attr("msgTime")
+                        let msgTime = parseInt(msgTimeStr)
+                        let msgId = $(element).attr("msgID")
+                        if (msgTimeStr != undefined && msgId != undefined) {
+
+                            arrayExistBubble.push({ 'msgTime': msgTime, 'msgID': msgId })
+                        }
+                    })
+
+                    Obj.forEach((value, index) => {
+
+
+                        let timeObj = undefined
+
+                        if (typeof (value["time"]) === 'number') {
+                            timeObj = new Date(value["time"])
+                        } else if (typeof (value["time"]) == "string") {
+                            timeObj = new Date(value["time"])
+                        } else if (typeof (value["time"]) == "object") {
+                            timeObj = value["time"]
+                        } else {
+                            timeObj = new Date()
+                        }
+
+                        let timeWaitInsert = timeObj.getTime()
+
+                        // 在index对应的bubble之前插入
+                        let currentInsertIndex = 0
+                        for (let indexOfExistBubble = 0;
+                            indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
+                            if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
+                                currentInsertIndex = -1
+                            }
+                            if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
+                                currentInsertIndex = indexOfExistBubble
+                            }
+                        }
+
+                        if (currentInsertIndex >= 0) {
+                            if (currentInsertIndex == arrayExistBubble.length - 1) {
+                                $(dialogSelector).append(AddDialogHtml(value))
+                            } else {
+                                $(AddDialogHtml(value))
+                                    .insertBefore(
+                                        dialogSelector
+                                        + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
+                                    )
+                            }
+
+                        }
+
+
+                    })
+
+                }
+
+
                 console.log('focusing innnnnnnnnnnn')
                 $(webTag2Selector(webTag)).focus()
                 console.log(document.activeElement)
@@ -1049,6 +1106,22 @@ $(document).ready(function () {
             console.log("error : click obj error.")
             console.log("obj : ", this)
             console.log("userID : ", userID)
+        } else if (
+            $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
+            && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
+            && $("#td-right div.td-chat-title h2").text() == nickName
+        ) {
+            // 当前聊天内容不需要清空, 只需要补充
+            core.HostSendToWeb(
+                webTag2Selector(webTag),
+                { "queryDialog": { "userID": userID } }
+            ).then((res) => {
+                console.log("queryDialog : webReply : ", res)
+
+            }).catch((error) => {
+                throw error
+            })
+
         } else {
             // ---------右侧标题-----------
             $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
@@ -1252,7 +1325,7 @@ $(document).ready(function () {
         event.preventDefault();
         event.stopPropagation();
         // console.log(this.href.substring(0,4))
-        if(this.href.substring(0,4) == 'http'){
+        if (this.href.substring(0, 4) == 'http') {
             shell.openExternal(this.href);
             // let options = {
             //     type: 'info',
@@ -1270,10 +1343,10 @@ $(document).ready(function () {
             //   });
             console.log(this)
             let objBubble = $(this).closest("div.td-bubble")
-            if($(objBubble).length > 0){
+            if ($(objBubble).length > 0) {
                 $(objBubble).find("div.td-chatText p").text("opened in default browser.")
             }
         }
-        
+
     });
 })
