@@ -337,6 +337,10 @@ $(document).ready(function () {
                     return
                 }
 
+
+                // 判断当前用户是否在看最后一条
+                let atBottom = false
+
                 let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
                 // 附加到右边
                 if ($(dialogSelector + " div.td-bubble").length == 0) {
@@ -347,16 +351,10 @@ $(document).ready(function () {
 
                     // 滑动到最下面
                     $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                    atBottom = true
                 } else {
 
-                    // 判断当前用户是否在看最后一条
 
-                    let atBottom = false
-                    // console.log("滑条 : ",$(dialogSelector).scrollTop() , $(dialogSelector)[0].clientHeight , $(dialogSelector)[0].scrollHeight )
-                    if ($(dialogSelector).is(":visible") &&
-                        $(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight) {
-                        atBottom = true
-                    }
 
                     // 拿到已有bubble的时间, 并且按照顺序储存
                     let arrayExistBubble = new Array()
@@ -414,31 +412,33 @@ $(document).ready(function () {
 
 
                     })
-
-                    // 判断用户当前所在位置, 如果用户在阅读之前的bubble就不应该滚动滑条
-                    if (atBottom) {
-                        // 滑动到最下面
-                        $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
-                    } else {
-
-                        // 未完, 需要一个显示有新消息的机制
-                        console.log("dialog updated. new bubble(s) not display...")
+                    // console.log("滑条 : ",$(dialogSelector).scrollTop() , $(dialogSelector)[0].clientHeight , $(dialogSelector)[0].scrollHeight )
+                    if ($(dialogSelector).is(":visible") &&
+                        $(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight) {
+                        atBottom = true
                     }
-
                 }
 
 
-                console.log('focusing innnnnnnnnnnn')
-                $(webTag2Selector(webTag)).focus()
-                console.log(document.activeElement)
-                // document.querySelector('webview').focus()
+                // 判断用户当前所在位置, 如果用户在阅读之前的bubble就不应该滚动滑条
+                if (atBottom) {
+                    // 滑动到最下面
+                    $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
-                // setTimeout(() => {
-                console.log('bluring outttttttttttttttttttt')
-                $(webTag2Selector(webTag)).blur()
-                console.log(document.activeElement)
-                // document.querySelector('webview').blur()
-                // }, 2000)
+                    // 取消unread
+                    console.log('focusing innnnnnnnnnnn')
+                    $(webTag2Selector(webTag)).focus()
+                    console.log(document.activeElement)
+
+                    console.log('bluring outttttttttttttttttttt')
+                    $(webTag2Selector(webTag)).blur()
+                    console.log(document.activeElement)
+                } else {
+
+                    console.log("dialog updated. new bubble(s) not display...")
+                }
+
+
 
 
                 resolve("copy that.")
@@ -469,7 +469,7 @@ $(document).ready(function () {
                     let strDialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
                     if ($(strDialogSelector).is(":visible") &&
                         $(strDialogSelector).scrollTop() + $(strDialogSelector)[0].clientHeight == $(strDialogSelector)[0].scrollHeight) {
-                        
+
                         // 取消新消息未读, 和声音提示
                         Convo.counter = 0
                     }
@@ -480,10 +480,10 @@ $(document).ready(function () {
                         { "queryDialog": { "userID": Convo.userID } }
                     ).then((res) => {
                         console.log("queryDialog : webReply : ", res)
-            
+
                     }).catch((error) => {
                         throw error
-                    })                    
+                    })
 
                 }
 
@@ -1143,6 +1143,8 @@ $(document).ready(function () {
 
     // 点击convo
     $('#td-left').on('click', 'div.td-convo', function () {
+
+
         // 识别webtag
         // console.log($(this).find("div.td-nickname").text())        
         let webTag = $(this).attr("data-app-name")
@@ -1157,7 +1159,16 @@ $(document).ready(function () {
             console.log("error : click obj error.")
             console.log("obj : ", this)
             console.log("userID : ", userID)
-        } else if (
+            return
+        }
+
+        // 加载dialog(当前可能显示的是extension)
+        $(debug_goBackChat_str).click()
+        // 滑动条拖到最后
+        let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+        $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+
+        if (
             $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
             && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
             && $("#td-right div.td-chat-title h2").text() == nickName
@@ -1201,8 +1212,6 @@ $(document).ready(function () {
                 throw error
             })
         }
-
-
 
     });
 
