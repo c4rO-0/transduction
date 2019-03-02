@@ -1299,9 +1299,11 @@ $(document).ready(function () {
         event.preventDefault();
         // event.stopPropagation();
 
-        processDataTransfer(event.originalEvent.clipboardData).then(
-            console.log("insert input done")
+        let clipData = event.originalEvent.clipboardData //|| window.clipboardData;
+        processDataTransfer(clipData).then(
+            console.log("paste insert input done")
         )
+
     });
 
 
