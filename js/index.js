@@ -354,7 +354,14 @@ $(document).ready(function () {
                     atBottom = true
                 } else {
 
-
+                    if ($(dialogSelector).is(":visible") &&
+                        $(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight) {
+                        atBottom = true
+                        console.log("要滚动啊.......")
+                    }else{
+                        console.log("滑条 : ",$(dialogSelector).scrollTop() , $(dialogSelector)[0].clientHeight , $(dialogSelector)[0].scrollHeight )
+                        console.log("不滚动啊.......")
+                    }
 
                     // 拿到已有bubble的时间, 并且按照顺序储存
                     let arrayExistBubble = new Array()
@@ -412,11 +419,8 @@ $(document).ready(function () {
 
 
                     })
-                    // console.log("滑条 : ",$(dialogSelector).scrollTop() , $(dialogSelector)[0].clientHeight , $(dialogSelector)[0].scrollHeight )
-                    if ($(dialogSelector).is(":visible") &&
-                        $(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight) {
-                        atBottom = true
-                    }
+                    // 
+
                 }
 
 
@@ -940,25 +944,26 @@ $(document).ready(function () {
                         // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
 
                         autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit).then((newSize) => {
-                            if (pasteHtmlAtCaret(
-                                "<img data-file-ID='"
-                                + item.fileID
-                                + "' contenteditable=false src='"
-                                + item.path
-                                + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
 
-
-                                item.localSave().then(() => {
-                                    fileList[item.fileID] = item
+                            item.localSave().then(() => {
+                                console.log("debug : path : ", item.path, "-----------------------------------")
+                                fileList[item.fileID] = item
+                                if (pasteHtmlAtCaret(
+                                    "<img data-file-ID='"
+                                    + item.fileID
+                                    + "' contenteditable=false src='"
+                                    + item.path
+                                    + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
                                     resolve("")
-                                }).catch((err) => {
-                                    console.log("error : processDataTransfer : localSave ")
-                                    console.log(err)
-                                    reject(err)
-                                })
-                            } else {
-                                reject("error : processDataTransfer : pasteHtmlAtCaret")
-                            }
+                                } else {
+                                    reject("error : processDataTransfer : pasteHtmlAtCaret")
+                                }
+                            }).catch((err) => {
+                                console.log("error : processDataTransfer : localSave ")
+                                console.log(err)
+                                reject(err)
+                            })
+
                         }).catch((err) => {
                             reject("error : processDataTransfer : autoSizeImg")
                         })
@@ -1298,9 +1303,11 @@ $(document).ready(function () {
         event.preventDefault();
         // event.stopPropagation();
 
-        processDataTransfer(event.originalEvent.clipboardData).then(
-            console.log("insert input done")
+        let clipData = event.originalEvent.clipboardData //|| window.clipboardData;
+        processDataTransfer(clipData).then(
+            console.log("paste insert input done")
         )
+
     });
 
 
