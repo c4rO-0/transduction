@@ -1303,7 +1303,7 @@ $(document).ready(function () {
         event.preventDefault();
         // event.stopPropagation();
 
-        let clipData = event.originalEvent.clipboardData //|| window.clipboardData;
+        let clipData = event.originalEvent.clipboardData || window.clipboardData;
         processDataTransfer(clipData).then(
             console.log("paste insert input done")
         )
