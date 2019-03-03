@@ -354,7 +354,14 @@ $(document).ready(function () {
                     atBottom = true
                 } else {
 
-
+                    if ($(dialogSelector).is(":visible") &&
+                        $(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight) {
+                        atBottom = true
+                        console.log("要滚动啊.......")
+                    }else{
+                        console.log("滑条 : ",$(dialogSelector).scrollTop() , $(dialogSelector)[0].clientHeight , $(dialogSelector)[0].scrollHeight )
+                        console.log("不滚动啊.......")
+                    }
 
                     // 拿到已有bubble的时间, 并且按照顺序储存
                     let arrayExistBubble = new Array()
@@ -412,11 +419,8 @@ $(document).ready(function () {
 
 
                     })
-                    // console.log("滑条 : ",$(dialogSelector).scrollTop() , $(dialogSelector)[0].clientHeight , $(dialogSelector)[0].scrollHeight )
-                    if ($(dialogSelector).is(":visible") &&
-                        $(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight) {
-                        atBottom = true
-                    }
+                    // 
+
                 }
 
 
