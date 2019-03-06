@@ -313,7 +313,7 @@ $(document).ready(function () {
 
             console.log("debug : ", "----------------------")
             console.log("debug : ", "Convo from ", webTag)
-            // console.log(MSG)
+            console.log(Obj)
 
             if (key == 'Dialog') {
                 // 收到某个用户聊天记录
@@ -358,8 +358,8 @@ $(document).ready(function () {
                         $(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight) {
                         atBottom = true
                         console.log("要滚动啊.......")
-                    }else{
-                        console.log("滑条 : ",$(dialogSelector).scrollTop() , $(dialogSelector)[0].clientHeight , $(dialogSelector)[0].scrollHeight )
+                    } else {
+                        console.log("滑条 : ", $(dialogSelector).scrollTop(), $(dialogSelector)[0].clientHeight, $(dialogSelector)[0].scrollHeight)
                         console.log("不滚动啊.......")
                     }
 
@@ -397,7 +397,7 @@ $(document).ready(function () {
                         for (let indexOfExistBubble = 0;
                             indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
                             if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
-                                currentInsertIndex = -1
+                                currentInsertIndex = -indexOfExistBubble
                             }
                             if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
                                 currentInsertIndex = indexOfExistBubble
@@ -415,6 +415,12 @@ $(document).ready(function () {
                                     )
                             }
 
+                        } else {
+                            // 重复的ID, 替换成新的
+                            $(dialogSelector
+                                + " [msgID='" + arrayExistBubble[-currentInsertIndex].msgID + "']")
+                                .replaceWith(AddDialogHtml(value)
+                                )
                         }
 
 
@@ -1303,7 +1309,7 @@ $(document).ready(function () {
         event.preventDefault();
         // event.stopPropagation();
 
-        let clipData = event.originalEvent.clipboardData //|| window.clipboardData;
+        let clipData = event.originalEvent.clipboardData || window.clipboardData;
         processDataTransfer(clipData).then(
             console.log("paste insert input done")
         )
