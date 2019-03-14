@@ -127,6 +127,25 @@ function UniqueStr() {
     return (Date.now() + Math.random()).toString()
 }
 
+/**
+ * 删除系统某个文件夹及其子文件
+ * @param {string} dir 绝对路径
+ */
+function removeDir(dir) {
+    let files = fs.readdirSync(dir)
+    for (var i = 0; i < files.length; i++) {
+        let childPath = path.join(dir, files[i]);
+        let stat = fs.statSync(childPath)
+        if (stat.isDirectory()) {
+            // 递归
+            removeDir(childPath);
+        } else {
+            //删除文件
+            fs.unlinkSync(childPath);
+        }
+    }
+    fs.rmdirSync(dir)
+}
 
 
 
@@ -202,6 +221,12 @@ module.exports = {
                     'transduction', 'img', this.fileID,
                     this.name);
 
+                this.path = uploadedImagePath
+                this.pathRoot = path.join(
+                    tempDir,
+                    'transduction', 'img')
+                this.dataUrl = ''
+
                 // Save decoded binary image to disk
                 try {
                     mkdirp(path.dirname(uploadedImagePath), (errMK) => {
@@ -211,6 +236,7 @@ module.exports = {
                         fs.writeFile(uploadedImagePath, imageBuffer.data,
                             function () {
                                 console.log('DEBUG : Saved image to :', uploadedImagePath);
+                                resolve('')
                             });
 
                     })
@@ -221,35 +247,12 @@ module.exports = {
                     reject('error : localSave')
                 }
 
-                this.path = uploadedImagePath
-                this.pathRoot = path.join(
-                    tempDir,
-                    'transduction', 'img')
-                this.dataUrl = ''
-                resolve('')
                 // }
             })
 
         }
         clear() {
-            function removeDir(dir) {
-                let files = fs.readdirSync(dir)
-                for (var i = 0; i < files.length; i++) {
-                    let childPath = path.join(dir, files[i]);
-                    let stat = fs.statSync(childPath)
-                    if (stat.isDirectory()) {
-                        // 递归
-                        removeDir(childPath);
-                    } else {
-                        //删除文件
-                        fs.unlinkSync(childPath);
-                    }
-                }
-                fs.rmdirSync(dir)
-            }
-
             removeDir(path.join(this.pathRoot, this.fileID))
-
         }
 
     },
@@ -687,7 +690,7 @@ document.body.appendChild(el);}")
 
                 // 为了removeListener需要单独封装
                 function handleMsg(event, arg) {
-                    // console.log("win asy reply : ", arg)
+                    console.log("win asy reply : ", arg)
                     if (Object.keys(arg).length == 0) {
                         reject("WebToHost : receive nothing")
                     } else if (Object.keys(arg).length == 1) {

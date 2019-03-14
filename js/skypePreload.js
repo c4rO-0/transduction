@@ -6,6 +6,26 @@ window.onload = function () {
     window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
     const core = require("../js/core")
 
+    let logStatus = { "status": "offline" }
+
+    // 检查登录状态
+    if (document.getElementById("timelineComponent")) {
+        logStatus.status = "online"
+        console.log("=======================online=====================================")
+        core.WebToHost({ "logStatus": logStatus })
+        core.WebToHost({ "hide": {} })
+    }
+
+    $(document).ready(function () {
+        console.log(document.getElementById("forgotUsername"))
+        if (document.getElementById("forgotUsername")) {
+            logStatus.status = "offline"
+            console.log("********************offline***************************************")
+            core.WebToHost({ "logStatus": logStatus })
+            core.WebToHost({ "show": {} })
+        }
+    })
+
 
     class conversation {
         constructor(action, userID, nickName, timestamp, avatar, message, counter, index, muted) {
@@ -438,6 +458,8 @@ window.onload = function () {
                 // 开始发送消息
                 send(arg, 1)
 
+            } else if (key == 'queryLogStatus') {
+                resolve(logStatus )
             } else {
                 reject("unknown key : ", key)
             }
