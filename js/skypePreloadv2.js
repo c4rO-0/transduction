@@ -1,5 +1,5 @@
 window.onload = function () {
-    console.log("runing skype preload")
+    console.log("runing skype preload------------------------>")
     // console.log(process.versions.electron)
     // console.log(process.env.PWD)
     // console.log(process.cwd())
@@ -7,25 +7,6 @@ window.onload = function () {
     const core = require("../js/core")
 
     let logStatus = { "status": "offline" }
-
-    // 检查登录状态
-    if (document.getElementById("signInName")) {
-        logStatus.status = "online"
-        console.log("=======================online=====================================")
-        core.WebToHost({ "logStatus": logStatus })
-        core.WebToHost({ "hide": {} })
-    }
-
-    $(document).ready(function () {
-        console.log(document.getElementById("forgotUsername"))
-        if (document.getElementById("forgotUsername")) {
-            logStatus.status = "offline"
-            console.log("********************offline***************************************")
-            core.WebToHost({ "logStatus": logStatus })
-            core.WebToHost({ "show": {} })
-        }
-    })
-
 
     // class conversation {
     //     constructor(action, userID, nickName, timestamp, avatar, message, counter, index, muted) {
@@ -151,4 +132,49 @@ window.onload = function () {
         return Math.random().toString().slice(2, 5) + Date.now().toString()
     }
 
+
+    // ==================================================
+
+    // $(document).ready(function () {
+    // 检查登录状态
+
+    // - 登陆了
+    if (document.getElementById("signInName")) {
+        logStatus.status = "online"
+        console.log("=======================online=====================================")
+        core.WebToHost({ "logStatus": logStatus })
+        core.WebToHost({ "hide": {} })
+
+    }
+
+    // 没登录
+    if (document.getElementById("forgotUsername")) {
+        logStatus.status = "offline"
+        console.log("********************offline***************************************")
+        core.WebToHost({ "logStatus": logStatus })
+        core.WebToHost({ "show": {} })
+    }
+    // })
+    // 等待win发来消息
+    core.WebReply((key, arg) => {
+        return new Promise((resolve, reject) => {
+            //  收到消息进行处理
+            if (key == 'queryDialog') {
+                // 查询Dialog
+
+                resolve("copy the query. Please wait...")
+            } else if (key == 'sendDialog') {
+
+
+                console.log("--------sendDialog---")
+                //检查
+
+
+            } else if (key == 'queryLogStatus') {
+                resolve(logStatus)
+            } else {
+                reject("unknown key : ", key)
+            }
+        })
+    })
 }
