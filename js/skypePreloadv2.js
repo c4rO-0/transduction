@@ -1,8 +1,13 @@
+/*************************************
+notice : Because Skype overload console function in vender.js,
+'console.info' should be used, instead of 'console.log'
+**************************************/
+
 window.onload = function () {
-    console.log("runing skype preload------------------------>")
-    // console.log(process.versions.electron)
-    // console.log(process.env.PWD)
-    // console.log(process.cwd())
+    console.info("runing skype preload------------------------>")
+    // console.info(process.versions.electron)
+    // console.info(process.env.PWD)
+    // console.info(process.cwd())
     window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
     const core = require("../js/core")
 
@@ -22,7 +27,7 @@ window.onload = function () {
     //     }
     //     print() {
     //         for (let property in this) {
-    //             console.log(property + ": " + this[property])
+    //             console.info(property + ": " + this[property])
     //         }
     //     }
     //     /**
@@ -44,15 +49,15 @@ window.onload = function () {
     //             }
 
     //         }).then((res) => {
-    //             console.log("debug : ---Win reply---")
-    //             console.log(res)
+    //             console.info("debug : ---Win reply---")
+    //             console.info(res)
     //         }).catch((error) => {
     //             throw error
     //         });
     //     }
     //     extractAll(aNode) {
     //         // this.action=
-    //         console.log(aNode)
+    //         console.info(aNode)
     //         this.userID = aNode.dataset.userID
     //         this.nickName = aNode.querySelector('h4 > span.topic').title
     //         this.timestamp = Date.now()
@@ -66,7 +71,7 @@ window.onload = function () {
     //         this.muted = false
     //     }
     //     extract(aNode, property) {
-    //         console.log(aNode)
+    //         console.info(aNode)
     //         this.userID = aNode.dataset.userID
     //         if (property === 'nickName') {
     //             this.nickName = aNode.querySelector('h4 > span.topic').title
@@ -102,26 +107,26 @@ window.onload = function () {
     //         }
     //         if (aNode.classList.contains('picture') &&
     //             aNode.querySelector('div.content > p.PictureSharing > a')) {
-    //             console.log('found img')
+    //             console.info('found img')
     //             this.type = 'img'
     //             this.message = aNode.querySelector('div.content > p.PictureSharing > a').href
     //         } else if (aNode.classList.contains('urlPreview') &&
     //             aNode.querySelector('div.content p.urlPreviewText > a')) {
-    //             console.log('found url')
+    //             console.info('found url')
     //             this.type = 'url'
     //             this.message = aNode.querySelector('div.content p.urlPreviewText > a').href
     //         } else if (aNode.classList.contains('urlPreview') &&
     //             aNode.querySelector('div.content a.thumbnail')) {
-    //             console.log('found url')
+    //             console.info('found url')
     //             this.type = 'url'
     //             this.message = aNode.querySelector('div.content a.thumbnail').href
     //         } else if (aNode.classList.contains('text') &&
     //             aNode.querySelector('div.content > p')) {
-    //             console.log('found text')
+    //             console.info('found text')
     //             this.type = 'text'
     //             this.message = aNode.querySelector('div.content > p').innerHTML.replace(/<[^<>]*>/gm, '')
     //         } else {
-    //             console.log('found unknown')
+    //             console.info('found unknown')
     //             this.type = 'unknown'
     //             this.message = aNode.querySelector('div.content').innerHTML.replace(/<!--[\s\S]*?-->/gm, '').replace(/<[^<>]*>/gm, '').trim()
     //         }
@@ -134,27 +139,77 @@ window.onload = function () {
 
 
     // ==================================================
+    /**
+     * 登录后, 爬虫脚本, 用来抓取左侧和右侧消息
+     */
+    function runCrawler() {
 
-    // $(document).ready(function () {
+        let callbackConvo = function (mutationList, observer) {
+            console.info("left changed")
+            mutationList.map(function (mutation) {
+                // console.info("debug : ===========convo============")
+
+                
+                let objConvo = $(mutation.target).closest("[id^=rx-vlv-]")
+                if(objConvo.length > 0){
+                    console.info( "------") 
+                    console.info(objConvo)           
+                    console.info("debug : ", "obs type : ", mutation.type)
+                    console.info("debug : ", "obs target : ")
+                    console.info(mutation.target)
+                }
+
+                if($(mutation.removedNodes).length > 0){
+                    // 有节点被删除
+                    // console.info($(mutation.removedNodes))      
+                }
+            })
+        }
+        let obsConvo = new MutationObserver(callbackConvo);
+        obsConvo.observe($("div.scrollViewport.scrollViewportV")[0], {
+            subtree: true, childList: true, characterData: true, attributes: true,
+            attributeOldValue: true, characterDataOldValue: true
+        });
+    }
+
     // 检查登录状态
-
     // - 登陆了
     if (document.getElementById("signInName")) {
-        logStatus.status = "online"
-        console.log("=======================online=====================================")
-        core.WebToHost({ "logStatus": logStatus })
-        core.WebToHost({ "hide": {} })
+        
+        console.info("=======================online=====================================")
+
+        // 观察整个body, 等待skype页面加载完成(否则skype会报错)
+        let callbackBody = function (mutationList, observer) {
+            if ($("div.app-container").length > 0) {
+                
+                // 发送登录消息
+                logStatus.status = "online"
+                core.WebToHost({ "logStatus": logStatus })
+                core.WebToHost({ "hide": {} })
+
+                // 运行页面爬虫脚本
+                runCrawler()
+
+                observer.disconnect()
+            }
+        }
+        let obsMain = new MutationObserver(callbackBody);
+        obsMain.observe(document.body, {
+            subtree: true, childList: true, characterData: true, attributes: true,
+            attributeOldValue: true, characterDataOldValue: true
+        });
 
     }
 
     // 没登录
     if (document.getElementById("forgotUsername")) {
         logStatus.status = "offline"
-        console.log("********************offline***************************************")
+        console.info("********************offline***************************************")
         core.WebToHost({ "logStatus": logStatus })
         core.WebToHost({ "show": {} })
     }
-    // })
+
+    //========================
     // 等待win发来消息
     core.WebReply((key, arg) => {
         return new Promise((resolve, reject) => {
@@ -166,7 +221,7 @@ window.onload = function () {
             } else if (key == 'sendDialog') {
 
 
-                console.log("--------sendDialog---")
+                console.info("--------sendDialog---")
                 //检查
 
 
