@@ -13,75 +13,117 @@ window.onload = function () {
 
     let logStatus = { "status": "offline" }
 
-    // class conversation {
-    //     constructor(action, userID, nickName, timestamp, avatar, message, counter, index, muted) {
-    //         this.action = action
-    //         this.userID = userID
-    //         this.nickName = nickName
-    //         this.timestamp = timestamp
-    //         this.avatar = avatar
-    //         this.message = message
-    //         this.counter = counter
-    //         this.index = index
-    //         this.muted = muted
-    //     }
-    //     print() {
-    //         for (let property in this) {
-    //             console.info(property + ": " + this[property])
-    //         }
-    //     }
-    //     /**
-    //      * 发送消息到Win
-    //      */
-    //     send() {
-    //         core.WebToHost({
-    //             "Convo-new":
-    //             {
-    //                 "userID": this.userID,
-    //                 "time": this.timestamp,
-    //                 "message": this.message,
-    //                 "nickName": this.nickName,
-    //                 "avatar": this.avatar,
-    //                 "counter": this.counter,
-    //                 "action": this.action,
-    //                 "muted": this.muted,
-    //                 "index": this.index
-    //             }
+    class conversation {
+        constructor(action, userID, nickName, timestamp, avatar, message, counter, index, muted) {
+            this.action = action
+            this.userID = userID
+            this.nickName = nickName
+            this.timestamp = timestamp
+            this.avatar = avatar
+            this.message = message
+            this.counter = counter
+            this.index = index
+            this.muted = muted
+        }
+        print() {
+            for (let property in this) {
+                console.info(property + ": " + this[property])
+            }
+        }
+        /**
+         * 发送消息到Win
+         */
+        send() {
+            core.WebToHost({
+                "Convo-new":
+                {
+                    "userID": this.userID,
+                    "time": this.timestamp,
+                    "message": this.message,
+                    "nickName": this.nickName,
+                    "avatar": this.avatar,
+                    "counter": this.counter,
+                    "action": this.action,
+                    "muted": this.muted,
+                    "index": this.index
+                }
 
-    //         }).then((res) => {
-    //             console.info("debug : ---Win reply---")
-    //             console.info(res)
-    //         }).catch((error) => {
-    //             throw error
-    //         });
-    //     }
-    //     extractAll(aNode) {
-    //         // this.action=
-    //         console.info(aNode)
-    //         this.userID = aNode.dataset.userID
-    //         this.nickName = aNode.querySelector('h4 > span.topic').title
-    //         this.timestamp = Date.now()
-    //         this.avatar = aNode.querySelector('img.Avatar-image').src
-    //         this.message = aNode.querySelector('div.message > p').innerHTML.replace(/<[^<>]*>/gm, '')
-    //         this.counter = parseInt(aNode.querySelector('span.circle > p').innerText)
-    //         this.index = Array.prototype.indexOf.call(
-    //             aNode.closest('div.recents.scrollViewport-inner').querySelectorAll(
-    //                 'swx-recent-item.list-selectable'),
-    //             aNode.closest('swx-recent-item.list-selectable'))
-    //         this.muted = false
-    //     }
-    //     extract(aNode, property) {
-    //         console.info(aNode)
-    //         this.userID = aNode.dataset.userID
-    //         if (property === 'nickName') {
-    //             this.nickName = aNode.querySelector('h4 > span.topic').title
-    //         } else if (property === 'avatar') {
-    //             this.avatar = aNode.querySelector('img.Avatar-image').src
-    //         } else if (property === 'message') {
-    //             this.message = aNode.querySelector('div.message > p').innerHTML.replace(/<[^<>]*>/gm, '')
-    //         }
-    //     }
-    // }
+            }).then((res) => {
+                console.info("debug : ---Win reply---")
+                console.info(res)
+            }).catch((error) => {
+                throw error
+            });
+        }
+        /**
+         * 从...的target中爬取到convo信息
+         * @param {String} userID 
+         */
+        extractById(userID) {
+
+            this.userID = userID
+
+
+            let parts = $("#" + userID + " > div > div > div")
+
+            if ($(parts).length == 3) {
+                // console.info($(parts).get(0))
+                //     // 0 为头像, 1 为中间(名字和消息), 2 为时间和未读数
+                let objAvatar = $(parts).get(0)
+                // console.info($(objAvatar).find("[data-text-as-pseudo-element]").length)
+                if ($(objAvatar).find("[data-text-as-pseudo-element]").length > 0) {
+                    this.avatar = undefined
+                } else {
+                    // console.info($(objAvatar).find("> div"))
+                    this.avatar = ($(objAvatar).find("> div").css("background-image")).slice(5, -2)
+                }
+                // console.info(this.avatar)
+
+                let objMiddle = $(parts).get(1) //名字和消息
+                this.nickName = $($(objMiddle).find("[data-text-as-pseudo-element]").get(0)).attr("data-text-as-pseudo-element")
+                this.message = $(objMiddle).text()
+                // console.info(this.nickName, this.message)
+
+                let objRight = $($(parts).get(2)).find("[data-text-as-pseudo-element]") //时间和未读数
+                if ($(objRight).length == 2) {
+                    // 有时间和未读
+                    this.counter = parseInt($($(objRight).get(1)).attr("data-text-as-pseudo-element"))
+                    let timeStr = $($(objRight).get(0)).attr("data-text-as-pseudo-element")
+
+                    if (timeStr == '') {
+                        this.timestamp = undefined
+                    } else {
+                        this.timestamp = tranSkypeTime(timeStr)
+                    }
+                    // console.info('time : ', timeStr, new Date(this.timestamp))
+                } else {
+                    // 没有未读
+                    this.counter = 0
+                    let timeStr = $($(objRight).get(0)).attr("data-text-as-pseudo-element")
+
+                    if (timeStr == '') {
+                        this.timestamp = undefined
+                    } else {
+                        this.timestamp = tranSkypeTime(timeStr)
+                    }
+                    // console.info('time : ', timeStr, new Date(this.timestamp))
+
+                }
+                // console.info(this.counter, this.timestamp)
+
+            }
+
+            if (this.counter > 0) {
+                this.action = 'a'
+            } else {
+                this.action = 'c'
+            }
+
+            this.muted = false
+            this.index = $("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride) > div > div > div > div").index($("#" + userID))
+
+        }
+    }
 
     // class chatLog {
     //     constructor(type, msgID, from, time, message) {
@@ -137,6 +179,87 @@ window.onload = function () {
         return Math.random().toString().slice(2, 5) + Date.now().toString()
     }
 
+    /**
+     * 将skype格式的时间, 转化为timestamp
+     * - 20:40
+     * - Fri
+     * - 2019/3/3
+     * @param {String} strTime 
+     */
+    function tranSkypeTime(strTime) {
+
+        let timeStamp = 0
+        if (strTime.indexOf(':') >= 0) {
+            let timeArray = strTime.split(':')
+            // console.info('type1 ', strTime.indexOf(':') , timeArray, )
+            let time = new Date(Date.now())
+            time.setHours(timeArray[0])
+            time.setMinutes(timeArray[1])
+
+            timeStamp = time.getTime()
+            // console.info(time.getTime())
+
+        } else if (strTime.indexOf('/') >= 0) {
+            let timeArray = strTime.split('/')
+            // console.info('type2 ', strTime.indexOf('/'), timeArray)
+            let time = new Date(Date.now())
+            time.setFullYear(timeArray[0])
+            time.setMonth(parseInt(timeArray[1]) - 1)
+            time.setDate(timeArray[2])
+            time.setHours(0)
+            time.setMinutes(0)
+
+            timeStamp = time.getTime()
+        } else {
+            let time = new Date(Date.now())
+            time.setHours(0)
+            time.setMinutes(0)
+
+            // Sunday - Saturday : 0 - 6
+            let today = time.getDay()
+            let msgDay = 0
+            if (strTime == 'Sun') {
+                msgDay = 0
+            } else if (strTime == 'Mon') {
+                msgDay = 1
+            } else if (strTime == 'Tue') {
+                msgDay = 2
+            } else if (strTime == 'Wed') {
+                msgDay = 3
+            } else if (strTime == 'Thu') {
+                msgDay = 4
+            } else if (strTime == 'Fri') {
+                msgDay = 5
+            } else if (strTime == 'Sat') {
+                msgDay = 6
+            }
+            if (msgDay > today) { // 上周
+                timeStamp = (new Date(time.getTime() - (7 - (msgDay - today)) * 24 * 60 * 60 * 1000)).getTime()
+            } else {
+                timeStamp = (new Date(time.getTime() - (today - msgDay) * 24 * 60 * 60 * 1000)).getTime()
+            }
+        }
+
+        return timeStamp
+    }
+
+    /**
+     * 传入convo的userID, 转化为conversition
+     * @param {Array(String)} convoIDList 
+     * @returns {Array(conversation)}
+     */
+    function tranConvoByID(convoIDList) {
+        let convoList = new Array()
+
+        convoIDList.forEach(userID => {
+            let convo = new conversation()
+            convo.extractById(userID)
+
+            convoList.push(convo)
+        });
+
+        return convoList
+    }
 
     // ==================================================
     /**
@@ -145,43 +268,58 @@ window.onload = function () {
     function runCrawler() {
 
         let callbackConvo = function (mutationList, observer) {
-            console.info("left changed")
+            // console.info("debug : ===========convo============")
+            // console.info(mutationList)
+            let convoIDList = new Array()
             mutationList.map(function (mutation) {
-                // console.info("debug : ===========convo============")
 
-                
+
                 let objConvo = $(mutation.target).closest("[id^=rx-vlv-]")
-                if(objConvo.length > 0){
-                    console.info( "------") 
-                    console.info(objConvo)           
-                    console.info("debug : ", "obs type : ", mutation.type)
-                    console.info("debug : ", "obs target : ")
-                    console.info(mutation.target)
+                if ($(objConvo).length > 0) {
+                    // console.info( "------") 
+                    // console.info(objConvo)           
+                    // console.info("debug : ", "obs type : ", mutation.type)
+                    // console.info("debug : ", "obs target : ")
+                    // console.info(mutation.target)
+                    let userID = $(objConvo).attr("id")
+                    if (!convoIDList.includes(userID)) {
+                        convoIDList.push(userID)
+                    }
                 }
 
-                if($(mutation.removedNodes).length > 0){
+
+                if (mutation.removedNodes.length > 0) {
                     // 有节点被删除
                     // console.info($(mutation.removedNodes))      
                 }
             })
+            // console.info(convoIDList)
+            let convoList = tranConvoByID(convoIDList)
+            convoList.forEach(convo => {
+
+                if (convo.counter > 0) {
+                    convo.print()
+                    convo.send()
+                }
+            })
         }
         let obsConvo = new MutationObserver(callbackConvo);
-        obsConvo.observe($("div.scrollViewport.scrollViewportV")[0], {
+        obsConvo.observe($("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride) > div > div > div")[0], {
             subtree: true, childList: true, characterData: true, attributes: true,
-            attributeOldValue: true, characterDataOldValue: true
+            attributeFilter: ["data-text-as-pseudo-element"], attributeOldValue: false, characterDataOldValue: false
         });
     }
 
     // 检查登录状态
     // - 登陆了
     if (document.getElementById("signInName")) {
-        
+
         console.info("=======================online=====================================")
 
         // 观察整个body, 等待skype页面加载完成(否则skype会报错)
         let callbackBody = function (mutationList, observer) {
-            if ($("div.app-container").length > 0) {
-                
+            if ($("div.scrollViewport.scrollViewportV").length > 0) {
+
                 // 发送登录消息
                 logStatus.status = "online"
                 core.WebToHost({ "logStatus": logStatus })
