@@ -28,21 +28,26 @@ function createWindow() {
         // 清理temp文件夹
         console.log("cleaning temp folder...")
         function removeDir(dir) {
-            let files = fs.readdirSync(dir)
-            for (var i = 0; i < files.length; i++) {
-                let childPath = path.join(dir, files[i]);
-                let stat = fs.statSync(childPath)
-                if (stat.isDirectory()) {
-                    // 递归
-                    // console.log("children : ", childPath)
-                    removeDir(childPath);
-                } else {
-                    //删除文件
-                    // console.log("del file : ", childPath)
-                    fs.unlinkSync(childPath);
+            if (fs.existsSync(dir)) {
+                let files = fs.readdirSync(dir)
+                for (var i = 0; i < files.length; i++) {
+                    let childPath = path.join(dir, files[i]);
+                    let stat = fs.statSync(childPath)
+                    if (stat.isDirectory()) {
+                        // 递归
+                        // console.log("children : ", childPath)
+                        removeDir(childPath);
+                    } else {
+                        //删除文件
+                        // console.log("del file : ", childPath)
+                        fs.unlinkSync(childPath);
+                    }
                 }
+
+                fs.rmdirSync(dir)
             }
-            fs.rmdirSync(dir)
+
+
 
         }
 
