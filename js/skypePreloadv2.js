@@ -354,7 +354,17 @@ window.onload = function () {
             //  收到消息进行处理
             if (key == 'queryDialog') {
                 // 查询Dialog
-
+                let userID = arg.userID
+                console.info("debug : userID : ", userID)
+                let target = $("#" + userID)
+                // if (target.classList.contains('active')) {
+                //     reportChatLog(undefined)
+                // } else {
+                //     obsChatLog.observe(document.querySelector('.fragmentsContainer'), {
+                //         subtree: true, childList: true, attributes: true, attributeOldValue: true
+                //     })
+                $("#" + userID + " > div > div").click()
+                // }
                 resolve("copy the query. Please wait...")
             } else if (key == 'sendDialog') {
 

@@ -1223,6 +1223,8 @@ $(document).ready(function () {
                 throw error
             })
         }
+        $(webTag2Selector(webTag)).focus()
+
 
     });
 
