@@ -271,8 +271,9 @@ window.onload = function () {
             // console.info("debug : ===========convo============")
             // console.info(mutationList)
             let convoIDList = new Array()
-            mutationList.map(function (mutation) {
-
+            let counterList = new Array() // 记录counter发生了变化
+            
+            mutationList.forEach((mutation,index) => {
 
                 let objConvo = $(mutation.target).closest("[id^=rx-vlv-]")
                 if ($(objConvo).length > 0) {
@@ -285,20 +286,40 @@ window.onload = function () {
                     if (!convoIDList.includes(userID)) {
                         convoIDList.push(userID)
                     }
+                    console.info($("#" + userID + "> div > div > div:nth-child(3)"))
+                    console.info($.contains($("#" + userID + "> div > div > div:nth-child(3)").get(0),mutation.target))
+                    console.info($("#" + userID + "> div > div > div:nth-child(3)").get(0) == $(mutation.target))
+                    if($.contains($("#" + userID + "> div > div > div:nth-child(3)").get(0),mutation.target)){
+                        // 消息数变化
+                        if (!counterList.includes(userID)) {
+                            counterList.push(userID)
+                        }
+                    }else if($("#" + userID + "> div > div > div:nth-child(3)").get(0) == mutation.target
+                    && (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)){
+                        // 新添未读/ 删除未读
+                        if (!counterList.includes(userID)) {
+                            counterList.push(userID)
+                        }                        
+                    }
                 }
 
 
                 if (mutation.removedNodes.length > 0) {
                     // 有节点被删除
-                    // console.info($(mutation.removedNodes))      
+                    // console.info($(mutation.removedNodes))     
+                    // mutation.removedNodes.forEach(node =>{
+                    //     // 判断删除的节点
+                    // })
                 }
             })
             // console.info(convoIDList)
             let convoList = tranConvoByID(convoIDList)
             convoList.forEach(convo => {
-
-                if (convo.counter > 0) {
-                    convo.print()
+                
+                // 判断counter有没有发生变化
+                if (counterList.includes(convo.userID) ) {
+                    convo.action = 'a'
+                    // convo.print()
                     convo.send()
                 }
             })
