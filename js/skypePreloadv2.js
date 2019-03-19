@@ -125,55 +125,22 @@ window.onload = function () {
         }
     }
 
-    // class chatLog {
-    //     constructor(type, msgID, from, time, message) {
-    //         this.type = type
-    //         this.msgID = msgID
-    //         this.from = from
-    //         this.time = time
-    //         this.message = message
-    //     }
-    //     extractAll(aNode) {
-    //         // 各种类型的信息应该都在div.content里，正常是p，图片是p.PictureSharing，
-    //         // 联系人是<span>+<div.contactslist>，文件是p.FileTransfer.扩展名
-    //         // 所以正确的逻辑应该是寻找div.content然后判断内部内容
-    //         // 来自对方的消息 swx-message.their 自己的消息 swx-message.me
-    //         // url是 div.messageTextWrapper>p.urlPreviewText>a
-    //         this.msgID = aNode.dataset.id
-    //         this.time = parseInt(aNode.dataset.id)
-    //         if (aNode.classList.contains('their') &&
-    //             aNode.querySelector('swx-name')) {
-    //             this.from = aNode.querySelector('swx-name').innerHTML.replace(/<[^<>]*>/gm, '').trim()
-    //         } else {
-    //             this.from = undefined
-    //         }
-    //         if (aNode.classList.contains('picture') &&
-    //             aNode.querySelector('div.content > p.PictureSharing > a')) {
-    //             console.info('found img')
-    //             this.type = 'img'
-    //             this.message = aNode.querySelector('div.content > p.PictureSharing > a').href
-    //         } else if (aNode.classList.contains('urlPreview') &&
-    //             aNode.querySelector('div.content p.urlPreviewText > a')) {
-    //             console.info('found url')
-    //             this.type = 'url'
-    //             this.message = aNode.querySelector('div.content p.urlPreviewText > a').href
-    //         } else if (aNode.classList.contains('urlPreview') &&
-    //             aNode.querySelector('div.content a.thumbnail')) {
-    //             console.info('found url')
-    //             this.type = 'url'
-    //             this.message = aNode.querySelector('div.content a.thumbnail').href
-    //         } else if (aNode.classList.contains('text') &&
-    //             aNode.querySelector('div.content > p')) {
-    //             console.info('found text')
-    //             this.type = 'text'
-    //             this.message = aNode.querySelector('div.content > p').innerHTML.replace(/<[^<>]*>/gm, '')
-    //         } else {
-    //             console.info('found unknown')
-    //             this.type = 'unknown'
-    //             this.message = aNode.querySelector('div.content').innerHTML.replace(/<!--[\s\S]*?-->/gm, '').replace(/<[^<>]*>/gm, '').trim()
-    //         }
-    //     }
-    // }
+    class chatMSG {
+        constructor(type, msgID, from, time, message) {
+            this.type = type
+            this.msgID = msgID
+            this.from = from
+            this.time = time
+            this.message = message
+        }
+        /**
+         * 从每个消息中抓取信息
+         * @param {Element} Node <div role='region' ...>
+         */
+        extract(Node) {
+            
+        }
+    }
 
     function uniqueStr() {
         return Math.random().toString().slice(2, 5) + Date.now().toString()
@@ -272,8 +239,8 @@ window.onload = function () {
             // console.info(mutationList)
             let convoIDList = new Array()
             let counterList = new Array() // 记录counter发生了变化
-            
-            mutationList.forEach((mutation,index) => {
+
+            mutationList.forEach((mutation, index) => {
 
                 let objConvo = $(mutation.target).closest("[id^=rx-vlv-]")
                 if ($(objConvo).length > 0) {
@@ -287,19 +254,19 @@ window.onload = function () {
                         convoIDList.push(userID)
                     }
                     console.info($("#" + userID + "> div > div > div:nth-child(3)"))
-                    console.info($.contains($("#" + userID + "> div > div > div:nth-child(3)").get(0),mutation.target))
+                    console.info($.contains($("#" + userID + "> div > div > div:nth-child(3)").get(0), mutation.target))
                     console.info($("#" + userID + "> div > div > div:nth-child(3)").get(0) == $(mutation.target))
-                    if($.contains($("#" + userID + "> div > div > div:nth-child(3)").get(0),mutation.target)){
+                    if ($.contains($("#" + userID + "> div > div > div:nth-child(3)").get(0), mutation.target)) {
                         // 消息数变化
                         if (!counterList.includes(userID)) {
                             counterList.push(userID)
                         }
-                    }else if($("#" + userID + "> div > div > div:nth-child(3)").get(0) == mutation.target
-                    && (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)){
+                    } else if ($("#" + userID + "> div > div > div:nth-child(3)").get(0) == mutation.target
+                        && (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)) {
                         // 新添未读/ 删除未读
                         if (!counterList.includes(userID)) {
                             counterList.push(userID)
-                        }                        
+                        }
                     }
                 }
 
@@ -315,9 +282,9 @@ window.onload = function () {
             // console.info(convoIDList)
             let convoList = tranConvoByID(convoIDList)
             convoList.forEach(convo => {
-                
+
                 // 判断counter有没有发生变化
-                if (counterList.includes(convo.userID) ) {
+                if (counterList.includes(convo.userID)) {
                     convo.action = 'a'
                     // convo.print()
                     convo.send()
@@ -325,10 +292,21 @@ window.onload = function () {
             })
         }
         let obsConvo = new MutationObserver(callbackConvo);
+        
+        // 
         obsConvo.observe($("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride) > div > div > div")[0], {
             subtree: true, childList: true, characterData: true, attributes: true,
             attributeFilter: ["data-text-as-pseudo-element"], attributeOldValue: false, characterDataOldValue: false
         });
+    }
+
+    /**
+     * 直接爬取右边
+     */
+    function reportDialog(){
+        $("div[role=region]").each((index, element)=>{
+
+        })
     }
 
     // 检查登录状态
@@ -378,14 +356,15 @@ window.onload = function () {
                 let userID = arg.userID
                 console.info("debug : userID : ", userID)
                 let target = $("#" + userID)
-                // if (target.classList.contains('active')) {
-                //     reportChatLog(undefined)
-                // } else {
-                //     obsChatLog.observe(document.querySelector('.fragmentsContainer'), {
-                //         subtree: true, childList: true, attributes: true, attributeOldValue: true
-                //     })
-                $("#" + userID + " > div > div").click()
-                // }
+                if ($(target).attr('tabindex') === "0" && $("div.rxCustomScroll.rxCustomScrollV.active").length > 0) {
+                    // 当前target已经被选中, 直接爬取右侧
+                    reportDialog()
+                } else {
+                    // obsChatLog.observe(document.querySelector('.fragmentsContainer'), {
+                    //     subtree: true, childList: true, attributes: true, attributeOldValue: true
+                    // })
+                    $("#" + userID + " > div > div").click()
+                }
                 resolve("copy the query. Please wait...")
             } else if (key == 'sendDialog') {
 
