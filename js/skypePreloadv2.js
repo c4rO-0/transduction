@@ -253,9 +253,9 @@ window.onload = function () {
                     if (!convoIDList.includes(userID)) {
                         convoIDList.push(userID)
                     }
-                    console.info($("#" + userID + "> div > div > div:nth-child(3)"))
-                    console.info($.contains($("#" + userID + "> div > div > div:nth-child(3)").get(0), mutation.target))
-                    console.info($("#" + userID + "> div > div > div:nth-child(3)").get(0) == $(mutation.target))
+                    // console.info($("#" + userID + "> div > div > div:nth-child(3)"))
+                    // console.info($.contains($("#" + userID + "> div > div > div:nth-child(3)").get(0), mutation.target))
+                    // console.info($("#" + userID + "> div > div > div:nth-child(3)").get(0) == $(mutation.target))
                     if ($.contains($("#" + userID + "> div > div > div:nth-child(3)").get(0), mutation.target)) {
                         // 消息数变化
                         if (!counterList.includes(userID)) {
