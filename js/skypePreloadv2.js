@@ -3,6 +3,10 @@ notice : Because Skype overload console function in vender.js,
 'console.info' should be used, instead of 'console.log'
 **************************************/
 
+window.onerror = function(message, source, lineno, colno, error) {
+    console.info(message);
+ }
+
 window.onload = function () {
     console.info("runing skype preload------------------------>")
     // console.info(process.versions.electron)
@@ -135,10 +139,24 @@ window.onload = function () {
         }
         /**
          * 从每个消息中抓取信息
-         * @param {Element} Node <div role='region' ...>
+         * @param {Element} node <div role='region' ...>
+         * @param {String} userID convo的userID
          */
-        extract(Node) {
-            
+        extract(node,userID) {
+            this.msgID = $(node).attr("msgID")
+
+            if($(node).attr("aria-label")){
+                if($(node).find(" > div > div ").css("justify-content") =='flex-start'){
+                    // 左侧
+                    let indexSplitName = ($(node).attr("aria-label")).lastIndexOf(',')
+                    this.from = $(node).attr("aria-label").substr(0,indexSplitName)
+                }else{
+                    this.from = undefined
+                }
+            }else{
+                // 特殊消息
+            }
+
         }
     }
 
@@ -303,9 +321,41 @@ window.onload = function () {
     /**
      * 直接爬取右边
      */
-    function reportDialog(){
-        $("div[role=region]").each((index, element)=>{
+    function reportDialog(userID){
 
+        let msgArray = new Array()
+        $("div[role=region][aria-label]").each((index, element)=>{
+            let nodeBubble = $(element).find(" > div > div")
+            if($(nodeBubble).length > 0 
+            && $(nodeBubble).css("justify-content") 
+            && ($(nodeBubble).css("justify-content") =='flex-start' || $(nodeBubble).css("justify-content") =='flex-end')){
+                let msg = chatMSG()
+                msg.extract(element,userID)
+                msgArray.push(msg)
+            }
+
+        })
+
+        return msg
+    }
+
+    function getNickNameByUserID(userID){
+        return $($("#" + userID + " > div > div > div:get(2)")
+                .find("[data-text-as-pseudo-element]").get(0))
+                .attr("data-text-as-pseudo-element") //名字和消息
+    }
+
+    /**
+     * 给右侧消息添加MsgID
+     */
+    function addMsgID(){
+        $("div[role=region]:not([msgID])").each((index, element)=>{
+            let nodeBubble = $(element).find(" > div > div")
+            if($(nodeBubble).length > 0 
+            && $(nodeBubble).css("justify-content") 
+            && ($(nodeBubble).css("justify-content") =='flex-start' || $(nodeBubble).css("justify-content") =='flex-end')){
+                $(element).attr("msgID", uniqueStr())
+            }            
         })
     }
 
@@ -358,8 +408,13 @@ window.onload = function () {
                 let target = $("#" + userID)
                 if ($(target).attr('tabindex') === "0" && $("div.rxCustomScroll.rxCustomScrollV.active").length > 0) {
                     // 当前target已经被选中, 直接爬取右侧
-                    reportDialog()
+                    addMsgID()
+                    reportDialog(userID)
                 } else {
+
+                    if($("div.rxCustomScroll.rxCustomScrollV.active").length == 0){
+                        // 右侧还没有点击
+                    }
                     // obsChatLog.observe(document.querySelector('.fragmentsContainer'), {
                     //     subtree: true, childList: true, attributes: true, attributeOldValue: true
                     // })
