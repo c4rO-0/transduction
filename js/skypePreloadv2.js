@@ -325,7 +325,7 @@ window.onload = function () {
             })
         }
         let obsConvo = new MutationObserver(callbackConvo);
-        obsConvo.observe($("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride) > div > div > div")[0], {
+        obsConvo.observe($("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride):not(.active) > div > div > div")[0], {
             subtree: true, childList: true, characterData: true, attributes: true,
             attributeFilter: ["data-text-as-pseudo-element"], attributeOldValue: false, characterDataOldValue: false
         });
