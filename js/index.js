@@ -482,15 +482,15 @@ $(document).ready(function () {
                     if ($(strDialogSelector).is(":visible") &&
                         $(strDialogSelector).scrollTop() + $(strDialogSelector)[0].clientHeight == $(strDialogSelector)[0].scrollHeight) {
 
-                        if(document.hasFocus()){
+                        if (document.hasFocus()) {
                             // 取消新消息未读, 和声音提示
                             Convo.counter = 0
                         }
                         // setTimeout(() => {
-                            // console.info("focusssssss")
-                            $(webTag2Selector(webTag)).focus() 
+                        // console.info("focusssssss")
+                        $(webTag2Selector(webTag)).focus()
                         // }, 10000);
-                        
+
                     }
 
                     // 刷新dialog
@@ -499,13 +499,13 @@ $(document).ready(function () {
                         { "queryDialog": { "userID": Convo.userID } }
                     ).then((res) => {
                         console.log("queryDialog : webReply : ", res)
-                        
+
                     }).catch((error) => {
                         throw error
-                        
+
                     })
 
-                    
+
 
                 }
 
@@ -1175,6 +1175,13 @@ $(document).ready(function () {
         },
     })
     followPin()
+    $('.modal').on('show.bs.modal', function (e) {
+        // console.log(document.getElementsByTagName('webview'))
+        document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
+        document.getElementById('modal-wechat').querySelector('webview').insertCSS('.login.ng-scope{min-width: unset;}')
+    })
+
+
 
     // ===========================接收消息===========================
 
