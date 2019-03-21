@@ -6,31 +6,31 @@ notice : Because Skype overload console function in vender.js,
 // *********************************************
 // navigator setting
 // ---------------------------------------------
-Object.defineProperty(navigator,'language',{
-    value:'en',
+Object.defineProperty(navigator, 'language', {
+    value: 'en',
     configurable: false,
     writable: false,
 })
-Object.defineProperty(navigator,'languages',{
-    value:['en'],
-    configurable: false,
-    writable: false,
-})
-
-Object.defineProperty(navigator,'platform',{
-    value:'Win32',
+Object.defineProperty(navigator, 'languages', {
+    value: ['en'],
     configurable: false,
     writable: false,
 })
 
-Object.defineProperty(navigator,'appVersion',{
-    value:'5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) WhatsApp/0.3.1475 Chrome/66.0.3359.181 Electron/3.0.0 Safari/537.36',
+Object.defineProperty(navigator, 'platform', {
+    value: 'Win32',
     configurable: false,
     writable: false,
 })
 
-Object.defineProperty(navigator,'userAgent',{
-    value:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) WhatsApp/0.3.1475 Chrome/66.0.3359.181 Electron/3.0.0 Safari/537.36',
+Object.defineProperty(navigator, 'appVersion', {
+    value: '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) WhatsApp/0.3.1475 Chrome/66.0.3359.181 Electron/3.0.0 Safari/537.36',
+    configurable: false,
+    writable: false,
+})
+
+Object.defineProperty(navigator, 'userAgent', {
+    value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) WhatsApp/0.3.1475 Chrome/66.0.3359.181 Electron/3.0.0 Safari/537.36',
     configurable: false,
     writable: false,
 })
@@ -171,18 +171,18 @@ window.onload = function () {
          * @param {Element} node <div role='region' ...>
          * @param {String} userID convo的userID
          */
-        extract(node,userID) {
+        extract(node, userID) {
             this.msgID = $(node).attr("msgID")
 
-            if($(node).attr("aria-label")){
-                if($(node).find(" > div > div ").css("justify-content") =='flex-start'){
+            if ($(node).attr("aria-label")) {
+                if ($(node).find(" > div > div ").css("justify-content") == 'flex-start') {
                     // 左侧
                     let indexSplitName = ($(node).attr("aria-label")).lastIndexOf(',')
-                    this.from = $(node).attr("aria-label").substr(0,indexSplitName)
-                }else{
+                    this.from = $(node).attr("aria-label").substr(0, indexSplitName)
+                } else {
                     this.from = undefined
                 }
-            }else{
+            } else {
                 // 特殊消息
             }
 
@@ -213,16 +213,9 @@ window.onload = function () {
             timeStamp = time.getTime()
             // console.info(time.getTime())
 
-        } else if (strTime.indexOf('/') >= 0) {
-            let timeArray = strTime.split('/')
-            // console.info('type2 ', strTime.indexOf('/'), timeArray)
-            let time = new Date(Date.now())
-            time.setFullYear(timeArray[0])
-            time.setMonth(parseInt(timeArray[1]) - 1)
-            time.setDate(timeArray[2])
-            time.setHours(0)
-            time.setMinutes(0)
-
+        } else if (strTime.indexOf('/') >= 0
+            || strTime.indexOf(',') >= 0) {
+            let time = new Date(Date.parse(strTime))    
             timeStamp = time.getTime()
         } else {
             let time = new Date(Date.now())
@@ -232,21 +225,26 @@ window.onload = function () {
             // Sunday - Saturday : 0 - 6
             let today = time.getDay()
             let msgDay = 0
-            if (strTime == 'Sun') {
+            if (strTime == 'Sun' || strTime == 'Sunday') {
                 msgDay = 0
-            } else if (strTime == 'Mon') {
+            } else if (strTime == 'Mon' || strTime == 'Monday') {
                 msgDay = 1
-            } else if (strTime == 'Tue') {
+            } else if (strTime == 'Tue' || strTime == 'Tuesday') {
                 msgDay = 2
-            } else if (strTime == 'Wed') {
+            } else if (strTime == 'Wed' || strTime == 'Wednesday') {
                 msgDay = 3
-            } else if (strTime == 'Thu') {
+            } else if (strTime == 'Thu' || strTime == 'Thursday') {
                 msgDay = 4
-            } else if (strTime == 'Fri') {
+            } else if (strTime == 'Fri' || strTime == 'Friday') {
                 msgDay = 5
-            } else if (strTime == 'Sat') {
+            } else if (strTime == 'Sat' || strTime == 'Saturday') {
                 msgDay = 6
+            } else if (strTime == 'Yesterday') {
+                msgDay = today - 1
+            } else if (strTime == 'Today') {
+                msgDay = today
             }
+
             if (msgDay > today) { // 上周
                 timeStamp = (new Date(time.getTime() - (7 - (msgDay - today)) * 24 * 60 * 60 * 1000)).getTime()
             } else {
@@ -339,7 +337,7 @@ window.onload = function () {
             })
         }
         let obsConvo = new MutationObserver(callbackConvo);
-        
+
         // 
         obsConvo.observe($("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride) > div > div > div")[0], {
             subtree: true, childList: true, characterData: true, attributes: true,
@@ -350,16 +348,16 @@ window.onload = function () {
     /**
      * 直接爬取右边
      */
-    function reportDialog(userID){
+    function reportDialog(userID) {
 
         let msgArray = new Array()
-        $("div[role=region][aria-label]").each((index, element)=>{
+        $("div[role=region][aria-label]").each((index, element) => {
             let nodeBubble = $(element).find(" > div > div")
-            if($(nodeBubble).length > 0 
-            && $(nodeBubble).css("justify-content") 
-            && ($(nodeBubble).css("justify-content") =='flex-start' || $(nodeBubble).css("justify-content") =='flex-end')){
+            if ($(nodeBubble).length > 0
+                && $(nodeBubble).css("justify-content")
+                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')) {
                 let msg = chatMSG()
-                msg.extract(element,userID)
+                msg.extract(element, userID)
                 msgArray.push(msg)
             }
 
@@ -466,7 +464,7 @@ window.onload = function () {
                     reportDialog(userID)
                 } else {
 
-                    if($("div.rxCustomScroll.rxCustomScrollV.active").length == 0){
+                    if ($("div.rxCustomScroll.rxCustomScrollV.active").length == 0) {
                         // 右侧还没有点击
                     }
                     // obsChatLog.observe(document.querySelector('.fragmentsContainer'), {
