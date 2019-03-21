@@ -3,6 +3,21 @@ notice : Because Skype overload console function in vender.js,
 'console.info' should be used, instead of 'console.log'
 **************************************/
 
+// *********************************************
+// navigator setting
+// ---------------------------------------------
+Object.defineProperty(navigator,'language',{
+    value:'en',
+    configurable: false,
+    writable: false,
+})
+Object.defineProperty(navigator,'languages',{
+    value:['en'],
+    configurable: false,
+    writable: false,
+})
+// *********************************************
+
 window.onerror = function(message, source, lineno, colno, error) {
     console.info(message);
  }

@@ -1,4 +1,19 @@
 // =========================全局函数和变量===========================
+// *********************************************
+// navigator setting
+// ---------------------------------------------
+Object.defineProperty(navigator,'language',{
+    value:'en',
+    configurable: false,
+    writable: false,
+})
+Object.defineProperty(navigator,'languages',{
+    value:['en'],
+    configurable: false,
+    writable: false,
+})
+// *********************************************
+
 /**
  * 开关webview
  */
