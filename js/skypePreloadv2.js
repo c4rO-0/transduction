@@ -16,11 +16,25 @@ Object.defineProperty(navigator,'languages',{
     configurable: false,
     writable: false,
 })
-// *********************************************
 
-window.onerror = function(message, source, lineno, colno, error) {
-    console.info(message);
- }
+Object.defineProperty(navigator,'platform',{
+    value:'Win32',
+    configurable: false,
+    writable: false,
+})
+
+Object.defineProperty(navigator,'appVersion',{
+    value:'5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) WhatsApp/0.3.1475 Chrome/66.0.3359.181 Electron/3.0.0 Safari/537.36',
+    configurable: false,
+    writable: false,
+})
+
+Object.defineProperty(navigator,'userAgent',{
+    value:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) WhatsApp/0.3.1475 Chrome/66.0.3359.181 Electron/3.0.0 Safari/537.36',
+    configurable: false,
+    writable: false,
+})
+// *********************************************
 
 window.onload = function () {
     console.info("runing skype preload------------------------>")

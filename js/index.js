@@ -1157,12 +1157,32 @@ $(document).ready(function () {
         });
 
     }
-
-
+    
+    function loadWebview(webTag, url, strUserAgent){
+        // console.log(strUserAgent)
+        if($(webTag2Selector(webTag)).length > 0){
+            console.log("load")
+            $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
+            {"userAgent":
+            "userAgent : "+strUserAgent,
+            "extraHeaders":"User-Agent:"+strUserAgent+"\n"})
+        }
+    }
 
 
     // =============================程序主体=============================
 
+    console.log("toggle")
+    // toggleWebview()
+
+    window.onresize = () => {
+        console.log("===window resize====")
+    }
+
+    loadWebview("skype","https://web.skype.com/",core.strUserAgentWin)
+    loadWebview("wechat","https://web.wechat.com/",core.strUserAgentWin)
+
+    // openDevtool('skype')
 
     // ===========================接收消息===========================
 
@@ -1254,12 +1274,6 @@ $(document).ready(function () {
     });
 
 
-    console.log("toggle")
-    toggleWebview()
-    // openDevtool('skype')
-    window.onresize = () => {
-        console.log("===window resize====")
-    }
 
 
     // =================extension click==================
