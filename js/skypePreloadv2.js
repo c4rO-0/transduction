@@ -354,25 +354,50 @@ window.onload = function () {
         return msg
     }
 
-    function getNickNameByUserID(userID){
+    function getNickNameByUserID(userID) {
         return $($("#" + userID + " > div > div > div:get(2)")
-                .find("[data-text-as-pseudo-element]").get(0))
-                .attr("data-text-as-pseudo-element") //名字和消息
+            .find("[data-text-as-pseudo-element]").get(0))
+            .attr("data-text-as-pseudo-element") //名字和消息
     }
 
     /**
      * 给右侧消息添加MsgID
      */
-    function addMsgID(){
-        $("div[role=region]:not([msgID])").each((index, element)=>{
+    function addMsgID() {
+        $("div[role=region]:not([msgID])").each((index, element) => {
             let nodeBubble = $(element).find(" > div > div")
-            if($(nodeBubble).length > 0 
-            && $(nodeBubble).css("justify-content") 
-            && ($(nodeBubble).css("justify-content") =='flex-start' || $(nodeBubble).css("justify-content") =='flex-end')){
+            if ($(nodeBubble).length > 0
+                && $(nodeBubble).css("justify-content")
+                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')) {
                 $(element).attr("msgID", uniqueStr())
-            }            
+            }
         })
     }
+
+    +    /**
+    +     * 给右侧消息添加时间戳
+    +     */
+        function addMsgTime() {
+            let date = undefined
+            $("div[role=region]").each((index, element) => {
+                if ($(element).find("> div[role='heading']").length > 0) {
+                    // 日期格式有问题
+                    let dateStr = $(element).find("> div[role='heading']").attr("aria-label");
+                    date = new Date();
+                }
+
+                let nodeBubble = $(element).find(" > div > div")
+                if (date
+                    && $(nodeBubble).length > 0
+                    && $(nodeBubble).css("justify-content")
+                    && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
+                    && $(element).attr("aria-label")) {
+                    let time = $(element).attr("aria-label").slice(-6, -2)
+                    // let msgTime = new Date(date)
+                    $(element).attr("time", date.toString() + time)
+                }
+            })
+        }
 
     // 检查登录状态
     // - 登陆了
