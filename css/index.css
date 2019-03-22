@@ -23,6 +23,38 @@ webview {
     /* flex: 0 0 56px; */
     min-width: 56px;
     max-width: 256px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+#td-settings .td-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+#td-settings .td-app-status {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.app-online {
+    filter: grayscale(0%);
+}
+.app-offline {
+    filter: grayscale(100%);
+}
+
+.td-buttons img {
+    height: 40px;
+    width: 40px;
+}
+
+.td-app-status img {
+    height: 32px;
+    width: 32px;
 }
 
 .col-right {

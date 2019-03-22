@@ -258,9 +258,9 @@ $(document).ready(function () {
     }
 
     function ChangeConvoHtml(appName, convo) {
-        let objConvo = $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
+        let objConvo = $('#td-convo-container [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
         if (objConvo.length) { // 检测存在
-            $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').remove()
+            $('#td-convo-container [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').remove()
             for (let key in convo) {
                 if (convo[key] != undefined) {
                     switch (key) {
@@ -289,7 +289,7 @@ $(document).ready(function () {
                     }
                 }
             }
-            $('#td-left').prepend(objConvo)
+            $('#td-convo-container').prepend(objConvo)
         }
     }
 
@@ -514,8 +514,8 @@ $(document).ready(function () {
                     // console.log(typeof Convo.time)
                     // console.log(convoHtml('skype', Convo))
                     // 覆盖消息
-                    $('#td-left [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
-                    $('#td-left').prepend(AddConvoHtml(webTag, Convo))
+                    $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
+                    $('#td-convo-container').prepend(AddConvoHtml(webTag, Convo))
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
                     ChangeConvoHtml(webTag, Convo)
@@ -545,27 +545,33 @@ $(document).ready(function () {
                 // 登录状态
                 // console.log("============================================================")
                 if (Obj.status) {
-                    let color = 'red'
+                    // let color = 'red'
 
                     if (Obj.status == 'offline') {
                         console.log(webTag + " not log yet.")
+                        $('#app-' + webTag).removeClass('app-online')
+                        $('#app-' + webTag).addClass('app-offline')
                     } else if (Obj.status == 'online') {
                         console.log(webTag + " is logged already.")
-                        color = 'green'
+                        $('#app-' + webTag).removeClass('app-offline')
+                        $('#app-' + webTag).addClass('app-online')
+                        // color = 'green'
                     } else if (Obj.status == 'failure') {
                         console.log(webTag + " log failed")
+                        $('#app-' + webTag).removeClass('app-online')
+                        $('#app-' + webTag).addClass('app-offline')
                     }
 
                     // 修改登录状态
-                    let selector = "#test-2 p[data-app-name='" + webTag + "']"
-                    if ($(selector).length == 0) {
-                        $("#test-2").append(
-                            "<p data-app-name='" + webTag + "'>" + webTag + " : " + Obj.status + "</p>")
-                        $(selector).css("background-color", color);
-                    } else {
-                        $(selector).text(webTag + " : " + Obj.status)
-                        $(selector).css("background-color", color);
-                    }
+                    //     let selector = "#test-2 p[data-app-name='" + webTag + "']"
+                    //     if ($(selector).length == 0) {
+                    //         $("#test-2").append(
+                    //             "<p data-app-name='" + webTag + "'>" + webTag + " : " + Obj.status + "</p>")
+                    //         $(selector).css("background-color", color);
+                    //     } else {
+                    //         $(selector).text(webTag + " : " + Obj.status)
+                    //         $(selector).css("background-color", color);
+                    //     }
                 }
 
             } else if (key == 'queryToggleStatus') {
@@ -575,13 +581,15 @@ $(document).ready(function () {
                 // 显示对应webview
                 // Obj里应该储存要定位的位置
                 console.log(webTag + "说 : 我要显摆我自己~")
-                $("#test-" + webTag + "-toggle").text("快打开" + webTag)
-                $("#test-" + webTag + "-toggle").css("background-color", '#ffc107')
+                $('#modal-' + webTag).modal('show')
+                // $("#test-" + webTag + "-toggle").text("快打开" + webTag)
+                // $("#test-" + webTag + "-toggle").css("background-color", '#ffc107')
             } else if (key == 'hide') {
                 // 隐藏webview
                 console.log(webTag + "说 : 快把我关掉!")
-                $("#test-" + webTag + "-toggle").text("快关上" + webTag)
-                $("#test-" + webTag + "-toggle").css("background-color", '#866606')
+                $('#modal-' + webTag).modal('hide')
+                // $("#test-" + webTag + "-toggle").text("快关上" + webTag)
+                // $("#test-" + webTag + "-toggle").css("background-color", '#866606')
             }
 
         }),
@@ -1197,7 +1205,7 @@ $(document).ready(function () {
 
 
     // 点击convo
-    $('#td-left').on('click', 'div.td-convo', function () {
+    $('#td-convo-container').on('click', 'div.td-convo', function () {
 
 
         // 识别webtag
@@ -1206,7 +1214,7 @@ $(document).ready(function () {
         let userID = $(this).attr("data-user-i-d")
         let nickName = $(this).find("div.td-nickname").text()
 
-        $('#td-left div.td-convo').removeClass('theme-transduction-active')
+        $('#td-convo-container div.td-convo').removeClass('theme-transduction-active')
         $(this).addClass('theme-transduction-active')
 
 
@@ -1444,33 +1452,65 @@ $(document).ready(function () {
     })
 
     // ===查询后台登录情况===
-    $("#test-1").on("click", () => {
+    // $("#test-1").on("click", () => {
+    //     console.log("====query logStatus=====")
+    //     $("webview[data-app-name]").each((index, el) => {
+    //         let webTag = $(el).attr("data-app-name")
+    //         // console.log()
+    //         core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
+    //             let color = 'red'
+    //             // console.log((obj['queryLogStatus'+":"+""]))
+    //             let logStatus = (obj['queryLogStatus' + ":" + ""])
+    //             if (logStatus.status == 'offline') {
+    //                 console.log(webTag + " not log yet.")
+    //             } else if (logStatus.status == 'online') {
+    //                 console.log(webTag + " is logged already.")
+    //                 color = 'green'
+    //             } else if (logStatus.status == 'failure') {
+    //                 console.log(webTag + " log failed")
+    //             }
+
+    //             // 修改登录状态
+    //             let selector = "#test-2 p[data-app-name='" + webTag + "']"
+    //             if ($(selector).length == 0) {
+    //                 $("#test-2").append(
+    //                     "<p data-app-name='" + webTag + "'>" + webTag + " : " + logStatus.status + "</p>")
+    //                 $(selector).css("background-color", color);
+    //             } else {
+    //                 $(selector).text(webTag + " : " + logStatus.status)
+    //                 $(selector).css("background-color", color);
+    //             }
+    //         }).catch((err) => {
+    //             console.log(webTag, "no response", err)
+    //         })
+    //     })
+
+    // })
+
+    // ===查询后台登录情况===
+    $("#td-request-status").on("click", () => {
         console.log("====query logStatus=====")
         $("webview[data-app-name]").each((index, el) => {
             let webTag = $(el).attr("data-app-name")
             // console.log()
             core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
-                let color = 'red'
+                // let color = 'red'
                 // console.log((obj['queryLogStatus'+":"+""]))
                 let logStatus = (obj['queryLogStatus' + ":" + ""])
                 if (logStatus.status == 'offline') {
                     console.log(webTag + " not log yet.")
+                    $('#app-' + webTag).removeClass('app-online')
+                    $('#app-' + webTag).addClass('app-offline')
+
                 } else if (logStatus.status == 'online') {
                     console.log(webTag + " is logged already.")
-                    color = 'green'
+                    $('#app-' + webTag).removeClass('app-offline')
+                    $('#app-' + webTag).addClass('app-online')
+                    // color = 'green'
                 } else if (logStatus.status == 'failure') {
                     console.log(webTag + " log failed")
-                }
-
-                // 修改登录状态
-                let selector = "#test-2 p[data-app-name='" + webTag + "']"
-                if ($(selector).length == 0) {
-                    $("#test-2").append(
-                        "<p data-app-name='" + webTag + "'>" + webTag + " : " + logStatus.status + "</p>")
-                    $(selector).css("background-color", color);
-                } else {
-                    $(selector).text(webTag + " : " + logStatus.status)
-                    $(selector).css("background-color", color);
+                    $('#app-' + webTag).removeClass('app-online')
+                    $('#app-' + webTag).addClass('app-offline')
                 }
             }).catch((err) => {
                 console.log(webTag, "no response", err)
