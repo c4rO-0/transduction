@@ -442,7 +442,7 @@ window.onload = function () {
 
         // 没登录
 
-        if (document.getElementById("i0281") || document.getElementById("forgotUsername") ) {
+        if (document.getElementById("i0281") || document.getElementById("forgotUsername")) {
             logStatus.status = "offline"
             console.info("********************offline***************************************")
             core.WebToHost({ "logStatus": logStatus })
@@ -484,6 +484,25 @@ window.onload = function () {
 
             } else if (key == 'queryLogStatus') {
                 resolve(logStatus)
+            } else if (key == 'logoff') {
+                if (logStatus.status == 'online') {
+                    console.info('logoff')
+                    console.info($("button[aria-label='Sign out']").length)
+                    if ($("button[aria-label='Sign out']").length == 0) {
+                        $('button[aria-label="More options"]').click()
+                    }
+                    setTimeout(() => {
+                        $("button[aria-label='Sign out']").click()
+                        setTimeout(() => {
+                            $("button[aria-label='Sign out']").click()
+                        }, 500);
+                    }, 500);
+
+
+                    resolve("wechat log off")
+                } else {
+                    resolve('wechat already logoff')
+                }
             } else {
                 reject("unknown key : ", key)
             }

@@ -1,13 +1,13 @@
 // *********************************************
 // navigator setting
 // ---------------------------------------------
-Object.defineProperty(navigator,'language',{
-    value:'en',
+Object.defineProperty(navigator, 'language', {
+    value: 'en',
     configurable: false,
     writable: false,
 })
-Object.defineProperty(navigator,'languages',{
-    value:['en'],
+Object.defineProperty(navigator, 'languages', {
+    value: ['en'],
     configurable: false,
     writable: false,
 })
@@ -533,7 +533,7 @@ window.onload = function () {
                             //     attributeOldValue: false, characterDataOldValue: false
                             // });
 
-                        }else {
+                        } else {
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---")
                                 waitSend(arrayValue, index)
@@ -587,7 +587,19 @@ window.onload = function () {
                     send(arg, 1)
                 } else if (key == 'queryLogStatus') {
                     console.log("resolve back")
-                    resolve(logStatus )
+                    resolve(logStatus)
+                } else if (key == 'logoff') {
+                    if (logStatus.status == 'online') {
+                        if ($("i.menuicon_quit").length == 0) {
+                            $("i.web_wechat_add").click()
+                        }
+
+                        $("i.menuicon_quit").click()
+
+                        resolve("wechat log off")
+                    } else {
+                        resolve('wechat already logoff')
+                    }
                 } else {
                     reject('unknown key')
                 }
