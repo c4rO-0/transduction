@@ -32,6 +32,8 @@ function listWebview() {
     })
 }
 
+let tdPinCoord = [0, 0]
+
 
 
 $(document).ready(function () {
@@ -256,9 +258,9 @@ $(document).ready(function () {
     }
 
     function ChangeConvoHtml(appName, convo) {
-        let objConvo = $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
+        let objConvo = $('#td-convo-container [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').clone()
         if (objConvo.length) { // 检测存在
-            $('#td-left [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').remove()
+            $('#td-convo-container [data-app-name=' + appName + '][data-user-i-d="' + convo.userID + '"]').remove()
             for (let key in convo) {
                 if (convo[key] != undefined) {
                     switch (key) {
@@ -287,7 +289,7 @@ $(document).ready(function () {
                     }
                 }
             }
-            $('#td-left').prepend(objConvo)
+            $('#td-convo-container').prepend(objConvo)
         }
     }
 
@@ -480,15 +482,15 @@ $(document).ready(function () {
                     if ($(strDialogSelector).is(":visible") &&
                         $(strDialogSelector).scrollTop() + $(strDialogSelector)[0].clientHeight == $(strDialogSelector)[0].scrollHeight) {
 
-                        if(document.hasFocus()){
+                        if (document.hasFocus()) {
                             // 取消新消息未读, 和声音提示
                             Convo.counter = 0
                         }
                         // setTimeout(() => {
-                            // console.info("focusssssss")
-                            $(webTag2Selector(webTag)).focus() 
+                        // console.info("focusssssss")
+                        $(webTag2Selector(webTag)).focus()
                         // }, 10000);
-                        
+
                     }
 
                     // 刷新dialog
@@ -497,13 +499,13 @@ $(document).ready(function () {
                         { "queryDialog": { "userID": Convo.userID } }
                     ).then((res) => {
                         console.log("queryDialog : webReply : ", res)
-                        
+
                     }).catch((error) => {
                         throw error
-                        
+
                     })
 
-                    
+
 
                 }
 
@@ -512,8 +514,8 @@ $(document).ready(function () {
                     // console.log(typeof Convo.time)
                     // console.log(convoHtml('skype', Convo))
                     // 覆盖消息
-                    $('#td-left [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
-                    $('#td-left').prepend(AddConvoHtml(webTag, Convo))
+                    $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
+                    $('#td-convo-container').prepend(AddConvoHtml(webTag, Convo))
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
                     ChangeConvoHtml(webTag, Convo)
@@ -543,27 +545,33 @@ $(document).ready(function () {
                 // 登录状态
                 // console.log("============================================================")
                 if (Obj.status) {
-                    let color = 'red'
+                    // let color = 'red'
 
                     if (Obj.status == 'offline') {
                         console.log(webTag + " not log yet.")
+                        $('#app-' + webTag).removeClass('app-online')
+                        $('#app-' + webTag).addClass('app-offline')
                     } else if (Obj.status == 'online') {
                         console.log(webTag + " is logged already.")
-                        color = 'green'
+                        $('#app-' + webTag).removeClass('app-offline')
+                        $('#app-' + webTag).addClass('app-online')
+                        // color = 'green'
                     } else if (Obj.status == 'failure') {
                         console.log(webTag + " log failed")
+                        $('#app-' + webTag).removeClass('app-online')
+                        $('#app-' + webTag).addClass('app-offline')
                     }
 
                     // 修改登录状态
-                    let selector = "#test-2 p[data-app-name='" + webTag + "']"
-                    if ($(selector).length == 0) {
-                        $("#test-2").append(
-                            "<p data-app-name='" + webTag + "'>" + webTag + " : " + Obj.status + "</p>")
-                        $(selector).css("background-color", color);
-                    } else {
-                        $(selector).text(webTag + " : " + Obj.status)
-                        $(selector).css("background-color", color);
-                    }
+                    //     let selector = "#test-2 p[data-app-name='" + webTag + "']"
+                    //     if ($(selector).length == 0) {
+                    //         $("#test-2").append(
+                    //             "<p data-app-name='" + webTag + "'>" + webTag + " : " + Obj.status + "</p>")
+                    //         $(selector).css("background-color", color);
+                    //     } else {
+                    //         $(selector).text(webTag + " : " + Obj.status)
+                    //         $(selector).css("background-color", color);
+                    //     }
                 }
 
             } else if (key == 'queryToggleStatus') {
@@ -573,13 +581,15 @@ $(document).ready(function () {
                 // 显示对应webview
                 // Obj里应该储存要定位的位置
                 console.log(webTag + "说 : 我要显摆我自己~")
-                $("#test-" + webTag + "-toggle").text("快打开" + webTag)
-                $("#test-" + webTag + "-toggle").css("background-color", '#ffc107')
+                $('#modal-' + webTag).modal('show')
+                // $("#test-" + webTag + "-toggle").text("快打开" + webTag)
+                // $("#test-" + webTag + "-toggle").css("background-color", '#ffc107')
             } else if (key == 'hide') {
                 // 隐藏webview
                 console.log(webTag + "说 : 快把我关掉!")
-                $("#test-" + webTag + "-toggle").text("快关上" + webTag)
-                $("#test-" + webTag + "-toggle").css("background-color", '#866606')
+                $('#modal-' + webTag).modal('hide')
+                // $("#test-" + webTag + "-toggle").text("快关上" + webTag)
+                // $("#test-" + webTag + "-toggle").css("background-color", '#866606')
             }
 
         }),
@@ -1148,6 +1158,38 @@ $(document).ready(function () {
 
     // =============================程序主体=============================
 
+    function followPin() {
+        let target = document.getElementById('td-pin')
+        let x = target.getBoundingClientRect().x
+        let y = target.getBoundingClientRect().bottom
+        tdPinCoord = [x, window.innerHeight - y]
+        window.scrollTo(0, 0)
+        document.getElementById('td-left').style.width = x + 'px'
+        document.getElementById('td-input').style.height = window.innerHeight - y + 'px'
+
+    }
+
+    //==============================UI==============================
+    $('#td-pin').draggable({
+        grid: [10, 10],
+        containment: "#td-pin-area",
+        drag: followPin,
+        stop: function (event, ui) {
+            followPin()
+            let target = document.getElementById('td-pin')
+            let y = target.getBoundingClientRect().bottom
+            target.style.bottom = window.innerHeight - y + 'px'
+            target.style.top = ''
+        },
+    })
+    followPin()
+    $('.modal').on('show.bs.modal', function (e) {
+        // console.log(document.getElementsByTagName('webview'))
+        document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
+        document.getElementById('modal-wechat').querySelector('webview').insertCSS('.login.ng-scope{min-width: unset;}')
+    })
+
+
 
     // ===========================接收消息===========================
 
@@ -1163,7 +1205,7 @@ $(document).ready(function () {
 
 
     // 点击convo
-    $('#td-left').on('click', 'div.td-convo', function () {
+    $('#td-convo-container').on('click', 'div.td-convo', function () {
 
 
         // 识别webtag
@@ -1172,7 +1214,7 @@ $(document).ready(function () {
         let userID = $(this).attr("data-user-i-d")
         let nickName = $(this).find("div.td-nickname").text()
 
-        $('#td-left div.td-convo').removeClass('theme-transduction-active')
+        $('#td-convo-container div.td-convo').removeClass('theme-transduction-active')
         $(this).addClass('theme-transduction-active')
 
 
@@ -1243,20 +1285,32 @@ $(document).ready(function () {
     toggleWebview()
     // openDevtool('skype')
     window.onresize = () => {
-        console.log("===window resize====")
+        // console.log("===window resize====")
+        document.getElementById('td-pin').style.left = window.getComputedStyle(document.getElementById('td-left')).getPropertyValue('width')
+        document.getElementById('td-pin').style.bottom = window.getComputedStyle(document.getElementById('td-input')).getPropertyValue('height')
+        // console.log(window.getComputedStyle(document.getElementById('td-left')).getPropertyValue('width'))
     }
+    // $(window).resize(function () {
+    //     document.getElementById('td-pin').style.left = tdPinCoord[0] + 'px'
+    //     document.getElementById('td-pin').style.bottom = tdPinCoord[1] + 'px'
+    // })
 
 
     // =================extension click==================
     // extension click
-    $(debug_firefox_send_str).on('click', () => {
+    $(debug_firefox_send_str).on('click', (e) => {
+        $('.td-toolbox > img').removeClass('theme-transduction-active')
+        $(e.target).addClass('theme-transduction-active')
         let extensionName = "firefox-send"
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
         $("#td-right div.td-chatLog[winType='extension']").show()
         loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
     })
 
-    $(debug_latex_str).on('click', () => {
+    $(debug_latex_str).on('click', (e) => {
+        $('.td-toolbox > img').removeClass('theme-transduction-active')
+        $(e.target).addClass('theme-transduction-active')
+
         let extensionName = "latex2png"
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
         $("#td-right div.td-chatLog[winType='extension']").show()
@@ -1265,6 +1319,8 @@ $(document).ready(function () {
 
     // 隐藏extension
     $(debug_goBackChat_str).on('click', () => {
+        $('.td-toolbox > img').removeClass('theme-transduction-active')
+
         $("#td-right div.td-chatLog[winType='chatLog']").show()
         // webview隐藏, 防止再次点击刷新页面
         $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
@@ -1277,44 +1333,60 @@ $(document).ready(function () {
     // ======================拖入东西==========================
     // 检测到拖入到东西
     // 当extension打开的时候, 只接受输入框位置拖入
-    $("#td-right").on("dragenter", (event) => {
-        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+    // $("#td-right").on("dragenter", (event) => {
+    //     if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
 
-        } else {
-            $("#td-right").hide()
-            $("div[winType='dropFile']").show()
-        }
+    //     } else {
+    //         $("#td-right").hide()
+    //         $("div[winType='dropFile']").show()
+    //     }
+    // })
+    $('#td-right').on('dragenter', (event) => {
+        // $('.td-dropFile').show()
+        $('.td-dropFile').removeClass('hide')
     })
-    $("div.td-inputbox").on("dragenter", (event) => {
-        if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
-            $("#td-right").hide()
-            $("div[winType='dropFile']").show()
-        } else {
+    // $("div.td-inputbox").on("dragenter", (event) => {
+    //     if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
+    //         $("#td-right").hide()
+    //         $("div[winType='dropFile']").show()
+    //     } else {
 
-        }
+    //     }
+    // })
+    $('div.td-inputbox').on('dragenter', (event) => {
+        $('.td-dropFile').removeClass('hide')
     })
 
     // 拖出右侧还原
-    $("div[winType='dropFile']").on("dragleave", (event) => {
-        $("div[winType='dropFile']").hide()
-        $("#td-right").show()
+    // $("div[winType='dropFile']").on("dragleave", (event) => {
+    //     $("div[winType='dropFile']").hide()
+    //     $("#td-right").show()
+    // })
+    $('.td-dropFile').on('dragleave', (event) => {
+        $('.td-dropFile').addClass('hide')
     })
 
+
     //识别到放下东西
-    $("div[winType='dropFile']").on("drop", (event) => {
-        console.log("drop")
-        $("div[winType='dropFile']").hide()
-        $("#td-right").show()
-        // Prevent default behavior (Prevent file from being opened)
+    // $("div[winType='dropFile']").on("drop", (event) => {
+    //     console.log("drop")
+    //     $("div[winType='dropFile']").hide()
+    //     $("#td-right").show()
+    //     // Prevent default behavior (Prevent file from being opened)
+    //     event.preventDefault();
+    //     processDataTransfer(event.originalEvent.dataTransfer).then(
+    //         console.log("insert input done")
+    //     )
+    // })
+    $('.td-dropFile').on('drop', (event) => {
+        console.log('drop')
+        $('.td-dropFile').addClass('hide')
         event.preventDefault();
-
-
         processDataTransfer(event.originalEvent.dataTransfer).then(
             console.log("insert input done")
         )
-
-
     })
+
 
     // ===========paste================
     $("div.td-inputbox").on("paste", function (event) {
@@ -1380,33 +1452,65 @@ $(document).ready(function () {
     })
 
     // ===查询后台登录情况===
-    $("#test-1").on("click", () => {
+    // $("#test-1").on("click", () => {
+    //     console.log("====query logStatus=====")
+    //     $("webview[data-app-name]").each((index, el) => {
+    //         let webTag = $(el).attr("data-app-name")
+    //         // console.log()
+    //         core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
+    //             let color = 'red'
+    //             // console.log((obj['queryLogStatus'+":"+""]))
+    //             let logStatus = (obj['queryLogStatus' + ":" + ""])
+    //             if (logStatus.status == 'offline') {
+    //                 console.log(webTag + " not log yet.")
+    //             } else if (logStatus.status == 'online') {
+    //                 console.log(webTag + " is logged already.")
+    //                 color = 'green'
+    //             } else if (logStatus.status == 'failure') {
+    //                 console.log(webTag + " log failed")
+    //             }
+
+    //             // 修改登录状态
+    //             let selector = "#test-2 p[data-app-name='" + webTag + "']"
+    //             if ($(selector).length == 0) {
+    //                 $("#test-2").append(
+    //                     "<p data-app-name='" + webTag + "'>" + webTag + " : " + logStatus.status + "</p>")
+    //                 $(selector).css("background-color", color);
+    //             } else {
+    //                 $(selector).text(webTag + " : " + logStatus.status)
+    //                 $(selector).css("background-color", color);
+    //             }
+    //         }).catch((err) => {
+    //             console.log(webTag, "no response", err)
+    //         })
+    //     })
+
+    // })
+
+    // ===查询后台登录情况===
+    $("#td-request-status").on("click", () => {
         console.log("====query logStatus=====")
         $("webview[data-app-name]").each((index, el) => {
             let webTag = $(el).attr("data-app-name")
             // console.log()
             core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
-                let color = 'red'
+                // let color = 'red'
                 // console.log((obj['queryLogStatus'+":"+""]))
                 let logStatus = (obj['queryLogStatus' + ":" + ""])
                 if (logStatus.status == 'offline') {
                     console.log(webTag + " not log yet.")
+                    $('#app-' + webTag).removeClass('app-online')
+                    $('#app-' + webTag).addClass('app-offline')
+
                 } else if (logStatus.status == 'online') {
                     console.log(webTag + " is logged already.")
-                    color = 'green'
+                    $('#app-' + webTag).removeClass('app-offline')
+                    $('#app-' + webTag).addClass('app-online')
+                    // color = 'green'
                 } else if (logStatus.status == 'failure') {
                     console.log(webTag + " log failed")
-                }
-
-                // 修改登录状态
-                let selector = "#test-2 p[data-app-name='" + webTag + "']"
-                if ($(selector).length == 0) {
-                    $("#test-2").append(
-                        "<p data-app-name='" + webTag + "'>" + webTag + " : " + logStatus.status + "</p>")
-                    $(selector).css("background-color", color);
-                } else {
-                    $(selector).text(webTag + " : " + logStatus.status)
-                    $(selector).css("background-color", color);
+                    $('#app-' + webTag).removeClass('app-online')
+                    $('#app-' + webTag).addClass('app-offline')
                 }
             }).catch((err) => {
                 console.log(webTag, "no response", err)
