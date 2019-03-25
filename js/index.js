@@ -1,22 +1,46 @@
 // =========================全局函数和变量===========================
+// *********************************************
+// navigator setting
+// ---------------------------------------------
+Object.defineProperty(navigator,'language',{
+    value:'en',
+    configurable: false,
+    writable: false,
+})
+Object.defineProperty(navigator,'languages',{
+    value:['en'],
+    configurable: false,
+    writable: false,
+})
+// *********************************************
+
+// /**
+//  * 开关webview
+//  */
+// function toggleWebview() {
+//     // document.querySelectorAll('webview').forEach((e) => {
+//     //     if (e.style.display === 'none') {
+//     //         e.style.display = ''
+//     //     } else {
+//     //         e.style.display = 'none'
+//     //     }
+//     // })
+//     if (document.body.style.overflow === 'hidden') {
+//         document.body.style.overflow = ''
+//     } else {
+//         window.scrollTo(0, 0)
+//         document.body.style.overflow = 'hidden'
+//     }
+// }
+
 /**
- * 开关webview
+ * 指定开关webview
+ * @param {String} webTag webview名字 skype, wechat....
  */
-function toggleWebview() {
-    // document.querySelectorAll('webview').forEach((e) => {
-    //     if (e.style.display === 'none') {
-    //         e.style.display = ''
-    //     } else {
-    //         e.style.display = 'none'
-    //     }
-    // })
-    if (document.body.style.overflow === 'hidden') {
-        document.body.style.overflow = ''
-    } else {
-        window.scrollTo(0, 0)
-        document.body.style.overflow = 'hidden'
-    }
+function toggleWebview(webTag) {
+    $("#modal-"+webTag).modal('toggle')
 }
+
 /**
  * 打开webview Devtool
  * @param {string} appName
@@ -1152,12 +1176,31 @@ $(document).ready(function () {
         });
 
     }
+    
+    function loadWebview(webTag, url, strUserAgent){
+        // console.log(strUserAgent)
+        if($(webTag2Selector(webTag)).length > 0){
+            console.log("load")
+            $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
+            {"userAgent":
+            "userAgent : "+strUserAgent,
+            "extraHeaders":"User-Agent:"+strUserAgent+"\n"})
+        }
+    }
 
 
 
 
     // =============================程序主体=============================
 
+    
+    loadWebview("skype","https://web.skype.com/",core.strUserAgentWin)
+    loadWebview("wechat","https://web.wechat.com/",core.strUserAgentWin)
+
+    //==============================UI==============================
+    /**
+     * 注释.....图钉跟随?
+     */
     function followPin() {
         let target = document.getElementById('td-pin')
         let x = target.getBoundingClientRect().x
@@ -1169,7 +1212,6 @@ $(document).ready(function () {
 
     }
 
-    //==============================UI==============================
     $('#td-pin').draggable({
         grid: [10, 10],
         containment: "#td-pin-area",
@@ -1281,8 +1323,8 @@ $(document).ready(function () {
     });
 
 
-    console.log("toggle")
-    toggleWebview()
+    // console.log("toggle")
+    // toggleWebview()
     // openDevtool('skype')
     window.onresize = () => {
         // console.log("===window resize====")
