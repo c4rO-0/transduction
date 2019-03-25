@@ -2,13 +2,13 @@
 // *********************************************
 // navigator setting
 // ---------------------------------------------
-Object.defineProperty(navigator,'language',{
-    value:'en',
+Object.defineProperty(navigator, 'language', {
+    value: 'en',
     configurable: false,
     writable: false,
 })
-Object.defineProperty(navigator,'languages',{
-    value:['en'],
+Object.defineProperty(navigator, 'languages', {
+    value: ['en'],
     configurable: false,
     writable: false,
 })
@@ -38,7 +38,7 @@ Object.defineProperty(navigator,'languages',{
  * @param {String} webTag webview名字 skype, wechat....
  */
 function toggleWebview(webTag) {
-    $("#modal-"+webTag).modal('toggle')
+    $("#modal-" + webTag).modal('toggle')
 }
 
 /**
@@ -1176,15 +1176,17 @@ $(document).ready(function () {
         });
 
     }
-    
-    function loadWebview(webTag, url, strUserAgent){
+
+    function loadWebview(webTag, url, strUserAgent) {
         // console.log(strUserAgent)
-        if($(webTag2Selector(webTag)).length > 0){
+        if ($(webTag2Selector(webTag)).length > 0) {
             console.log("load")
             $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
-            {"userAgent":
-            "userAgent : "+strUserAgent,
-            "extraHeaders":"User-Agent:"+strUserAgent+"\n"})
+                {
+                    "userAgent":
+                        "userAgent : " + strUserAgent,
+                    "extraHeaders": "User-Agent:" + strUserAgent + "\n"
+                })
         }
     }
 
@@ -1193,9 +1195,9 @@ $(document).ready(function () {
 
     // =============================程序主体=============================
 
-    
-    loadWebview("skype","https://web.skype.com/",core.strUserAgentWin)
-    loadWebview("wechat","https://web.wechat.com/",core.strUserAgentWin)
+
+    loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
+    loadWebview("wechat", "https://web.wechat.com/", core.strUserAgentWin)
 
     //==============================UI==============================
     /**
@@ -1229,6 +1231,21 @@ $(document).ready(function () {
         // console.log(document.getElementsByTagName('webview'))
         document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
         document.getElementById('modal-wechat').querySelector('webview').insertCSS('.login.ng-scope{min-width: unset;}')
+    })
+
+    $('.modal').on('hidden.bs.modal', function (e) {
+        $('>div.modal-dialog', this).removeClass('modal-xl')
+    })
+
+    $('.td-app-status img[class]').on('click', function () {
+        let webTag = '#modal-' + this.id.substring(4)
+        if (this.matches('.app-offline')) {
+            $(webTag).modal('show')
+        }
+        if (this.matches('.app-online')) {
+            $(webTag + '>div.modal-dialog').addClass('modal-xl')
+            $(webTag).modal('show')
+        }
     })
 
 
