@@ -215,7 +215,7 @@ window.onload = function () {
 
         } else if (strTime.indexOf('/') >= 0
             || strTime.indexOf(',') >= 0) {
-            let time = new Date(Date.parse(strTime))    
+            let time = new Date(Date.parse(strTime))
             timeStamp = time.getTime()
         } else {
             let time = new Date(Date.now())
@@ -410,43 +410,45 @@ window.onload = function () {
                 }
             })
         }
+    $(document).ready(function () {
+        // 检查登录状态
+        // - 登陆了
+        if (document.getElementById("signInName")) {
 
-    // 检查登录状态
-    // - 登陆了
-    if (document.getElementById("signInName")) {
+            console.info("=======================online=====================================")
 
-        console.info("=======================online=====================================")
+            // 观察整个body, 等待skype页面加载完成(否则skype会报错)
+            let callbackBody = function (mutationList, observer) {
+                if ($("div.scrollViewport.scrollViewportV").length > 0) {
 
-        // 观察整个body, 等待skype页面加载完成(否则skype会报错)
-        let callbackBody = function (mutationList, observer) {
-            if ($("div.scrollViewport.scrollViewportV").length > 0) {
+                    // 发送登录消息
+                    logStatus.status = "online"
+                    core.WebToHost({ "logStatus": logStatus })
+                    core.WebToHost({ "hide": {} })
 
-                // 发送登录消息
-                logStatus.status = "online"
-                core.WebToHost({ "logStatus": logStatus })
-                core.WebToHost({ "hide": {} })
+                    // 运行页面爬虫脚本
+                    runCrawler()
 
-                // 运行页面爬虫脚本
-                runCrawler()
-
-                observer.disconnect()
+                    observer.disconnect()
+                }
             }
+            let obsMain = new MutationObserver(callbackBody);
+            obsMain.observe(document.body, {
+                subtree: true, childList: true, characterData: true, attributes: true,
+                attributeOldValue: true, characterDataOldValue: true
+            });
+
         }
-        let obsMain = new MutationObserver(callbackBody);
-        obsMain.observe(document.body, {
-            subtree: true, childList: true, characterData: true, attributes: true,
-            attributeOldValue: true, characterDataOldValue: true
-        });
 
-    }
+        // 没登录
 
-    // 没登录
-    if (document.getElementById("forgotUsername")) {
-        logStatus.status = "offline"
-        console.info("********************offline***************************************")
-        core.WebToHost({ "logStatus": logStatus })
-        core.WebToHost({ "show": {} })
-    }
+        if (document.getElementById("i0281") || document.getElementById("forgotUsername") ) {
+            logStatus.status = "offline"
+            console.info("********************offline***************************************")
+            core.WebToHost({ "logStatus": logStatus })
+            core.WebToHost({ "show": {} })
+        }
+    })
 
     //========================
     // 等待win发来消息
