@@ -1,3 +1,19 @@
+// *********************************************
+// navigator setting
+// ---------------------------------------------
+Object.defineProperty(navigator,'language',{
+    value:'en',
+    configurable: false,
+    writable: false,
+})
+Object.defineProperty(navigator,'languages',{
+    value:['en'],
+    configurable: false,
+    writable: false,
+})
+// *********************************************
+
+
 window.onload = function () {
 
     const core = require("../js/core.js")
