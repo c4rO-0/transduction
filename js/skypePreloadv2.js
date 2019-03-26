@@ -289,6 +289,20 @@ window.onload = function () {
      */
     function runCrawler() {
 
+        // 先读取一遍, 然后再obser. 
+        // 因为observe抓不到刚登录时候的变化
+        tranConvoByID(
+            $.map($("[id^=rx-vlv-]"), function(convo) {
+            return $(convo).attr("id");})
+        ).forEach(convo => {
+            if(convo.counter > 0){
+            // 判断counter有没有发生变化
+            convo.action = 'a'
+            // convo.print()
+            convo.send()
+            }
+        })        
+
         let callbackConvo = function (mutationList, observer) {
             // console.info("debug : ===========convo============")
             // console.info(mutationList)
@@ -299,9 +313,9 @@ window.onload = function () {
 
                 let objConvo = $(mutation.target).closest("[id^=rx-vlv-]")
                 if ($(objConvo).length > 0) {
-                    console.info( "------") 
-                    console.info(objConvo)           
-                    console.info(mutation)
+                    // console.info( "------") 
+                    // console.info(objConvo)           
+                    // console.info(mutation)
                     // console.info("debug : ", "obs target : ")
                     // console.info(mutation.target)
                     let userID = $(objConvo).attr("id")
@@ -347,17 +361,12 @@ window.onload = function () {
             })
         }
         let obsConvo = new MutationObserver(callbackConvo);
-
-        // // 
-        // obsConvo.observe($("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride) > div > div > div")[0], {
-        //     subtree: true, childList: true, characterData: true, attributes: true,
-        //     attributeFilter: ["data-text-as-pseudo-element"], attributeOldValue: false, characterDataOldValue: false
-        // });
-
+        // 
         obsConvo.observe($("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride) > div > div > div")[0], {
             subtree: true, childList: true, characterData: true, attributes: true,
             attributeFilter: ["data-text-as-pseudo-element"], attributeOldValue: false, characterDataOldValue: false
-        });        
+        });
+
     }
 
     /**
