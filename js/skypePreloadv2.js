@@ -201,14 +201,24 @@ window.onload = function () {
      * @param {String} strTime 
      */
     function tranSkypeTime(strTime) {
-
+        console.info("time : " ,strTime)
         let timeStamp = 0
         if (strTime.indexOf(':') >= 0) {
             let timeArray = strTime.split(':')
             // console.info('type1 ', strTime.indexOf(':') , timeArray, )
             let time = new Date(Date.now())
-            time.setHours(timeArray[0])
-            time.setMinutes(timeArray[1])
+            if(timeArray[1].indexOf('PM') >= 0){
+                console.log(parseInt(timeArray[0])+12)
+                time.setHours(parseInt(timeArray[0])+12)
+                time.setMinutes(timeArray[1].slice(0,-4))
+            }else if(timeArray[1].indexOf('AM') >= 0){
+                time.setHours(timeArray[0])
+                time.setMinutes(timeArray[1].slice(0,-4))                
+            }else{
+                time.setHours(timeArray[0])
+                time.setMinutes(timeArray[1])                 
+            }
+
 
             timeStamp = time.getTime()
             // console.info(time.getTime())
@@ -279,6 +289,20 @@ window.onload = function () {
      */
     function runCrawler() {
 
+        // 先读取一遍, 然后再obser. 
+        // 因为observe抓不到刚登录时候的变化
+        tranConvoByID(
+            $.map($("[id^=rx-vlv-]"), function(convo) {
+            return $(convo).attr("id");})
+        ).forEach(convo => {
+            if(convo.counter > 0){
+            // 判断counter有没有发生变化
+            convo.action = 'a'
+            // convo.print()
+            convo.send()
+            }
+        })        
+
         let callbackConvo = function (mutationList, observer) {
             // console.info("debug : ===========convo============")
             // console.info(mutationList)
@@ -291,7 +315,7 @@ window.onload = function () {
                 if ($(objConvo).length > 0) {
                     // console.info( "------") 
                     // console.info(objConvo)           
-                    // console.info("debug : ", "obs type : ", mutation.type)
+                    // console.info(mutation)
                     // console.info("debug : ", "obs target : ")
                     // console.info(mutation.target)
                     let userID = $(objConvo).attr("id")
@@ -331,18 +355,18 @@ window.onload = function () {
                 // 判断counter有没有发生变化
                 if (counterList.includes(convo.userID)) {
                     convo.action = 'a'
-                    // convo.print()
+                    convo.print()
                     convo.send()
                 }
             })
         }
         let obsConvo = new MutationObserver(callbackConvo);
-
         // 
         obsConvo.observe($("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride) > div > div > div")[0], {
             subtree: true, childList: true, characterData: true, attributes: true,
             attributeFilter: ["data-text-as-pseudo-element"], attributeOldValue: false, characterDataOldValue: false
         });
+
     }
 
     /**
@@ -389,27 +413,29 @@ window.onload = function () {
     +    /**
     +     * 给右侧消息添加时间戳
     +     */
-        function addMsgTime() {
-            let date = undefined
-            $("div[role=region]").each((index, element) => {
-                if ($(element).find("> div[role='heading']").length > 0) {
-                    // 日期格式有问题
-                    let dateStr = $(element).find("> div[role='heading']").attr("aria-label");
-                    date = new Date();
-                }
+    function addMsgTime() {
+        let date = undefined
+        $("div[role=region]").each((index, element) => {
+            if ($(element).find("> div[role='heading']").length > 0) {
+                // 日期格式有问题
+                let dateStr = $(element).find("> div[role='heading']").attr("aria-label");
+                // Console.info(dateStr)
+                date = new Date();
+            }
 
-                let nodeBubble = $(element).find(" > div > div")
-                if (date
-                    && $(nodeBubble).length > 0
-                    && $(nodeBubble).css("justify-content")
-                    && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
-                    && $(element).attr("aria-label")) {
-                    let time = $(element).attr("aria-label").slice(-6, -2)
-                    // let msgTime = new Date(date)
-                    $(element).attr("time", date.toString() + time)
-                }
-            })
-        }
+            let nodeBubble = $(element).find(" > div > div")
+            if (date
+                && $(nodeBubble).length > 0
+                && $(nodeBubble).css("justify-content")
+                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
+                && $(element).attr("aria-label")) {
+                let time = $(element).attr("aria-label").slice(-6, -2)
+                // let msgTime = new Date(date)
+                $(element).attr("time", date.toString() + time)
+            }
+        })
+    }
+
     $(document).ready(function () {
         // 检查登录状态
         // - 登陆了
@@ -442,7 +468,7 @@ window.onload = function () {
 
         // 没登录
 
-        if (document.getElementById("i0281") || document.getElementById("forgotUsername") ) {
+        if (document.getElementById("i0281") || document.getElementById("forgotUsername")) {
             logStatus.status = "offline"
             console.info("********************offline***************************************")
             core.WebToHost({ "logStatus": logStatus })
@@ -484,6 +510,25 @@ window.onload = function () {
 
             } else if (key == 'queryLogStatus') {
                 resolve(logStatus)
+            } else if (key == 'logoff') {
+                if (logStatus.status == 'online') {
+                    console.info('logoff')
+                    console.info($("button[aria-label='Sign out']").length)
+                    if ($("button[aria-label='Sign out']").length == 0) {
+                        $('button[aria-label="More options"]').click()
+                    }
+                    setTimeout(() => {
+                        $("button[aria-label='Sign out']").click()
+                        setTimeout(() => {
+                            $("button[aria-label='Sign out']").click()
+                        }, 500);
+                    }, 500);
+
+
+                    resolve("wechat log off")
+                } else {
+                    resolve('wechat already logoff')
+                }
             } else {
                 reject("unknown key : ", key)
             }

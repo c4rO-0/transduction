@@ -1548,32 +1548,41 @@ $(document).ready(function () {
 
     // ===查询后台登录情况===
     $("#td-request-status").on("click", () => {
-        console.log("====query logStatus=====")
-        $("webview[data-app-name]").each((index, el) => {
-            let webTag = $(el).attr("data-app-name")
-            // console.log()
-            core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
-                // let color = 'red'
-                // console.log((obj['queryLogStatus'+":"+""]))
-                let logStatus = (obj['queryLogStatus' + ":" + ""])
-                if (logStatus.status == 'offline') {
-                    console.log(webTag + " not log yet.")
-                    $('#app-' + webTag).removeClass('app-online')
-                    $('#app-' + webTag).addClass('app-offline')
+        console.log("log off click")
+        // $("webview[data-app-name]").each((index, el) => {
+        //     let webTag = $(el).attr("data-app-name")
+        //     // console.log()
+        //     core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
+        //         // let color = 'red'
+        //         // console.log((obj['queryLogStatus'+":"+""]))
+        //         let logStatus = (obj['queryLogStatus' + ":" + ""])
+        //         if (logStatus.status == 'offline') {
+        //             console.log(webTag + " not log yet.")
+        //             $('#app-' + webTag).removeClass('app-online')
+        //             $('#app-' + webTag).addClass('app-offline')
 
-                } else if (logStatus.status == 'online') {
-                    console.log(webTag + " is logged already.")
-                    $('#app-' + webTag).removeClass('app-offline')
-                    $('#app-' + webTag).addClass('app-online')
-                    // color = 'green'
-                } else if (logStatus.status == 'failure') {
-                    console.log(webTag + " log failed")
-                    $('#app-' + webTag).removeClass('app-online')
-                    $('#app-' + webTag).addClass('app-offline')
-                }
-            }).catch((err) => {
-                console.log(webTag, "no response", err)
-            })
+        //         } else if (logStatus.status == 'online') {
+        //             console.log(webTag + " is logged already.")
+        //             $('#app-' + webTag).removeClass('app-offline')
+        //             $('#app-' + webTag).addClass('app-online')
+        //             // color = 'green'
+        //         } else if (logStatus.status == 'failure') {
+        //             console.log(webTag + " log failed")
+        //             $('#app-' + webTag).removeClass('app-online')
+        //             $('#app-' + webTag).addClass('app-offline')
+        //         }
+        //     }).catch((err) => {
+        //         console.log(webTag, "no response", err)
+        //     })
+        // })
+
+        core.HostSendToWeb(webTag2Selector("wechat"), { 'logoff': '' }).then((obj) => {
+
+        })
+
+        $(webTag2Selector("skype")).focus()
+        core.HostSendToWeb(webTag2Selector("skype"), { 'logoff': '' }).then((obj) => {
+
         })
 
     })
@@ -1608,4 +1617,6 @@ $(document).ready(function () {
         }
 
     });
+
+
 })
