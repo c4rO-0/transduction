@@ -489,14 +489,14 @@ window.onload = function () {
                 let userID = arg.userID
                 console.info("debug : userID : ", userID, $('[aria-label="Find"]').length)
                 let target = $("#" + userID)
-                if ($('[aria-label="Find"]').length > 0 // 右侧窗口被打开
-                && $(target).attr('tabindex') === "0" //左侧显示被选中
-                ) {
-                    console.info("debug : 直接爬取")
-                    // 当前target已经被选中, 直接爬取右侧
-                    addMsgID()
-                    reportDialog(userID)
-                } else {
+                // if ($('[aria-label="Find"]').length > 0 // 右侧窗口被打开
+                // && $(target).attr('tabindex') === "0" //左侧显示被选中
+                // ) {
+                //     console.info("debug : 直接爬取")
+                //     // 当前target已经被选中, 直接爬取右侧
+                //     addMsgID()
+                //     reportDialog(userID)
+                // } else {
                     console.info("debug : 点击")
                     if ($("div.rxCustomScroll.rxCustomScrollV.active").length == 0) {
                         // 右侧还没有点击
@@ -505,7 +505,7 @@ window.onload = function () {
                     //     subtree: true, childList: true, attributes: true, attributeOldValue: true
                     // })
                     $("#" + userID + " > div > div").click()
-                }
+                // }
                 
                 resolve("copy the query. Please wait...")
             } else if (key == 'sendDialog') {
