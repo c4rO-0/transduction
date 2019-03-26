@@ -1228,9 +1228,12 @@ $(document).ready(function () {
     })
     followPin()
     $('.modal').on('show.bs.modal', function (e) {
-        // console.log(document.getElementsByTagName('webview'))
         document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
         document.getElementById('modal-wechat').querySelector('webview').insertCSS('.login.ng-scope{min-width: unset;}')
+    })
+
+    document.getElementById('modal-wechat').querySelector('webview').addEventListener('load-commit', function(){
+        this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
 
     $('.modal').on('hidden.bs.modal', function (e) {

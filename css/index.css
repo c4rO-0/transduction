@@ -16,7 +16,16 @@ webview {
 }
 
 ::-webkit-scrollbar {
-    display: none;
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: #e8e8e8;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #c0c0c0;
 }
 
 .col-left {
@@ -43,6 +52,7 @@ webview {
 .app-online {
     filter: grayscale(0%);
 }
+
 .app-offline {
     filter: grayscale(100%);
 }
@@ -219,7 +229,7 @@ webview {
     height: auto;
     flex: 0 0 auto;
     display: flex;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .td-inputbox {
