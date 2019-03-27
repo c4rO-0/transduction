@@ -423,7 +423,7 @@ $(document).ready(function () {
                         for (let indexOfExistBubble = 0;
                             indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
                             if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
-                                currentInsertIndex = -indexOfExistBubble
+                                currentInsertIndex = -(indexOfExistBubble+1)
                             }
                             if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
                                 currentInsertIndex = indexOfExistBubble
@@ -444,7 +444,7 @@ $(document).ready(function () {
                         } else {
                             // 重复的ID, 替换成新的
                             $(dialogSelector
-                                + " [msgID='" + arrayExistBubble[-currentInsertIndex].msgID + "']")
+                                + " [msgID='" + arrayExistBubble[-currentInsertIndex-1].msgID + "']")
                                 .replaceWith(AddDialogHtml(value)
                                 )
                         }
