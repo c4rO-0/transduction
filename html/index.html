@@ -17,7 +17,7 @@
     <div id="td-root" class="" style="height: -webkit-fill-available; display: flex; flex-wrap:nowrap">
         <div id="td-pin-area" style="position:fixed; left:56px; bottom:7rem; width:234px;height: 23rem;">
         </div>
-        <div class="col-left" id="td-left">
+        <div class="col-left" id="td-left" ondragstart="return false">
             <div id="td-settings">
                 <div class="td-buttons">
                     <img src="../res/pic/settings.png">
@@ -90,13 +90,13 @@
             </div>
         </div>
         <div class="col-right td-font" id="td-right">
-            <div class="td-chat-title">
+            <div class="td-chat-title" ondragstart="return false">
                 <h2>Sheng Bi</h2>
                 <img id="debug-app-link" src="../res/pic/skype.png">
             </div>
             <div class="td-chat" winType="td-chat">
                 <img id="td-pin" src="../res/pic/pin.png">
-                <div class="td-chatLog" winType="chatLog">
+                <div class="td-chatLog" winType="chatLog" ondragstart="return false">
                     <div class="td-bubble">
                         <p class="m-0">猜猜我是谁</p>
                         <div class="td-them">
@@ -179,14 +179,14 @@
                     <!-- 插入extension的地方 -->
                     <!-- <webview data-extension-name="" src="" preload=""></webview> -->
                 </div>
-                <div class="td-toolbox">
+                <div class="td-toolbox" ondragstart="return false">
                     <img id="debug-goBackChat" class="theme-transduction" src="../res/pic/home.png">
                     <img id="debug-firefox-send" class="theme-transduction" src="../res/pic/ffsend.png">
                     <img id="debug-latex2png" class="theme-transduction" src="../res/pic/latex.png">
                 </div>
             </div>
 
-            <div id="td-input" class="td-input">
+            <div id="td-input" class="td-input" ondragstart="return false">
                 <div class="td-inputbox" contenteditable="true"></div>
                 <div class="td-toolbox">
                     <img id="debug-image" src="../res/pic/image.png">

@@ -417,8 +417,6 @@ webview {
     border-radius: 20px;
 }
 
-/* @media (min-width: 576px) { */
-
 .col-left.td-full {
     flex: 0 0 256px;
     max-width: 256px;
@@ -431,5 +429,3 @@ webview {
 .col-appLogo.td-full {
     display: block;
 }
-
-/* } */
