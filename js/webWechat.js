@@ -75,7 +75,7 @@ window.onload = function () {
 
         let fromUserName = MSG["FromUserName"]
         // let toUserName = MSG["ToUserName"]
-        let time = new Date(MSG["MMDisplayTime"] * 1000)
+        let time = new Date(MSG["CreateTime"] * 1000)
 
 
 
