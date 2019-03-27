@@ -542,6 +542,8 @@ window.onload = function () {
                             // });
 
                         } else {
+                            // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
+                            // $('input.webuploader-element-invisible').click()
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---")
                                 waitSend(arrayValue, index)
