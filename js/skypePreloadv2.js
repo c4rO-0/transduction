@@ -48,6 +48,7 @@ window.onload = function () {
     let logStatus = { "status": "offline" }
 
 
+
     class conversation {
         constructor(action, userID, nickName, timestamp, avatar, message, counter, index, muted) {
             this.action = action
@@ -432,6 +433,7 @@ window.onload = function () {
      * 给右侧消息添加MsgID
      */
     function addMsgID() {
+        // console.info("add MsgID")
         $("div[role=region]:not([msgID])").each((index, element) => {
             let nodeBubble = $(element).find(" > div > div")
             if ($(nodeBubble).length > 0
@@ -446,6 +448,7 @@ window.onload = function () {
     * 给右侧消息添加时间戳
     */
     function addMsgTime() {
+        // console.info("add Time")
         let date = undefined
         let timeLast = undefined //储存上一条Bubble时间
 
@@ -462,37 +465,40 @@ window.onload = function () {
 
             }
 
-            let nodeBubble = $(element).find(" > div > div")
-            if (date
-                && $(nodeBubble).length > 0
-                && $(nodeBubble).css("justify-content")
-                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
-            ) {
-                if ($(element).attr("aria-label")) {
-                    let time = $(element).attr("aria-label")
-                        .slice(
-                            $(element).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.
-                    // let msgTime = new Date(date)
-                    // modifyClockOfDate(date, time)
-                    if (timeLast) {
-                        let timeCurrent = modifyClockOfDate(date, time)
-                        if (timeLast >= timeCurrent) {
-                            timeCurrent = timeLast + 1
+            if ($(element).attr("time")) {  // 已经存在时间了
+                timeLast = parseInt($(nodeBubble).attr("time"))
+            } else {
+                let nodeBubble = $(element).find(" > div > div")
+                if (date
+                    && $(nodeBubble).length > 0
+                    && $(nodeBubble).css("justify-content")
+                    && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
+                ) {
+                    if ($(element).attr("aria-label")) {
+                        let time = $(element).attr("aria-label")
+                            .slice(
+                                $(element).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.
+                        // let msgTime = new Date(date)
+                        // modifyClockOfDate(date, time)
+                        if (timeLast) {
+                            let timeCurrent = modifyClockOfDate(date, time)
+                            if (timeLast >= timeCurrent) {
+                                timeCurrent = timeLast + 1
+                            }
+                            $(element).attr("time", timeCurrent)
+                            timeLast = timeCurrent
+                        } else {
+                            let timeCurrent = modifyClockOfDate(date, time)
+                            $(element).attr("time", timeCurrent)
+                            timeLast = timeCurrent
                         }
-                        $(element).attr("time", timeCurrent)
-                        timeLast = timeCurrent
                     } else {
-                        let timeCurrent = modifyClockOfDate(date, time)
-                        $(element).attr("time", timeCurrent)
-                        timeLast = timeCurrent
-                    }
-                }else{
-                    // 不具有aria-label, 奇怪的消息类型, 比如天气
-                    let timeObj = $(element).find("div[aria-label*='sent at']")
-                    if(timeObj){
-                        let time = $(timeObj).attr("aria-label")
-                        .slice(
-                            $(timeObj).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.  
+                        // 不具有aria-label, 奇怪的消息类型, 比如天气
+                        let timeObj = $(element).find("div[aria-label*='sent at']")
+                        if ($(timeObj).length > 0) {
+                            let time = $(timeObj).attr("aria-label")
+                                .slice(
+                                    $(timeObj).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.  
                             if (timeLast) {
                                 let timeCurrent = modifyClockOfDate(date, time)
                                 if (timeLast >= timeCurrent) {
@@ -504,19 +510,21 @@ window.onload = function () {
                                 let timeCurrent = modifyClockOfDate(date, time)
                                 $(element).attr("time", timeCurrent)
                                 timeLast = timeCurrent
-                            }                                                  
-                    }else{
-                        // 没有找到任何时间标识, 用上一个时间做推测
-                        if (timeLast) {
-                            let timeCurrent = timeLast + 1
-                            $(element).attr("time", timeCurrent)
-                            timeLast = timeCurrent
+                            }
                         } else {
-                            // 前面也没有时间, 无能为例, 跳过该条消息
-                        }                        
+                            // 没有找到任何时间标识, 用上一个时间做推测
+                            if (timeLast) {
+                                let timeCurrent = timeLast + 1
+                                $(element).attr("time", timeCurrent)
+                                timeLast = timeCurrent
+                            } else {
+                                // 前面也没有时间, 无能为例, 跳过该条消息
+                            }
+                        }
                     }
                 }
             }
+
 
         })
     }
@@ -524,27 +532,113 @@ window.onload = function () {
     /**
      * 右侧聊天窗已经点开, 爬取bubble
      */
-    function runGrepRightBubble() {
+    // function runGrepRightBubble() {
 
-        // 添加id
+    //     // 添加id
+    //     addMsgID()
+
+    //     // 添加时间戳
+    //     addMsgTime()
+
+
+    //     // let msgArray = new Array()
+    //     // $("div[role=region][aria-label]").each((index, element) => {
+    //     //     let nodeBubble = $(element).find(" > div > div")
+    //     //     if ($(nodeBubble).length > 0
+    //     //         && $(nodeBubble).css("justify-content")
+    //     //         && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')) {
+    //     //         let msg = new chatMSG()
+    //     //         msg.extract(element, userID)
+    //     //         msgArray.push(msg)
+    //     //     }
+    //     // })        
+    // }
+
+
+    let callbackDialog = function (mutationList, observer) {
+
+
+        // console.info("======Dialog changed=====", mutationList.length)
+        // // 添加id
         addMsgID()
 
-        // 添加时间戳
-        addMsgTime()
+        // // 添加时间戳
+        // addMsgTime()
+
+        mutationList.map(function (mutation) {
+
+            if ($(mutation.target).closest('div[role=region]:not([time])').length > 0) {
+
+                console.info("debug : ===========Dialog slide============")
+                console.info("debug : ", "obs type : ", mutation.type)
+                console.info("debug : ", "obs target : ")
+                console.info(mutation.target)
+
+                if (mutation.type == 'attributes') {
+                    console.info("debug : ", "attributes old value : ")
+                    console.info(mutation.attributeName)
+                }
+                // console.info("debug : ", "add : ", $(mutation.addedNodes).length)
+                // console.info($(mutation.addedNodes))
 
 
-        // let msgArray = new Array()
-        // $("div[role=region][aria-label]").each((index, element) => {
-        //     let nodeBubble = $(element).find(" > div > div")
-        //     if ($(nodeBubble).length > 0
-        //         && $(nodeBubble).css("justify-content")
-        //         && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')) {
-        //         let msg = new chatMSG()
-        //         msg.extract(element, userID)
-        //         msgArray.push(msg)
-        //     }
-        // })        
+                // let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
+                // // console.log( obj  )    
+                // if (obj.length > 0) {
+                //     let existed = false
+                //     arrayObjUser.forEach((currentValue, index) => {
+
+                //         if (!existed && $(currentValue).is(obj)) {
+                //             existed = true
+                //         }
+
+                //     })
+                //     if (!existed) {
+                //         arrayObjUser.push(obj)
+                //     }
+                // }
+
+
+                // if ($(record.removedNodes).length != 0) {
+                //     $(record.removedNodes).toArray().forEach((currentValue, index) => {
+                //         $(currentValue).children(".chat_item.slide-left.ng-scope").toArray().forEach((obj, idx) => {
+                //             let existed = false
+                //             arrayObjUser.forEach((objIn) => {
+
+                //                 if (!existed && $(objIn).is(obj)) {
+                //                     existed = true
+                //                 }
+
+                //             })
+                //             if (!existed) {
+                //                 arrayObjUser.push(obj)
+                //             }
+                //         })
+                //     })
+                // }
+            }
+
+
+        })
+        // addMsgTime()
+
     }
+    let obsDialog = new MutationObserver(callbackDialog); // 用来检测Dialog变化
+
+    function startObserveDialog() {
+        obsDialog.disconnect()
+
+        if ($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2) {
+            obsDialog.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV")[1], {
+                subtree: true, childList: true, characterData: true, attributes: true,
+                attributeFilter: ['tabindex', 'data-transition-id'], attributeOldValue: false, characterDataOldValue: false
+            });
+        } else {
+            console.info("error : startObserveDialog : 没找到dialog obt")
+        }
+
+    }
+
 
     $(document).ready(function () {
         // 检查登录状态
@@ -613,7 +707,9 @@ window.onload = function () {
                             if ($("div.DraftEditor-editorContainer").length > 0 && $("button[role='button'][title='" + convo.nickName + "']").length > 0) {
 
                                 // 爬取右侧
-                                runGrepRightBubble()
+                                // runGrepRightBubble()
+                                startObserveDialog()
+
 
                                 observer.disconnect()
                             }
@@ -626,7 +722,8 @@ window.onload = function () {
 
                     } else {
                         // 直接爬取
-                        runGrepRightBubble()
+                        // runGrepRightBubble()
+                        startObserveDialog()
                     }
 
                     resolve("copy the query. Please wait...")
