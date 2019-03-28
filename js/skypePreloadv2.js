@@ -284,7 +284,7 @@ window.onload = function () {
         if (timeArray.length == 2) {
             console.info('2 : ', timeArray[1].indexOf('PM') >= 0)
             if (timeArray[1].indexOf('PM') >= 0) {
-                
+
                 time.setHours(parseInt(timeArray[0]) + 12)
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else if (timeArray[1].indexOf('AM') >= 0) {
@@ -422,27 +422,6 @@ window.onload = function () {
 
     }
 
-    /**
-     * 直接爬取右边
-     */
-    function reportDialog(userID) {
-
-        let msgArray = new Array()
-        $("div[role=region][aria-label]").each((index, element) => {
-            let nodeBubble = $(element).find(" > div > div")
-            if ($(nodeBubble).length > 0
-                && $(nodeBubble).css("justify-content")
-                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')) {
-                let msg = chatMSG()
-                msg.extract(element, userID)
-                msgArray.push(msg)
-            }
-
-        })
-
-        return msg
-    }
-
     function getNickNameByUserID(userID) {
         return $($("#" + userID + " > div > div > div:get(2)")
             .find("[data-text-as-pseudo-element]").get(0))
@@ -472,13 +451,13 @@ window.onload = function () {
 
         $("div[role=region]").each((index, element) => {
 
-        
+
             if ($(element).find("> div[role='heading']").length > 0) {
                 // 日期格式有问题
                 let dateStrLocal = $(element).find("> div[role='heading']").attr("aria-label");
                 let dayList = ['Today', 'Yesterday', 'Sunday', 'Monday', 'Tuesday', 'Wednsday', 'Thursday', 'Friday', 'Saturday']
                 if (dayList.indexOf(dateStrLocal.split(',')[0]) != -1) { //排除非日期格式 : unread...
-                    date = tranSkypeTime(dateStrLocal) 
+                    date = tranSkypeTime(dateStrLocal)
                 }
 
             }
@@ -494,21 +473,21 @@ window.onload = function () {
                         $(element).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.
                 // let msgTime = new Date(date)
                 // modifyClockOfDate(date, time)
-                if(timeLast ){
+                if (timeLast) {
                     let timeCurrent = modifyClockOfDate(date, time)
-                    if(timeLast >= timeCurrent ){
+                    if (timeLast >= timeCurrent) {
                         timeCurrent = timeLast + 1
                     }
                     $(element).attr("time", timeCurrent)
                     timeLast = timeCurrent
-                }else{
+                } else {
                     let timeCurrent = modifyClockOfDate(date, time)
                     $(element).attr("time", timeCurrent)
-                    timeLast = timeCurrent                    
+                    timeLast = timeCurrent
                 }
-                
+
             }
-            
+
         })
     }
 
@@ -522,6 +501,19 @@ window.onload = function () {
 
         // 添加时间戳
         addMsgTime()
+
+
+        // let msgArray = new Array()
+        // $("div[role=region][aria-label]").each((index, element) => {
+        //     let nodeBubble = $(element).find(" > div > div")
+        //     if ($(nodeBubble).length > 0
+        //         && $(nodeBubble).css("justify-content")
+        //         && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')) {
+        //         let msg = new chatMSG()
+        //         msg.extract(element, userID)
+        //         msgArray.push(msg)
+        //     }
+        // })        
     }
 
     $(document).ready(function () {
@@ -576,16 +568,19 @@ window.onload = function () {
                     // 查询Dialog
                     let userID = arg.userID
                     console.info("debug : userID : ", userID, $('[aria-label="Find"]').length)
-                    let target = $("#" + userID)
+                    // let target = $("#" + userID)
+                    let convo = new conversation()
+                    convo.extractById(userID)
+                    console.info(convo.nickName)
 
-
-                    if ($('[aria-label="Find"]').length == 0 || $("#" + userID).attr('tabindex') == '-1') {
+                    // if ($('[aria-label="Find"]').length == 0 || $("#" + userID).attr('tabindex') == '-1') {
+                    if ($("button[role='button'][title='" + convo.nickName + "']").length == 0) {
                         console.info("debug : 点击")
                         $("#" + userID + " > div > div").click()
 
                         // 等待加载右侧
                         let callbackRight = function (mutationList, observer) {
-                            if ($("div.DraftEditor-editorContainer").length > 0) {
+                            if ($("div.DraftEditor-editorContainer").length > 0 && $("button[role='button'][title='" + convo.nickName + "']").length > 0) {
 
                                 // 爬取右侧
                                 runGrepRightBubble()
