@@ -275,14 +275,14 @@ window.onload = function () {
      */
     function modifyClockOfDate(date, strClock) {
 
-        console.info('--------')
-        console.info(date, strClock)
+        // console.info('--------')
+        // console.info(date, strClock)
         let time = new Date(date)
 
         let timeArray = strClock.split(':')
-        console.info(timeArray, timeArray.length)
+        // console.info(timeArray, timeArray.length)
         if (timeArray.length == 2) {
-            console.info('2 : ', timeArray[1].indexOf('PM') >= 0)
+            // console.info('2 : ', timeArray[1].indexOf('PM') >= 0)
             if (timeArray[1].indexOf('PM') >= 0) {
 
                 time.setHours(parseInt(timeArray[0]) + 12)
@@ -295,7 +295,7 @@ window.onload = function () {
                 time.setMinutes(timeArray[1])
             }
         } else {
-            console.info('3 : ', timeArray[2].indexOf('PM') >= 0)
+            // console.info('3 : ', timeArray[2].indexOf('PM') >= 0)
             if (timeArray[2].indexOf('PM') >= 0) {
                 // console.log(parseInt(timeArray[0]) + 12)
                 time.setHours(parseInt(timeArray[0]) + 12)
@@ -311,7 +311,7 @@ window.onload = function () {
                 time.setMilliseconds(timeArray[2])
             }
         }
-        console.info(time)
+        // console.info(time)
         return time.getTime()
         // console.info(time.getTime())
 
@@ -467,25 +467,55 @@ window.onload = function () {
                 && $(nodeBubble).length > 0
                 && $(nodeBubble).css("justify-content")
                 && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
-                && $(element).attr("aria-label")) {
-                let time = $(element).attr("aria-label")
-                    .slice(
-                        $(element).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.
-                // let msgTime = new Date(date)
-                // modifyClockOfDate(date, time)
-                if (timeLast) {
-                    let timeCurrent = modifyClockOfDate(date, time)
-                    if (timeLast >= timeCurrent) {
-                        timeCurrent = timeLast + 1
+            ) {
+                if ($(element).attr("aria-label")) {
+                    let time = $(element).attr("aria-label")
+                        .slice(
+                            $(element).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.
+                    // let msgTime = new Date(date)
+                    // modifyClockOfDate(date, time)
+                    if (timeLast) {
+                        let timeCurrent = modifyClockOfDate(date, time)
+                        if (timeLast >= timeCurrent) {
+                            timeCurrent = timeLast + 1
+                        }
+                        $(element).attr("time", timeCurrent)
+                        timeLast = timeCurrent
+                    } else {
+                        let timeCurrent = modifyClockOfDate(date, time)
+                        $(element).attr("time", timeCurrent)
+                        timeLast = timeCurrent
                     }
-                    $(element).attr("time", timeCurrent)
-                    timeLast = timeCurrent
-                } else {
-                    let timeCurrent = modifyClockOfDate(date, time)
-                    $(element).attr("time", timeCurrent)
-                    timeLast = timeCurrent
+                }else{
+                    // 不具有aria-label, 奇怪的消息类型, 比如天气
+                    let timeObj = $(element).find("div[aria-label*='sent at']")
+                    if(timeObj){
+                        let time = $(timeObj).attr("aria-label")
+                        .slice(
+                            $(timeObj).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.  
+                            if (timeLast) {
+                                let timeCurrent = modifyClockOfDate(date, time)
+                                if (timeLast >= timeCurrent) {
+                                    timeCurrent = timeLast + 1
+                                }
+                                $(element).attr("time", timeCurrent)
+                                timeLast = timeCurrent
+                            } else {
+                                let timeCurrent = modifyClockOfDate(date, time)
+                                $(element).attr("time", timeCurrent)
+                                timeLast = timeCurrent
+                            }                                                  
+                    }else{
+                        // 没有找到任何时间标识, 用上一个时间做推测
+                        if (timeLast) {
+                            let timeCurrent = timeLast + 1
+                            $(element).attr("time", timeCurrent)
+                            timeLast = timeCurrent
+                        } else {
+                            // 前面也没有时间, 无能为例, 跳过该条消息
+                        }                        
+                    }
                 }
-
             }
 
         })
