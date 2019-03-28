@@ -423,7 +423,7 @@ $(document).ready(function () {
                         for (let indexOfExistBubble = 0;
                             indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
                             if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
-                                currentInsertIndex = -indexOfExistBubble
+                                currentInsertIndex = -(indexOfExistBubble+1)
                             }
                             if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
                                 currentInsertIndex = indexOfExistBubble
@@ -444,7 +444,7 @@ $(document).ready(function () {
                         } else {
                             // 重复的ID, 替换成新的
                             $(dialogSelector
-                                + " [msgID='" + arrayExistBubble[-currentInsertIndex].msgID + "']")
+                                + " [msgID='" + arrayExistBubble[-currentInsertIndex-1].msgID + "']")
                                 .replaceWith(AddDialogHtml(value)
                                 )
                         }
@@ -605,7 +605,7 @@ $(document).ready(function () {
                 // 显示对应webview
                 // Obj里应该储存要定位的位置
                 console.log(webTag + "说 : 我要显摆我自己~")
-                $('#modal-' + webTag).modal('show')
+                // $('#modal-' + webTag).modal('show')
                 // $("#test-" + webTag + "-toggle").text("快打开" + webTag)
                 // $("#test-" + webTag + "-toggle").css("background-color", '#ffc107')
             } else if (key == 'hide') {
@@ -1290,6 +1290,8 @@ $(document).ready(function () {
         let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
         $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
+
+        $(webTag2Selector(webTag)).focus()
         if (
             $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
             && $("#td-right div.td-chat-title").attr("data-app-name") == webTag

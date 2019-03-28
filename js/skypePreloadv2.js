@@ -38,6 +38,7 @@ Object.defineProperty(navigator, 'userAgent', {
 
 window.onload = function () {
     console.info("runing skype preload------------------------>")
+    
     // console.info(process.versions.electron)
     // console.info(process.env.PWD)
     // console.info(process.cwd())
@@ -45,6 +46,7 @@ window.onload = function () {
     const core = require("../js/core")
 
     let logStatus = { "status": "offline" }
+
 
     class conversation {
         constructor(action, userID, nickName, timestamp, avatar, message, counter, index, muted) {
@@ -201,7 +203,7 @@ window.onload = function () {
      * @param {String} strTime 
      */
     function tranSkypeTime(strTime) {
-        console.info("time : " ,strTime)
+        // console.info("time : " ,strTime)
         let timeStamp = 0
         if (strTime.indexOf(':') >= 0) {
             let timeArray = strTime.split(':')
@@ -292,13 +294,13 @@ window.onload = function () {
         // 先读取一遍, 然后再obser. 
         // 因为observe抓不到刚登录时候的变化
         tranConvoByID(
-            $.map($("[id^=rx-vlv-]"), function(convo) {
+            $.map($("[role=button][id^=rx-vlv-]"), function(convo) {
             return $(convo).attr("id");})
         ).forEach(convo => {
             if(convo.counter > 0){
             // 判断counter有没有发生变化
             convo.action = 'a'
-            // convo.print()
+            convo.print()
             convo.send()
             }
         })        
@@ -311,7 +313,7 @@ window.onload = function () {
 
             mutationList.forEach((mutation, index) => {
 
-                let objConvo = $(mutation.target).closest("[id^=rx-vlv-]")
+                let objConvo = $(mutation.target).closest("[role=button][id^=rx-vlv-]")
                 if ($(objConvo).length > 0) {
                     // console.info( "------") 
                     // console.info(objConvo)           
@@ -481,17 +483,21 @@ window.onload = function () {
     core.WebReply((key, arg) => {
         return new Promise((resolve, reject) => {
             //  收到消息进行处理
+            console.info('WebReply : ',key )
             if (key == 'queryDialog') {
                 // 查询Dialog
                 let userID = arg.userID
-                console.info("debug : userID : ", userID)
+                console.info("debug : userID : ", userID, $('[aria-label="Find"]').length)
                 let target = $("#" + userID)
-                if ($(target).attr('tabindex') === "0" && $("div.rxCustomScroll.rxCustomScrollV.active").length > 0) {
-                    // 当前target已经被选中, 直接爬取右侧
-                    addMsgID()
-                    reportDialog(userID)
-                } else {
-
+                // if ($('[aria-label="Find"]').length > 0 // 右侧窗口被打开
+                // && $(target).attr('tabindex') === "0" //左侧显示被选中
+                // ) {
+                //     console.info("debug : 直接爬取")
+                //     // 当前target已经被选中, 直接爬取右侧
+                //     addMsgID()
+                //     reportDialog(userID)
+                // } else {
+                    console.info("debug : 点击")
                     if ($("div.rxCustomScroll.rxCustomScrollV.active").length == 0) {
                         // 右侧还没有点击
                     }
@@ -499,7 +505,8 @@ window.onload = function () {
                     //     subtree: true, childList: true, attributes: true, attributeOldValue: true
                     // })
                     $("#" + userID + " > div > div").click()
-                }
+                // }
+                
                 resolve("copy the query. Please wait...")
             } else if (key == 'sendDialog') {
 
