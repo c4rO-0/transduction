@@ -38,7 +38,7 @@ Object.defineProperty(navigator, 'userAgent', {
 
 window.onload = function () {
     console.info("runing skype preload------------------------>")
-    
+
     // console.info(process.versions.electron)
     // console.info(process.env.PWD)
     // console.info(process.cwd())
@@ -197,10 +197,11 @@ window.onload = function () {
 
     /**
      * 将skype格式的时间, 转化为timestamp
-     * - 20:40
+     * - 20:40 , 8:03 AM
      * - Fri
      * - 2019/3/3
      * @param {String} strTime 
+     * @returns {Int} Timestamp
      */
     function tranSkypeTime(strTime) {
         // console.info("time : " ,strTime)
@@ -209,16 +210,16 @@ window.onload = function () {
             let timeArray = strTime.split(':')
             // console.info('type1 ', strTime.indexOf(':') , timeArray, )
             let time = new Date(Date.now())
-            if(timeArray[1].indexOf('PM') >= 0){
-                console.log(parseInt(timeArray[0])+12)
-                time.setHours(parseInt(timeArray[0])+12)
-                time.setMinutes(timeArray[1].slice(0,-4))
-            }else if(timeArray[1].indexOf('AM') >= 0){
+            if (timeArray[1].indexOf('PM') >= 0) {
+                console.log(parseInt(timeArray[0]) + 12)
+                time.setHours(parseInt(timeArray[0]) + 12)
+                time.setMinutes(timeArray[1].slice(0, -3))
+            } else if (timeArray[1].indexOf('AM') >= 0) {
                 time.setHours(timeArray[0])
-                time.setMinutes(timeArray[1].slice(0,-4))                
-            }else{
+                time.setMinutes(timeArray[1].slice(0, -3))
+            } else {
                 time.setHours(timeArray[0])
-                time.setMinutes(timeArray[1])                 
+                time.setMinutes(timeArray[1])
             }
 
 
@@ -268,6 +269,55 @@ window.onload = function () {
     }
 
     /**
+     * 修改date对应的具体时间
+     * @param {} date 
+     * @param {*} strClock 6:02:53 AM
+     */
+    function modifyClockOfDate(date, strClock) {
+
+        console.info('--------')
+        console.info(date, strClock)
+        let time = new Date(date)
+
+        let timeArray = strClock.split(':')
+        console.info(timeArray, timeArray.length)
+        if (timeArray.length == 2) {
+            console.info('2 : ', timeArray[1].indexOf('PM') >= 0)
+            if (timeArray[1].indexOf('PM') >= 0) {
+                
+                time.setHours(parseInt(timeArray[0]) + 12)
+                time.setMinutes(timeArray[1].slice(0, -3))
+            } else if (timeArray[1].indexOf('AM') >= 0) {
+                time.setHours(timeArray[0])
+                time.setMinutes(timeArray[1].slice(0, -4))
+            } else {
+                time.setHours(timeArray[0])
+                time.setMinutes(timeArray[1])
+            }
+        } else {
+            console.info('3 : ', timeArray[2].indexOf('PM') >= 0)
+            if (timeArray[2].indexOf('PM') >= 0) {
+                // console.log(parseInt(timeArray[0]) + 12)
+                time.setHours(parseInt(timeArray[0]) + 12)
+                time.setMinutes(timeArray[1])
+                time.setMilliseconds(timeArray[2].slice(0, -3))
+            } else if (timeArray[2].indexOf('AM') >= 0) {
+                time.setHours(timeArray[0])
+                time.setMinutes(timeArray[1])
+                time.setMilliseconds(timeArray[2].slice(0, -3))
+            } else {
+                time.setHours(timeArray[0])
+                time.setMinutes(timeArray[1])
+                time.setMilliseconds(timeArray[2])
+            }
+        }
+        console.info(time)
+        return time.getTime()
+        // console.info(time.getTime())
+
+    }
+
+    /**
      * 传入convo的userID, 转化为conversition
      * @param {Array(String)} convoIDList 
      * @returns {Array(conversation)}
@@ -287,23 +337,24 @@ window.onload = function () {
 
     // ==================================================
     /**
-     * 登录后, 爬虫脚本, 用来抓取左侧和右侧消息
+     * 登录后, preload主体函数, 用来抓取左侧和右侧消息
      */
-    function runCrawler() {
+    function runMain() {
 
         // 先读取一遍, 然后再obser. 
         // 因为observe抓不到刚登录时候的变化
         tranConvoByID(
-            $.map($("[role=button][id^=rx-vlv-]"), function(convo) {
-            return $(convo).attr("id");})
+            $.map($("[role=button][id^=rx-vlv-]"), function (convo) {
+                return $(convo).attr("id");
+            })
         ).forEach(convo => {
-            if(convo.counter > 0){
-            // 判断counter有没有发生变化
-            convo.action = 'a'
-            convo.print()
-            convo.send()
+            if (convo.counter > 0) {
+                // 判断counter有没有发生变化
+                convo.action = 'a'
+                convo.print()
+                convo.send()
             }
-        })        
+        })
 
         let callbackConvo = function (mutationList, observer) {
             // console.info("debug : ===========convo============")
@@ -412,17 +463,24 @@ window.onload = function () {
         })
     }
 
-    +    /**
-    +     * 给右侧消息添加时间戳
-    +     */
+    /**
+    * 给右侧消息添加时间戳
+    */
     function addMsgTime() {
         let date = undefined
+        let timeLast = undefined //储存上一条Bubble时间
+
         $("div[role=region]").each((index, element) => {
+
+        
             if ($(element).find("> div[role='heading']").length > 0) {
                 // 日期格式有问题
-                let dateStr = $(element).find("> div[role='heading']").attr("aria-label");
-                // Console.info(dateStr)
-                date = new Date();
+                let dateStrLocal = $(element).find("> div[role='heading']").attr("aria-label");
+                let dayList = ['Today', 'Yesterday', 'Sunday', 'Monday', 'Tuesday', 'Wednsday', 'Thursday', 'Friday', 'Saturday']
+                if (dayList.indexOf(dateStrLocal.split(',')[0]) != -1) { //排除非日期格式 : unread...
+                    date = tranSkypeTime(dateStrLocal) 
+                }
+
             }
 
             let nodeBubble = $(element).find(" > div > div")
@@ -431,11 +489,39 @@ window.onload = function () {
                 && $(nodeBubble).css("justify-content")
                 && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
                 && $(element).attr("aria-label")) {
-                let time = $(element).attr("aria-label").slice(-6, -2)
+                let time = $(element).attr("aria-label")
+                    .slice(
+                        $(element).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.
                 // let msgTime = new Date(date)
-                $(element).attr("time", date.toString() + time)
+                // modifyClockOfDate(date, time)
+                if(timeLast ){
+                    let timeCurrent = modifyClockOfDate(date, time)
+                    if(timeLast >= timeCurrent ){
+                        timeCurrent = timeLast + 1
+                    }
+                    $(element).attr("time", timeCurrent)
+                    timeLast = timeCurrent
+                }else{
+                    let timeCurrent = modifyClockOfDate(date, time)
+                    $(element).attr("time", timeCurrent)
+                    timeLast = timeCurrent                    
+                }
+                
             }
+            
         })
+    }
+
+    /**
+     * 右侧聊天窗已经点开, 爬取bubble
+     */
+    function runGrepRightBubble() {
+
+        // 添加id
+        addMsgID()
+
+        // 添加时间戳
+        addMsgTime()
     }
 
     $(document).ready(function () {
@@ -455,7 +541,7 @@ window.onload = function () {
                     core.WebToHost({ "hide": {} })
 
                     // 运行页面爬虫脚本
-                    runCrawler()
+                    runMain()
 
                     observer.disconnect()
                 }
@@ -483,31 +569,48 @@ window.onload = function () {
     core.WebReply((key, arg) => {
         return new Promise((resolve, reject) => {
             //  收到消息进行处理
-            console.info('WebReply : ',key )
+            console.info('WebReply : ', key)
             if (key == 'queryDialog') {
-                // 查询Dialog
-                let userID = arg.userID
-                console.info("debug : userID : ", userID, $('[aria-label="Find"]').length)
-                let target = $("#" + userID)
-                // if ($('[aria-label="Find"]').length > 0 // 右侧窗口被打开
-                // && $(target).attr('tabindex') === "0" //左侧显示被选中
-                // ) {
-                //     console.info("debug : 直接爬取")
-                //     // 当前target已经被选中, 直接爬取右侧
-                //     addMsgID()
-                //     reportDialog(userID)
-                // } else {
-                    console.info("debug : 点击")
-                    if ($("div.rxCustomScroll.rxCustomScrollV.active").length == 0) {
-                        // 右侧还没有点击
+
+                if (logStatus.status == 'online') {
+                    // 查询Dialog
+                    let userID = arg.userID
+                    console.info("debug : userID : ", userID, $('[aria-label="Find"]').length)
+                    let target = $("#" + userID)
+
+
+                    if ($('[aria-label="Find"]').length == 0 || $("#" + userID).attr('tabindex') == '-1') {
+                        console.info("debug : 点击")
+                        $("#" + userID + " > div > div").click()
+
+                        // 等待加载右侧
+                        let callbackRight = function (mutationList, observer) {
+                            if ($("div.DraftEditor-editorContainer").length > 0) {
+
+                                // 爬取右侧
+                                runGrepRightBubble()
+
+                                observer.disconnect()
+                            }
+                        }
+                        let obsRight = new MutationObserver(callbackRight);
+                        obsRight.observe($('div.app-cotainer')[0], {
+                            subtree: true, childList: true, characterData: true, attributes: true,
+                            attributeOldValue: false, characterDataOldValue: false
+                        });
+
+                    } else {
+                        // 直接爬取
+                        runGrepRightBubble()
                     }
-                    // obsChatLog.observe(document.querySelector('.fragmentsContainer'), {
-                    //     subtree: true, childList: true, attributes: true, attributeOldValue: true
-                    // })
-                    $("#" + userID + " > div > div").click()
-                // }
-                
-                resolve("copy the query. Please wait...")
+
+                    resolve("copy the query. Please wait...")
+                }
+
+
+                reject("skype not online.")
+
+
             } else if (key == 'sendDialog') {
 
 
