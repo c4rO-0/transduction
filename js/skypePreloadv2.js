@@ -233,11 +233,20 @@ window.onload = function () {
             // console.info('type1 ', strTime.indexOf(':') , timeArray, )
             let time = new Date(Date.now())
             if (timeArray[1].indexOf('PM') >= 0) {
-                console.log(parseInt(timeArray[0]) + 12)
-                time.setHours(parseInt(timeArray[0]) + 12)
+                if(parseInt(timeArray[0]) == 12){
+                    time.setHours(12)
+                }else{
+                    time.setHours(parseInt(timeArray[0]) + 12)
+                }
+                
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else if (timeArray[1].indexOf('AM') >= 0) {
-                time.setHours(timeArray[0])
+                if(parseInt(timeArray[0]) == 12){
+                    time.setHours(0)
+                }else{
+                    time.setHours(timeArray[0])
+                }
+                
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else {
                 time.setHours(timeArray[0])
@@ -306,11 +315,18 @@ window.onload = function () {
         if (timeArray.length == 2) {
             // console.info('2 : ', timeArray[1].indexOf('PM') >= 0)
             if (timeArray[1].indexOf('PM') >= 0) {
-
-                time.setHours(parseInt(timeArray[0]) + 12)
+                if(parseInt(timeArray[0]) == 12){
+                    time.setHours(12)
+                }else{
+                    time.setHours(parseInt(timeArray[0]) + 12)
+                }
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else if (timeArray[1].indexOf('AM') >= 0) {
-                time.setHours(timeArray[0])
+                if(parseInt(timeArray[0]) == 12){
+                    time.setHours(0)
+                }else{
+                    time.setHours(timeArray[0])
+                }
                 time.setMinutes(timeArray[1].slice(0, -4))
             } else {
                 time.setHours(timeArray[0])
@@ -320,11 +336,19 @@ window.onload = function () {
             // console.info('3 : ', timeArray[2].indexOf('PM') >= 0)
             if (timeArray[2].indexOf('PM') >= 0) {
                 // console.log(parseInt(timeArray[0]) + 12)
-                time.setHours(parseInt(timeArray[0]) + 12)
+                if(parseInt(timeArray[0]) == 12){
+                    time.setHours(12)
+                }else{
+                    time.setHours(parseInt(timeArray[0]) + 12)
+                }
                 time.setMinutes(timeArray[1])
                 time.setMilliseconds(timeArray[2].slice(0, -3))
             } else if (timeArray[2].indexOf('AM') >= 0) {
-                time.setHours(timeArray[0])
+                if(parseInt(timeArray[0]) == 12){
+                    time.setHours(0)
+                }else{
+                    time.setHours(timeArray[0])
+                }
                 time.setMinutes(timeArray[1])
                 time.setMilliseconds(timeArray[2].slice(0, -3))
             } else {
@@ -444,11 +468,11 @@ window.onload = function () {
 
     }
 
-    function getNickNameByUserID(userID) {
-        return $($("#" + userID + " > div > div > div:get(2)")
-            .find("[data-text-as-pseudo-element]").get(0))
-            .attr("data-text-as-pseudo-element") //名字和消息
-    }
+    // function getNickNameByUserID(userID) {
+    //     return $($("#" + userID + " > div > div > div:get(2)")
+    //         .find("[data-text-as-pseudo-element]").get(0))
+    //         .attr("data-text-as-pseudo-element") //名字和消息
+    // }
 
     /**
      * 给右侧消息添加MsgID
@@ -465,6 +489,14 @@ window.onload = function () {
         })
     }
 
+    //// Sheng Bi, aa222 , sent at 10:37 PM. This message was edited. c4r reacted with a yes.
+    function getTimeFromSkypeAria(str){
+        let posAt = str.lastIndexOf('at') + 3
+        let posEnd = str.indexOf('.', posAt)
+
+        return str.slice(posAt, posEnd)
+    }
+
     /**
     * 给右侧消息添加时间戳
     */
@@ -472,6 +504,31 @@ window.onload = function () {
         // console.info("add Time")
         let date = undefined
         let timeLast = undefined //储存上一条Bubble时间
+
+        
+        // // 先扫一遍, 防止一个时间都没有
+        // $("div[role=region]").each((index, element) => {
+        //     if ($(element).find("> div[role='heading']").length > 0) {
+        //         // 日期格式有问题
+        //         let dateStrLocal = $(element).find("> div[role='heading']").attr("aria-label");
+        //         let dayList = ['Today', 'Yesterday', 'Sunday', 'Monday', 'Tuesday', 'Wednsday', 'Thursday', 'Friday', 'Saturday']
+        //         if (dayList.indexOf(dateStrLocal.split(',')[0]) != -1) { //排除非日期格式 : unread...
+                    
+        //             date = tranSkypeTime(dateStrLocal)
+                    
+        //         }
+
+        //     }
+        // })
+
+        // if(date == undefined){
+        //     // 可能存在问题 准确日期应该从
+        //     // $('.reactxp-ignore-pointer-events button div[data-text-as-pseudo-element]')
+
+        //     // date = Date.now()
+
+        //     return
+        // }
 
         $("div[role=region]").each((index, element) => {
 
@@ -482,15 +539,16 @@ window.onload = function () {
                 let dayList = ['Today', 'Yesterday', 'Sunday', 'Monday', 'Tuesday', 'Wednsday', 'Thursday', 'Friday', 'Saturday']
                 if (dayList.indexOf(dateStrLocal.split(',')[0]) != -1) { //排除非日期格式 : unread...
                     date = tranSkypeTime(dateStrLocal)
+                    // console.info(dateStrLocal, '| ', new Date(date), element)
                 }
 
             }
 
-            if ($(element).attr("time")) {  // 已经存在时间了
-                timeLast = parseInt($(element).attr("time"))
-                // timeLast = $(element).attr("time")
-                // console.info("already timeLast")
-            } else {
+            // if ($(element).attr("time")) {  // 已经存在时间了
+            //     timeLast = parseInt($(element).attr("time"))
+            //     // timeLast = $(element).attr("time")
+            //     // console.info("already timeLast")
+            // } else {
                 let nodeBubble = $(element).find(" > div > div")
                 if (date
                     && $(nodeBubble).length > 0
@@ -498,40 +556,42 @@ window.onload = function () {
                     && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
                 ) {
                     if ($(element).attr("aria-label")) {
-                        let time = $(element).attr("aria-label")
-                            .slice(
-                                $(element).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.
+                        let time = getTimeFromSkypeAria($(element).attr("aria-label"))
                         // let msgTime = new Date(date)
                         // modifyClockOfDate(date, time)
                         if (timeLast) {
                             let timeCurrent = modifyClockOfDate(date, time)
+                            // console.info(time, new Date(timeCurrent))
                             if (timeLast >= timeCurrent) {
                                 timeCurrent = timeLast + 1
                             }
                             $(element).attr("time", timeCurrent)
+                            // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                             timeLast = timeCurrent
                         } else {
                             let timeCurrent = modifyClockOfDate(date, time)
+                            // console.info(time, new Date(timeCurrent))
                             $(element).attr("time", timeCurrent)
+                            // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                             timeLast = timeCurrent
                         }
                     } else {
                         // 不具有aria-label, 奇怪的消息类型, 比如天气
                         let timeObj = $(element).find("div[aria-label*='sent at']")
                         if ($(timeObj).length > 0) {
-                            let time = $(timeObj).attr("aria-label")
-                                .slice(
-                                    $(timeObj).attr("aria-label").lastIndexOf('at') + 3, -1) // c4r Team, aaa, sent at 1:57 PM.  
+                            let time = getTimeFromSkypeAria($(timeObj).attr("aria-label")) // c4r Team, aaa, sent at 1:57 PM.  
                             if (timeLast) {
                                 let timeCurrent = modifyClockOfDate(date, time)
                                 if (timeLast >= timeCurrent) {
                                     timeCurrent = timeLast + 1
                                 }
                                 $(element).attr("time", timeCurrent)
+                                // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                                 timeLast = timeCurrent
                             } else {
                                 let timeCurrent = modifyClockOfDate(date, time)
                                 $(element).attr("time", timeCurrent)
+                                // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                                 timeLast = timeCurrent
                             }
                         } else {
@@ -546,7 +606,7 @@ window.onload = function () {
                         }
                     }
                 }
-            }
+            // }
 
 
         })
@@ -639,23 +699,78 @@ window.onload = function () {
 
     let callbackDialog = function (mutationList, observer) {
 
-
         // console.info("======Dialog changed=====", mutationList.length)
         if ($("button[role='button'][userID]").length > 0) {
             runGrepRightBubble()
         }
 
     }
+
+    let callbackDialogOnce = function (mutationList, observer) {
+                
+        let addedNodes = false
+        mutationList.forEach(mutation =>{
+            if(mutation.addedNodes.length == 1 ){
+                let node = mutation.addedNodes[0]
+                
+
+                if($(node).find(' > button[title="More options"]').length > 0) { // 普通划过
+
+                // }else if($(node).find(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
+
+                // }else if($(node).closest(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
+
+                // }else if(node.nodeName == 'SPAN' && $(node).attr('class').includes('sprite')) { // 点赞
+
+                }else{
+                    // console.info(mutation.addedNodes)
+                    addedNodes = addedNodes || true
+                }
+
+
+
+            }else if(mutation.addedNodes.length > 0 ){
+                // console.info(mutation.addedNodes)
+                addedNodes = addedNodes || true
+
+            }
+        })
+
+        // console.info('once : ', addedNodes , $("button[role='button'][userID]").length)
+        if(addedNodes){
+            if ($("button[role='button'][userID]").length > 0) {
+                runGrepRightBubble()
+            }
+        }
+        // if ($("button[role='button'][userID]").length > 0) {
+        //     console.info("once : ", $("button[role='button'][userID]").length)
+        //     runGrepRightBubble()
+        //     observer.disconnect()
+        // } 
+
+    }   
     let obsDialog = new MutationObserver(callbackDialog); // 用来检测Dialog变化
+    let obsDialogOnce = new MutationObserver(callbackDialogOnce); // 用来检测Dialog变化
+
 
     function startObserveDialog() {
         obsDialog.disconnect()
+        obsDialogOnce.disconnect()
 
         if ($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2) {
-            obsDialog.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV")[1], {
-                subtree: true, childList: false, characterData: true, attributes: true,
-                attributeFilter: ['tabindex', 'data-transition-id'], attributeOldValue: false, characterDataOldValue: false
+
+            obsDialog.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV:eq(1) > div > div:eq(1)")[0], {
+                subtree: true, childList: false, characterData: false, attributes: true,
+                attributeFilter: ['data-transition-id'], attributeOldValue: true, characterDataOldValue: false
             });
+
+            
+            obsDialogOnce.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV:eq(1)")[0], {
+                subtree: true, childList: true, characterData: false, attributes: false,
+                attributeOldValue: false, characterDataOldValue: false
+            });
+
+
         } else {
             console.info("error : startObserveDialog : 没找到dialog obt", $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV"))
         }
@@ -734,6 +849,7 @@ window.onload = function () {
                             && $("button[role='button'][title='" + convo.nickName + "']").length > 0 // 最上面title已加载
                             && $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2 // 右侧bubble已加载出来
                             ) {
+                                
 
                                 console.info("add userID in title")
                                 $("button[role='button'][title='" + convo.nickName + "']").attr("userID", userID)
@@ -761,7 +877,7 @@ window.onload = function () {
                     } else {
                         // 直接爬取
                         console.info("debug : 直接爬取")
-                        startObserveDialog()
+                        // startObserveDialog()
                     }
 
                     resolve("copy the query. Please wait...")
