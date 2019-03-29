@@ -175,9 +175,9 @@ window.onload = function () {
          */
         extract(node) {
             this.msgID = $(node).attr("msgID")
-            this.time = $(node).attr("time")
+            this.time = parseInt($(node).attr("time"))
             this.from = $(node).attr("sender")
-            if(this.from === ''){
+            if (this.from === '') {
                 this.from = undefined
             }
             this.type = undefined
@@ -190,17 +190,18 @@ window.onload = function () {
                 if ($(node).attr("aria-label")) {
                     // 图片 , 文字
                     let textObj = $(node).find('> div > div > div > div > div > div > div > div')
-                    if($(textObj).length> 0 && $(textObj).text() != ''){
+                    if ($(textObj).length > 0 && $(textObj).text() != '') {
                         this.type = 'text'
-                        this.message =  $(textObj).text()
+                        this.message = $(textObj).text()
                     }
-
-                    let imgObj = $(node).find("button[role='button'][title='Open image'][arial-label='Open image']")
-                    if($(imgObj).length > 0){ // 图片信息
+                    
+                    let imgObj = $(node).find("button[role='button'][title='Open image'][aria-label='Open image']")
+                    if ($(imgObj).length > 0) { // 图片信息
                         this.type = 'img'
                         this.message = $(imgObj).find('> div > div').css('background-image')
-                        if(this.message && this.message.includes('url')){
-                            this.message = this.message.slice(5,-2)
+                        if (this.message && this.message.includes('url')) {
+                            this.message = this.message.slice(5, -2).replace(/imgpsh_thumbnail_sx/, "imgpsh_mobile_save_anim")
+                            
                         }
                     }
 
@@ -572,35 +573,35 @@ window.onload = function () {
         // console.info("add MsgID")
 
         let lastSender = undefined
-        
+
 
         $("div[role=region]").each((index, element) => {
 
-            if($(element).attr('sender') === undefined){
+            if ($(element).attr('sender') === undefined) {
                 let nodeBubble = $(element).find(" > div > div")
                 if ($(nodeBubble).length > 0
-                    && $(nodeBubble).css("justify-content")){
-                    if( $(nodeBubble).css("justify-content") == 'flex-start'){ //右侧
+                    && $(nodeBubble).css("justify-content")) {
+                    if ($(nodeBubble).css("justify-content") == 'flex-start') { //右侧
                         let senderObj = $(nodeBubble).find("button[role='button'][aria-label$=profile]")
-                        if($(senderObj).length > 0 ){
-                            let currentSender = $(senderObj).attr('aria-label').slice(0,$(senderObj).attr('aria-label').lastIndexOf(','))
+                        if ($(senderObj).length > 0) {
+                            let currentSender = $(senderObj).attr('aria-label').slice(0, $(senderObj).attr('aria-label').lastIndexOf(','))
                             $(element).attr('sender', currentSender)
                             lastSender = currentSender
-                        }else if(lastSender){
+                        } else if (lastSender) {
                             $(element).attr('sender', lastSender)
-                        }else{
+                        } else {
                             // 没有找到sender
                         }
-    
-                    }else if( $(nodeBubble).css("justify-content") == 'flex-end' ) {
-                        $(element).attr('sender','')
+
+                    } else if ($(nodeBubble).css("justify-content") == 'flex-end') {
+                        $(element).attr('sender', '')
                         lastSender = ''
                     }
-                    
-                }       
-            }else{
+
+                }
+            } else {
                 lastSender = $(element).attr('sender')
-            }        
+            }
 
         })
     }
@@ -608,43 +609,54 @@ window.onload = function () {
     /**
      * 右侧聊天窗已经点开, 爬取bubble
      */
-    // function runGrepRightBubble() {
+    function runGrepRightBubble() {
 
-    //     // 添加id
-    //     addMsgID()
+        let userID = $("button[role='button'][userID]").attr('userID')
+        if ($("button[role='button'][userID]")) {
 
-    //     // 添加时间戳
-    //     addMsgTime()
+            // 添加id
+            addMsgID()
+
+            // 添加时间戳
+            addMsgTime()
+
+            // 添加发送者
+            addSender()
 
 
-    //     // let msgArray = new Array()
-    //     // $("div[role=region][aria-label]").each((index, element) => {
-    //     //     let nodeBubble = $(element).find(" > div > div")
-    //     //     if ($(nodeBubble).length > 0
-    //     //         && $(nodeBubble).css("justify-content")
-    //     //         && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')) {
-    //     //         let msg = new chatMSG()
-    //     //         msg.extract(element, userID)
-    //     //         msgArray.push(msg)
-    //     //     }
-    //     // })        
-    // }
+            let msgArray = new Array()
+            $("div[role=region][msgID][time][sender]").each((index, element) => {
+                let msg = new chatMSG()
+                msg.extract(element)
+
+                msgArray.push(msg)
+            })
+
+            if(msgArray.length > 0){
+                (msgArray[0])["userID"] = userID;
+
+                core.WebToHost({ "Dialog": msgArray }).then((res) => {
+                    console.info("send dialog res : ", res)
+                }).catch((error) => {
+                    throw error
+                });                    
+            }
+        
+
+        } else {
+            return
+        }
+
+    }
 
 
     let callbackDialog = function (mutationList, observer) {
 
 
         // console.info("======Dialog changed=====", mutationList.length)
-        // // 添加id
-        addMsgID()
-
-        // // 添加时间戳
-        addMsgTime()
-
-        // 添加发送者
-        addSender()
-
-        console.info('total dialog : ', $('div[role=region][msgID][time]').length)
+        if ($("button[role='button'][userID]").length > 0) {
+            runGrepRightBubble()
+        }
 
     }
     let obsDialog = new MutationObserver(callbackDialog); // 用来检测Dialog变化
@@ -719,16 +731,21 @@ window.onload = function () {
                     // let target = $("#" + userID)
                     let convo = new conversation()
                     convo.extractById(userID)
-                    console.info(convo.nickName)
+                    console.info(convo.nickName, userID)
 
                     // if ($('[aria-label="Find"]').length == 0 || $("#" + userID).attr('tabindex') == '-1') {
-                    if ($("button[role='button'][title='" + convo.nickName + "']").length == 0) {
-                        console.info("debug : 点击")
-                        $("#" + userID + " > div > div").click()
+                    if ($("button[role='button'][title='" + convo.nickName + "']").length == 0
+                        || $("button[role='button'][title='" + convo.nickName + "']").attr("userID") != userID) {
 
                         // 等待加载右侧
                         let callbackRight = function (mutationList, observer) {
+
+                            // console.info("callbackRight", $("div.DraftEditor-editorContainer").length > 0 , $("button[role='button'][title='" + convo.nickName + "']").length > 0)
+                            
                             if ($("div.DraftEditor-editorContainer").length > 0 && $("button[role='button'][title='" + convo.nickName + "']").length > 0) {
+                                
+                                console.info("add userID in title")
+                                $("button[role='button'][title='" + convo.nickName + "']").attr("userID", userID)
 
                                 // 爬取右侧
                                 // runGrepRightBubble()
@@ -737,16 +754,21 @@ window.onload = function () {
 
                                 observer.disconnect()
                             }
+
+                            
                         }
                         let obsRight = new MutationObserver(callbackRight);
-                        obsRight.observe($('div.app-cotainer')[0], {
+                        obsRight.observe($('div.app-container')[0], {
                             subtree: true, childList: true, characterData: true, attributes: true,
                             attributeOldValue: false, characterDataOldValue: false
                         });
 
+                        console.info("debug : 点击")
+                        $("#" + userID + " > div > div").click()
+
                     } else {
                         // 直接爬取
-                        // runGrepRightBubble()
+                        console.info("debug : 直接爬取")
                         startObserveDialog()
                     }
 
