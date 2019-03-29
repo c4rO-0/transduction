@@ -184,6 +184,8 @@ $(document).ready(function () {
             displayCounter = ""
         }
 
+        let avatar = convo.avatar == undefined ? '../res/pic/weird.png' : convo.avatar
+
         return '\
         <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + '>\
             <div class="col-appLogo">\
@@ -193,7 +195,7 @@ $(document).ready(function () {
                 <div class="row-hint theme-'+ appName + '"></div>\
             </div>\
             <div class="col-avatar d-flex justify-content-center">\
-                <div class="td-avatar align-self-center" style="background-image: url('+ convo.avatar + ')"></div>\
+                <div class="td-avatar align-self-center" style="background-image: url('+ avatar + ')"></div>\
                 <div class="td-counter" style="'+ displayCounter + '">\
                     <div style="align-self:center;">'+ convo.counter + '</div>\
                 </div>\
