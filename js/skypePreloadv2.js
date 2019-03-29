@@ -194,33 +194,20 @@ window.onload = function () {
                         this.type = 'text'
                         this.message = $(textObj).text()
                     }
-                    
+
                     let imgObj = $(node).find("button[role='button'][title='Open image'][aria-label='Open image']")
                     if ($(imgObj).length > 0) { // 图片信息
                         this.type = 'img'
                         this.message = $(imgObj).find('> div > div').css('background-image')
                         if (this.message && this.message.includes('url')) {
                             this.message = this.message.slice(5, -2).replace(/imgpsh_thumbnail_sx/, "imgpsh_mobile_save_anim")
-                            
+
                         }
                     }
 
                 } else {
                     // 奇怪的消息类型
                 }
-            }
-
-
-            if ($(node).attr("aria-label")) {
-                if ($(node).find(" > div > div ").css("justify-content") == 'flex-start') {
-                    // 左侧
-                    let indexSplitName = ($(node).attr("aria-label")).lastIndexOf(',')
-                    this.from = $(node).attr("aria-label").substr(0, indexSplitName)
-                } else {
-                    this.from = ''
-                }
-            } else {
-                // 特殊消息
             }
 
         }
@@ -632,16 +619,16 @@ window.onload = function () {
                 msgArray.push(msg)
             })
 
-            if(msgArray.length > 0){
+            if (msgArray.length > 0) {
                 (msgArray[0])["userID"] = userID;
 
                 core.WebToHost({ "Dialog": msgArray }).then((res) => {
-                    console.info("send dialog res : ", res)
+                    // console.info("send dialog res : ", res)
                 }).catch((error) => {
                     throw error
-                });                    
+                });
             }
-        
+
 
         } else {
             return
@@ -666,11 +653,11 @@ window.onload = function () {
 
         if ($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2) {
             obsDialog.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV")[1], {
-                subtree: true, childList: true, characterData: true, attributes: true,
+                subtree: true, childList: false, characterData: true, attributes: true,
                 attributeFilter: ['tabindex', 'data-transition-id'], attributeOldValue: false, characterDataOldValue: false
             });
         } else {
-            console.info("error : startObserveDialog : 没找到dialog obt")
+            console.info("error : startObserveDialog : 没找到dialog obt", $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV"))
         }
 
     }
@@ -737,13 +724,17 @@ window.onload = function () {
                     if ($("button[role='button'][title='" + convo.nickName + "']").length == 0
                         || $("button[role='button'][title='" + convo.nickName + "']").attr("userID") != userID) {
 
+
                         // 等待加载右侧
                         let callbackRight = function (mutationList, observer) {
 
                             // console.info("callbackRight", $("div.DraftEditor-editorContainer").length > 0 , $("button[role='button'][title='" + convo.nickName + "']").length > 0)
-                            
-                            if ($("div.DraftEditor-editorContainer").length > 0 && $("button[role='button'][title='" + convo.nickName + "']").length > 0) {
-                                
+
+                            if ($("div.DraftEditor-editorContainer").length > 0  // 有编辑区域
+                            && $("button[role='button'][title='" + convo.nickName + "']").length > 0 // 最上面title已加载
+                            && $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2 // 右侧bubble已加载出来
+                            ) {
+
                                 console.info("add userID in title")
                                 $("button[role='button'][title='" + convo.nickName + "']").attr("userID", userID)
 
@@ -755,13 +746,14 @@ window.onload = function () {
                                 observer.disconnect()
                             }
 
-                            
+
                         }
                         let obsRight = new MutationObserver(callbackRight);
                         obsRight.observe($('div.app-container')[0], {
                             subtree: true, childList: true, characterData: true, attributes: true,
                             attributeOldValue: false, characterDataOldValue: false
                         });
+
 
                         console.info("debug : 点击")
                         $("#" + userID + " > div > div").click()
