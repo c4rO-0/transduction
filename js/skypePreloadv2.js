@@ -176,6 +176,25 @@ window.onload = function () {
          */
         extract(node, userID) {
             this.msgID = $(node).attr("msgID")
+            this.time = $(node).attr("time")
+
+            let nodeBubble = $(node).find(" > div > div")
+            if ($(nodeBubble).length > 0
+                && $(nodeBubble).css("justify-content")
+                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
+            ) {
+                if($(nodeBubble).css("justify-content") == 'flex-end'){ //右侧
+                    this.from = ''
+                }else{ // 左侧
+
+                }
+                if ($(node).attr("aria-label")) {
+
+                } else {
+                    // 奇怪的消息类型
+                }
+            }
+
 
             if ($(node).attr("aria-label")) {
                 if ($(node).find(" > div > div ").css("justify-content") == 'flex-start') {
@@ -183,7 +202,7 @@ window.onload = function () {
                     let indexSplitName = ($(node).attr("aria-label")).lastIndexOf(',')
                     this.from = $(node).attr("aria-label").substr(0, indexSplitName)
                 } else {
-                    this.from = undefined
+                    this.from = ''
                 }
             } else {
                 // 特殊消息
@@ -466,7 +485,9 @@ window.onload = function () {
             }
 
             if ($(element).attr("time")) {  // 已经存在时间了
-                timeLast = parseInt($(nodeBubble).attr("time"))
+                timeLast = parseInt($(element).attr("time"))
+                // timeLast = $(element).attr("time")
+                // console.info("already timeLast")
             } else {
                 let nodeBubble = $(element).find(" > div > div")
                 if (date
@@ -529,6 +550,47 @@ window.onload = function () {
         })
     }
 
+
+    /**
+     * 给右侧消息添加MsgID
+     */
+    function addSender() {
+        // console.info("add MsgID")
+
+        let lastSender = undefined
+        
+
+        $("div[role=region]").each((index, element) => {
+
+            if($(element).attr('sender') === undefined){
+                let nodeBubble = $(element).find(" > div > div")
+                if ($(nodeBubble).length > 0
+                    && $(nodeBubble).css("justify-content")){
+                    if( $(nodeBubble).css("justify-content") == 'flex-start'){ //右侧
+                        let senderObj = $(nodeBubble).find("button[role='button'][aria-label$=profile]")
+                        if($(senderObj).length > 0 ){
+                            let currentSender = $(senderObj).attr('aria-label').slice(0,$(senderObj).attr('aria-label').lastIndexOf(','))
+                            $(element).attr('sender', currentSender)
+                            lastSender = currentSender
+                        }else if(lastSender){
+                            $(element).attr('sender', lastSender)
+                        }else{
+                            // 没有找到sender
+                        }
+    
+                    }else if( $(nodeBubble).css("justify-content") == 'flex-end' ) {
+                        $(element).attr('sender','')
+                        lastSender = ''
+                    }
+                    
+                }       
+            }else{
+                lastSender = $(element).attr('sender')
+            }        
+
+        })
+    }
+
     /**
      * 右侧聊天窗已经点开, 爬取bubble
      */
@@ -563,64 +625,12 @@ window.onload = function () {
         addMsgID()
 
         // // 添加时间戳
-        // addMsgTime()
+        addMsgTime()
 
-        mutationList.map(function (mutation) {
+        // 添加发送者
+        addSender()
 
-            if ($(mutation.target).closest('div[role=region]:not([time])').length > 0) {
-
-                console.info("debug : ===========Dialog slide============")
-                console.info("debug : ", "obs type : ", mutation.type)
-                console.info("debug : ", "obs target : ")
-                console.info(mutation.target)
-
-                if (mutation.type == 'attributes') {
-                    console.info("debug : ", "attributes old value : ")
-                    console.info(mutation.attributeName)
-                }
-                // console.info("debug : ", "add : ", $(mutation.addedNodes).length)
-                // console.info($(mutation.addedNodes))
-
-
-                // let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
-                // // console.log( obj  )    
-                // if (obj.length > 0) {
-                //     let existed = false
-                //     arrayObjUser.forEach((currentValue, index) => {
-
-                //         if (!existed && $(currentValue).is(obj)) {
-                //             existed = true
-                //         }
-
-                //     })
-                //     if (!existed) {
-                //         arrayObjUser.push(obj)
-                //     }
-                // }
-
-
-                // if ($(record.removedNodes).length != 0) {
-                //     $(record.removedNodes).toArray().forEach((currentValue, index) => {
-                //         $(currentValue).children(".chat_item.slide-left.ng-scope").toArray().forEach((obj, idx) => {
-                //             let existed = false
-                //             arrayObjUser.forEach((objIn) => {
-
-                //                 if (!existed && $(objIn).is(obj)) {
-                //                     existed = true
-                //                 }
-
-                //             })
-                //             if (!existed) {
-                //                 arrayObjUser.push(obj)
-                //             }
-                //         })
-                //     })
-                // }
-            }
-
-
-        })
-        // addMsgTime()
+        console.info('total dialog : ', $('div[role=region][msgID][time]').length)
 
     }
     let obsDialog = new MutationObserver(callbackDialog); // 用来检测Dialog变化
