@@ -172,23 +172,37 @@ window.onload = function () {
         /**
          * 从每个消息中抓取信息
          * @param {Element} node <div role='region' ...>
-         * @param {String} userID convo的userID
          */
-        extract(node, userID) {
+        extract(node) {
             this.msgID = $(node).attr("msgID")
             this.time = $(node).attr("time")
+            this.from = $(node).attr("sender")
+            if(this.from === ''){
+                this.from = undefined
+            }
+            this.type = undefined
 
             let nodeBubble = $(node).find(" > div > div")
             if ($(nodeBubble).length > 0
                 && $(nodeBubble).css("justify-content")
                 && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
             ) {
-                if($(nodeBubble).css("justify-content") == 'flex-end'){ //右侧
-                    this.from = ''
-                }else{ // 左侧
-
-                }
                 if ($(node).attr("aria-label")) {
+                    // 图片 , 文字
+                    let textObj = $(node).find('> div > div > div > div > div > div > div > div')
+                    if($(textObj).length> 0 && $(textObj).text() != ''){
+                        this.type = 'text'
+                        this.message =  $(textObj).text()
+                    }
+
+                    let imgObj = $(node).find("button[role='button'][title='Open image'][arial-label='Open image']")
+                    if($(imgObj).length > 0){ // 图片信息
+                        this.type = 'img'
+                        this.message = $(imgObj).find('> div > div').css('background-image')
+                        if(this.message && this.message.includes('url')){
+                            this.message = this.message.slice(5,-2)
+                        }
+                    }
 
                 } else {
                     // 奇怪的消息类型
