@@ -182,11 +182,8 @@ window.onload = function () {
             }
             this.type = undefined
 
-            let nodeBubble = $(node).find(" > div > div")
-            if ($(nodeBubble).length > 0
-                && $(nodeBubble).css("justify-content")
-                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
-            ) {
+            let nodeBubble = $(node).find("div[style*='justify-content: flex-start;'], div[style*='justify-content: flex-end;']")
+            if ($(nodeBubble).length > 0){
                 if ($(node).attr("aria-label")) {
                     // 图片 , 文字
                     let textObj = $(node).find('> div > div > div > div > div > div > div > div')
@@ -205,8 +202,27 @@ window.onload = function () {
                         }
                     }
 
+                    // 卡片链接
+                    let urlCardObj = $(node).find("button[role='button'][aria-label*='sent a website'] > div > div")
+                    if($(urlCardObj).length == 2){ // 没有简介
+                        this.type = 'url'
+                        this.message = $($(urlCardObj).get(1)).text()
+                    }else if($(urlCardObj).length == 3){ // 有简介
+                        this.type = 'url'
+                        this.message = $($(urlCardObj).get(2)).text()
+                    }
+                    
+                    let urlObj = $(node).find("a[href]")
+                    if($(urlObj).length>0){
+                        this.type = 'url'
+                        this.message = $(urlObj).attr('href')
+                    }                    
+
+
+
                 } else {
                     // 奇怪的消息类型
+
                 }
             }
 
@@ -233,20 +249,20 @@ window.onload = function () {
             // console.info('type1 ', strTime.indexOf(':') , timeArray, )
             let time = new Date(Date.now())
             if (timeArray[1].indexOf('PM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(12)
-                }else{
+                } else {
                     time.setHours(parseInt(timeArray[0]) + 12)
                 }
-                
+
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else if (timeArray[1].indexOf('AM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(0)
-                }else{
+                } else {
                     time.setHours(timeArray[0])
                 }
-                
+
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else {
                 time.setHours(timeArray[0])
@@ -315,19 +331,19 @@ window.onload = function () {
         if (timeArray.length == 2) {
             // console.info('2 : ', timeArray[1].indexOf('PM') >= 0)
             if (timeArray[1].indexOf('PM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(12)
-                }else{
+                } else {
                     time.setHours(parseInt(timeArray[0]) + 12)
                 }
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else if (timeArray[1].indexOf('AM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(0)
-                }else{
+                } else {
                     time.setHours(timeArray[0])
                 }
-                time.setMinutes(timeArray[1].slice(0, -4))
+                time.setMinutes(timeArray[1].slice(0, -3))
             } else {
                 time.setHours(timeArray[0])
                 time.setMinutes(timeArray[1])
@@ -336,17 +352,17 @@ window.onload = function () {
             // console.info('3 : ', timeArray[2].indexOf('PM') >= 0)
             if (timeArray[2].indexOf('PM') >= 0) {
                 // console.log(parseInt(timeArray[0]) + 12)
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(12)
-                }else{
+                } else {
                     time.setHours(parseInt(timeArray[0]) + 12)
                 }
                 time.setMinutes(timeArray[1])
                 time.setMilliseconds(timeArray[2].slice(0, -3))
             } else if (timeArray[2].indexOf('AM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(0)
-                }else{
+                } else {
                     time.setHours(timeArray[0])
                 }
                 time.setMinutes(timeArray[1])
@@ -480,17 +496,16 @@ window.onload = function () {
     function addMsgID() {
         // console.info("add MsgID")
         $("div[role=region]:not([msgID])").each((index, element) => {
-            let nodeBubble = $(element).find(" > div > div")
-            if ($(nodeBubble).length > 0
-                && $(nodeBubble).css("justify-content")
-                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')) {
+            let nodeBubble = $(element).find("div[style*='justify-content: flex-start;'], div[style*='justify-content: flex-end;']")
+            if ($(nodeBubble).length > 0) {
                 $(element).attr("msgID", uniqueStr())
             }
         })
     }
 
-    //// Sheng Bi, aa222 , sent at 10:37 PM. This message was edited. c4r reacted with a yes.
-    function getTimeFromSkypeAria(str){
+    // Sheng Bi, aa222 , sent at 10:37 PM. This message was edited. c4r reacted with a yes.
+    // c4r Team sent a photo at 12:41 AM.
+    function getTimeFromSkypeAria(str) {
         let posAt = str.lastIndexOf('at') + 3
         let posEnd = str.indexOf('.', posAt)
 
@@ -505,7 +520,7 @@ window.onload = function () {
         let date = undefined
         let timeLast = undefined //储存上一条Bubble时间
 
-        
+
         // // 先扫一遍, 防止一个时间都没有
         // $("div[role=region]").each((index, element) => {
         //     if ($(element).find("> div[role='heading']").length > 0) {
@@ -513,9 +528,9 @@ window.onload = function () {
         //         let dateStrLocal = $(element).find("> div[role='heading']").attr("aria-label");
         //         let dayList = ['Today', 'Yesterday', 'Sunday', 'Monday', 'Tuesday', 'Wednsday', 'Thursday', 'Friday', 'Saturday']
         //         if (dayList.indexOf(dateStrLocal.split(',')[0]) != -1) { //排除非日期格式 : unread...
-                    
+
         //             date = tranSkypeTime(dateStrLocal)
-                    
+
         //         }
 
         //     }
@@ -549,63 +564,68 @@ window.onload = function () {
             //     // timeLast = $(element).attr("time")
             //     // console.info("already timeLast")
             // } else {
-                let nodeBubble = $(element).find(" > div > div")
-                if (date
-                    && $(nodeBubble).length > 0
-                    && $(nodeBubble).css("justify-content")
-                    && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
-                ) {
-                    if ($(element).attr("aria-label")) {
-                        let time = getTimeFromSkypeAria($(element).attr("aria-label"))
-                        // let msgTime = new Date(date)
-                        // modifyClockOfDate(date, time)
+            let nodeBubble = $(element).find("div[style*='justify-content: flex-start;'], div[style*='justify-content: flex-end;']")
+            if (date && $(nodeBubble).length > 0) {
+                if ($(element).attr("aria-label")) {
+                    let time = getTimeFromSkypeAria($(element).attr("aria-label"))
+                    // let msgTime = new Date(date)
+                    // modifyClockOfDate(date, time)
+                    if (timeLast) {
+                        let timeCurrent = modifyClockOfDate(date, time)
+                        // console.info(time, new Date(timeCurrent))
+                        if (timeLast >= timeCurrent) {
+                            timeCurrent = timeLast + 1
+                        }
+                        $(element).attr("time", timeCurrent)
+                        $(element).attr("timeTempDate", date)
+                        $(element).attr("timeTempTime", time)
+                        $(element).attr("timeTempMod", modifyClockOfDate(date, time))
+                        // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
+                        timeLast = timeCurrent
+                    } else {
+                        let timeCurrent = modifyClockOfDate(date, time)
+                        // console.info(time, new Date(timeCurrent))
+                        $(element).attr("time", timeCurrent)
+                        $(element).attr("timeTempDate", date)
+                        $(element).attr("timeTempTime", time)
+                        $(element).attr("timeTempMod", modifyClockOfDate(date, time))                        
+                        // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
+                        timeLast = timeCurrent
+                    }
+                } else {
+                    // 不具有aria-label, 奇怪的消息类型, 比如天气
+                    let timeObj = $(element).find("div[aria-label*='sent at']")
+                    if ($(timeObj).length > 0) {
+                        let time = getTimeFromSkypeAria($(timeObj).attr("aria-label")) // c4r Team, aaa, sent at 1:57 PM.  
                         if (timeLast) {
                             let timeCurrent = modifyClockOfDate(date, time)
-                            // console.info(time, new Date(timeCurrent))
                             if (timeLast >= timeCurrent) {
                                 timeCurrent = timeLast + 1
                             }
                             $(element).attr("time", timeCurrent)
+                            $(element).attr("timeTempDate", date)
+                            $(element).attr("timeTempTime", time)
+                            $(element).attr("timeTempMod", modifyClockOfDate(date, time))                            
                             // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                             timeLast = timeCurrent
                         } else {
                             let timeCurrent = modifyClockOfDate(date, time)
-                            // console.info(time, new Date(timeCurrent))
                             $(element).attr("time", timeCurrent)
                             // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                             timeLast = timeCurrent
                         }
                     } else {
-                        // 不具有aria-label, 奇怪的消息类型, 比如天气
-                        let timeObj = $(element).find("div[aria-label*='sent at']")
-                        if ($(timeObj).length > 0) {
-                            let time = getTimeFromSkypeAria($(timeObj).attr("aria-label")) // c4r Team, aaa, sent at 1:57 PM.  
-                            if (timeLast) {
-                                let timeCurrent = modifyClockOfDate(date, time)
-                                if (timeLast >= timeCurrent) {
-                                    timeCurrent = timeLast + 1
-                                }
-                                $(element).attr("time", timeCurrent)
-                                // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
-                                timeLast = timeCurrent
-                            } else {
-                                let timeCurrent = modifyClockOfDate(date, time)
-                                $(element).attr("time", timeCurrent)
-                                // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
-                                timeLast = timeCurrent
-                            }
+                        // 没有找到任何时间标识, 用上一个时间做推测
+                        if (timeLast) {
+                            let timeCurrent = timeLast + 1
+                            $(element).attr("time", timeCurrent)
+                            timeLast = timeCurrent
                         } else {
-                            // 没有找到任何时间标识, 用上一个时间做推测
-                            if (timeLast) {
-                                let timeCurrent = timeLast + 1
-                                $(element).attr("time", timeCurrent)
-                                timeLast = timeCurrent
-                            } else {
-                                // 前面也没有时间, 无能为例, 跳过该条消息
-                            }
+                            // 前面也没有时间, 无能为例, 跳过该条消息
                         }
                     }
                 }
+            }
             // }
 
 
@@ -625,9 +645,9 @@ window.onload = function () {
         $("div[role=region]").each((index, element) => {
 
             if ($(element).attr('sender') === undefined) {
-                let nodeBubble = $(element).find(" > div > div")
-                if ($(nodeBubble).length > 0
-                    && $(nodeBubble).css("justify-content")) {
+                let nodeBubble = $(element).find("div[style*='justify-content: flex-start;'], div[style*='justify-content: flex-end;']")
+                if ($(nodeBubble).length > 0) {
+
                     if ($(nodeBubble).css("justify-content") == 'flex-start') { //右侧
                         let senderObj = $(nodeBubble).find("button[role='button'][aria-label$=profile]")
                         if ($(senderObj).length > 0) {
@@ -707,29 +727,29 @@ window.onload = function () {
     }
 
     let callbackDialogOnce = function (mutationList, observer) {
-                
+
         let addedNodes = false
-        mutationList.forEach(mutation =>{
-            if(mutation.addedNodes.length == 1 ){
+        mutationList.forEach(mutation => {
+            if (mutation.addedNodes.length == 1) {
                 let node = mutation.addedNodes[0]
-                
 
-                if($(node).find(' > button[title="More options"]').length > 0) { // 普通划过
 
-                // }else if($(node).find(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
+                if ($(node).find(' > button[title="More options"]').length > 0) { // 普通划过
 
-                // }else if($(node).closest(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
+                    // }else if($(node).find(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
 
-                // }else if(node.nodeName == 'SPAN' && $(node).attr('class').includes('sprite')) { // 点赞
+                    // }else if($(node).closest(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
 
-                }else{
+                    // }else if(node.nodeName == 'SPAN' && $(node).attr('class').includes('sprite')) { // 点赞
+
+                } else {
                     // console.info(mutation.addedNodes)
                     addedNodes = addedNodes || true
                 }
 
 
 
-            }else if(mutation.addedNodes.length > 0 ){
+            } else if (mutation.addedNodes.length > 0) {
                 // console.info(mutation.addedNodes)
                 addedNodes = addedNodes || true
 
@@ -737,7 +757,7 @@ window.onload = function () {
         })
 
         // console.info('once : ', addedNodes , $("button[role='button'][userID]").length)
-        if(addedNodes){
+        if (addedNodes) {
             if ($("button[role='button'][userID]").length > 0) {
                 runGrepRightBubble()
             }
@@ -748,7 +768,7 @@ window.onload = function () {
         //     observer.disconnect()
         // } 
 
-    }   
+    }
     let obsDialog = new MutationObserver(callbackDialog); // 用来检测Dialog变化
     let obsDialogOnce = new MutationObserver(callbackDialogOnce); // 用来检测Dialog变化
 
@@ -764,7 +784,7 @@ window.onload = function () {
                 attributeFilter: ['data-transition-id'], attributeOldValue: true, characterDataOldValue: false
             });
 
-            
+
             obsDialogOnce.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV:eq(1)")[0], {
                 subtree: true, childList: true, characterData: false, attributes: false,
                 attributeOldValue: false, characterDataOldValue: false
@@ -846,10 +866,10 @@ window.onload = function () {
                             // console.info("callbackRight", $("div.DraftEditor-editorContainer").length > 0 , $("button[role='button'][title='" + convo.nickName + "']").length > 0)
 
                             if ($("div.DraftEditor-editorContainer").length > 0  // 有编辑区域
-                            && $("button[role='button'][title='" + convo.nickName + "']").length > 0 // 最上面title已加载
-                            && $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2 // 右侧bubble已加载出来
+                                && $("button[role='button'][title='" + convo.nickName + "']").length > 0 // 最上面title已加载
+                                && $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2 // 右侧bubble已加载出来
                             ) {
-                                
+
 
                                 console.info("add userID in title")
                                 $("button[role='button'][title='" + convo.nickName + "']").attr("userID", userID)
