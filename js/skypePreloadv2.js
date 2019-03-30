@@ -950,8 +950,12 @@ window.onload = function () {
                         });
 
                     } else {
-                        core.WebToHost({ "attachFile": { "selector": "input.fileInput", "file": value } }).then((resHost) => {
-                            console.log("---file---")
+
+                        if($('input.[type="file"]').length == 0){
+                            $('button[role="button"][title="Add files"][aria-label="Add files"]').click()
+                        }
+                        core.WebToHost({ "attachFile": { "selector": "input.[type='file']", "file": value } }).then((resHost) => {
+                            console.info("---file---")
                             waitSend(arrayValue, index)
                         })
                     }
