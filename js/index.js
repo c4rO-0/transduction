@@ -59,6 +59,73 @@ function listWebview() {
 let tdPinCoord = [0, 0]
 
 
+/**
+ * chrome debugger for key : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
+ * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
+ * @param {string} webSelector 'webview[data-app-name="skype"]'
+ * @param {string} type keyup, keydown, keypress
+ * @param {int} charCode windowsVirtualKeyCode(目前只对字母好使) code列表 https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+ * @param {boolean} [shift=false] 
+ * @param {boolean} [alt=false] 
+ * @param {boolean} [ctrl=false]  
+ * @param {boolean} [cmd=false]  
+ */
+function keypressSimulator(webSelector, type, charCode, shift = false, alt = false, ctrl = false, cmd = false) {
+
+
+    let wc = $(webSelector).get(0).getWebContents();
+
+    // console.log("---attachInputFile----")
+    try {
+        if (!wc.debugger.isAttached()) {
+            wc.debugger.attach("1.1");
+        }
+    } catch (err) {
+        console.error("Debugger attach failed : ", err);
+    };
+    var text = "";
+
+    switch (type) {
+        case 'keyup':
+            type = 'keyUp';
+            break;
+        case 'keydown':
+            type = 'rawKeyDown';
+            break;
+        case 'keypress':
+            type = 'char';
+            text = String.fromCharCode(charCode);
+            break;
+        default:
+            throw new Error("Unknown type of event.");
+            break;
+    }
+
+    var modifiers = 0;
+    if (shift) {
+        modifiers += 8;
+    }
+    if (alt) {
+        modifiers += 1;
+    }
+    if (ctrl) {
+        modifiers += 2;
+    }
+    if (cmd) {
+        modifiers += 4;
+    }
+
+    return wc.debugger
+        .sendCommand("Input.dispatchKeyEvent", { 
+            type: type,
+            windowsVirtualKeyCode: charCode,
+            modifiers: modifiers,
+            text: text
+        });
+
+}
+
+
 
 $(document).ready(function () {
 
@@ -257,6 +324,7 @@ $(document).ready(function () {
 
 
 
+
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
                     <p class="m-0">'+ dialog["from"] + '</p>\
@@ -425,7 +493,7 @@ $(document).ready(function () {
                         for (let indexOfExistBubble = 0;
                             indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
                             if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
-                                currentInsertIndex = -(indexOfExistBubble+1)
+                                currentInsertIndex = -(indexOfExistBubble + 1)
                             }
                             if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
                                 currentInsertIndex = indexOfExistBubble
@@ -446,7 +514,7 @@ $(document).ready(function () {
                         } else {
                             // 重复的ID, 替换成新的
                             $(dialogSelector
-                                + " [msgID='" + arrayExistBubble[-currentInsertIndex-1].msgID + "']")
+                                + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
                                 .replaceWith(AddDialogHtml(value)
                                 )
                         }
@@ -1179,6 +1247,9 @@ $(document).ready(function () {
 
     }
 
+
+
+
     function loadWebview(webTag, url, strUserAgent) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
@@ -1200,6 +1271,8 @@ $(document).ready(function () {
 
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://web.wechat.com/", core.strUserAgentWin)
+
+    openDevtool("skype")
 
     //==============================UI==============================
     /**
