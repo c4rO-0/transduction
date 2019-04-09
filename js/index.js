@@ -59,71 +59,6 @@ function listWebview() {
 let tdPinCoord = [0, 0]
 
 
-/**
- * chrome debugger for key : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
- * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
- * @param {string} webSelector 'webview[data-app-name="skype"]'
- * @param {string} type keyup, keydown, keypress
- * @param {int} charCode windowsVirtualKeyCode(目前只对字母好使) code列表 https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
- * @param {boolean} [shift=false] 
- * @param {boolean} [alt=false] 
- * @param {boolean} [ctrl=false]  
- * @param {boolean} [cmd=false]  
- */
-function keypressSimulator(webSelector, type, charCode, shift = false, alt = false, ctrl = false, cmd = false) {
-
-
-    let wc = $(webSelector).get(0).getWebContents();
-
-    // console.log("---attachInputFile----")
-    try {
-        if (!wc.debugger.isAttached()) {
-            wc.debugger.attach("1.1");
-        }
-    } catch (err) {
-        console.error("Debugger attach failed : ", err);
-    };
-    var text = "";
-
-    switch (type) {
-        case 'keyup':
-            type = 'keyUp';
-            break;
-        case 'keydown':
-            type = 'rawKeyDown';
-            break;
-        case 'keypress':
-            type = 'char';
-            text = String.fromCharCode(charCode);
-            break;
-        default:
-            throw new Error("Unknown type of event.");
-            break;
-    }
-
-    var modifiers = 0;
-    if (shift) {
-        modifiers += 8;
-    }
-    if (alt) {
-        modifiers += 1;
-    }
-    if (ctrl) {
-        modifiers += 2;
-    }
-    if (cmd) {
-        modifiers += 4;
-    }
-
-    return wc.debugger
-        .sendCommand("Input.dispatchKeyEvent", { 
-            type: type,
-            windowsVirtualKeyCode: charCode,
-            modifiers: modifiers,
-            text: text
-        });
-
-}
 
 
 
@@ -635,6 +570,12 @@ $(document).ready(function () {
                 attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
 
                 resolve("attached")
+            } else if (key == 'simulateKey') {
+                // 按键模拟
+
+                keypressSimulator(webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
+
+                resolve("simulated")
             } else if (key == 'logStatus') {
                 // 登录状态
                 // console.log("============================================================")
@@ -1207,6 +1148,72 @@ $(document).ready(function () {
         return arraySimpleInput
     }
 
+
+    /**
+     * chrome debugger for key : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
+     * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
+     * @param {string} webSelector 'webview[data-app-name="skype"]'
+     * @param {string} type keyup, keydown, keypress
+     * @param {int} charCode windowsVirtualKeyCode(目前只对字母好使) code列表 https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+     * @param {boolean} [shift=false] 
+     * @param {boolean} [alt=false] 
+     * @param {boolean} [ctrl=false]  
+     * @param {boolean} [cmd=false]  
+     */
+    function keypressSimulator(webSelector, type, charCode, shift = false, alt = false, ctrl = false, cmd = false) {
+
+
+        let wc = $(webSelector).get(0).getWebContents();
+
+        // console.log("---attachInputFile----")
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.1");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+        var text = "";
+
+        switch (type) {
+            case 'keyup':
+                type = 'keyUp';
+                break;
+            case 'keydown':
+                type = 'rawKeyDown';
+                break;
+            case 'keypress':
+                type = 'char';
+                text = String.fromCharCode(charCode);
+                break;
+            default:
+                throw new Error("Unknown type of event.");
+                break;
+        }
+
+        var modifiers = 0;
+        if (shift) {
+            modifiers += 8;
+        }
+        if (alt) {
+            modifiers += 1;
+        }
+        if (ctrl) {
+            modifiers += 2;
+        }
+        if (cmd) {
+            modifiers += 4;
+        }
+
+        return wc.debugger
+            .sendCommand("Input.dispatchKeyEvent", {
+                type: type,
+                windowsVirtualKeyCode: charCode,
+                modifiers: modifiers,
+                text: text
+            });
+
+    }
 
     function attachInputFile(webSelector, inputSelector, filePath) {
 
