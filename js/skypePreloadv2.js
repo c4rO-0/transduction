@@ -183,7 +183,7 @@ window.onload = function () {
             this.type = undefined
 
             let nodeBubble = $(node).find("div[style*='justify-content: flex-start;'], div[style*='justify-content: flex-end;']")
-            if ($(nodeBubble).length > 0){
+            if ($(nodeBubble).length > 0) {
                 if ($(node).attr("aria-label")) {
                     // 图片 , 文字
                     let textObj = $(node).find('> div > div > div > div > div > div > div > div')
@@ -204,19 +204,19 @@ window.onload = function () {
 
                     // 卡片链接
                     let urlCardObj = $(node).find("button[role='button'][aria-label*='sent a website'] > div > div")
-                    if($(urlCardObj).length == 2){ // 没有简介
+                    if ($(urlCardObj).length == 2) { // 没有简介
                         this.type = 'url'
                         this.message = $($(urlCardObj).get(1)).text()
-                    }else if($(urlCardObj).length == 3){ // 有简介
+                    } else if ($(urlCardObj).length == 3) { // 有简介
                         this.type = 'url'
                         this.message = $($(urlCardObj).get(2)).text()
                     }
-                    
+
                     let urlObj = $(node).find("a[href]")
-                    if($(urlObj).length>0){
+                    if ($(urlObj).length > 0) {
                         this.type = 'url'
                         this.message = $(urlObj).attr('href')
-                    }                    
+                    }
 
 
 
@@ -588,7 +588,7 @@ window.onload = function () {
                         $(element).attr("time", timeCurrent)
                         $(element).attr("timeTempDate", date)
                         $(element).attr("timeTempTime", time)
-                        $(element).attr("timeTempMod", modifyClockOfDate(date, time))                        
+                        $(element).attr("timeTempMod", modifyClockOfDate(date, time))
                         // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                         timeLast = timeCurrent
                     }
@@ -605,7 +605,7 @@ window.onload = function () {
                             $(element).attr("time", timeCurrent)
                             $(element).attr("timeTempDate", date)
                             $(element).attr("timeTempTime", time)
-                            $(element).attr("timeTempMod", modifyClockOfDate(date, time))                            
+                            $(element).attr("timeTempMod", modifyClockOfDate(date, time))
                             // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                             timeLast = timeCurrent
                         } else {
@@ -931,27 +931,43 @@ window.onload = function () {
                     if (typeof (value) == 'string') {
                         // console.log(value)
 
-                        $('#chatInputAreaWithQuotes').val(value)
+                        
 
-                        let e = $.Event("keydown", { keyCode: 64 }); //64没有对应按键
-                        $("#chatInputAreaWithQuotes").trigger(e);
-
+                        // 等待send button
                         let obsSend = new MutationObserver((mutationList, observer) => {
-                            $('div.send-button-holder button').click()
 
-                            console.log("---text---")
-                            waitSend(arrayValue, index)
+                            if ($('button[role="button"][title="Send message"]').length > 0) {
 
-                            observer.disconnect()
+                                // 2. 在A后面添加真实消息
+                                $('#chatInputAreaWithQuotes').val(value)
+
+                                // 3. 再次输入字母A
+
+                                // 4. 光标移动到最开始
+
+                                // 5. 两次 Del 去掉字母A
+
+                                // 6. 发送
+                                
+                                // $('div.send-button-holder button').click() 
+
+                                console.log("---text---")
+                                waitSend(arrayValue, index)
+
+                                observer.disconnect()
+                            }
+
                         });
-                        obsSend.observe($('div.send-button-holder button')[0], {
+                        obsSend.observe($('button[aria-label="Open Expression picker"]').parent()[0], {
                             subtree: false, childList: false, characterData: false, attributes: true,
                             attributeOldValue: false, characterDataOldValue: false
                         });
+                        // 1. 敲击键盘 输入字母A 
+
 
                     } else {
 
-                        if($('input.[type="file"]').length == 0){
+                        if ($('input.[type="file"]').length == 0) {
                             $('button[role="button"][title="Add files"][aria-label="Add files"]').click()
                         }
                         core.WebToHost({ "attachFile": { "selector": "input.[type='file']", "file": value } }).then((resHost) => {
