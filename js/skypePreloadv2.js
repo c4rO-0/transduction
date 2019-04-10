@@ -522,28 +522,28 @@ window.onload = function () {
 
 
         // // 先扫一遍, 防止一个时间都没有
-        // $("div[role=region]").each((index, element) => {
-        //     if ($(element).find("> div[role='heading']").length > 0) {
-        //         // 日期格式有问题
-        //         let dateStrLocal = $(element).find("> div[role='heading']").attr("aria-label");
-        //         let dayList = ['Today', 'Yesterday', 'Sunday', 'Monday', 'Tuesday', 'Wednsday', 'Thursday', 'Friday', 'Saturday']
-        //         if (dayList.indexOf(dateStrLocal.split(',')[0]) != -1) { //排除非日期格式 : unread...
+        $("div[role=region]").each((index, element) => {
+            if ($(element).find("> div[role='heading']").length > 0) {
+                // 日期格式有问题
+                let dateStrLocal = $(element).find("> div[role='heading']").attr("aria-label");
+                let dayList = ['Today', 'Yesterday', 'Sunday', 'Monday', 'Tuesday', 'Wednsday', 'Thursday', 'Friday', 'Saturday']
+                if (dayList.indexOf(dateStrLocal.split(',')[0]) != -1) { //排除非日期格式 : unread...
 
-        //             date = tranSkypeTime(dateStrLocal)
+                    date = tranSkypeTime(dateStrLocal)
 
-        //         }
+                }
 
-        //     }
-        // })
+            }
+        })
 
-        // if(date == undefined){
-        //     // 可能存在问题 准确日期应该从
-        //     // $('.reactxp-ignore-pointer-events button div[data-text-as-pseudo-element]')
+        if(date == undefined){
+            // 可能存在问题 准确日期应该从
+            // $('.reactxp-ignore-pointer-events button div[data-text-as-pseudo-element]')
 
-        //     // date = Date.now()
+            date = Date.now()
 
-        //     return
-        // }
+            // return
+        }
 
         $("div[role=region]").each((index, element) => {
 
@@ -934,6 +934,7 @@ window.onload = function () {
                         // 等待send button
                         let obsSend = new MutationObserver((mutationList, observer) => {
 
+                            // console.info(mutationList)
                             console.info('obsSend changed. ', $('button[role="button"][title="Send message"]').length > 0
                                 && $('span[data-offset-key="0-0-0"]').length > 0
                                 && $('span[data-offset-key="0-0-0"] span').text() == 'A',
@@ -947,7 +948,7 @@ window.onload = function () {
 
                                 // 2. 在A后面添加真实消息
                                 setTimeout(() => {
-                                    $('span[data-offset-key="0-0-0"] span').text('A' + value)
+                                    $('span[data-offset-key="0-0-0"] span').text(' ' + value)
 
                                     // 3. 输入空格
                                     $('div.public-DraftEditor-content').focus()
@@ -968,12 +969,13 @@ window.onload = function () {
                                     }).then(() => {
                                         // 6. 发送
                                         setTimeout(() => {
+                                            // waitSend(arrayValue, index)
                                             $('button[role="button"][title="Send message"]').click()
                                         }, 600);
                                     })
 
                                     // console.info("---text---")
-                                    // waitSend(arrayValue, index)
+                                    
                                 }, 200);
                                 
                             }
@@ -993,10 +995,19 @@ window.onload = function () {
 
                     } else {
 
-                        if ($('input.[type="file"]').length == 0) {
-                            $('button[role="button"][title="Add files"][aria-label="Add files"]').click()
+                        if ($('input[type="file"]').length == 0) {
+                            if($('button[role="button"][title="Add files"]').length == 0){
+                                if($('button[role="button"][title="More"][aria-label="More"]').length == 0){
+                                    // error
+                                }else{
+                                    $('button[role="button"][title="More"][aria-label="More"]').click()
+                                }
+                            }
+
+                            $('button[role="button"][title="Add files"]').click()
                         }
-                        core.WebToHost({ "attachFile": { "selector": "input.[type='file']", "file": value } }).then((resHost) => {
+
+                        core.WebToHost({ "attachFile": { "selector": "input[type='file']", "file": value } }).then((resHost) => {
                             console.info("---file---")
                             waitSend(arrayValue, index)
                         })
@@ -1006,39 +1017,45 @@ window.onload = function () {
 
                 function waitSend(arrayValue, index) {
                     // 等待发送完成
-                    let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
 
-                        mutationList.forEach((mutation, nodeIndex) => {
-                            let addedNodes = mutation.addedNodes
-                            console.log(addedNodes)
-                            if (addedNodes && addedNodes[0].nodeName == "SWX-MESSAGE") {
-                                console.log('---addedNodes----')
-                                observer.disconnect()
+                    if (typeof (arrayValue[index]) == 'string') {
 
-                                let obsFinished = new MutationObserver((mList, obs) => {
-                                    console.log('-------obs update--------')
-                                    console.log(mList)
-                                    console.log("DeliveryStatus update : ", $('swx-message.me span.DeliveryStatus-status').last().text())
-                                    if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
-                                        obs.disconnect()
-                                        send(arrayValue, index + 1)
-                                    }
-                                })
 
-                                obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
-                                    // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
-                                    subtree: true, childList: true, characterData: true, attributes: true,
-                                    attributeOldValue: false, characterDataOldValue: false
-                                });
+                    }else{
+                    //     let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
 
-                            }
-                        })
-
-                    })
-                    obsSwxUpdated.observe($("div.messageHistory")[0], {
-                        subtree: false, childList: true, characterData: false, attributes: false,
-                        attributeOldValue: false, characterDataOldValue: false
-                    })
+                    //         mutationList.forEach((mutation, nodeIndex) => {
+                    //             let addedNodes = mutation.addedNodes
+                    //             console.log(addedNodes)
+                    //             if (addedNodes && addedNodes[0].nodeName == "SWX-MESSAGE") {
+                    //                 console.log('---addedNodes----')
+                    //                 observer.disconnect()
+    
+                    //                 let obsFinished = new MutationObserver((mList, obs) => {
+                    //                     console.log('-------obs update--------')
+                    //                     console.log(mList)
+                    //                     console.log("DeliveryStatus update : ", $('swx-message.me span.DeliveryStatus-status').last().text())
+                    //                     if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
+                    //                         obs.disconnect()
+                    //                         send(arrayValue, index + 1)
+                    //                     }
+                    //                 })
+    
+                    //                 obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
+                    //                     // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                    //                     subtree: true, childList: true, characterData: true, attributes: true,
+                    //                     attributeOldValue: false, characterDataOldValue: false
+                    //                 });
+    
+                    //             }
+                    //         })
+    
+                    //     })
+                    //     obsSwxUpdated.observe($("div.messageHistory")[0], {
+                    //         subtree: false, childList: true, characterData: false, attributes: false,
+                    //         attributeOldValue: false, characterDataOldValue: false
+                    //     })
+                    }
 
                 }
 
