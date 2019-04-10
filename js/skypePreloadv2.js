@@ -910,7 +910,7 @@ window.onload = function () {
             } else if (key == 'sendDialog') {
 
 
-                console.log("--------sendDialog---")
+                console.info("--------sendDialog---")
                 //检查
                 if ($("button[role='button'][userID]").attr("userID") != arg[0]) {
 
@@ -920,9 +920,9 @@ window.onload = function () {
 
                 function send(arrayValue, index = 0) {
 
-                    console.log("index : ", index)
+                    console.info("index : ", index)
                     if (index == arrayValue.length) {
-                        console.log("sendDialog finished")
+                        console.info("sendDialog finished")
                         resolve("Dialog send")
                         return
                     }
@@ -931,38 +931,64 @@ window.onload = function () {
                     if (typeof (value) == 'string') {
                         // console.log(value)
 
-                        
-
                         // 等待send button
                         let obsSend = new MutationObserver((mutationList, observer) => {
 
-                            if ($('button[role="button"][title="Send message"]').length > 0) {
+                            console.info('obsSend changed. ', $('button[role="button"][title="Send message"]').length > 0
+                                && $('span[data-offset-key="0-0-0"]').length > 0
+                                && $('span[data-offset-key="0-0-0"] span').text() == 'A',
+                                $('button[role="button"][title="Send message"]').length,
+                                $('span[data-offset-key="0-0-0"]').length,
+                                $('span[data-offset-key="0-0-0"] span').text())
+
+                            if ($('button[role="button"][title="Send message"]').length > 0
+                                && $('span[data-offset-key="0-0-0"]').length > 0
+                                && $('span[data-offset-key="0-0-0"] span').text() == 'A') {
 
                                 // 2. 在A后面添加真实消息
-                                $('#chatInputAreaWithQuotes').val(value)
+                                setTimeout(() => {
+                                    $('span[data-offset-key="0-0-0"] span').text('A' + value)
 
-                                // 3. 再次输入字母A
+                                    // 3. 输入空格
+                                    $('div.public-DraftEditor-content').focus()
+                                    core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } }).then(() => {
+                                        // 4. 光标移动到最开始
+                                        $('div.public-DraftEditor-content').focus()
+                                        core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x24 } })
+                                    }).then(() => {
+                                        // 5. 两次 Del 去掉字母A
+                                        $('div.public-DraftEditor-content').focus()
+                                        setTimeout(() => {
+                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                        }, 200);
+                                    }).then(() => {
+                                        setTimeout(() => {
+                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                        }, 400);
+                                    }).then(() => {
+                                        // 6. 发送
+                                        setTimeout(() => {
+                                            $('button[role="button"][title="Send message"]').click()
+                                        }, 600);
+                                    })
 
-                                // 4. 光标移动到最开始
-
-                                // 5. 两次 Del 去掉字母A
-
-                                // 6. 发送
+                                    // console.info("---text---")
+                                    // waitSend(arrayValue, index)
+                                }, 200);
                                 
-                                // $('div.send-button-holder button').click() 
-
-                                console.log("---text---")
-                                waitSend(arrayValue, index)
-
-                                observer.disconnect()
                             }
+
+
 
                         });
                         obsSend.observe($('button[aria-label="Open Expression picker"]').parent()[0], {
-                            subtree: false, childList: false, characterData: false, attributes: true,
+                            subtree: true, childList: true, characterData: true, attributes: true,
                             attributeOldValue: false, characterDataOldValue: false
                         });
+                        // console.info($('button[aria-label="Open Expression picker"]').parent())
                         // 1. 敲击键盘 输入字母A 
+                        $('div.public-DraftEditor-content').focus()
+                        core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x41 } })
 
 
                     } else {
