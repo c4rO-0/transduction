@@ -1068,24 +1068,30 @@ window.onload = function () {
 
                             let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
                                 if ($("div[role=region]:eq(-2) svg[viewBox]").length > 0) {
-                                    console.info("发送中....")
+                                    console.info("发送中....", $("div[role=region]:eq(-2) svg[viewBox]"))
                                     observer.disconnect()
 
-                                    let sendFinshed = new MutationObserver((mutationListSend, observerSenf) => {
+                                    let sendFinished = new MutationObserver((mutationListSend, observerSend) => {
+                                        
                                         let objSend = $("div[role=region]:eq(-2)")
+                                        // console.info("发送状态 : 右侧 :", 
+                                        // $(objSend).find("div[style*='justify-content: flex-end;']").length > 0, 
+                                        // "小飞机 : ", $(objSend).find('button[role="button"][title="Forward"][aria-label="Forward"]').length > 0)
                                         if ($(objSend).find("div[style*='justify-content: flex-end;']").length > 0) {
+
                                             if ($(objSend).find('button[role="button"][title="Forward"][aria-label="Forward"]').length > 0) {
-                                                observerSenf.disconnect()
+                                                console.info("图片已发送...")
+                                                observerSend.disconnect()
                                                 send(arrayValue, index + 1)
                                             } else if ($("div[role=region]:eq(-2)").find('div[title="Unable to send message"]').length > 0) {
                                                 // 发送失败
-                                                observerSenf.disconnect()
+                                                observerSend.disconnect()
                                                 send(arrayValue, index + 1)
                                             }
                                         }
                                     })
-                                    sendFinshed.observe($("div[role=region]:eq(-2) svg[viewBox]").parent()[0], {
-                                        subtree: true, childList: true, characterData: true, attributes: true,
+                                    sendFinished.observe($("div[role=region]:eq(-2)")[0], {
+                                        subtree: true, childList: true, characterData: true, attributes: false,
                                         attributeOldValue: false, characterDataOldValue: false
                                     })
 
@@ -1095,9 +1101,9 @@ window.onload = function () {
 
 
                             obsSwxUpdated.observe($('div[role="region"]').parent()[0], {
-                                subtree: true, childList: true, characterData: true, attributes: true,
+                                subtree: true, childList: true, characterData: false, attributes: false,
                                 attributeOldValue: false, characterDataOldValue: false
-                            })
+                            });
 
 
                         } else {
