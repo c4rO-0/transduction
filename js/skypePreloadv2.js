@@ -1005,6 +1005,7 @@ window.onload = function () {
                                         setTimeout(() => {
                                             // waitSend(arrayValue, index)
                                             $('button[role="button"][title="Send message"]').click()
+                                            waitSend(arrayValue, index)
                                         }, 600);
                                     })
 
@@ -1021,7 +1022,7 @@ window.onload = function () {
                         });
                         // console.info($('button[aria-label="Open Expression picker"]').parent())
                         // 1. 敲击键盘 输入字母A 
-                        core.WebToHost({ "focus":''}).then(()=>{
+                        core.WebToHost({ "focus": '' }).then(() => {
                             $('div.public-DraftEditor-content').focus()
                             core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } })
                             core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x41 } })
@@ -1030,8 +1031,8 @@ window.onload = function () {
 
 
                     } else {
-
-                        if ($('input[type="file"]').length == 0) {
+                        core.WebToHost({ "focus": '' }).then(() => {
+                            // if ($('input[type="file"]').length == 0) {
                             if ($('button[role="button"][title="Add files"]').length == 0) {
                                 if ($('button[role="button"][title="More"][aria-label="More"]').length == 0) {
                                     // error
@@ -1041,11 +1042,12 @@ window.onload = function () {
                             }
 
                             $('button[role="button"][title="Add files"]').click()
-                        }
+                            // }
 
-                        core.WebToHost({ "attachFile": { "selector": "input[type='file']", "file": value } }).then((resHost) => {
-                            console.info("---file---")
-                            waitSend(arrayValue, index)
+                            core.WebToHost({ "attachFile": { "selector": "input[type='file']", "file": value } }).then((resHost) => {
+                                console.info("---file---")
+                                waitSend(arrayValue, index)
+                            })
                         })
                     }
 
@@ -1055,7 +1057,7 @@ window.onload = function () {
                     // 等待发送完成
 
                     if (typeof (arrayValue[index]) == 'string') {
-
+                        send(arrayValue, index + 1)
 
                     } else {
                         //     let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
