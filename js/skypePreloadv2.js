@@ -536,7 +536,7 @@ window.onload = function () {
             }
         })
 
-        if(date == undefined){
+        if (date == undefined) {
             // 可能存在问题 准确日期应该从
             // $('.reactxp-ignore-pointer-events button div[data-text-as-pseudo-element]')
 
@@ -935,16 +935,11 @@ window.onload = function () {
                         let obsSend = new MutationObserver((mutationList, observer) => {
 
                             // console.info(mutationList)
-                            console.info('obsSend changed. ', $('button[role="button"][title="Send message"]').length > 0
-                                && $('span[data-offset-key="0-0-0"]').length > 0
-                                && $('span[data-offset-key="0-0-0"] span').text() == 'A',
-                                $('button[role="button"][title="Send message"]').length,
-                                $('span[data-offset-key="0-0-0"]').length,
-                                $('span[data-offset-key="0-0-0"] span').text())
 
                             if ($('button[role="button"][title="Send message"]').length > 0
                                 && $('span[data-offset-key="0-0-0"]').length > 0
                                 && $('span[data-offset-key="0-0-0"] span').text() == 'A') {
+                                observer.disconnect()
 
                                 // 2. 在A后面添加真实消息
                                 setTimeout(() => {
@@ -975,12 +970,49 @@ window.onload = function () {
                                     })
 
                                     // console.info("---text---")
-                                    
+
                                 }, 200);
-                                
+
                             }
 
+                            if ($('button[role="button"][title="Send message"]').length > 0
+                                && $('span[data-offset-key="0-0-0"]').length > 0
+                                && $('span[data-offset-key="0-0-0"] span').text() == ' A') { // 空格A
+                                observer.disconnect()
 
+                                // 2. 在A后面添加真实消息
+                                setTimeout(() => {
+                                    $('span[data-offset-key="0-0-0"] span').text(' ' + value)
+
+                                    // 3. 输入空格
+                                    $('div.public-DraftEditor-content').focus()
+                                    core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } }).then(() => {
+                                        // 4. 光标移动到最开始
+                                        $('div.public-DraftEditor-content').focus()
+                                        core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x24 } })
+                                    }).then(() => {
+                                        // 5. 两次 Del 去掉字母A
+                                        $('div.public-DraftEditor-content').focus()
+                                        setTimeout(() => {
+                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                        }, 200);
+                                    }).then(() => {
+                                        setTimeout(() => {
+                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                        }, 400);
+                                    }).then(() => {
+                                        // 6. 发送
+                                        setTimeout(() => {
+                                            // waitSend(arrayValue, index)
+                                            $('button[role="button"][title="Send message"]').click()
+                                        }, 600);
+                                    })
+
+                                    // console.info("---text---")
+
+                                }, 200);
+
+                            }
 
                         });
                         obsSend.observe($('button[aria-label="Open Expression picker"]').parent()[0], {
@@ -989,17 +1021,21 @@ window.onload = function () {
                         });
                         // console.info($('button[aria-label="Open Expression picker"]').parent())
                         // 1. 敲击键盘 输入字母A 
-                        $('div.public-DraftEditor-content').focus()
-                        core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x41 } })
+                        core.WebToHost({ "focus":''}).then(()=>{
+                            $('div.public-DraftEditor-content').focus()
+                            core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } })
+                            core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x41 } })
+                        })
+
 
 
                     } else {
 
                         if ($('input[type="file"]').length == 0) {
-                            if($('button[role="button"][title="Add files"]').length == 0){
-                                if($('button[role="button"][title="More"][aria-label="More"]').length == 0){
+                            if ($('button[role="button"][title="Add files"]').length == 0) {
+                                if ($('button[role="button"][title="More"][aria-label="More"]').length == 0) {
                                     // error
-                                }else{
+                                } else {
                                     $('button[role="button"][title="More"][aria-label="More"]').click()
                                 }
                             }
@@ -1021,40 +1057,40 @@ window.onload = function () {
                     if (typeof (arrayValue[index]) == 'string') {
 
 
-                    }else{
-                    //     let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
+                    } else {
+                        //     let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
 
-                    //         mutationList.forEach((mutation, nodeIndex) => {
-                    //             let addedNodes = mutation.addedNodes
-                    //             console.log(addedNodes)
-                    //             if (addedNodes && addedNodes[0].nodeName == "SWX-MESSAGE") {
-                    //                 console.log('---addedNodes----')
-                    //                 observer.disconnect()
-    
-                    //                 let obsFinished = new MutationObserver((mList, obs) => {
-                    //                     console.log('-------obs update--------')
-                    //                     console.log(mList)
-                    //                     console.log("DeliveryStatus update : ", $('swx-message.me span.DeliveryStatus-status').last().text())
-                    //                     if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
-                    //                         obs.disconnect()
-                    //                         send(arrayValue, index + 1)
-                    //                     }
-                    //                 })
-    
-                    //                 obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
-                    //                     // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
-                    //                     subtree: true, childList: true, characterData: true, attributes: true,
-                    //                     attributeOldValue: false, characterDataOldValue: false
-                    //                 });
-    
-                    //             }
-                    //         })
-    
-                    //     })
-                    //     obsSwxUpdated.observe($("div.messageHistory")[0], {
-                    //         subtree: false, childList: true, characterData: false, attributes: false,
-                    //         attributeOldValue: false, characterDataOldValue: false
-                    //     })
+                        //         mutationList.forEach((mutation, nodeIndex) => {
+                        //             let addedNodes = mutation.addedNodes
+                        //             console.log(addedNodes)
+                        //             if (addedNodes && addedNodes[0].nodeName == "SWX-MESSAGE") {
+                        //                 console.log('---addedNodes----')
+                        //                 observer.disconnect()
+
+                        //                 let obsFinished = new MutationObserver((mList, obs) => {
+                        //                     console.log('-------obs update--------')
+                        //                     console.log(mList)
+                        //                     console.log("DeliveryStatus update : ", $('swx-message.me span.DeliveryStatus-status').last().text())
+                        //                     if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
+                        //                         obs.disconnect()
+                        //                         send(arrayValue, index + 1)
+                        //                     }
+                        //                 })
+
+                        //                 obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
+                        //                     // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                        //                     subtree: true, childList: true, characterData: true, attributes: true,
+                        //                     attributeOldValue: false, characterDataOldValue: false
+                        //                 });
+
+                        //             }
+                        //         })
+
+                        //     })
+                        //     obsSwxUpdated.observe($("div.messageHistory")[0], {
+                        //         subtree: false, childList: true, characterData: false, attributes: false,
+                        //         attributeOldValue: false, characterDataOldValue: false
+                        //     })
                     }
 
                 }
