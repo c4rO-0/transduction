@@ -1046,7 +1046,9 @@ window.onload = function () {
 
                             core.WebToHost({ "attachFile": { "selector": "input[type='file']", "file": value } }).then((resHost) => {
                                 console.info("---file---")
+
                                 waitSend(arrayValue, index)
+
                             })
                         })
                     }
@@ -1060,39 +1062,49 @@ window.onload = function () {
                         send(arrayValue, index + 1)
 
                     } else {
-                        //     let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
+                        if ($('div[role="region"]').parent().length == 1) {
 
-                        //         mutationList.forEach((mutation, nodeIndex) => {
-                        //             let addedNodes = mutation.addedNodes
-                        //             console.log(addedNodes)
-                        //             if (addedNodes && addedNodes[0].nodeName == "SWX-MESSAGE") {
-                        //                 console.log('---addedNodes----')
-                        //                 observer.disconnect()
 
-                        //                 let obsFinished = new MutationObserver((mList, obs) => {
-                        //                     console.log('-------obs update--------')
-                        //                     console.log(mList)
-                        //                     console.log("DeliveryStatus update : ", $('swx-message.me span.DeliveryStatus-status').last().text())
-                        //                     if ($('swx-message.me span.DeliveryStatus-status').last().text() == 'Sent') {
-                        //                         obs.disconnect()
-                        //                         send(arrayValue, index + 1)
-                        //                     }
-                        //                 })
 
-                        //                 obsFinished.observe($('swx-message.me span.DeliveryStatus-status').last()[0], {
-                        //                     // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
-                        //                     subtree: true, childList: true, characterData: true, attributes: true,
-                        //                     attributeOldValue: false, characterDataOldValue: false
-                        //                 });
+                            let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
+                                if ($("div[role=region]:eq(-2) svg[viewBox]").length > 0) {
+                                    console.info("发送中....")
+                                    observer.disconnect()
 
-                        //             }
-                        //         })
+                                    let sendFinshed = new MutationObserver((mutationListSend, observerSenf) => {
+                                        let objSend = $("div[role=region]:eq(-2)")
+                                        if ($(objSend).find("div[style*='justify-content: flex-end;']").length > 0) {
+                                            if ($(objSend).find('button[role="button"][title="Forward"][aria-label="Forward"]').length > 0) {
+                                                observerSenf.disconnect()
+                                                send(arrayValue, index + 1)
+                                            } else if ($("div[role=region]:eq(-2)").find('div[title="Unable to send message"]').length > 0) {
+                                                // 发送失败
+                                                observerSenf.disconnect()
+                                                send(arrayValue, index + 1)
+                                            }
+                                        }
+                                    })
+                                    sendFinshed.observe($("div[role=region]:eq(-2) svg[viewBox]").parent()[0], {
+                                        subtree: true, childList: true, characterData: true, attributes: true,
+                                        attributeOldValue: false, characterDataOldValue: false
+                                    })
 
-                        //     })
-                        //     obsSwxUpdated.observe($("div.messageHistory")[0], {
-                        //         subtree: false, childList: true, characterData: false, attributes: false,
-                        //         attributeOldValue: false, characterDataOldValue: false
-                        //     })
+                                }
+
+                            })
+
+
+                            obsSwxUpdated.observe($('div[role="region"]').parent()[0], {
+                                subtree: true, childList: true, characterData: true, attributes: true,
+                                attributeOldValue: false, characterDataOldValue: false
+                            })
+
+
+                        } else {
+                            send(arrayValue, index + 1)
+                        }
+
+
                     }
 
                 }
