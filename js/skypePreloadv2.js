@@ -897,7 +897,7 @@ window.onload = function () {
                     } else {
                         // 直接爬取
                         console.info("debug : 直接爬取")
-                        // startObserveDialog()
+                        runGrepRightBubble()
                     }
 
                     resolve("copy the query. Please wait...")
@@ -995,19 +995,25 @@ window.onload = function () {
                                         $('div.public-DraftEditor-content').focus()
                                         setTimeout(() => {
                                             core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                            setTimeout(() => {
+                                                core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+
+                                                // 6. 发送
+                                                setTimeout(() => {
+                                                    // waitSend(arrayValue, index)
+                                                    $('div.public-DraftEditor-content').focus()
+                                                    console.info("click send")
+                                                    $('button[role="button"][title="Send message"]').click()
+                                                    console.info("waitSend : ", index)
+                                                    waitSend(arrayValue, index)
+
+                                                }, 200);
+
+                                            }, 200);
+
                                         }, 200);
-                                    }).then(() => {
-                                        setTimeout(() => {
-                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
-                                        }, 400);
-                                    }).then(() => {
-                                        // 6. 发送
-                                        setTimeout(() => {
-                                            // waitSend(arrayValue, index)
-                                            $('button[role="button"][title="Send message"]').click()
-                                            waitSend(arrayValue, index)
-                                        }, 600);
                                     })
+
 
                                     // console.info("---text---")
 
@@ -1031,21 +1037,24 @@ window.onload = function () {
 
 
                     } else {
+                        console.info("---file---")
                         core.WebToHost({ "focus": '' }).then(() => {
                             // if ($('input[type="file"]').length == 0) {
                             if ($('button[role="button"][title="Add files"]').length == 0) {
                                 if ($('button[role="button"][title="More"][aria-label="More"]').length == 0) {
                                     // error
                                 } else {
+                                    console.info("click more")
                                     $('button[role="button"][title="More"][aria-label="More"]').click()
                                 }
                             }
 
+                            console.info("click add")
                             $('button[role="button"][title="Add files"]').click()
                             // }
 
                             core.WebToHost({ "attachFile": { "selector": "input[type='file']", "file": value } }).then((resHost) => {
-                                console.info("---file---")
+
 
                                 waitSend(arrayValue, index)
 
@@ -1057,7 +1066,7 @@ window.onload = function () {
 
                 function waitSend(arrayValue, index) {
                     // 等待发送完成
-
+                    console.info("wait : ", index)
                     if (typeof (arrayValue[index]) == 'string') {
                         send(arrayValue, index + 1)
 
@@ -1072,7 +1081,7 @@ window.onload = function () {
                                     observer.disconnect()
 
                                     let sendFinished = new MutationObserver((mutationListSend, observerSend) => {
-                                        
+
                                         let objSend = $("div[role=region]:eq(-2)")
                                         // console.info("发送状态 : 右侧 :", 
                                         // $(objSend).find("div[style*='justify-content: flex-end;']").length > 0, 
