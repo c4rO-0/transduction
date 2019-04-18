@@ -1702,5 +1702,15 @@ $(document).ready(function () {
 
     });
 
+    $(document).on('keydown', function (event) {
+        // console.log("focus text")
+        // if(document.activeElement == $(".td-inputbox").get(0)){
+
+        // }else{
+
+        // }
+        $(".td-inputbox").focus()
+    })
+
 
 })
