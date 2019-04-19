@@ -1230,14 +1230,18 @@ $(document).ready(function () {
     $('.modal').on('show.bs.modal', function (e) {
         document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
         document.getElementById('modal-wechat').querySelector('webview').insertCSS('.login.ng-scope{min-width: unset;}')
+        $(this).css('left','')
     })
 
-    document.getElementById('modal-wechat').querySelector('webview').addEventListener('load-commit', function(){
+    document.getElementById('modal-wechat').querySelector('webview').addEventListener('load-commit', function () {
         this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
 
     $('.modal').on('hidden.bs.modal', function (e) {
         $('>div.modal-dialog', this).removeClass('modal-xl')
+        // $('#modal-wechat > div.modal-dialog').css('left', '')
+        $(this).css('left','100000px')
+        $(this).show()
     })
 
     $('.td-app-status img[class]').on('click', function () {

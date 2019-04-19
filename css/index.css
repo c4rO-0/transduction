@@ -189,7 +189,7 @@ webview {
 }
 
 #td-sending {
-    position: sticky;
+    position: absolute;
     bottom: 0px;
     text-align: center;
     width: 100%;
@@ -220,7 +220,7 @@ webview {
 
 .td-them {
     margin: 0 40px 0 0;
-    background-color: #c0c0c0;
+    background-color: #e0e0e0;
     display: flex;
     /* max-width: 100%; */
     width: fit-content;
