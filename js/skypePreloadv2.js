@@ -777,22 +777,22 @@ window.onload = function () {
         obsDialog.disconnect()
         obsDialogOnce.disconnect()
 
-        if ($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2) {
+        if ($(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV").length == 3) {
 
-            obsDialog.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV:eq(1) > div > div:eq(1)")[0], {
+            obsDialog.observe($(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV:eq(2) > div > div:eq(1)")[0], {
                 subtree: true, childList: false, characterData: false, attributes: true,
                 attributeFilter: ['data-transition-id'], attributeOldValue: true, characterDataOldValue: false
             });
 
 
-            obsDialogOnce.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV:eq(1)")[0], {
+            obsDialogOnce.observe($(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV:eq(2)")[0], {
                 subtree: true, childList: true, characterData: false, attributes: false,
                 attributeOldValue: false, characterDataOldValue: false
             });
 
 
         } else {
-            console.info("error : startObserveDialog : 没找到dialog obt", $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV"))
+            console.info("error : startObserveDialog : 没找到dialog obt", $(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV"))
         }
 
     }
@@ -867,7 +867,7 @@ window.onload = function () {
 
                             if ($("div.DraftEditor-editorContainer").length > 0  // 有编辑区域
                                 && $("button[role='button'][title='" + convo.nickName + "']").length > 0 // 最上面title已加载
-                                && $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2 // 右侧bubble已加载出来
+                                && $(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV").length == 3 // 右侧bubble已加载出来
                             ) {
 
 
