@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <title>Hello World!</title>
     <script>window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")</script>
-    <script src="../toolkit/bootstrap-4.3.1-dist/js/bootstrap.js""></script>
-    <link href=" ../toolkit/bootstrap-4.3.1-dist/css/bootstrap.css"rel="stylesheet" type="text/css">
+    <script src="../toolkit/bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+    <link href=" ../toolkit/bootstrap-4.3.1-dist/css/bootstrap.css" rel="stylesheet" type="text/css">
     <script src="../toolkit/jquery-ui-1.12.1/jquery-ui.min.js"></script>
     <link href="../toolkit/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet" type="text/css">
     <script src="../js/index.js"></script>
@@ -17,11 +17,11 @@
     <div id="td-root" class="" style="height: -webkit-fill-available; display: flex; flex-wrap:nowrap">
         <div id="td-pin-area" style="position:fixed; left:56px; bottom:7rem; width:234px;height: 23rem;">
         </div>
-        <div class="col-left" id="td-left">
+        <div class="col-left" id="td-left" ondragstart="return false">
             <div id="td-settings">
                 <div class="td-buttons">
                     <img src="../res/pic/settings.png">
-                    <img src="../res/pic/weird.png">
+                    <img id="weird" src="../res/pic/weird.png">
                 </div>
                 <div class="td-app-status">
                     <img id="app-skype" class="app-offline" src="../res/pic/skype.png">
@@ -29,20 +29,6 @@
                     <img id="td-request-status" src="../res/pic/refreshing.png">
                 </div>
             </div>
-            <!-- 实验按钮 by BS -->
-            <!-- <div id='test-area'>
-                <button id='test-1'>查询登录</button>
-                <div id="test-2"></div>
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-6" id='test-skype-toggle' style="background-color:#866606;">
-                        </div>
-                        <div class="col-sm-6" id='test-wechat-toggle' style="background-color:#866606;">
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-            <!-- 实验结束 -->
             <div id="td-convo-container">
                 <div class="td-convo theme-transduction td-font">
                     <div class="col-appLogo">
@@ -104,13 +90,13 @@
             </div>
         </div>
         <div class="col-right td-font" id="td-right">
-            <div class="td-chat-title">
+            <div class="td-chat-title" ondragstart="return false">
                 <h2>Sheng Bi</h2>
                 <img id="debug-app-link" src="../res/pic/skype.png">
             </div>
             <div class="td-chat" winType="td-chat">
                 <img id="td-pin" src="../res/pic/pin.png">
-                <div class="td-chatLog" winType="chatLog">
+                <div class="td-chatLog" winType="chatLog" ondragstart="return false">
                     <div class="td-bubble">
                         <p class="m-0">猜猜我是谁</p>
                         <div class="td-them">
@@ -135,32 +121,72 @@
                             <p class="m-0">06:23</p>
                             <!-- </div> -->
                         </div>
-                        <div class="td-bubble" msgid="6006027547129611817">
-                            <div class="td-me">
-                                <div class="td-chatText">
-                                    <a href="https://www.bilibili.com">
-                                        https://www.bilibili.com
-                                    </a>
-                                    <!-- p用来添加提示 : 链接在浏览器里打开 -->
-                                    <p></p>
-                                </div>
-                                <p class="m-0">16:35</p>
+                    </div>
+                    <div class="td-bubble" msgid="6006027547129611817">
+                        <div class="td-me">
+                            <div class="td-chatText">
+                                <a href="https://www.bilibili.com">
+                                    https://www.bilibili.com
+                                </a>
+                                <!-- p用来添加提示 : 链接在浏览器里打开 -->
+                                <p></p>
+                            </div>
+                            <p class="m-0">16:35</p>
+                        </div>
+                    </div>
+                    <div class="td-bubble">
+                        <p class="m-0">不支持的内容</p>
+                        <div class="td-them">
+                            <div class="td-chatAvatar">
+                                <img
+                                    src="https://api.asm.skype.com/v1/objects/0-ea-d5-beb6f294abc5bdbd372f46002006dd6a/views/swx_avatar">
+                                <p class="m-0">05:45</p>
+                            </div>
+                            <div class="td-chatText">
+                                <span class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</span>
+                                <p>
+                                    奥拉奥拉
+                                </p>
                             </div>
                         </div>
                     </div>
+                    <div class="td-bubble">
+                        <p class="m-0">firefox-send</p>
+                        <div class="td-them">
+                            <div class="td-chatAvatar">
+                                <img
+                                    src="https://api.asm.skype.com/v1/objects/0-ea-d5-beb6f294abc5bdbd372f46002006dd6a/views/swx_avatar">
+                                <p class="m-0">05:45</p>
+                            </div>
+                            <div class="td-chatText">
+                                <span class="badge badge-pill badge-light py-0 mt-1">
+                                    <img src="../res/pic/ffsend.logo.svg" height="15px">
+                                </span>
+                                <a href="https://send.firefox.com/download/3499f894d8cfc804/#JSH2QG29lkhTH4x91kNoUw">
+                                    https://send.firefox.com/download/3499f894d8cfc804/#JSH2QG29lkhTH4x91kNoUw
+                                </a>
+                                <p>
+                                    奥拉奥拉
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="td-sending">
+                            Sending...
+                     </div>
                 </div>
                 <div class="td-chatLog" winType="extension" style="display:none">
                     <!-- 插入extension的地方 -->
                     <!-- <webview data-extension-name="" src="" preload=""></webview> -->
                 </div>
-                <div class="td-toolbox">
+                <div class="td-toolbox" ondragstart="return false">
                     <img id="debug-goBackChat" class="theme-transduction" src="../res/pic/home.png">
                     <img id="debug-firefox-send" class="theme-transduction" src="../res/pic/ffsend.png">
                     <img id="debug-latex2png" class="theme-transduction" src="../res/pic/latex.png">
                 </div>
             </div>
 
-            <div id="td-input" class="td-input">
+            <div id="td-input" class="td-input" ondragstart="return false">
                 <div class="td-inputbox" contenteditable="true"></div>
                 <div class="td-toolbox">
                     <img id="debug-image" src="../res/pic/image.png">
