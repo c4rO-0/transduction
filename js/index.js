@@ -1319,15 +1319,36 @@ $(document).ready(function () {
         this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
 
+    /**
+     * webview隐藏
+     */
+    $('.modal:hidden').each((index, element)=>{
+        $('>div.modal-dialog', element).removeClass('modal-xl')
+        // $('#modal-wechat > div.modal-dialog').css('left', '')
+        $(element).css('left','100000px')         
+        $(element).show()
+
+        $(webTag2Selector(element.id.substring(6))).width("800px")
+        $(webTag2Selector(element.id.substring(6))).height("800px")           
+    })
     $('.modal').on('hidden.bs.modal', function (e) {
         $('>div.modal-dialog', this).removeClass('modal-xl')
         // $('#modal-wechat > div.modal-dialog').css('left', '')
-        $(this).css('left','100000px')
+        $(this).css('left','100000px')         
         $(this).show()
+
+        $(webTag2Selector(this.id.substring(6))).width("800px")
+        $(webTag2Selector(this.id.substring(6))).height("800px")            
     })
 
+    /**
+     * webview出现
+     */
     $('.td-app-status img[class]').on('click', function () {
         let webTag = '#modal-' + this.id.substring(4)
+        $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+        $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+
         if (this.matches('.app-offline')) {
             $(webTag).modal('show')
         }
@@ -1718,6 +1739,5 @@ $(document).ready(function () {
         // }
         $(".td-inputbox").focus()
     })
-
 
 })
