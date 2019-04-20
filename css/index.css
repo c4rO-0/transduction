@@ -16,7 +16,16 @@ webview {
 }
 
 ::-webkit-scrollbar {
-    display: none;
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: #e8e8e8;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #c0c0c0;
 }
 
 .col-left {
@@ -43,6 +52,7 @@ webview {
 .app-online {
     filter: grayscale(0%);
 }
+
 .app-offline {
     filter: grayscale(100%);
 }
@@ -172,7 +182,29 @@ webview {
 
 .td-chatText {
     display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    word-break: break-word;
+}
+
+#td-sending {
+    position: absolute;
+    bottom: 0px;
+    text-align: center;
+    width: 100%;
+    background-color:#c0c0c0;
+    animation-name: sending;
+    animation-direction: alternate;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+
+@keyframes sending {
+    100% {
+        background-color: unset;
+    }
 }
 
 .td-chatImg {
@@ -188,7 +220,7 @@ webview {
 
 .td-them {
     margin: 0 40px 0 0;
-    background-color: #c0c0c0;
+    background-color: #e0e0e0;
     display: flex;
     /* max-width: 100%; */
     width: fit-content;
@@ -219,12 +251,13 @@ webview {
     height: auto;
     flex: 0 0 auto;
     display: flex;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .td-inputbox {
     flex: 1;
     overflow: auto;
+    word-break: break-word;
 }
 
 .td-send {
@@ -384,8 +417,6 @@ webview {
     border-radius: 20px;
 }
 
-/* @media (min-width: 576px) { */
-
 .col-left.td-full {
     flex: 0 0 256px;
     max-width: 256px;
@@ -398,5 +429,3 @@ webview {
 .col-appLogo.td-full {
     display: block;
 }
-
-/* } */
