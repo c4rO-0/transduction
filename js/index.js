@@ -1279,7 +1279,9 @@ $(document).ready(function () {
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://web.wechat.com/", core.strUserAgentWin)
 
-    openDevtool("skype")
+    // openDevtool("skype")
+    // openDevtool("wechat")
+
 
     //==============================UI==============================
     /**
