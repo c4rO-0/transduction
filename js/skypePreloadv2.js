@@ -182,11 +182,8 @@ window.onload = function () {
             }
             this.type = undefined
 
-            let nodeBubble = $(node).find(" > div > div")
-            if ($(nodeBubble).length > 0
-                && $(nodeBubble).css("justify-content")
-                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
-            ) {
+            let nodeBubble = $(node).find("div[style*='justify-content: flex-start;'], div[style*='justify-content: flex-end;']")
+            if ($(nodeBubble).length > 0) {
                 if ($(node).attr("aria-label")) {
                     // 图片 , 文字
                     let textObj = $(node).find('> div > div > div > div > div > div > div > div')
@@ -205,8 +202,27 @@ window.onload = function () {
                         }
                     }
 
+                    // 卡片链接
+                    let urlCardObj = $(node).find("button[role='button'][aria-label*='sent a website'] > div > div")
+                    if ($(urlCardObj).length == 2) { // 没有简介
+                        this.type = 'url'
+                        this.message = $($(urlCardObj).get(1)).text()
+                    } else if ($(urlCardObj).length == 3) { // 有简介
+                        this.type = 'url'
+                        this.message = $($(urlCardObj).get(2)).text()
+                    }
+
+                    let urlObj = $(node).find("a[href]")
+                    if ($(urlObj).length > 0) {
+                        this.type = 'url'
+                        this.message = $(urlObj).attr('href')
+                    }
+
+
+
                 } else {
                     // 奇怪的消息类型
+
                 }
             }
 
@@ -233,20 +249,20 @@ window.onload = function () {
             // console.info('type1 ', strTime.indexOf(':') , timeArray, )
             let time = new Date(Date.now())
             if (timeArray[1].indexOf('PM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(12)
-                }else{
+                } else {
                     time.setHours(parseInt(timeArray[0]) + 12)
                 }
-                
+
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else if (timeArray[1].indexOf('AM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(0)
-                }else{
+                } else {
                     time.setHours(timeArray[0])
                 }
-                
+
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else {
                 time.setHours(timeArray[0])
@@ -315,19 +331,19 @@ window.onload = function () {
         if (timeArray.length == 2) {
             // console.info('2 : ', timeArray[1].indexOf('PM') >= 0)
             if (timeArray[1].indexOf('PM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(12)
-                }else{
+                } else {
                     time.setHours(parseInt(timeArray[0]) + 12)
                 }
                 time.setMinutes(timeArray[1].slice(0, -3))
             } else if (timeArray[1].indexOf('AM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(0)
-                }else{
+                } else {
                     time.setHours(timeArray[0])
                 }
-                time.setMinutes(timeArray[1].slice(0, -4))
+                time.setMinutes(timeArray[1].slice(0, -3))
             } else {
                 time.setHours(timeArray[0])
                 time.setMinutes(timeArray[1])
@@ -336,17 +352,17 @@ window.onload = function () {
             // console.info('3 : ', timeArray[2].indexOf('PM') >= 0)
             if (timeArray[2].indexOf('PM') >= 0) {
                 // console.log(parseInt(timeArray[0]) + 12)
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(12)
-                }else{
+                } else {
                     time.setHours(parseInt(timeArray[0]) + 12)
                 }
                 time.setMinutes(timeArray[1])
                 time.setMilliseconds(timeArray[2].slice(0, -3))
             } else if (timeArray[2].indexOf('AM') >= 0) {
-                if(parseInt(timeArray[0]) == 12){
+                if (parseInt(timeArray[0]) == 12) {
                     time.setHours(0)
-                }else{
+                } else {
                     time.setHours(timeArray[0])
                 }
                 time.setMinutes(timeArray[1])
@@ -480,17 +496,16 @@ window.onload = function () {
     function addMsgID() {
         // console.info("add MsgID")
         $("div[role=region]:not([msgID])").each((index, element) => {
-            let nodeBubble = $(element).find(" > div > div")
-            if ($(nodeBubble).length > 0
-                && $(nodeBubble).css("justify-content")
-                && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')) {
+            let nodeBubble = $(element).find("div[style*='justify-content: flex-start;'], div[style*='justify-content: flex-end;']")
+            if ($(nodeBubble).length > 0) {
                 $(element).attr("msgID", uniqueStr())
             }
         })
     }
 
-    //// Sheng Bi, aa222 , sent at 10:37 PM. This message was edited. c4r reacted with a yes.
-    function getTimeFromSkypeAria(str){
+    // Sheng Bi, aa222 , sent at 10:37 PM. This message was edited. c4r reacted with a yes.
+    // c4r Team sent a photo at 12:41 AM.
+    function getTimeFromSkypeAria(str) {
         let posAt = str.lastIndexOf('at') + 3
         let posEnd = str.indexOf('.', posAt)
 
@@ -505,30 +520,30 @@ window.onload = function () {
         let date = undefined
         let timeLast = undefined //储存上一条Bubble时间
 
-        
+
         // // 先扫一遍, 防止一个时间都没有
-        // $("div[role=region]").each((index, element) => {
-        //     if ($(element).find("> div[role='heading']").length > 0) {
-        //         // 日期格式有问题
-        //         let dateStrLocal = $(element).find("> div[role='heading']").attr("aria-label");
-        //         let dayList = ['Today', 'Yesterday', 'Sunday', 'Monday', 'Tuesday', 'Wednsday', 'Thursday', 'Friday', 'Saturday']
-        //         if (dayList.indexOf(dateStrLocal.split(',')[0]) != -1) { //排除非日期格式 : unread...
-                    
-        //             date = tranSkypeTime(dateStrLocal)
-                    
-        //         }
+        $("div[role=region]").each((index, element) => {
+            if ($(element).find("> div[role='heading']").length > 0) {
+                // 日期格式有问题
+                let dateStrLocal = $(element).find("> div[role='heading']").attr("aria-label");
+                let dayList = ['Today', 'Yesterday', 'Sunday', 'Monday', 'Tuesday', 'Wednsday', 'Thursday', 'Friday', 'Saturday']
+                if (dayList.indexOf(dateStrLocal.split(',')[0]) != -1) { //排除非日期格式 : unread...
 
-        //     }
-        // })
+                    date = tranSkypeTime(dateStrLocal)
 
-        // if(date == undefined){
-        //     // 可能存在问题 准确日期应该从
-        //     // $('.reactxp-ignore-pointer-events button div[data-text-as-pseudo-element]')
+                }
 
-        //     // date = Date.now()
+            }
+        })
 
-        //     return
-        // }
+        if (date == undefined) {
+            // 可能存在问题 准确日期应该从
+            // $('.reactxp-ignore-pointer-events button div[data-text-as-pseudo-element]')
+
+            date = Date.now()
+
+            // return
+        }
 
         $("div[role=region]").each((index, element) => {
 
@@ -549,63 +564,68 @@ window.onload = function () {
             //     // timeLast = $(element).attr("time")
             //     // console.info("already timeLast")
             // } else {
-                let nodeBubble = $(element).find(" > div > div")
-                if (date
-                    && $(nodeBubble).length > 0
-                    && $(nodeBubble).css("justify-content")
-                    && ($(nodeBubble).css("justify-content") == 'flex-start' || $(nodeBubble).css("justify-content") == 'flex-end')
-                ) {
-                    if ($(element).attr("aria-label")) {
-                        let time = getTimeFromSkypeAria($(element).attr("aria-label"))
-                        // let msgTime = new Date(date)
-                        // modifyClockOfDate(date, time)
+            let nodeBubble = $(element).find("div[style*='justify-content: flex-start;'], div[style*='justify-content: flex-end;']")
+            if (date && $(nodeBubble).length > 0) {
+                if ($(element).attr("aria-label")) {
+                    let time = getTimeFromSkypeAria($(element).attr("aria-label"))
+                    // let msgTime = new Date(date)
+                    // modifyClockOfDate(date, time)
+                    if (timeLast) {
+                        let timeCurrent = modifyClockOfDate(date, time)
+                        // console.info(time, new Date(timeCurrent))
+                        if (timeLast >= timeCurrent) {
+                            timeCurrent = timeLast + 1
+                        }
+                        $(element).attr("time", timeCurrent)
+                        $(element).attr("timeTempDate", date)
+                        $(element).attr("timeTempTime", time)
+                        $(element).attr("timeTempMod", modifyClockOfDate(date, time))
+                        // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
+                        timeLast = timeCurrent
+                    } else {
+                        let timeCurrent = modifyClockOfDate(date, time)
+                        // console.info(time, new Date(timeCurrent))
+                        $(element).attr("time", timeCurrent)
+                        $(element).attr("timeTempDate", date)
+                        $(element).attr("timeTempTime", time)
+                        $(element).attr("timeTempMod", modifyClockOfDate(date, time))
+                        // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
+                        timeLast = timeCurrent
+                    }
+                } else {
+                    // 不具有aria-label, 奇怪的消息类型, 比如天气
+                    let timeObj = $(element).find("div[aria-label*='sent at']")
+                    if ($(timeObj).length > 0) {
+                        let time = getTimeFromSkypeAria($(timeObj).attr("aria-label")) // c4r Team, aaa, sent at 1:57 PM.  
                         if (timeLast) {
                             let timeCurrent = modifyClockOfDate(date, time)
-                            // console.info(time, new Date(timeCurrent))
                             if (timeLast >= timeCurrent) {
                                 timeCurrent = timeLast + 1
                             }
                             $(element).attr("time", timeCurrent)
+                            $(element).attr("timeTempDate", date)
+                            $(element).attr("timeTempTime", time)
+                            $(element).attr("timeTempMod", modifyClockOfDate(date, time))
                             // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                             timeLast = timeCurrent
                         } else {
                             let timeCurrent = modifyClockOfDate(date, time)
-                            // console.info(time, new Date(timeCurrent))
                             $(element).attr("time", timeCurrent)
                             // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
                             timeLast = timeCurrent
                         }
                     } else {
-                        // 不具有aria-label, 奇怪的消息类型, 比如天气
-                        let timeObj = $(element).find("div[aria-label*='sent at']")
-                        if ($(timeObj).length > 0) {
-                            let time = getTimeFromSkypeAria($(timeObj).attr("aria-label")) // c4r Team, aaa, sent at 1:57 PM.  
-                            if (timeLast) {
-                                let timeCurrent = modifyClockOfDate(date, time)
-                                if (timeLast >= timeCurrent) {
-                                    timeCurrent = timeLast + 1
-                                }
-                                $(element).attr("time", timeCurrent)
-                                // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
-                                timeLast = timeCurrent
-                            } else {
-                                let timeCurrent = modifyClockOfDate(date, time)
-                                $(element).attr("time", timeCurrent)
-                                // $(element).attr("timeTemp", time+','+ (new Date(date)).toString())
-                                timeLast = timeCurrent
-                            }
+                        // 没有找到任何时间标识, 用上一个时间做推测
+                        if (timeLast) {
+                            let timeCurrent = timeLast + 1
+                            $(element).attr("time", timeCurrent)
+                            timeLast = timeCurrent
                         } else {
-                            // 没有找到任何时间标识, 用上一个时间做推测
-                            if (timeLast) {
-                                let timeCurrent = timeLast + 1
-                                $(element).attr("time", timeCurrent)
-                                timeLast = timeCurrent
-                            } else {
-                                // 前面也没有时间, 无能为例, 跳过该条消息
-                            }
+                            // 前面也没有时间, 无能为例, 跳过该条消息
                         }
                     }
                 }
+            }
             // }
 
 
@@ -625,9 +645,9 @@ window.onload = function () {
         $("div[role=region]").each((index, element) => {
 
             if ($(element).attr('sender') === undefined) {
-                let nodeBubble = $(element).find(" > div > div")
-                if ($(nodeBubble).length > 0
-                    && $(nodeBubble).css("justify-content")) {
+                let nodeBubble = $(element).find("div[style*='justify-content: flex-start;'], div[style*='justify-content: flex-end;']")
+                if ($(nodeBubble).length > 0) {
+
                     if ($(nodeBubble).css("justify-content") == 'flex-start') { //右侧
                         let senderObj = $(nodeBubble).find("button[role='button'][aria-label$=profile]")
                         if ($(senderObj).length > 0) {
@@ -707,29 +727,29 @@ window.onload = function () {
     }
 
     let callbackDialogOnce = function (mutationList, observer) {
-                
+
         let addedNodes = false
-        mutationList.forEach(mutation =>{
-            if(mutation.addedNodes.length == 1 ){
+        mutationList.forEach(mutation => {
+            if (mutation.addedNodes.length == 1) {
                 let node = mutation.addedNodes[0]
-                
 
-                if($(node).find(' > button[title="More options"]').length > 0) { // 普通划过
 
-                // }else if($(node).find(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
+                if ($(node).find(' > button[title="More options"]').length > 0) { // 普通划过
 
-                // }else if($(node).closest(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
+                    // }else if($(node).find(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
 
-                // }else if(node.nodeName == 'SPAN' && $(node).attr('class').includes('sprite')) { // 点赞
+                    // }else if($(node).closest(' > button[title^="See who reacted with emoticon"]').length > 0){// 点赞
 
-                }else{
+                    // }else if(node.nodeName == 'SPAN' && $(node).attr('class').includes('sprite')) { // 点赞
+
+                } else {
                     // console.info(mutation.addedNodes)
                     addedNodes = addedNodes || true
                 }
 
 
 
-            }else if(mutation.addedNodes.length > 0 ){
+            } else if (mutation.addedNodes.length > 0) {
                 // console.info(mutation.addedNodes)
                 addedNodes = addedNodes || true
 
@@ -737,7 +757,7 @@ window.onload = function () {
         })
 
         // console.info('once : ', addedNodes , $("button[role='button'][userID]").length)
-        if(addedNodes){
+        if (addedNodes) {
             if ($("button[role='button'][userID]").length > 0) {
                 runGrepRightBubble()
             }
@@ -748,7 +768,7 @@ window.onload = function () {
         //     observer.disconnect()
         // } 
 
-    }   
+    }
     let obsDialog = new MutationObserver(callbackDialog); // 用来检测Dialog变化
     let obsDialogOnce = new MutationObserver(callbackDialogOnce); // 用来检测Dialog变化
 
@@ -757,22 +777,22 @@ window.onload = function () {
         obsDialog.disconnect()
         obsDialogOnce.disconnect()
 
-        if ($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2) {
+        if ($(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV").length == 3) {
 
-            obsDialog.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV:eq(1) > div > div:eq(1)")[0], {
+            obsDialog.observe($(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV:eq(2) > div > div:eq(1)")[0], {
                 subtree: true, childList: false, characterData: false, attributes: true,
                 attributeFilter: ['data-transition-id'], attributeOldValue: true, characterDataOldValue: false
             });
 
-            
-            obsDialogOnce.observe($(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV:eq(1)")[0], {
+
+            obsDialogOnce.observe($(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV:eq(2)")[0], {
                 subtree: true, childList: true, characterData: false, attributes: false,
                 attributeOldValue: false, characterDataOldValue: false
             });
 
 
         } else {
-            console.info("error : startObserveDialog : 没找到dialog obt", $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV"))
+            console.info("error : startObserveDialog : 没找到dialog obt", $(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV"))
         }
 
     }
@@ -846,10 +866,10 @@ window.onload = function () {
                             // console.info("callbackRight", $("div.DraftEditor-editorContainer").length > 0 , $("button[role='button'][title='" + convo.nickName + "']").length > 0)
 
                             if ($("div.DraftEditor-editorContainer").length > 0  // 有编辑区域
-                            && $("button[role='button'][title='" + convo.nickName + "']").length > 0 // 最上面title已加载
-                            && $(".rxCustomScroll.rxCustomScrollV.active .scrollViewport.scrollViewportV").length == 2 // 右侧bubble已加载出来
+                                && $("button[role='button'][title='" + convo.nickName + "']").length > 0 // 最上面title已加载
+                                && $(".rxCustomScroll.rxCustomScrollV .scrollViewport.scrollViewportV").length == 3 // 右侧bubble已加载出来
                             ) {
-                                
+
 
                                 console.info("add userID in title")
                                 $("button[role='button'][title='" + convo.nickName + "']").attr("userID", userID)
@@ -877,7 +897,7 @@ window.onload = function () {
                     } else {
                         // 直接爬取
                         console.info("debug : 直接爬取")
-                        // startObserveDialog()
+                        runGrepRightBubble()
                     }
 
                     resolve("copy the query. Please wait...")
@@ -892,7 +912,220 @@ window.onload = function () {
 
                 console.info("--------sendDialog---")
                 //检查
+                if ($("button[role='button'][userID]").attr("userID") != arg[0]) {
 
+                    reject("user not active")
+                    return
+                }
+
+                function send(arrayValue, index = 0) {
+
+                    console.info("index : ", index)
+                    if (index == arrayValue.length) {
+                        console.info("sendDialog finished")
+                        resolve("Dialog send")
+                        return
+                    }
+
+                    value = arrayValue[index]
+                    if (typeof (value) == 'string') {
+                        // console.log(value)
+
+                        // 等待send button
+                        let obsSend = new MutationObserver((mutationList, observer) => {
+
+                            // console.info(mutationList)
+
+                            if ($('button[role="button"][title="Send message"]').length > 0
+                                && $('span[data-offset-key="0-0-0"]').length > 0
+                                && $('span[data-offset-key="0-0-0"] span').text() == 'A') {
+                                observer.disconnect()
+
+                                // 2. 在A后面添加真实消息
+                                setTimeout(() => {
+                                    $('span[data-offset-key="0-0-0"] span').text(' ' + value)
+
+                                    // 3. 输入空格
+                                    $('div.public-DraftEditor-content').focus()
+                                    core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } }).then(() => {
+                                        // 4. 光标移动到最开始
+                                        $('div.public-DraftEditor-content').focus()
+                                        core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x24 } })
+                                    }).then(() => {
+                                        // 5. 两次 Del 去掉字母A
+                                        $('div.public-DraftEditor-content').focus()
+                                        setTimeout(() => {
+                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                        }, 200);
+                                    }).then(() => {
+                                        setTimeout(() => {
+                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                        }, 400);
+                                    }).then(() => {
+                                        // 6. 发送
+                                        setTimeout(() => {
+                                            // waitSend(arrayValue, index)
+                                            $('button[role="button"][title="Send message"]').click()
+                                        }, 600);
+                                    })
+
+                                    // console.info("---text---")
+
+                                }, 200);
+
+                            }
+
+                            if ($('button[role="button"][title="Send message"]').length > 0
+                                && $('span[data-offset-key="0-0-0"]').length > 0
+                                && $('span[data-offset-key="0-0-0"] span').text() == ' A') { // 空格A
+                                observer.disconnect()
+
+                                // 2. 在A后面添加真实消息
+                                setTimeout(() => {
+                                    $('span[data-offset-key="0-0-0"] span').text(' ' + value)
+
+                                    // 3. 输入空格
+                                    $('div.public-DraftEditor-content').focus()
+                                    core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } }).then(() => {
+                                        // 4. 光标移动到最开始
+                                        $('div.public-DraftEditor-content').focus()
+                                        core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x24 } })
+                                    }).then(() => {
+                                        // 5. 两次 Del 去掉字母A
+                                        $('div.public-DraftEditor-content').focus()
+                                        setTimeout(() => {
+                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                            setTimeout(() => {
+                                                core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+
+                                                // 6. 发送
+                                                setTimeout(() => {
+                                                    // waitSend(arrayValue, index)
+                                                    $('div.public-DraftEditor-content').focus()
+                                                    console.info("click send")
+                                                    $('button[role="button"][title="Send message"]').click()
+                                                    console.info("waitSend : ", index)
+                                                    waitSend(arrayValue, index)
+
+                                                }, 200);
+
+                                            }, 200);
+
+                                        }, 200);
+                                    })
+
+
+                                    // console.info("---text---")
+
+                                }, 200);
+
+                            }
+
+                        });
+                        obsSend.observe($('button[aria-label="Open Expression picker"]').parent()[0], {
+                            subtree: true, childList: true, characterData: true, attributes: true,
+                            attributeOldValue: false, characterDataOldValue: false
+                        });
+                        // console.info($('button[aria-label="Open Expression picker"]').parent())
+                        // 1. 敲击键盘 输入字母A 
+                        core.WebToHost({ "focus": '' }).then(() => {
+                            $('div.public-DraftEditor-content').focus()
+                            core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } })
+                            core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x41 } })
+                        })
+
+
+
+                    } else {
+                        console.info("---file---")
+                        core.WebToHost({ "focus": '' }).then(() => {
+                            // if ($('input[type="file"]').length == 0) {
+                            if ($('button[role="button"][title="Add files"]').length == 0) {
+                                if ($('button[role="button"][title="More"][aria-label="More"]').length == 0) {
+                                    // error
+                                } else {
+                                    console.info("click more")
+                                    $('button[role="button"][title="More"][aria-label="More"]').click()
+                                }
+                            }
+
+                            console.info("click add")
+                            $('button[role="button"][title="Add files"]').click()
+                            // }
+
+                            core.WebToHost({ "attachFile": { "selector": "input[type='file']", "file": value } }).then((resHost) => {
+
+
+                                waitSend(arrayValue, index)
+
+                            })
+                        })
+                    }
+
+                }
+
+                function waitSend(arrayValue, index) {
+                    // 等待发送完成
+                    console.info("wait : ", index)
+                    if (typeof (arrayValue[index]) == 'string') {
+                        send(arrayValue, index + 1)
+
+                    } else {
+                        if ($('div[role="region"]').parent().length == 1) {
+
+
+
+                            let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
+                                if ($("div[role=region]:eq(-2) svg[viewBox]").length > 0) {
+                                    console.info("发送中....", $("div[role=region]:eq(-2) svg[viewBox]"))
+                                    observer.disconnect()
+
+                                    let sendFinished = new MutationObserver((mutationListSend, observerSend) => {
+
+                                        let objSend = $("div[role=region]:eq(-2)")
+                                        // console.info("发送状态 : 右侧 :", 
+                                        // $(objSend).find("div[style*='justify-content: flex-end;']").length > 0, 
+                                        // "小飞机 : ", $(objSend).find('button[role="button"][title="Forward"][aria-label="Forward"]').length > 0)
+                                        if ($(objSend).find("div[style*='justify-content: flex-end;']").length > 0) {
+
+                                            if ($(objSend).find('button[role="button"][title="Forward"][aria-label="Forward"]').length > 0) {
+                                                console.info("图片已发送...")
+                                                observerSend.disconnect()
+                                                send(arrayValue, index + 1)
+                                            } else if ($("div[role=region]:eq(-2)").find('div[title="Unable to send message"]').length > 0) {
+                                                // 发送失败
+                                                observerSend.disconnect()
+                                                send(arrayValue, index + 1)
+                                            }
+                                        }
+                                    })
+                                    sendFinished.observe($("div[role=region]:eq(-2)")[0], {
+                                        subtree: true, childList: true, characterData: true, attributes: false,
+                                        attributeOldValue: false, characterDataOldValue: false
+                                    })
+
+                                }
+
+                            })
+
+
+                            obsSwxUpdated.observe($('div[role="region"]').parent()[0], {
+                                subtree: true, childList: true, characterData: false, attributes: false,
+                                attributeOldValue: false, characterDataOldValue: false
+                            });
+
+
+                        } else {
+                            send(arrayValue, index + 1)
+                        }
+
+
+                    }
+
+                }
+
+                // 开始发送消息
+                send(arg, 1)
 
             } else if (key == 'queryLogStatus') {
                 resolve(logStatus)

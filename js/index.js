@@ -60,6 +60,8 @@ let tdPinCoord = [0, 0]
 
 
 
+
+
 $(document).ready(function () {
 
     const core = require("../js/core.js")
@@ -257,6 +259,7 @@ $(document).ready(function () {
 
 
 
+
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
                     <p class="m-0">'+ dialog["from"] + '</p>\
@@ -425,7 +428,7 @@ $(document).ready(function () {
                         for (let indexOfExistBubble = 0;
                             indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
                             if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
-                                currentInsertIndex = -(indexOfExistBubble+1)
+                                currentInsertIndex = -(indexOfExistBubble + 1)
                             }
                             if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
                                 currentInsertIndex = indexOfExistBubble
@@ -446,7 +449,7 @@ $(document).ready(function () {
                         } else {
                             // 重复的ID, 替换成新的
                             $(dialogSelector
-                                + " [msgID='" + arrayExistBubble[-currentInsertIndex-1].msgID + "']")
+                                + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
                                 .replaceWith(AddDialogHtml(value)
                                 )
                         }
@@ -567,6 +570,12 @@ $(document).ready(function () {
                 attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
 
                 resolve("attached")
+            } else if (key == 'simulateKey') {
+                // 按键模拟
+
+                keypressSimulator(webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
+
+                resolve("simulated")
             } else if (key == 'logStatus') {
                 // 登录状态
                 // console.log("============================================================")
@@ -1140,6 +1149,72 @@ $(document).ready(function () {
     }
 
 
+    /**
+     * chrome debugger for key : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
+     * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
+     * @param {string} webSelector 'webview[data-app-name="skype"]'
+     * @param {string} type keyup, keydown, keypress
+     * @param {int} charCode windowsVirtualKeyCode(目前只对字母好使) code列表 https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+     * @param {boolean} [shift=false] 
+     * @param {boolean} [alt=false] 
+     * @param {boolean} [ctrl=false]  
+     * @param {boolean} [cmd=false]  
+     */
+    function keypressSimulator(webSelector, type, charCode, shift = false, alt = false, ctrl = false, cmd = false) {
+
+
+        let wc = $(webSelector).get(0).getWebContents();
+
+        // console.log("---attachInputFile----")
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.1");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+        var text = "";
+
+        switch (type) {
+            case 'keyup':
+                type = 'keyUp';
+                break;
+            case 'keydown':
+                type = 'rawKeyDown';
+                break;
+            case 'keypress':
+                type = 'char';
+                text = String.fromCharCode(charCode);
+                break;
+            default:
+                throw new Error("Unknown type of event.");
+                break;
+        }
+
+        var modifiers = 0;
+        if (shift) {
+            modifiers += 8;
+        }
+        if (alt) {
+            modifiers += 1;
+        }
+        if (ctrl) {
+            modifiers += 2;
+        }
+        if (cmd) {
+            modifiers += 4;
+        }
+
+        return wc.debugger
+            .sendCommand("Input.dispatchKeyEvent", {
+                type: type,
+                windowsVirtualKeyCode: charCode,
+                modifiers: modifiers,
+                text: text
+            });
+
+    }
+
     function attachInputFile(webSelector, inputSelector, filePath) {
 
 
@@ -1179,6 +1254,9 @@ $(document).ready(function () {
 
     }
 
+
+
+
     function loadWebview(webTag, url, strUserAgent) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
@@ -1200,6 +1278,8 @@ $(document).ready(function () {
 
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://web.wechat.com/", core.strUserAgentWin)
+
+    openDevtool("skype")
 
     //==============================UI==============================
     /**
@@ -1239,15 +1319,36 @@ $(document).ready(function () {
         this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
 
+    /**
+     * webview隐藏
+     */
+    $('.modal:hidden').each((index, element)=>{
+        $('>div.modal-dialog', element).removeClass('modal-xl')
+        // $('#modal-wechat > div.modal-dialog').css('left', '')
+        $(element).css('left','100000px')         
+        $(element).show()
+
+        $(webTag2Selector(element.id.substring(6))).width("800px")
+        $(webTag2Selector(element.id.substring(6))).height("800px")           
+    })
     $('.modal').on('hidden.bs.modal', function (e) {
         $('>div.modal-dialog', this).removeClass('modal-xl')
         // $('#modal-wechat > div.modal-dialog').css('left', '')
-        $(this).css('left','100000px')
+        $(this).css('left','100000px')         
         $(this).show()
+
+        $(webTag2Selector(this.id.substring(6))).width("800px")
+        $(webTag2Selector(this.id.substring(6))).height("800px")            
     })
 
+    /**
+     * webview出现
+     */
     $('.td-app-status img[class]').on('click', function () {
         let webTag = '#modal-' + this.id.substring(4)
+        $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+        $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+
         if (this.matches('.app-offline')) {
             $(webTag).modal('show')
         }
@@ -1628,6 +1729,34 @@ $(document).ready(function () {
         }
 
     });
+
+    // $(document).on('keydown', function (event) {
+    //     // console.log("focus text")
+    //     // if(document.activeElement == $(".td-inputbox").get(0)){
+
+    //     // }else{
+
+    //     // }
+    //     $(".td-inputbox").focus()
+    // })
+    $(document).on('keypress', function (event) {
+        // console.log("focus text")
+        // if(document.activeElement == $(".td-inputbox").get(0)){
+
+        // }else{
+
+        // }
+        console.log('key press : ', event.which , event.ctrlKey)
+        $(".td-inputbox").focus()
+        if(event.which == 13) {
+            // enter pressed
+            $('#debug-send').click()
+        }
+        if(event.ctrlKey && event.which == 10){
+            pasteHtmlAtCaret("</br>", 'div.td-inputbox')
+        }
+    })
+
 
 
 })
