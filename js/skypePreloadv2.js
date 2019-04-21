@@ -482,6 +482,48 @@ window.onload = function () {
             attributeFilter: ["data-text-as-pseudo-element"], attributeOldValue: false, characterDataOldValue: false
         });
 
+
+
+        let callbackAddConvo = function (mutationList, observer) {
+            let convoIDList = new Array()
+
+            mutationList.forEach((mutation, index) => {
+
+                if ($(mutation.target).attr('tabindex') == 0 && mutation.oldValue != null && (!mutation.oldValue.includes('background-color')) && $(mutation.target).find('>div>div').attr('style').includes('background-color')) {
+                    let objConvo = $(mutation.target)
+                    if ($(objConvo).length > 0) {
+                        // console.info( "------") 
+                        // console.info(objConvo)           
+                        // console.info(mutation)
+                        // console.info("debug : ", "obs target : ")
+                        // console.info(mutation.target)
+                        let userID = $(objConvo).attr("id")
+                        if (!convoIDList.includes(userID)) {
+                            convoIDList.push(userID)
+                        }
+                    }
+
+
+                }
+            })
+            let convoList = tranConvoByID(convoIDList)
+            convoList.forEach(convo => {
+
+                convo.action = 'a'
+                convo.print()
+                convo.send()
+
+            })
+
+            // console.info("style changed")
+        }
+        let obsAddConvo = new MutationObserver(callbackAddConvo);
+        // 
+        obsAddConvo.observe($("div.rxCustomScroll.rxCustomScrollV:not(.neutraloverride) > div > div > div")[0], {
+            subtree: true, childList: true, characterData: false, attributes: true,
+            attributeFilter: ["style"], attributeOldValue: true, characterDataOldValue: false
+        });
+
     }
 
     // function getNickNameByUserID(userID) {
