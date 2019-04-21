@@ -268,7 +268,7 @@ window.onload = function () {
                     if (content == '') {
                         // 初始化
                         counter = 0
-                        if (userID == "filehelper" || $(obj).hasClass("top")) {
+                        if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
                             action = 'a'
                         } else {
                             action = 'c'
@@ -291,7 +291,7 @@ window.onload = function () {
                 if (content == '') {
                     // 初始化
                     counter = 0
-                    if (userID == "filehelper" || $(obj).hasClass("top")) {
+                    if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
                         action = 'a'
                     } else {
                         action = 'c'
@@ -387,6 +387,12 @@ window.onload = function () {
                 })
             }
 
+            if(record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username'){
+                // 点击新的用户
+                arrayObjUser.push(
+                    $(".chat_item.slide-left.ng-scope[data-username='"+ $("#J_NavChatScrollBody").attr('data-username') + "']"))
+            }
+
         })
 
         console.log("debug : ", "------array:user-----")
@@ -447,7 +453,9 @@ window.onload = function () {
         obsChat.observe($("#J_NavChatScrollBody")[0], {
             childList: true,
             subtree: true,
-            characterData: true
+            characterData: true,
+            attributeFilter: ["data-username"],
+            attributes: true, attributeOldValue: true
         });
 
         // 接收上层消息
