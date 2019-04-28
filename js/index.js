@@ -245,11 +245,22 @@ $(document).ready(function () {
                     <img src="' + dialog['message'] + '"></img>\
                 </div>'
         } else if (dialog['type'] == 'url') {
-            content =
+            if (dialog['message'].search('https://send.firefox.com/download') !== -1){
+                content =
+                '<div class="td-chatText">\
+                    <span class="badge badge-pill badge-light py-0 mt-1">\
+                        <img src="../res/pic/ffsend.logo.svg" height="15px">\
+                    </span>\
+                    <a href="'+ dialog['message'] + '">' + dialog['message'] + '</a>\
+                    <p></p>\
+                </div>'
+            }else{
+                content =
                 '<div class="td-chatText">\
                     <a  href="' + dialog['message'] + '">' + dialog['message'] + '</a>\
                     <p></p>\
                 </div>'
+            }
         } else if (dialog['type'] == 'unknown') {
             content =
                 '<div class="td-chatText">\
@@ -257,15 +268,6 @@ $(document).ready(function () {
                     <p>'
                     + dialog['message'] +
                     '</p>\
-                </div>'
-        } else if (dialog['type'] == 'FireFoxSend') {
-            content =
-                '<div class="td-chatText">\
-                    <span class="badge badge-pill badge-light py-0 mt-1">\
-                        <img src="../res/pic/ffsend.logo.svg" height="15px">\
-                    </span>\
-                    <a href="'+ dialog['message'] + '">' + dialog['message'] + '</a>\
-                    <p></p>\
                 </div>'
         } else {
             content =
