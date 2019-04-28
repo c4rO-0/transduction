@@ -60,6 +60,8 @@ let tdPinCoord = [0, 0]
 
 
 
+
+
 $(document).ready(function () {
 
     const core = require("../js/core.js")
@@ -184,6 +186,8 @@ $(document).ready(function () {
             displayCounter = ""
         }
 
+        let avatar = convo.avatar == undefined ? '../res/pic/weird.png' : convo.avatar
+
         return '\
         <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + '>\
             <div class="col-appLogo">\
@@ -193,7 +197,7 @@ $(document).ready(function () {
                 <div class="row-hint theme-'+ appName + '"></div>\
             </div>\
             <div class="col-avatar d-flex justify-content-center">\
-                <div class="td-avatar align-self-center" style="background-image: url('+ convo.avatar + ')"></div>\
+                <div class="td-avatar align-self-center" style="background-image: url('+ avatar + ')"></div>\
                 <div class="td-counter" style="'+ displayCounter + '">\
                     <div style="align-self:center;">'+ convo.counter + '</div>\
                 </div>\
@@ -252,6 +256,7 @@ $(document).ready(function () {
             div.td-avatar")
                 .css('background-image')
                 .slice(5, -2)
+
 
 
 
@@ -423,7 +428,7 @@ $(document).ready(function () {
                         for (let indexOfExistBubble = 0;
                             indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
                             if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
-                                currentInsertIndex = -indexOfExistBubble
+                                currentInsertIndex = -(indexOfExistBubble + 1)
                             }
                             if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
                                 currentInsertIndex = indexOfExistBubble
@@ -444,7 +449,7 @@ $(document).ready(function () {
                         } else {
                             // 重复的ID, 替换成新的
                             $(dialogSelector
-                                + " [msgID='" + arrayExistBubble[-currentInsertIndex].msgID + "']")
+                                + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
                                 .replaceWith(AddDialogHtml(value)
                                 )
                         }
@@ -565,6 +570,12 @@ $(document).ready(function () {
                 attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
 
                 resolve("attached")
+            } else if (key == 'simulateKey') {
+                // 按键模拟
+
+                keypressSimulator(webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
+
+                resolve("simulated")
             } else if (key == 'logStatus') {
                 // 登录状态
                 // console.log("============================================================")
@@ -605,7 +616,7 @@ $(document).ready(function () {
                 // 显示对应webview
                 // Obj里应该储存要定位的位置
                 console.log(webTag + "说 : 我要显摆我自己~")
-                $('#modal-' + webTag).modal('show')
+                // $('#modal-' + webTag).modal('show')
                 // $("#test-" + webTag + "-toggle").text("快打开" + webTag)
                 // $("#test-" + webTag + "-toggle").css("background-color", '#ffc107')
             } else if (key == 'hide') {
@@ -1138,6 +1149,72 @@ $(document).ready(function () {
     }
 
 
+    /**
+     * chrome debugger for key : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
+     * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
+     * @param {string} webSelector 'webview[data-app-name="skype"]'
+     * @param {string} type keyup, keydown, keypress
+     * @param {int} charCode windowsVirtualKeyCode(目前只对字母好使) code列表 https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+     * @param {boolean} [shift=false] 
+     * @param {boolean} [alt=false] 
+     * @param {boolean} [ctrl=false]  
+     * @param {boolean} [cmd=false]  
+     */
+    function keypressSimulator(webSelector, type, charCode, shift = false, alt = false, ctrl = false, cmd = false) {
+
+
+        let wc = $(webSelector).get(0).getWebContents();
+
+        // console.log("---attachInputFile----")
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.1");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+        var text = "";
+
+        switch (type) {
+            case 'keyup':
+                type = 'keyUp';
+                break;
+            case 'keydown':
+                type = 'rawKeyDown';
+                break;
+            case 'keypress':
+                type = 'char';
+                text = String.fromCharCode(charCode);
+                break;
+            default:
+                throw new Error("Unknown type of event.");
+                break;
+        }
+
+        var modifiers = 0;
+        if (shift) {
+            modifiers += 8;
+        }
+        if (alt) {
+            modifiers += 1;
+        }
+        if (ctrl) {
+            modifiers += 2;
+        }
+        if (cmd) {
+            modifiers += 4;
+        }
+
+        return wc.debugger
+            .sendCommand("Input.dispatchKeyEvent", {
+                type: type,
+                windowsVirtualKeyCode: charCode,
+                modifiers: modifiers,
+                text: text
+            });
+
+    }
+
     function attachInputFile(webSelector, inputSelector, filePath) {
 
 
@@ -1177,6 +1254,9 @@ $(document).ready(function () {
 
     }
 
+
+
+
     function loadWebview(webTag, url, strUserAgent) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
@@ -1198,6 +1278,8 @@ $(document).ready(function () {
 
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://web.wechat.com/", core.strUserAgentWin)
+
+    openDevtool("skype")
 
     //==============================UI==============================
     /**
@@ -1237,15 +1319,36 @@ $(document).ready(function () {
         this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
 
+    /**
+     * webview隐藏
+     */
+    $('.modal:hidden').each((index, element)=>{
+        $('>div.modal-dialog', element).removeClass('modal-xl')
+        // $('#modal-wechat > div.modal-dialog').css('left', '')
+        $(element).css('left','100000px')         
+        $(element).show()
+
+        $(webTag2Selector(element.id.substring(6))).width("800px")
+        $(webTag2Selector(element.id.substring(6))).height("800px")           
+    })
     $('.modal').on('hidden.bs.modal', function (e) {
         $('>div.modal-dialog', this).removeClass('modal-xl')
         // $('#modal-wechat > div.modal-dialog').css('left', '')
-        $(this).css('left','100000px')
+        $(this).css('left','100000px')         
         $(this).show()
+
+        $(webTag2Selector(this.id.substring(6))).width("800px")
+        $(webTag2Selector(this.id.substring(6))).height("800px")            
     })
 
+    /**
+     * webview出现
+     */
     $('.td-app-status img[class]').on('click', function () {
         let webTag = '#modal-' + this.id.substring(4)
+        $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+        $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+
         if (this.matches('.app-offline')) {
             $(webTag).modal('show')
         }
@@ -1297,6 +1400,8 @@ $(document).ready(function () {
         let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
         $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
+
+        $(webTag2Selector(webTag)).focus()
         if (
             $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
             && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
@@ -1555,32 +1660,41 @@ $(document).ready(function () {
 
     // ===查询后台登录情况===
     $("#td-request-status").on("click", () => {
-        console.log("====query logStatus=====")
-        $("webview[data-app-name]").each((index, el) => {
-            let webTag = $(el).attr("data-app-name")
-            // console.log()
-            core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
-                // let color = 'red'
-                // console.log((obj['queryLogStatus'+":"+""]))
-                let logStatus = (obj['queryLogStatus' + ":" + ""])
-                if (logStatus.status == 'offline') {
-                    console.log(webTag + " not log yet.")
-                    $('#app-' + webTag).removeClass('app-online')
-                    $('#app-' + webTag).addClass('app-offline')
+        console.log("log off click")
+        // $("webview[data-app-name]").each((index, el) => {
+        //     let webTag = $(el).attr("data-app-name")
+        //     // console.log()
+        //     core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
+        //         // let color = 'red'
+        //         // console.log((obj['queryLogStatus'+":"+""]))
+        //         let logStatus = (obj['queryLogStatus' + ":" + ""])
+        //         if (logStatus.status == 'offline') {
+        //             console.log(webTag + " not log yet.")
+        //             $('#app-' + webTag).removeClass('app-online')
+        //             $('#app-' + webTag).addClass('app-offline')
 
-                } else if (logStatus.status == 'online') {
-                    console.log(webTag + " is logged already.")
-                    $('#app-' + webTag).removeClass('app-offline')
-                    $('#app-' + webTag).addClass('app-online')
-                    // color = 'green'
-                } else if (logStatus.status == 'failure') {
-                    console.log(webTag + " log failed")
-                    $('#app-' + webTag).removeClass('app-online')
-                    $('#app-' + webTag).addClass('app-offline')
-                }
-            }).catch((err) => {
-                console.log(webTag, "no response", err)
-            })
+        //         } else if (logStatus.status == 'online') {
+        //             console.log(webTag + " is logged already.")
+        //             $('#app-' + webTag).removeClass('app-offline')
+        //             $('#app-' + webTag).addClass('app-online')
+        //             // color = 'green'
+        //         } else if (logStatus.status == 'failure') {
+        //             console.log(webTag + " log failed")
+        //             $('#app-' + webTag).removeClass('app-online')
+        //             $('#app-' + webTag).addClass('app-offline')
+        //         }
+        //     }).catch((err) => {
+        //         console.log(webTag, "no response", err)
+        //     })
+        // })
+
+        core.HostSendToWeb(webTag2Selector("wechat"), { 'logoff': '' }).then((obj) => {
+
+        })
+
+        $(webTag2Selector("skype")).focus()
+        core.HostSendToWeb(webTag2Selector("skype"), { 'logoff': '' }).then((obj) => {
+
         })
 
     })
@@ -1615,4 +1729,34 @@ $(document).ready(function () {
         }
 
     });
+
+    // $(document).on('keydown', function (event) {
+    //     // console.log("focus text")
+    //     // if(document.activeElement == $(".td-inputbox").get(0)){
+
+    //     // }else{
+
+    //     // }
+    //     $(".td-inputbox").focus()
+    // })
+    $(document).on('keypress', function (event) {
+        // console.log("focus text")
+        // if(document.activeElement == $(".td-inputbox").get(0)){
+
+        // }else{
+
+        // }
+        console.log('key press : ', event.which , event.ctrlKey)
+        $(".td-inputbox").focus()
+        if(event.which == 13) {
+            // enter pressed
+            $('#debug-send').click()
+        }
+        if(event.ctrlKey && event.which == 10){
+            pasteHtmlAtCaret("</br>", 'div.td-inputbox')
+        }
+    })
+
+
+
 })

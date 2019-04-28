@@ -1,13 +1,13 @@
 // *********************************************
 // navigator setting
 // ---------------------------------------------
-Object.defineProperty(navigator,'language',{
-    value:'en',
+Object.defineProperty(navigator, 'language', {
+    value: 'en',
     configurable: false,
     writable: false,
 })
-Object.defineProperty(navigator,'languages',{
-    value:['en'],
+Object.defineProperty(navigator, 'languages', {
+    value: ['en'],
     configurable: false,
     writable: false,
 })
@@ -75,7 +75,7 @@ window.onload = function () {
 
         let fromUserName = MSG["FromUserName"]
         // let toUserName = MSG["ToUserName"]
-        let time = new Date(MSG["MMDisplayTime"] * 1000)
+        let time = new Date(MSG["CreateTime"] * 1000)
 
 
 
@@ -134,9 +134,10 @@ window.onload = function () {
             // 缓存图片
             // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
             type = 'img'
-            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+            // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+            // $(MSGObj).find("img.msg-img").attr("src")
             // 置换内容
-            content = imgUrl
+            content = MSG["MMThumbSrc"]
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
             type = 'img'
             // 小视频
@@ -467,13 +468,20 @@ window.onload = function () {
                     setTimeout(() => {
                         // 获取内容
                         let objSlide = chatContent[ID]
+                        // console.log("objSlide : id : ", ID ,objSlide)
                         let MSGList = new Array()
                         for (let indexMSG in objSlide) {
                             // console.log("debug : ", indexMSG, "---->")
                             // console.log(objSlide[indexMSG])
-                            let MSG = grepMSG(contacts, objSlide[indexMSG])
+                            if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
+                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                                .is(':hidden')) {
 
-                            MSGList.push(MSG)
+                                let MSG = grepMSG(contacts, objSlide[indexMSG])
+                                MSGList.push(MSG)
+                            }
+
+
                         }
                         if (MSGList.length > 0) {
                             console.log("debug : dialog-----------");
@@ -533,7 +541,9 @@ window.onload = function () {
                             //     attributeOldValue: false, characterDataOldValue: false
                             // });
 
-                        }else {
+                        } else {
+                            // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
+                            // $('input.webuploader-element-invisible').click()
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---")
                                 waitSend(arrayValue, index)
@@ -546,31 +556,44 @@ window.onload = function () {
                         // 等待发送完成
                         let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
 
+                            console.log("bubble changed : ", mutationList)
                             mutationList.forEach((mutation, nodeIndex) => {
                                 let addedNodes = mutation.addedNodes
                                 console.log(addedNodes)
                                 if (addedNodes && $(addedNodes[0]).attr("ng-repeat") && $(addedNodes[0]).attr("ng-repeat") == "message in chatContent") {
                                     console.log('---addedNodes----')
                                     observer.disconnect()
+                                    let lastObj = $("div[ng-switch-default].me")
+                                        .last().find("div.bubble")
+                                    console.log("last me : ", $(lastObj).attr("class"), $(lastObj).attr("data-cm"))
+                                    if ($("div[ng-switch-default].me")
+                                        .last()
+                                        .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                                        .is(':hidden')) {
+                                        console.log('---send single 完成----', $("div[ng-switch-default].me")
+                                            .last().find('div.bubble').attr('data-cm'))
+                                        send(arrayValue, index + 1)
+                                    } else {
+                                        let obsFinished = new MutationObserver((mList, obs) => {
+                                            console.log('-------obs update--------')
+                                            console.log(mList)
+                                            if ($("div[ng-switch-default].me")
+                                                .last()
+                                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                                                .is(':hidden')) {
+                                                obs.disconnect()
+                                                send(arrayValue, index + 1)
+                                            }
+                                        })
 
-                                    let obsFinished = new MutationObserver((mList, obs) => {
-                                        console.log('-------obs update--------')
-                                        console.log(mList)
-                                        if ($("div[ng-switch-default].me")
-                                            .last()
-                                            .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                                            .is(':hidden')) {
-                                            obs.disconnect()
-                                            send(arrayValue, index + 1)
-                                        }
-                                    })
+                                        obsFinished.observe($("div[ng-switch-default].me")
+                                            .last().find("div.bubble_cont.ng-scope")[0], {
+                                                // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                                subtree: true, childList: true, characterData: true, attributes: true,
+                                                attributeOldValue: false, characterDataOldValue: false
+                                            });
+                                    }
 
-                                    obsFinished.observe($("div[ng-switch-default].me")
-                                        .last().find("div.bubble_cont.ng-scope")[0], {
-                                            // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
-                                            subtree: true, childList: true, characterData: true, attributes: true,
-                                            attributeOldValue: false, characterDataOldValue: false
-                                        });
 
                                 }
                             })
@@ -587,7 +610,19 @@ window.onload = function () {
                     send(arg, 1)
                 } else if (key == 'queryLogStatus') {
                     console.log("resolve back")
-                    resolve(logStatus )
+                    resolve(logStatus)
+                } else if (key == 'logoff') {
+                    if (logStatus.status == 'online') {
+                        if ($("i.menuicon_quit").length == 0) {
+                            $("i.web_wechat_add").click()
+                        }
+
+                        $("i.menuicon_quit").click()
+
+                        resolve("wechat log off")
+                    } else {
+                        resolve('wechat already logoff')
+                    }
                 } else {
                     reject('unknown key')
                 }
