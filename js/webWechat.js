@@ -73,7 +73,8 @@ window.onload = function () {
      */
     function grepMSG(contacts, MSG) {
 
-        let fromUserName = MSG["FromUserName"]
+
+        let fromUserName = MSG["MMActualSender"]
         // let toUserName = MSG["ToUserName"]
         let time = new Date(MSG["CreateTime"] * 1000)
 
@@ -124,7 +125,10 @@ window.onload = function () {
         if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT && MSG["SubMsgType"] == 0) {
             // 正常输出
             type = 'text'
-
+            // 判断是否为组群消息
+            if(MSG["FromUserName"].substr(0,2) == "@@" ){
+                content = content.substr(content.indexOf(":")+1)
+            }
             // 判断是否为url
             if ($(MSGObj).find("div.plain pre a").length > 0 && $(MSGObj).find("div.plain pre").contents().toArray().length == 1) {
                 type = "url"
@@ -491,8 +495,8 @@ window.onload = function () {
                             // console.log(objSlide[indexMSG])
                             // 发送中
                             let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
-                            .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                            if ($(objSending).length == 0 || 
+                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                            if ($(objSending).length == 0 ||
                                 $(objSending).is(':hidden')) {
 
                                 let MSG = grepMSG(contacts, objSlide[indexMSG])
