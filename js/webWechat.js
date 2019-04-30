@@ -73,7 +73,8 @@ window.onload = function () {
      */
     function grepMSG(contacts, MSG) {
 
-        let fromUserName = MSG["FromUserName"]
+
+        let fromUserName = MSG["MMActualSender"]
         // let toUserName = MSG["ToUserName"]
         let time = new Date(MSG["CreateTime"] * 1000)
 
@@ -121,10 +122,13 @@ window.onload = function () {
         let MSGID = MSG["MsgId"]
 
         let MSGObj = $("div[data-cm*='" + MSGID + "']")
-        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT) {
+        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT && MSG["SubMsgType"] == 0) {
             // 正常输出
             type = 'text'
-
+            // 判断是否为组群消息
+            if(MSG["FromUserName"].substr(0,2) == "@@" ){
+                content = content.substr(content.indexOf(":")+1)
+            }
             // 判断是否为url
             if ($(MSGObj).find("div.plain pre a").length > 0 && $(MSGObj).find("div.plain pre").contents().toArray().length == 1) {
                 type = "url"
@@ -134,10 +138,18 @@ window.onload = function () {
             // 缓存图片
             // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
             type = 'img'
-            // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+            if (MSG["MMThumbSrc"]) { //小图片, 直接原图
+                content = MSG["MMThumbSrc"]
+            } else {
+                // 置换内容
+                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+                content = imgUrl
+            // 还原为原始大小
+            content = content.slice(0,-"&type=slave".length)                
+            }
+
             // $(MSGObj).find("img.msg-img").attr("src")
-            // 置换内容
-            content = MSG["MMThumbSrc"]
+
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
             type = 'img'
             // 小视频
@@ -152,7 +164,7 @@ window.onload = function () {
             content = fileName
         }
         else {
-
+            type = 'unknown'
         }
 
         // console.log(remarkName, MSGID, type, content, time)
@@ -268,7 +280,7 @@ window.onload = function () {
                     if (content == '') {
                         // 初始化
                         counter = 0
-                        if (userID == "filehelper" || $(obj).hasClass("top")) {
+                        if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
                             action = 'a'
                         } else {
                             action = 'c'
@@ -291,7 +303,7 @@ window.onload = function () {
                 if (content == '') {
                     // 初始化
                     counter = 0
-                    if (userID == "filehelper" || $(obj).hasClass("top")) {
+                    if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
                         action = 'a'
                     } else {
                         action = 'c'
@@ -387,6 +399,12 @@ window.onload = function () {
                 })
             }
 
+            if(record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username'){
+                // 点击新的用户
+                arrayObjUser.push(
+                    $(".chat_item.slide-left.ng-scope[data-username='"+ $("#J_NavChatScrollBody").attr('data-username') + "']"))
+            }
+
         })
 
         console.log("debug : ", "------array:user-----")
@@ -447,7 +465,9 @@ window.onload = function () {
         obsChat.observe($("#J_NavChatScrollBody")[0], {
             childList: true,
             subtree: true,
-            characterData: true
+            characterData: true,
+            attributeFilter: ["data-username"],
+            attributes: true, attributeOldValue: true
         });
 
         // 接收上层消息
@@ -473,9 +493,11 @@ window.onload = function () {
                         for (let indexMSG in objSlide) {
                             // console.log("debug : ", indexMSG, "---->")
                             // console.log(objSlide[indexMSG])
-                            if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
+                            // 发送中
+                            let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
                                 .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                                .is(':hidden')) {
+                            if ($(objSending).length == 0 ||
+                                $(objSending).is(':hidden')) {
 
                                 let MSG = grepMSG(contacts, objSlide[indexMSG])
                                 MSGList.push(MSG)
@@ -543,7 +565,7 @@ window.onload = function () {
 
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
-                            // $('input.webuploader-element-invisible').click()
+                            $('input.webuploader-element-invisible').click()
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---")
                                 waitSend(arrayValue, index)
