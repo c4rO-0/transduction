@@ -122,12 +122,15 @@ window.onload = function () {
         let MSGID = MSG["MsgId"]
 
         let MSGObj = $("div[data-cm*='" + MSGID + "']")
-        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT && MSG["SubMsgType"] == 0) {
+        // console.log("text : ", MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT && 
+        // ((! MSG["SubMsgType"])  || ( MSG["SubMsgType"] == 0)) )
+        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT &&
+            ((!MSG["SubMsgType"]) || (MSG["SubMsgType"] == 0))) {
             // 正常输出
             type = 'text'
             // 判断是否为组群消息
-            if(MSG["FromUserName"].substr(0,2) == "@@" ){
-                content = content.substr(content.indexOf(":")+1)
+            if (MSG["FromUserName"].substr(0, 2) == "@@") {
+                content = content.substr(content.indexOf(":") + 1)
             }
             // 判断是否为url
             if ($(MSGObj).find("div.plain pre a").length > 0 && $(MSGObj).find("div.plain pre").contents().toArray().length == 1) {
@@ -136,20 +139,30 @@ window.onload = function () {
 
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_IMAGE) {
             // 缓存图片
-            // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
+            // console.log("type img")
             type = 'img'
             if (MSG["MMThumbSrc"]) { //小图片, 直接原图
                 content = MSG["MMThumbSrc"]
+                // let scriptSrc = $("script[async][src*='skey']").attr("src")
+                // console.log(scriptSrc)
+                // let posskey =  scriptSrc.indexOf('skey')
+                // let skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
+                // console.log(skey)
+                // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                // + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+                // + "&skey=" + skey
+                // console.log(imgUrl)
+                // content = imgUrl                
             } else {
                 // 置换内容
                 let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
                 content = imgUrl
-            // 还原为原始大小
-            content = content.slice(0,-"&type=slave".length)                
+                // 还原为原始大小
+                content = content.slice(0, -"&type=slave".length)
             }
 
             // $(MSGObj).find("img.msg-img").attr("src")
-
+            // console.log("type img : ", content)
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
             type = 'img'
             // 小视频
@@ -399,10 +412,10 @@ window.onload = function () {
                 })
             }
 
-            if(record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username'){
+            if (record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username') {
                 // 点击新的用户
                 arrayObjUser.push(
-                    $(".chat_item.slide-left.ng-scope[data-username='"+ $("#J_NavChatScrollBody").attr('data-username') + "']"))
+                    $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']"))
             }
 
         })
