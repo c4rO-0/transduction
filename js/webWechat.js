@@ -121,7 +121,7 @@ window.onload = function () {
         let MSGID = MSG["MsgId"]
 
         let MSGObj = $("div[data-cm*='" + MSGID + "']")
-        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT) {
+        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT && MSG["SubMsgType"] == 0) {
             // 正常输出
             type = 'text'
 
@@ -152,7 +152,7 @@ window.onload = function () {
             content = fileName
         }
         else {
-
+            type = 'unknown'
         }
 
         // console.log(remarkName, MSGID, type, content, time)
@@ -481,9 +481,11 @@ window.onload = function () {
                         for (let indexMSG in objSlide) {
                             // console.log("debug : ", indexMSG, "---->")
                             // console.log(objSlide[indexMSG])
-                            if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
-                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                                .is(':hidden')) {
+                            // 发送中
+                            let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
+                            .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                            if ($(objSending).length == 0 || 
+                                $(objSending).is(':hidden')) {
 
                                 let MSG = grepMSG(contacts, objSlide[indexMSG])
                                 MSGList.push(MSG)
