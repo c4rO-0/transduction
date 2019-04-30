@@ -134,10 +134,17 @@ window.onload = function () {
             // 缓存图片
             // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
             type = 'img'
-            // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+            if (MSG["MMThumbSrc"]) {
+                content = MSG["MMThumbSrc"]
+            } else {
+                // 置换内容
+                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+                content = imgUrl
+            }
+            // 还原为原始大小
+            content = content.slice(0,-"&type=slave".length)
             // $(MSGObj).find("img.msg-img").attr("src")
-            // 置换内容
-            content = MSG["MMThumbSrc"]
+
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
             type = 'img'
             // 小视频
