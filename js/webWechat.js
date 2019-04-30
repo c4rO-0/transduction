@@ -134,15 +134,16 @@ window.onload = function () {
             // 缓存图片
             // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
             type = 'img'
-            if (MSG["MMThumbSrc"]) {
+            if (MSG["MMThumbSrc"]) { //小图片, 直接原图
                 content = MSG["MMThumbSrc"]
             } else {
                 // 置换内容
                 let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
                 content = imgUrl
-            }
             // 还原为原始大小
-            content = content.slice(0,-"&type=slave".length)
+            content = content.slice(0,-"&type=slave".length)                
+            }
+
             // $(MSGObj).find("img.msg-img").attr("src")
 
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
@@ -560,7 +561,7 @@ window.onload = function () {
 
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
-                            // $('input.webuploader-element-invisible').click()
+                            $('input.webuploader-element-invisible').click()
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---")
                                 waitSend(arrayValue, index)
