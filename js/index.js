@@ -235,15 +235,44 @@ $(document).ready(function () {
 
         let content = ''
         if (dialog['type'] == 'text') {
-            content = '<div class="td-chatText">' + dialog['message'] +
+            content =
+                '<div class="td-chatText">'
+                    + dialog['message'] +
                 '</div>'
         } else if (dialog['type'] == 'img') {
-            content = '<div class="td-chatImg"> <img src="' + dialog['message'] + '"></img></div>'
+            content =
+                '<div class="td-chatImg">\
+                    <img src="' + dialog['message'] + '"></img>\
+                </div>'
         } else if (dialog['type'] == 'url') {
-            content = '<div class="td-chatText"><a  href="' + dialog['message'] + '">' + dialog['message'] +
-                '</a><p></p></div>'
+            if (dialog['message'].search('https://send.firefox.com/download') !== -1){
+                content =
+                '<div class="td-chatText">\
+                    <span class="badge badge-pill badge-light py-0 mt-1">\
+                        <img src="../res/pic/ffsend.logo.svg" height="15px">\
+                    </span>\
+                    <a href="'+ dialog['message'] + '">' + dialog['message'] + '</a>\
+                    <p></p>\
+                </div>'
+            }else{
+                content =
+                '<div class="td-chatText">\
+                    <a  href="' + dialog['message'] + '">' + dialog['message'] + '</a>\
+                    <p></p>\
+                </div>'
+            }
+        } else if (dialog['type'] == 'unknown') {
+            content =
+                '<div class="td-chatText">\
+                    <span class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</span>\
+                    <p>'
+                    + dialog['message'] +
+                    '</p>\
+                </div>'
         } else {
-            content = '<div class="td-chatText">' + dialog['message'] +
+            content =
+                '<div class="td-chatText">'
+                    + dialog['message'] +
                 '</div>'
         }
 
@@ -253,12 +282,7 @@ $(document).ready(function () {
             let appName = $("#td-right div.td-chat-title").attr("data-app-name")
             let avatarUrl = $("#td-left \
             div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
-            div.td-avatar")
-                .css('background-image')
-                .slice(5, -2)
-
-
-
+            div.td-avatar").css('background-image').slice(5, -2)
 
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
@@ -267,22 +291,19 @@ $(document).ready(function () {
                         <div class="td-chatAvatar">\
                             <img src="'+ avatarUrl + '">\
                             <p class="m-0">'+ time + '</p>\
-                        </div>' +
-                content +
-                '</div>\
+                        </div>'
+                        + content +
+                    '</div>\
                 </div>'
-
-
         } else {
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
                     <div class="td-me">'
-                + content +
-                '<p class="m-0">' + time + '</p>\
+                        + content +
+                        '<p class="m-0">' + time + '</p>\
                     </div>\
                 </div>'
         }
-
         return strHtml
     }
 
@@ -1314,7 +1335,7 @@ $(document).ready(function () {
     $('.modal').on('show.bs.modal', function (e) {
         document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
         document.getElementById('modal-wechat').querySelector('webview').insertCSS('.login.ng-scope{min-width: unset;}')
-        $(this).css('left','')
+        $(this).css('left', '')
     })
 
     document.getElementById('modal-wechat').querySelector('webview').addEventListener('load-commit', function () {
@@ -1324,23 +1345,23 @@ $(document).ready(function () {
     /**
      * webview隐藏
      */
-    $('.modal:hidden').each((index, element)=>{
+    $('.modal:hidden').each((index, element) => {
         $('>div.modal-dialog', element).removeClass('modal-xl')
         // $('#modal-wechat > div.modal-dialog').css('left', '')
-        $(element).css('left','100000px')         
+        $(element).css('left', '100000px')
         $(element).show()
 
         $(webTag2Selector(element.id.substring(6))).width("800px")
-        $(webTag2Selector(element.id.substring(6))).height("800px")           
+        $(webTag2Selector(element.id.substring(6))).height("800px")
     })
     $('.modal').on('hidden.bs.modal', function (e) {
         $('>div.modal-dialog', this).removeClass('modal-xl')
         // $('#modal-wechat > div.modal-dialog').css('left', '')
-        $(this).css('left','100000px')         
+        $(this).css('left', '100000px')
         $(this).show()
 
         $(webTag2Selector(this.id.substring(6))).width("800px")
-        $(webTag2Selector(this.id.substring(6))).height("800px")            
+        $(webTag2Selector(this.id.substring(6))).height("800px")
     })
 
     /**
@@ -1748,13 +1769,13 @@ $(document).ready(function () {
         // }else{
 
         // }
-        console.log('key press : ', event.which , event.ctrlKey)
+        console.log('key press : ', event.which, event.ctrlKey)
         $(".td-inputbox").focus()
-        if(event.which == 13) {
+        if (event.which == 13) {
             // enter pressed
             $('#debug-send').click()
         }
-        if(event.ctrlKey && event.which == 10){
+        if (event.ctrlKey && event.which == 10) {
             pasteHtmlAtCaret("</br>", 'div.td-inputbox')
         }
     })
