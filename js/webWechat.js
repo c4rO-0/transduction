@@ -301,8 +301,13 @@ window.onload = function () {
 
 
                     } else {
-                        // 一条未读
-                        counter = 1
+                        if($(obj).find('div.avatar i.web_wechat_reddot_middle').length >0){
+                            // 一条未读
+                            counter = 1
+                        }else{
+                            counter = 0
+                        }
+
                     }
 
                 }
