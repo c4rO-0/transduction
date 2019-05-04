@@ -169,14 +169,17 @@ window.onload = function () {
             let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
             // 置换内容
             content = imgUrl
-        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP) {
-            // 文件
-            type = 'text'
-            let fileName = $(MSGObj).find("div.attach p[ng-bind*='message.FileName']").text()
-            let fileSize = $(MSGObj).find("div.attach span[ng-bind*='message.MMAppMsgFileSize']").text()
-            content = fileName
-        }
-        else {
+        // } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 5) {
+        //     // 公众号链接
+        //     type = 'url'
+        //     content = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("a").attr('href')
+        // } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 6) {    
+        //     // 文件
+        //     type = 'text'
+        //     let fileName = $(MSGObj).find("div.attach p[ng-bind*='message.FileName']").text()
+        //     // let fileSize = $(MSGObj).find("div.attach span[ng-bind*='message.MMAppMsgFileSize']").text()
+        //     content = fileName            
+        } else {
             type = 'unknown'
         }
 
