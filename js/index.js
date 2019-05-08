@@ -407,7 +407,7 @@ $(document).ready(function () {
                 } else {
 
                     if ($(dialogSelector).is(":visible") &&
-                        $(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight == $(dialogSelector)[0].scrollHeight) {
+                        Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) < 64 )  {
                         atBottom = true
                         console.log("要滚动啊.......")
                     } else {
