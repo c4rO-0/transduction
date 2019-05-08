@@ -405,13 +405,13 @@ document.body.appendChild(el);}")
             } else {
                 reject("sendToMain : two many msg")
             }
-        }),
-        new Promise((resolve, reject) => {
-            let erTime = setTimeout(() => {
-                clearTimeout(erTime)
-                reject("sendToMain : time out")
-            }, 5000);
-        })])
+        })]) //,
+        // new Promise((resolve, reject) => {
+        //     let erTime = setTimeout(() => {
+        //         clearTimeout(erTime)
+        //         reject("HostSendToWeb : time out")
+        //     }, 5000);
+        // })])
     },
     /**
      * 返回一个以时间作为种子的唯一字符串.
@@ -513,13 +513,13 @@ document.body.appendChild(el);}")
                 reject("sendToWin : two many msg")
             }
 
-        }),
-        new Promise((resolve, reject) => {
-            let erTime = setTimeout(() => {
-                clearTimeout(erTime)
-                reject("sendToWin : time out")
-            }, 5000);
-        })])
+        })]) //,
+        // new Promise((resolve, reject) => {
+        //     let erTime = setTimeout(() => {
+        //         clearTimeout(erTime)
+        //         reject("HostSendToWeb : time out")
+        //     }, 5000);
+        // })])
     },
     /**
      * window 处理sendToWin函数发来的消息.
@@ -623,13 +623,13 @@ document.body.appendChild(el);}")
                 }, 5000);
             }
 
-        }),
-        new Promise((resolve, reject) => {
-            let erTime = setTimeout(() => {
-                clearTimeout(erTime)
-                reject("HostSendToWeb : time out")
-            }, 5000);
-        })])
+        })]) //,
+        // new Promise((resolve, reject) => {
+        //     let erTime = setTimeout(() => {
+        //         clearTimeout(erTime)
+        //         reject("HostSendToWeb : time out")
+        //     }, 5000);
+        // })])
     },
     /**
      * webview 处理HostSendToWeb函数发来的消息.
@@ -723,13 +723,13 @@ document.body.appendChild(el);}")
                 reject("WebToHost : two many msg")
             }
 
-        }),
-        new Promise((resolve, reject) => {
-            let erTime = setTimeout(() => {
-                clearTimeout(erTime)
-                reject("WebToHost : time out")
-            }, 5000);
-        })])
+        })]) //,
+        // new Promise((resolve, reject) => {
+        //     let erTime = setTimeout(() => {
+        //         clearTimeout(erTime)
+        //         reject("HostSendToWeb : time out")
+        //     }, 5000);
+        // })])
     },
     /**
      * window 处理WebToHost函数发来的消息.
