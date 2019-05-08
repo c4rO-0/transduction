@@ -1610,10 +1610,18 @@ $(document).ready(function () {
             $("div.td-inputbox").empty()
             // console.log('-----send-----')
             if (arraySend.length > 0) {
+                // 添加send
+                if($("#td-sending").length == 0 ){
+                    $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
+                }
+                
+
                 arraySend.unshift(userID)
                 $(webTag2Selector(webTag)).focus()
                 core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }).then(() => {
-
+                    
+                    console.log("send finished")
+                    $("#td-sending").remove()
                     // 索取新的dialog
                     core.HostSendToWeb(
                         webTag2Selector(webTag),
@@ -1634,8 +1642,14 @@ $(document).ready(function () {
                             delete fileList[value.fileID]
                         }
                     })
-                }).catch((leftArraySend) => {
 
+
+                    
+
+                }).catch((err) => {
+                    console.log("send failed", err)
+
+                    $("#td-sending").remove()                    
                 })
             }
         }
