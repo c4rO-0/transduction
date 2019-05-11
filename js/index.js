@@ -84,6 +84,8 @@ $(document).ready(function () {
     let debug_latex_str = "#debug-latex2png"
     let debug_goBackChat_str = "#debug-goBackChat"
 
+    let sendingList = {};
+
 
     // =========================class===========================
     class conversation {
@@ -237,7 +239,7 @@ $(document).ready(function () {
         if (dialog['type'] == 'text') {
             content =
                 '<div class="td-chatText">'
-                    + dialog['message'] +
+                + dialog['message'] +
                 '</div>'
         } else if (dialog['type'] == 'img') {
             content =
@@ -245,18 +247,18 @@ $(document).ready(function () {
                     <img src="' + dialog['message'] + '"></img>\
                 </div>'
         } else if (dialog['type'] == 'url') {
-            if (dialog['message'].search('https://send.firefox.com/download') !== -1){
+            if (dialog['message'].search('https://send.firefox.com/download') !== -1) {
                 content =
-                '<div class="td-chatText">\
+                    '<div class="td-chatText">\
                     <span class="badge badge-pill badge-light py-0 mt-1">\
                         <img src="../res/pic/ffsend.logo.svg" height="15px">\
                     </span>\
                     <a href="'+ dialog['message'] + '">' + dialog['message'] + '</a>\
                     <p></p>\
                 </div>'
-            }else{
+            } else {
                 content =
-                '<div class="td-chatText">\
+                    '<div class="td-chatText">\
                     <a  href="' + dialog['message'] + '">' + dialog['message'] + '</a>\
                     <p></p>\
                 </div>'
@@ -266,13 +268,13 @@ $(document).ready(function () {
                 '<div class="td-chatText">\
                     <span class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</span>\
                     <p>'
-                    + dialog['message'] +
-                    '</p>\
+                + dialog['message'] +
+                '</p>\
                 </div>'
         } else {
             content =
                 '<div class="td-chatText">'
-                    + dialog['message'] +
+                + dialog['message'] +
                 '</div>'
         }
 
@@ -292,15 +294,15 @@ $(document).ready(function () {
                             <img src="'+ avatarUrl + '">\
                             <p class="m-0">'+ time + '</p>\
                         </div>'
-                        + content +
-                    '</div>\
+                + content +
+                '</div>\
                 </div>'
         } else {
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
                     <div class="td-me">'
-                        + content +
-                        '<p class="m-0">' + time + '</p>\
+                + content +
+                '<p class="m-0">' + time + '</p>\
                     </div>\
                 </div>'
         }
@@ -407,7 +409,7 @@ $(document).ready(function () {
                 } else {
 
                     if ($(dialogSelector).is(":visible") &&
-                        Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) < 64 )  {
+                        Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) < 64) {
                         atBottom = true
                         console.log("要滚动啊.......")
                     } else {
@@ -564,15 +566,15 @@ $(document).ready(function () {
                     // console.log(typeof Convo.time)
                     // console.log(convoHtml('skype', Convo))
                     // 覆盖消息
-                    let active = 
-                    $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
-                    .hasClass('theme-transduction-active')
+                    let active =
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
+                            .hasClass('theme-transduction-active')
 
                     $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
                     $('#td-convo-container').prepend(AddConvoHtml(webTag, Convo))
-                    if(active){
+                    if (active) {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
-                        .addClass('theme-transduction-active')                        
+                            .addClass('theme-transduction-active')
                     }
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
@@ -1414,71 +1416,93 @@ $(document).ready(function () {
         let userID = $(this).attr("data-user-i-d")
         let nickName = $(this).find("div.td-nickname").text()
 
-        $('#td-convo-container div.td-convo').removeClass('theme-transduction-active')
-        $(this).addClass('theme-transduction-active')
-
-
-        if (webTag == undefined || userID == undefined) {
-            console.log("error : click obj error.")
-            console.log("obj : ", this)
-            console.log("userID : ", userID)
-            return
+        let sendingUserID = undefined
+        // 该webtag下, 有个不是当前点击的userID在发送文件, 则不允许点击
+        // 比如微信正在给a发送消息, 那么可以点击skype下任意用户, 但是微信只允许点击a用户.
+        // 点击其他用户会把后台正在等待发消息的函数给停掉.
+        for (let key in sendingList) {
+            if (key.startsWith(webTag + ':') && key != webTag + ':' + userID && sendingList[key] > 0) {
+                sendingUserID = key.substr((webTag + ':').length)
+            }
         }
 
-        // 加载dialog(当前可能显示的是extension)
-        $(debug_goBackChat_str).click()
-        // 滑动条拖到最后
-        let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
-        $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+        if (sendingUserID === undefined) {
+            $('#td-convo-container div.td-convo').removeClass('theme-transduction-active')
+            $(this).addClass('theme-transduction-active')
 
 
-        $(webTag2Selector(webTag)).focus()
-        if (
-            $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
-            && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
-            && $("#td-right div.td-chat-title h2").text() == nickName
-        ) {
-            // 当前聊天内容不需要清空, 只需要补充
-            core.HostSendToWeb(
-                webTag2Selector(webTag),
-                { "queryDialog": { "userID": userID } }
-            ).then((res) => {
-                console.log("queryDialog : webReply : ", res)
+            if (webTag == undefined || userID == undefined) {
+                console.log("error : click obj error.")
+                console.log("obj : ", this)
+                console.log("userID : ", userID)
+                return
+            }
 
-            }).catch((error) => {
-                throw error
-            })
-
-        } else {
-            // ---------右侧标题-----------
-            $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
-            $("#td-right div.td-chat-title").attr("data-app-name", webTag)
-            $("#td-right div.td-chat-title h2").text(nickName)
-            $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
-            $("#td-right div.td-chatLog[wintype='chatLog']").empty()
+            // 加载dialog(当前可能显示的是extension)
+            $(debug_goBackChat_str).click()
+            // 滑动条拖到最后
+            let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+            $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
 
-            // $(webTag2Selector(webTag)).focus()
-            core.HostSendToWeb(
-                webTag2Selector(webTag),
-                { "queryDialog": { "userID": userID } }
-            ).then((res) => {
-                console.log("queryDialog : webReply : ", res)
+            $(webTag2Selector(webTag)).focus()
+            if (
+                $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
+                && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
+                && $("#td-right div.td-chat-title h2").text() == nickName
+            ) {
+                // 当前聊天内容不需要清空, 只需要补充
+                core.HostSendToWeb(
+                    webTag2Selector(webTag),
+                    { "queryDialog": { "userID": userID } }
+                ).then((res) => {
+                    console.log("queryDialog : webReply : ", res)
 
-                // setTimeout(() => {
-                //     console.log('bluring outtttttttttttttttttttttttt')
-                //     $(webTag2Selector(webTag)).blur()
-                // }, 1300)
-                // console.log('focusing innnnnnnnnnnn')
+                }).catch((error) => {
+                    throw error
+                })
+
+            } else {
+                // ---------右侧标题-----------
+                $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
+                $("#td-right div.td-chat-title").attr("data-app-name", webTag)
+                $("#td-right div.td-chat-title h2").text(nickName)
+                $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
+                $("#td-right div.td-chatLog[wintype='chatLog']").empty()
+
+
                 // $(webTag2Selector(webTag)).focus()
+                core.HostSendToWeb(
+                    webTag2Selector(webTag),
+                    { "queryDialog": { "userID": userID } }
+                ).then((res) => {
+                    console.log("queryDialog : webReply : ", res)
+
+                    // setTimeout(() => {
+                    //     console.log('bluring outtttttttttttttttttttttttt')
+                    //     $(webTag2Selector(webTag)).blur()
+                    // }, 1300)
+                    // console.log('focusing innnnnnnnnnnn')
+                    // $(webTag2Selector(webTag)).focus()
 
 
-            }).catch((error) => {
-                throw error
-            })
+                }).catch((error) => {
+                    throw error
+                })
+            }
+            $(webTag2Selector(webTag)).focus()
+            // 判断sending条
+            if (sendingList[webTag + ':' + userID] && sendingList[webTag + ':' + userID] > 0) {
+                $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
+            }
+        }else{
+            console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="'+ sendingUserID +'"] div.td-nickname').text())
+            $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' + 
+            $('div[data-user-i-d="'+ sendingUserID +'"] div.td-nickname').text() + '...</div>')
+            setTimeout(() => {
+                $("#td-warning").remove()
+            }, 5000);
         }
-        $(webTag2Selector(webTag)).focus()
-
 
     });
 
@@ -1618,18 +1642,30 @@ $(document).ready(function () {
             $("div.td-inputbox").empty()
             // console.log('-----send-----')
             if (arraySend.length > 0) {
+
+                if (sendingList[webTag + ':' + userID]) {
+
+                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] + 1
+                } else {
+                    sendingList[webTag + ':' + userID] = 1
+                }
+                // console.log("sending num : ", sendingList[webTag+':'+userID])
+
                 // 添加send
-                if($("#td-sending").length == 0 ){
+                if ($("#td-sending").length == 0) {
+                    console.log("attach sending-----")
                     $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
                 }
-                
 
                 arraySend.unshift(userID)
                 $(webTag2Selector(webTag)).focus()
-                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }).then(() => {
-                    
-                    console.log("send finished")
-                    $("#td-sending").remove()
+                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
+
+                    console.log("send finished. ", sendingList[webTag + ':' + userID], ' messages sending')
+                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] - 1
+                    if (sendingList[webTag + ':' + userID] <= 0) {
+                        $("#td-sending").remove()
+                    }
                     // 索取新的dialog
                     core.HostSendToWeb(
                         webTag2Selector(webTag),
@@ -1651,13 +1687,10 @@ $(document).ready(function () {
                         }
                     })
 
-
-                    
-
                 }).catch((err) => {
                     console.log("send failed", err)
 
-                    $("#td-sending").remove()                    
+                    // $("#td-sending").remove()                    
                 })
             }
         }
