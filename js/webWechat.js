@@ -23,6 +23,7 @@ window.onload = function () {
     const { net } = require('electron').remote
 
     let logStatus = { "status": "offline" }
+    // let meinUsername = undefined
 
     // const request = require('request')
     // const setimmediate = require('setimmediate')
@@ -156,34 +157,44 @@ window.onload = function () {
             } else {
                 // 置换内容
                 let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
-                content = imgUrl
-                // 还原为原始大小
-                content = content.slice(0, -"&type=slave".length)
+                if (imgUrl) {
+                    content = imgUrl
+                    // 还原为原始大小
+                    content = content.slice(0, -"&type=slave".length)
+                } else { // 找不到地址, 可能网页元素已经被删除
+                    content = MSG["MMThumbSrc"]
+                }
             }
 
-            // $(MSGObj).find("img.msg-img").attr("src")
-            // console.log("type img : ", content)
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
-            type = 'img'
-            // 小视频
-            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
-            // 置换内容
-            content = imgUrl
+                        // 小视频
+            type = 'unknown'
+
+            // type = 'img'
+            // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+            // // 置换内容
+            // content = imgUrl
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 5) {
             // 公众号链接
             type = 'url'
             content = MSG["Url"]
-        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 6) {    
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 6) {
             // 文件
             type = 'url'
-            content = MSG["MMAppMsgDownloadUrl"]      
+            content = MSG["MMAppMsgDownloadUrl"]
         } else {
             type = 'unknown'
         }
 
+        let usernameStr = $('div.header .avatar img.img').attr('mm-src')
+
+        let posUsername = usernameStr.indexOf('username')
+        let meinUsername = usernameStr.slice(posUsername + 'username='.length, usernameStr.indexOf('&', posUsername))
+        console.log("mein name : ", meinUsername)
+
         // console.log(remarkName, MSGID, type, content, time)
         return {
-            "from": MSGObj.hasClass("right") ? undefined : (remarkName == '' ? nickName : remarkName),
+            "from": MSG["FromUserName"] == meinUsername ? undefined : (remarkName == '' ? nickName : remarkName),
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
@@ -302,10 +313,10 @@ window.onload = function () {
 
 
                     } else {
-                        if($(obj).find('div.avatar i.web_wechat_reddot_middle').length >0){
+                        if ($(obj).find('div.avatar i.web_wechat_reddot_middle').length > 0) {
                             // 一条未读
                             counter = 1
-                        }else{
+                        } else {
                             counter = 0
                         }
 
@@ -456,12 +467,16 @@ window.onload = function () {
             logStatus.status = "offline"
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "show": {} })
+
         } else {
             logStatus.status = "online"
             console.log("=======================online=====================================")
             // console.log($("div.login"))
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "hide": {} })
+
+
+
         }
 
 

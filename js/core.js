@@ -156,7 +156,7 @@ function removeDir(dir) {
 module.exports = {
 
 
-    strUserAgentWin : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+    strUserAgentWin: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
     AppleWebKit/537.36 (KHTML, like Gecko) \
     WhatsApp/0.3.1475 Chrome/66.0.3359.181 Electron/3.0.0 Safari/537.36",
     fileSend: class {
@@ -399,19 +399,19 @@ document.body.appendChild(el);}")
                 setTimeout(() => {
 
                     ipcRender.removeListener('msg-ipc-asy-main-reply-' + uStr, handleMsg)
+                    reject("HostSendToWeb : time out")
 
-
-                }, 5000);
+                }, 5000000);
             } else {
                 reject("sendToMain : two many msg")
             }
-        }),
-        new Promise((resolve, reject) => {
-            let erTime = setTimeout(() => {
-                clearTimeout(erTime)
-                reject("sendToMain : time out")
-            }, 5000);
-        })])
+        })]) //,
+        // new Promise((resolve, reject) => {
+        //     let erTime = setTimeout(() => {
+        //         clearTimeout(erTime)
+        //         reject("HostSendToWeb : time out")
+        //     }, 5000);
+        // })])
     },
     /**
      * 返回一个以时间作为种子的唯一字符串.
@@ -507,19 +507,20 @@ document.body.appendChild(el);}")
                 setTimeout(() => {
 
                     ipcRender.removeListener('msg-ipc-asy-win-reply-' + uStr, handleMsg)
+                    reject("HostSendToWeb : time out")
 
-                }, 5000);
+                }, 5000000);
             } else {
                 reject("sendToWin : two many msg")
             }
 
-        }),
-        new Promise((resolve, reject) => {
-            let erTime = setTimeout(() => {
-                clearTimeout(erTime)
-                reject("sendToWin : time out")
-            }, 5000);
-        })])
+        })]) //,
+        // new Promise((resolve, reject) => {
+        //     let erTime = setTimeout(() => {
+        //         clearTimeout(erTime)
+        //         reject("HostSendToWeb : time out")
+        //     }, 5000);
+        // })])
     },
     /**
      * window 处理sendToWin函数发来的消息.
@@ -577,7 +578,7 @@ document.body.appendChild(el);}")
      * @returns {Promise} 
      * 对方通过调用WebReply返回的消息
      */
-    HostSendToWeb: function (webSelector, msg) {
+    HostSendToWeb: function (webSelector, msg, timeout = 5000) {
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -620,7 +621,8 @@ document.body.appendChild(el);}")
                 web.addEventListener('ipc-message', handleMsg)
                 setTimeout(() => {
                     web.removeEventListener('ipc-message', handleMsg)
-                }, 5000);
+                    reject("HostSendToWeb : time out")
+                }, timeout);
             }
 
         }),
@@ -628,7 +630,7 @@ document.body.appendChild(el);}")
             let erTime = setTimeout(() => {
                 clearTimeout(erTime)
                 reject("HostSendToWeb : time out")
-            }, 5000);
+            }, timeout);
         })])
     },
     /**
@@ -718,18 +720,18 @@ document.body.appendChild(el);}")
 
                     ipcRender.removeListener('msg-ipc-asy-win-reply-web-' + uStr, handleMsg)
 
-                }, 5000);
+                }, 5000000);
             } else {
                 reject("WebToHost : two many msg")
             }
 
-        }),
-        new Promise((resolve, reject) => {
-            let erTime = setTimeout(() => {
-                clearTimeout(erTime)
-                reject("WebToHost : time out")
-            }, 5000);
-        })])
+        })]) //,
+        // new Promise((resolve, reject) => {
+        //     let erTime = setTimeout(() => {
+        //         clearTimeout(erTime)
+        //         reject("HostSendToWeb : time out")
+        //     }, 5000);
+        // })])
     },
     /**
      * window 处理WebToHost函数发来的消息.
