@@ -1378,17 +1378,33 @@ $(document).ready(function () {
      * webview出现
      */
     $('.td-app-status img[class]').on('click', function () {
-        let webTag = '#modal-' + this.id.substring(4)
-        $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
-        $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+        let webTag = this.id.substring(4)
 
-        if (this.matches('.app-offline')) {
-            $(webTag).modal('show')
+        let sendingUserID = undefined
+        // 正在发消息不能打开后台
+        for (let key in sendingList) {
+            if (key.startsWith(webTag + ':') && sendingList[key] > 0) {
+                sendingUserID = key.substr((webTag + ':').length)
+            }
         }
-        if (this.matches('.app-online')) {
-            $(webTag + '>div.modal-dialog').addClass('modal-xl')
-            $(webTag).modal('show')
+        
+        
+        if(sendingUserID === undefined){
+            let webTagSelector = '#modal-' + webTag
+            $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+            $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+    
+            if (this.matches('.app-offline')) {
+                $(webTagSelector).modal('show')
+            }
+            if (this.matches('.app-online')) {
+                $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
+                $(webTagSelector).modal('show')
+            }
+        }else{
+            console.log(webTag, sendingUserID, 'sending')
         }
+
     })
 
 
