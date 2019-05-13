@@ -71,13 +71,14 @@ window.onload = function () {
      * 根据微信储存的变量_chatcontent读取消息
      * @param {Object} MSG 微信单条消息
      * @returns {Object} 拿到我们关系的内容
+     * @param {Integer} indexMSG MSG在_chatcontent里位置
      */
-    function grepMSG(contacts, MSG) {
+    function grepMSG(contacts, MSG, indexMSG) {
 
 
         let fromUserName = MSG["MMActualSender"]
         // let toUserName = MSG["ToUserName"]
-        let time = new Date(MSG["CreateTime"] * 1000)
+        let time = new Date(MSG["CreateTime"] * 1000  + indexMSG%1000)
 
 
 
@@ -533,7 +534,7 @@ window.onload = function () {
                             if ($(objSending).length == 0 ||
                                 $(objSending).is(':hidden')) {
 
-                                let MSG = grepMSG(contacts, objSlide[indexMSG])
+                                let MSG = grepMSG(contacts, objSlide[indexMSG], indexMSG)
                                 MSGList.push(MSG)
                             }
 
