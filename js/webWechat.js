@@ -53,11 +53,11 @@ window.onload = function () {
 
     // 通过RemarkName查找用户ID
     function getUsernameByRemarkName(remarkName) {
-        let contact = window._contacts
+        // let contact = window._contacts
         for (let username in contact) {
             // console.log(contact[username])
             // console.log((contact[username]))
-            if ((contact[username])["RemarkName"] == remarkName) {
+            if ((_contacts[username])["RemarkName"] == remarkName) {
                 return username
             }
 
@@ -150,10 +150,10 @@ window.onload = function () {
                 // let skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
                 // console.log(skey)
                 let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-                + "&skey=" + skey
+                    + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+                    + "&skey=" + skey
                 // console.log(imgUrl)
-                content = imgUrl                
+                content = imgUrl
             } else {
                 // 置换内容
                 let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
@@ -164,10 +164,10 @@ window.onload = function () {
                 } else { // 找不到地址, 可能网页元素已经被删除
                     content = MSG["MMThumbSrc"]
                     let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                    + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-                    + "&skey=" + skey
+                        + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+                        + "&skey=" + skey
                     // console.log(imgUrl)
-                    content = imgUrl                       
+                    content = imgUrl
                 }
             }
 
@@ -267,13 +267,13 @@ window.onload = function () {
             time = new Date((chatObj[chatObj.length - 1])["MMDisplayTime"] * 1000)
         }
 
-        let host =
-            window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
-                window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
-                window.location.href
+        // let host =
+        //     window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
+        //         window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
+        //         window.location.href
 
 
-        let avatar = host + $(obj).find("div.avatar img").attr("src")
+        let avatar = $(obj).find("div.avatar img").get(0).src
 
 
 
@@ -374,10 +374,10 @@ window.onload = function () {
             $("#navContact").scrollTop(0)
             $("#navContact").scrollTop($("#navContact")[0].scrollHeight)
 
-            // 更新联系人
-            contacts = window._contacts
-            // 更新对话
-            chatContent = window._chatContent
+            // // 更新联系人
+            // contacts = window._contacts
+            // // 更新对话
+            // chatContent = window._chatContent
 
             // 临时放在这
             // let username = getUsernameByRemarkName(remarkName)
@@ -495,6 +495,35 @@ window.onload = function () {
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "show": {} })
 
+            let callbackobsLogin = function(mutationList, observer){
+                // console.log("log status changed : ", $("div.login").is(':visible'))
+                if($('div[data-username="filehelper"]').length > 0){
+                    logStatus.status = "online"
+                    console.log("=======================online=====================================")
+                    // console.log($("div.login"))
+                    core.WebToHost({ "logStatus": logStatus })
+                    core.WebToHost({ "hide": {} })
+        
+                    // =====skey=========
+                    obsHead.observe($("head")[0], {
+                        childList: true,
+                        subtree: false,
+                        characterData: false,
+                        attributeFilter: ["src"],
+                        attributes: true, attributeOldValue: true
+                    });
+                    observer.disconnect()
+                }
+            }
+            let obsLogin = new MutationObserver(callbackobsLogin);
+            obsLogin.observe($('div[mm-repeat="chatContact in chatList track by chatContact.UserName"]')[0], {
+                childList: true,
+                subtree: false,
+                characterData: false,
+                // attributeFilter: ["style"],
+                attributes: false, attributeOldValue: false
+            });            
+
             // ====处理聊天记录====
 
             // =====skey=========
@@ -524,8 +553,8 @@ window.onload = function () {
         }
 
 
-        let contacts = window._contacts
-        let chatContent = window._chatContent
+        // let contacts = window._contacts
+        // let chatContent = window._chatContent
 
         // let remarkName = "乐宏昊"
 
@@ -565,7 +594,7 @@ window.onload = function () {
 
                     setTimeout(() => {
                         // 获取内容
-                        let objSlide = chatContent[ID]
+                        let objSlide = _chatContent[ID]
                         // console.log("objSlide : id : ", ID ,objSlide)
                         let MSGList = new Array()
                         for (let indexMSG in objSlide) {
@@ -577,7 +606,7 @@ window.onload = function () {
                             if ($(objSending).length == 0 ||
                                 $(objSending).is(':hidden')) {
 
-                                let MSG = grepMSG(contacts, objSlide[indexMSG], indexMSG)
+                                let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
                                 MSGList.push(MSG)
                             }
 
