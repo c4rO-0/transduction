@@ -23,6 +23,7 @@ window.onload = function () {
     const { net } = require('electron').remote
 
     let logStatus = { "status": "offline" }
+    let skey = ''
     // let meinUsername = undefined
 
     // const request = require('request')
@@ -48,8 +49,6 @@ window.onload = function () {
         MSGTYPE_SHARECARD: 42,
         MSGTYPE_SYS: 1e4
     }
-
-
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
     // 通过RemarkName查找用户ID
@@ -71,13 +70,14 @@ window.onload = function () {
      * 根据微信储存的变量_chatcontent读取消息
      * @param {Object} MSG 微信单条消息
      * @returns {Object} 拿到我们关系的内容
+     * @param {Integer} indexMSG MSG在_chatcontent里位置
      */
-    function grepMSG(contacts, MSG) {
+    function grepMSG(contacts, MSG, indexMSG) {
 
 
         let fromUserName = MSG["MMActualSender"]
         // let toUserName = MSG["ToUserName"]
-        let time = new Date(MSG["CreateTime"] * 1000)
+        let time = new Date(MSG["CreateTime"] * 1000 + indexMSG % 1000)
 
 
 
@@ -149,11 +149,11 @@ window.onload = function () {
                 // let posskey =  scriptSrc.indexOf('skey')
                 // let skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
                 // console.log(skey)
-                // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                // + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-                // + "&skey=" + skey
+                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+                + "&skey=" + skey
                 // console.log(imgUrl)
-                // content = imgUrl                
+                content = imgUrl                
             } else {
                 // 置换内容
                 let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
@@ -163,11 +163,16 @@ window.onload = function () {
                     content = content.slice(0, -"&type=slave".length)
                 } else { // 找不到地址, 可能网页元素已经被删除
                     content = MSG["MMThumbSrc"]
+                    let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                    + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+                    + "&skey=" + skey
+                    // console.log(imgUrl)
+                    content = imgUrl                       
                 }
             }
 
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
-                        // 小视频
+            // 小视频
             type = 'unknown'
 
             // type = 'img'
@@ -459,7 +464,29 @@ window.onload = function () {
 
     };
 
+
+    let callbackHead = function (mutationList) {
+
+        // console.log("head changed : ",mutationList )
+        mutationList.forEach((mutation, index) => {
+            // skey changed
+            // if (mutation.addedNodes && mutation.addedNodes.length){
+            //     console.log("head changed : ",mutation.addedNodes )
+            // }
+            if (mutation.addedNodes.length > 0 && $(mutation.addedNodes[0]).is("script[async][src*='skey']")) {
+                let scriptSrc = $("script[async][src*='skey']").attr("src")
+                // console.log(scriptSrc)
+                let posskey = scriptSrc.indexOf('skey')
+                skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey))
+                // console.log('skey : ', skey)
+            }
+        })
+    }
+
+
     $(document).ready(function () {
+
+        let obsHead = new MutationObserver(callbackHead);
 
         // 观察到微信登录或者注销登录页面会刷新
         if ($("div.login").length > 0) {
@@ -468,6 +495,12 @@ window.onload = function () {
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "show": {} })
 
+            // ====处理聊天记录====
+
+            // =====skey=========
+            obsHead.disconnect()
+
+
         } else {
             logStatus.status = "online"
             console.log("=======================online=====================================")
@@ -475,7 +508,18 @@ window.onload = function () {
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "hide": {} })
 
-
+            // =====skey=========
+            obsHead.observe($("head")[0], {
+                childList: true,
+                subtree: false,
+                characterData: false,
+                attributeFilter: ["src"],
+                attributes: true, attributeOldValue: true
+            });
+            // let scriptSrc = $("script[async][src*='skey']").attr("src")
+            // // console.log(scriptSrc)
+            // let posskey =  scriptSrc.indexOf('skey')
+            // skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
 
         }
 
@@ -533,7 +577,7 @@ window.onload = function () {
                             if ($(objSending).length == 0 ||
                                 $(objSending).is(':hidden')) {
 
-                                let MSG = grepMSG(contacts, objSlide[indexMSG])
+                                let MSG = grepMSG(contacts, objSlide[indexMSG], indexMSG)
                                 MSGList.push(MSG)
                             }
 

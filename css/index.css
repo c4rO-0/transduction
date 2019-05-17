@@ -203,7 +203,7 @@ webview {
 
 #td-warning {
     position: absolute;
-    /* bottom: 20px; */
+    top: 0px;
     text-align: center;
     width: 100%;
     background-color:#c0c0c0;
