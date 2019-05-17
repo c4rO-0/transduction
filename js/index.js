@@ -617,6 +617,17 @@ $(document).ready(function () {
                         console.log(webTag + " not log yet.")
                         $('#app-' + webTag).removeClass('app-online')
                         $('#app-' + webTag).addClass('app-offline')
+
+                        // 去掉聊天记录
+                        $('#td-convo-container > div').each((index,element)=>{
+                            if($(element).is('[data-app-name="'+ webTag +'"]')){
+                                $(element).remove()
+                            }
+                        })
+
+                        // 空白页
+
+
                     } else if (Obj.status == 'online') {
                         console.log(webTag + " is logged already.")
                         $('#app-' + webTag).removeClass('app-offline')
