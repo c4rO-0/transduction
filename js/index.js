@@ -1653,7 +1653,10 @@ $(document).ready(function () {
 
     });
 
-
+    // ===========================图片按钮===========================
+    $(debug_image_str).on('click', event =>{
+        $('.td-toolbox > input[type="file"]').get(0).click()
+    })
 
     // ===========================发送消息===========================
     $(debug_send_str).on('click', event => {
