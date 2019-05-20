@@ -300,15 +300,19 @@ window.onload = function () {
             let action = 'a'
             if ($(obj).find("div.ext p.attr.ng-scope[ng-if='chatContact.isMuted()']").length > 0) {
                 // 被静音了
+                console.log("is muted")
                 muted = true
                 if ($(obj).find("div.info p.msg span.ng-binding.ng-scope").length > 0) {
                     // 多条未读
+                    console.log("multi-MSGs")
                     let str_counter = $(obj).find("div.info p.msg span.ng-binding.ng-scope").text()
                     str_counter = str_counter.substr(1, str_counter.length - 3)
                     counter = parseInt(str_counter)
                 } else {
+                    console.log("single-MSG")
                     if (content == '') {
                         // 初始化
+                        console.log("initial muted group")
                         counter = 0
                         if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
                             action = 'a'
@@ -318,7 +322,8 @@ window.onload = function () {
 
 
                     } else {
-                        if ($(obj).find('div.avatar i.web_wechat_reddot_middle').length > 0) {
+                        console.log("unread 1 : ", $(obj).find('div.avatar i.web_wechat_reddot').length)
+                        if ($(obj).find('div.avatar i.web_wechat_reddot').length > 0) {
                             // 一条未读
                             counter = 1
                         } else {
