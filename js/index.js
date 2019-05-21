@@ -1494,7 +1494,12 @@ $(document).ready(function () {
                 $(webTagSelector).modal('show')
             }
         } else {
-            console.log(webTag, sendingUserID, 'sending')
+            console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
+            $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
+                $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text() + '...</div>')
+            setTimeout(() => {
+                $("#td-warning").remove()
+            }, 5000);
         }
 
     })
