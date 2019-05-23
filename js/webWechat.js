@@ -23,6 +23,8 @@ window.onload = function () {
     const { net } = require('electron').remote
 
     let logStatus = { "status": "offline" }
+    let skey = ''
+    // let meinUsername = undefined
 
     // const request = require('request')
     // const setimmediate = require('setimmediate')
@@ -47,17 +49,15 @@ window.onload = function () {
         MSGTYPE_SHARECARD: 42,
         MSGTYPE_SYS: 1e4
     }
-
-
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
     // 通过RemarkName查找用户ID
     function getUsernameByRemarkName(remarkName) {
-        let contact = window._contacts
+        // let contact = window._contacts
         for (let username in contact) {
             // console.log(contact[username])
             // console.log((contact[username]))
-            if ((contact[username])["RemarkName"] == remarkName) {
+            if ((_contacts[username])["RemarkName"] == remarkName) {
                 return username
             }
 
@@ -70,12 +70,14 @@ window.onload = function () {
      * 根据微信储存的变量_chatcontent读取消息
      * @param {Object} MSG 微信单条消息
      * @returns {Object} 拿到我们关系的内容
+     * @param {Integer} indexMSG MSG在_chatcontent里位置
      */
-    function grepMSG(contacts, MSG) {
+    function grepMSG(contacts, MSG, indexMSG) {
 
-        let fromUserName = MSG["FromUserName"]
+
+        let fromUserName = MSG["MMActualSender"]
         // let toUserName = MSG["ToUserName"]
-        let time = new Date(MSG["CreateTime"] * 1000)
+        let time = new Date(MSG["CreateTime"] * 1000 + indexMSG % 1000)
 
 
 
@@ -121,10 +123,16 @@ window.onload = function () {
         let MSGID = MSG["MsgId"]
 
         let MSGObj = $("div[data-cm*='" + MSGID + "']")
-        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT) {
+        // console.log("text : ", MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT && 
+        // ((! MSG["SubMsgType"])  || ( MSG["SubMsgType"] == 0)) )
+        if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT &&
+            ((!MSG["SubMsgType"]) || (MSG["SubMsgType"] == 0))) {
             // 正常输出
             type = 'text'
-
+            // 判断是否为组群消息
+            if (MSG["FromUserName"].substr(0, 2) == "@@") {
+                content = content.substr(content.indexOf(":") + 1)
+            }
             // 判断是否为url
             if ($(MSGObj).find("div.plain pre a").length > 0 && $(MSGObj).find("div.plain pre").contents().toArray().length == 1) {
                 type = "url"
@@ -132,32 +140,66 @@ window.onload = function () {
 
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_IMAGE) {
             // 缓存图片
-            // console.log($("div [data-cm*='" + MSG.MSGID + "'] img.msg-img"))
+            // console.log("type img")
             type = 'img'
-            // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
-            // $(MSGObj).find("img.msg-img").attr("src")
-            // 置换内容
-            content = MSG["MMThumbSrc"]
-        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
-            type = 'img'
-            // 小视频
-            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
-            // 置换内容
-            content = imgUrl
-        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP) {
-            // 文件
-            type = 'text'
-            let fileName = $(MSGObj).find("div.attach p[ng-bind*='message.FileName']").text()
-            let fileSize = $(MSGObj).find("div.attach span[ng-bind*='message.MMAppMsgFileSize']").text()
-            content = fileName
-        }
-        else {
+            if (MSG["MMThumbSrc"]) { //小图片, 直接原图
+                content = MSG["MMThumbSrc"]
+                // let scriptSrc = $("script[async][src*='skey']").attr("src")
+                // console.log(scriptSrc)
+                // let posskey =  scriptSrc.indexOf('skey')
+                // let skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
+                // console.log(skey)
+                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                    + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+                    + "&skey=" + skey
+                // console.log(imgUrl)
+                content = imgUrl
+            } else {
+                // 置换内容
+                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+                if (imgUrl) {
+                    content = imgUrl
+                    // 还原为原始大小
+                    content = content.slice(0, -"&type=slave".length)
+                } else { // 找不到地址, 可能网页元素已经被删除
+                    content = MSG["MMThumbSrc"]
+                    let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                        + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+                        + "&skey=" + skey
+                    // console.log(imgUrl)
+                    content = imgUrl
+                }
+            }
 
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
+            // 小视频
+            type = 'unknown'
+
+            // type = 'img'
+            // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+            // // 置换内容
+            // content = imgUrl
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 5) {
+            // 公众号链接
+            type = 'url'
+            content = MSG["Url"]
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 6) {
+            // 文件
+            type = 'url'
+            content = MSG["MMAppMsgDownloadUrl"]
+        } else {
+            type = 'unknown'
         }
+
+        let usernameStr = $('div.header .avatar img.img').attr('mm-src')
+
+        let posUsername = usernameStr.indexOf('username')
+        let meinUsername = usernameStr.slice(posUsername + 'username='.length, usernameStr.indexOf('&', posUsername))
+        console.log("mein name : ", meinUsername)
 
         // console.log(remarkName, MSGID, type, content, time)
         return {
-            "from": MSGObj.hasClass("right") ? undefined : (remarkName == '' ? nickName : remarkName),
+            "from": MSG["FromUserName"] == meinUsername ? undefined : (remarkName == '' ? nickName : remarkName),
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
@@ -225,13 +267,13 @@ window.onload = function () {
             time = new Date((chatObj[chatObj.length - 1])["MMDisplayTime"] * 1000)
         }
 
-        let host =
-            window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
-                window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
-                window.location.href
+        // let host =
+        //     window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
+        //         window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
+        //         window.location.href
 
 
-        let avatar = host + $(obj).find("div.avatar img").attr("src")
+        let avatar = $(obj).find("div.avatar img").get(0).src
 
 
 
@@ -268,7 +310,7 @@ window.onload = function () {
                     if (content == '') {
                         // 初始化
                         counter = 0
-                        if (userID == "filehelper" || $(obj).hasClass("top")) {
+                        if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
                             action = 'a'
                         } else {
                             action = 'c'
@@ -276,8 +318,13 @@ window.onload = function () {
 
 
                     } else {
-                        // 一条未读
-                        counter = 1
+                        if ($(obj).find('div.avatar i.web_wechat_reddot_middle').length > 0) {
+                            // 一条未读
+                            counter = 1
+                        } else {
+                            counter = 0
+                        }
+
                     }
 
                 }
@@ -291,7 +338,7 @@ window.onload = function () {
                 if (content == '') {
                     // 初始化
                     counter = 0
-                    if (userID == "filehelper" || $(obj).hasClass("top")) {
+                    if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
                         action = 'a'
                     } else {
                         action = 'c'
@@ -327,10 +374,10 @@ window.onload = function () {
             $("#navContact").scrollTop(0)
             $("#navContact").scrollTop($("#navContact")[0].scrollHeight)
 
-            // 更新联系人
-            contacts = window._contacts
-            // 更新对话
-            chatContent = window._chatContent
+            // // 更新联系人
+            // contacts = window._contacts
+            // // 更新对话
+            // chatContent = window._chatContent
 
             // 临时放在这
             // let username = getUsernameByRemarkName(remarkName)
@@ -387,6 +434,12 @@ window.onload = function () {
                 })
             }
 
+            if (record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username') {
+                // 点击新的用户
+                arrayObjUser.push(
+                    $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']"))
+            }
+
         })
 
         console.log("debug : ", "------array:user-----")
@@ -411,7 +464,29 @@ window.onload = function () {
 
     };
 
+
+    let callbackHead = function (mutationList) {
+
+        // console.log("head changed : ",mutationList )
+        mutationList.forEach((mutation, index) => {
+            // skey changed
+            // if (mutation.addedNodes && mutation.addedNodes.length){
+            //     console.log("head changed : ",mutation.addedNodes )
+            // }
+            if (mutation.addedNodes.length > 0 && $(mutation.addedNodes[0]).is("script[async][src*='skey']")) {
+                let scriptSrc = $("script[async][src*='skey']").attr("src")
+                // console.log(scriptSrc)
+                let posskey = scriptSrc.indexOf('skey')
+                skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey))
+                // console.log('skey : ', skey)
+            }
+        })
+    }
+
+
     $(document).ready(function () {
+
+        let obsHead = new MutationObserver(callbackHead);
 
         // 观察到微信登录或者注销登录页面会刷新
         if ($("div.login").length > 0) {
@@ -419,17 +494,67 @@ window.onload = function () {
             logStatus.status = "offline"
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "show": {} })
+
+            let callbackobsLogin = function(mutationList, observer){
+                // console.log("log status changed : ", $("div.login").is(':visible'))
+                if($('div[data-username="filehelper"]').length > 0){
+                    logStatus.status = "online"
+                    console.log("=======================online=====================================")
+                    // console.log($("div.login"))
+                    core.WebToHost({ "logStatus": logStatus })
+                    core.WebToHost({ "hide": {} })
+        
+                    // =====skey=========
+                    obsHead.observe($("head")[0], {
+                        childList: true,
+                        subtree: false,
+                        characterData: false,
+                        attributeFilter: ["src"],
+                        attributes: true, attributeOldValue: true
+                    });
+                    observer.disconnect()
+                }
+            }
+            let obsLogin = new MutationObserver(callbackobsLogin);
+            obsLogin.observe($('div[mm-repeat="chatContact in chatList track by chatContact.UserName"]')[0], {
+                childList: true,
+                subtree: false,
+                characterData: false,
+                // attributeFilter: ["style"],
+                attributes: false, attributeOldValue: false
+            });            
+
+            // ====处理聊天记录====
+
+            // =====skey=========
+            obsHead.disconnect()
+
+
         } else {
             logStatus.status = "online"
             console.log("=======================online=====================================")
             // console.log($("div.login"))
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "hide": {} })
+
+            // =====skey=========
+            obsHead.observe($("head")[0], {
+                childList: true,
+                subtree: false,
+                characterData: false,
+                attributeFilter: ["src"],
+                attributes: true, attributeOldValue: true
+            });
+            // let scriptSrc = $("script[async][src*='skey']").attr("src")
+            // // console.log(scriptSrc)
+            // let posskey =  scriptSrc.indexOf('skey')
+            // skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
+
         }
 
 
-        let contacts = window._contacts
-        let chatContent = window._chatContent
+        // let contacts = window._contacts
+        // let chatContent = window._chatContent
 
         // let remarkName = "乐宏昊"
 
@@ -447,7 +572,9 @@ window.onload = function () {
         obsChat.observe($("#J_NavChatScrollBody")[0], {
             childList: true,
             subtree: true,
-            characterData: true
+            characterData: true,
+            attributeFilter: ["data-username"],
+            attributes: true, attributeOldValue: true
         });
 
         // 接收上层消息
@@ -467,17 +594,19 @@ window.onload = function () {
 
                     setTimeout(() => {
                         // 获取内容
-                        let objSlide = chatContent[ID]
+                        let objSlide = _chatContent[ID]
                         // console.log("objSlide : id : ", ID ,objSlide)
                         let MSGList = new Array()
                         for (let indexMSG in objSlide) {
                             // console.log("debug : ", indexMSG, "---->")
                             // console.log(objSlide[indexMSG])
-                            if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
+                            // 发送中
+                            let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
                                 .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                                .is(':hidden')) {
+                            if ($(objSending).length == 0 ||
+                                $(objSending).is(':hidden')) {
 
-                                let MSG = grepMSG(contacts, objSlide[indexMSG])
+                                let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
                                 MSGList.push(MSG)
                             }
 
@@ -543,7 +672,7 @@ window.onload = function () {
 
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
-                            // $('input.webuploader-element-invisible').click()
+                            $('input.webuploader-element-invisible').click()
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---")
                                 waitSend(arrayValue, index)

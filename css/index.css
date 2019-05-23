@@ -201,6 +201,19 @@ webview {
     animation-timing-function: ease-in-out;
 }
 
+#td-warning {
+    position: absolute;
+    top: 0px;
+    text-align: center;
+    width: 100%;
+    background-color:#c0c0c0;
+    animation-name: sending;
+    animation-direction: alternate;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+
 @keyframes sending {
     100% {
         background-color: unset;
