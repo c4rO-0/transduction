@@ -619,8 +619,8 @@ $(document).ready(function () {
                         $('#app-' + webTag).addClass('app-offline')
 
                         // 去掉聊天记录
-                        $('#td-convo-container > div').each((index,element)=>{
-                            if($(element).is('[data-app-name="'+ webTag +'"]')){
+                        $('#td-convo-container > div').each((index, element) => {
+                            if ($(element).is('[data-app-name="' + webTag + '"]')) {
                                 $(element).remove()
                             }
                         })
@@ -966,6 +966,52 @@ $(document).ready(function () {
         })
     }
 
+
+    /**
+     * 将input转化成array
+     * @param {FileList} data 
+     * @returns {Promise} 
+     *  arra[{'key':value},{}] 
+     *  key : file text url
+     */
+    function filterFiles(files) {
+
+        return new Promise((resolve, reject) => {
+            let arrayItem = new Array();
+
+            console.log("---found files---")
+            // Use DataTransfer interface to access the file(s)
+            for (var i = 0; i < files.length; i++) {
+                // console.log(data.files[i])
+                let file = files[i]
+
+                arrayItem.push(new Promise(
+                    (resolve, reject) => {
+                        let imgSend = new core.fileSend(file.name, file.path, '')
+                        let reader = new FileReader();
+                        reader.onload = function (e) {
+                            imgSend.addDataUrl(reader.result)
+                            resolve(imgSend)
+                        }
+                        reader.readAsDataURL(file)
+                    }))
+
+
+            }
+
+
+            Promise.all(arrayItem).then((valueItems) => {
+
+                resolve(valueItems)
+
+            }).catch(error => {
+                reject({ 'string': error })
+            })
+
+        })
+    }
+
+
     /**
      * get  image height and width from dataUrl
      * @param {dataUrl} dataUrl 
@@ -1023,6 +1069,50 @@ $(document).ready(function () {
 
     }
 
+
+    function itemToHTML(item) {
+        return new Promise((resolve, reject) => {
+
+            if (typeof (item) == 'string') {
+                // insert string
+                pasteHtmlAtCaret($($("<div> </div>").text(item)).html(), 'div.td-inputbox')
+
+                resolve("")
+            } else {
+                // insert file
+                item.addFileID(core.UniqueStr())
+                //插入html
+                // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
+
+                autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit).then((newSize) => {
+
+                    item.localSave().then(() => {
+                        console.log("debug : path : ", item.path, "-----------------------------------")
+                        fileList[item.fileID] = item
+                        if (pasteHtmlAtCaret(
+                            "<img data-file-ID='"
+                            + item.fileID
+                            + "' contenteditable=false src='"
+                            + item.path
+                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
+                            resolve("")
+                        } else {
+                            reject("error : itemToHTML : pasteHtmlAtCaret")
+                        }
+                    }).catch((err) => {
+                        console.log("error : itemToHTML : localSave ")
+                        console.log(err)
+                        reject(err)
+                    })
+
+                }).catch((err) => {
+                    reject("error : itemToHTML : autoSizeImg")
+                })
+
+            }
+        })
+    }
+
     /**
      * 将data数据转化为Html附加到页面上
      * @param {dataTransfer} data 
@@ -1034,44 +1124,12 @@ $(document).ready(function () {
             filterDataTransfer(data).then((items) => {
                 // console.log("start insert")
                 items.forEach((item) => {
-                    // console.log(item)
-                    if (typeof (item) == 'string') {
-                        // insert string
-                        pasteHtmlAtCaret($($("<div> </div>").text(item)).html(), 'div.td-inputbox')
 
-                        resolve("")
-                    } else {
-                        // insert file
-                        item.addFileID(core.UniqueStr())
-                        //插入html
-                        // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
-
-                        autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit).then((newSize) => {
-
-                            item.localSave().then(() => {
-                                console.log("debug : path : ", item.path, "-----------------------------------")
-                                fileList[item.fileID] = item
-                                if (pasteHtmlAtCaret(
-                                    "<img data-file-ID='"
-                                    + item.fileID
-                                    + "' contenteditable=false src='"
-                                    + item.path
-                                    + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
-                                    resolve("")
-                                } else {
-                                    reject("error : processDataTransfer : pasteHtmlAtCaret")
-                                }
-                            }).catch((err) => {
-                                console.log("error : processDataTransfer : localSave ")
-                                console.log(err)
-                                reject(err)
-                            })
-
-                        }).catch((err) => {
-                            reject("error : processDataTransfer : autoSizeImg")
-                        })
-
-                    }
+                    itemToHTML(item).then((resolveItemToHTML) => {
+                        resolve(resolveItemToHTML)
+                    }).catch(errorItemToHTML => {
+                        reject(errorItemToHTML)
+                    })
                 })
 
             }).catch(error => {
@@ -1080,6 +1138,29 @@ $(document).ready(function () {
         })
     }
 
+
+    /**
+     * 将input传入的data数据转化为Html附加到页面上
+     * @param {FileList} fileList 
+     */
+    function processFileList(fileList) {
+        return new Promise((resolve, reject) => {
+
+            filterFiles(fileList).then((items) => {
+                // console.log("start insert")
+                items.forEach((item) => {
+                    itemToHTML(item).then((resolveItemToHTML) => {
+                        resolve(resolveItemToHTML)
+                    }).catch(errorItemToHTML => {
+                        reject(errorItemToHTML)
+                    })
+                })
+            }).catch(error => {
+                reject(error)
+            })
+        })
+
+    }
     /**
      * 在光标处插入代码 
      * @param {String} html 
@@ -1398,13 +1479,13 @@ $(document).ready(function () {
                 sendingUserID = key.substr((webTag + ':').length)
             }
         }
-        
-        
-        if(sendingUserID === undefined){
+
+
+        if (sendingUserID === undefined) {
             let webTagSelector = '#modal-' + webTag
             $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
             $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
-    
+
             if (this.matches('.app-offline')) {
                 $(webTagSelector).modal('show')
             }
@@ -1412,8 +1493,13 @@ $(document).ready(function () {
                 $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
                 $(webTagSelector).modal('show')
             }
-        }else{
-            console.log(webTag, sendingUserID, 'sending')
+        } else {
+            console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
+            $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
+                $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text() + '...</div>')
+            setTimeout(() => {
+                $("#td-warning").remove()
+            }, 5000);
         }
 
     })
@@ -1522,10 +1608,10 @@ $(document).ready(function () {
             if (sendingList[webTag + ':' + userID] && sendingList[webTag + ':' + userID] > 0) {
                 $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
             }
-        }else{
-            console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="'+ sendingUserID +'"] div.td-nickname').text())
-            $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' + 
-            $('div[data-user-i-d="'+ sendingUserID +'"] div.td-nickname').text() + '...</div>')
+        } else {
+            console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
+            $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
+                $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text() + '...</div>')
             setTimeout(() => {
                 $("#td-warning").remove()
             }, 5000);
@@ -1653,7 +1739,14 @@ $(document).ready(function () {
 
     });
 
+    // ===========================图片按钮===========================
+    $(debug_image_str).on('click', event => {
+        $('.td-toolbox > input[type="file"]').get(0).click()
+    })
 
+    $('.td-toolbox > input[type="file"]').on("change", function(event){ 
+        processFileList(event.target.files)
+     });
 
     // ===========================发送消息===========================
     $(debug_send_str).on('click', event => {
