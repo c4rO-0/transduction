@@ -37,6 +37,23 @@ webview {
     flex-wrap: nowrap;
 }
 
+#td-left {
+    background-color: #f9f9f9;
+}
+#td-settings {
+    border-bottom: 1px solid #c0c0c0;
+    padding: 2px;
+}
+
+.td-default {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%,-50%);
+    padding-right: 56px;
+}
+
 #td-settings .td-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -120,7 +137,7 @@ webview {
 }
 
 .td-chat-title {
-    height: 70px;
+    height: 76px;
     display: flex;
     align-items: center;
 }
