@@ -624,6 +624,22 @@ $(document).ready(function () {
                                 $(element).remove()
                             }
                         })
+                        // 右侧恢复到开始状态
+                        $('.td-chat-title').removeAttr('data-user-i-d')
+                        $('.td-chat-title').removeAttr('data-app-name')
+                        $('.td-chat-title > h2').text('')
+                        $('.td-chat-title > img').attr('src','../res/pic/nothing.png')
+
+                        $('.td-chatLog').empty()
+                        $('.td-chatLog').append('\
+                        <div class="td-default">\
+                            <p>\
+                                商业合作，问题反馈，请联系c4r。\
+                            </p>\
+                            <p>\
+                                business cooperation, bug report, please contact c4r.\
+                            </p>\
+                        </div>')
 
                         // 空白页
 
