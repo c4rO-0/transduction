@@ -584,8 +584,13 @@ $(document).ready(function () {
                 resolve("copy that")
             } else if (key == 'focus') {
                 console.log('focusing innnnnnnnnnnn')
+                // let activeE = document.activeElement
                 $(webTag2Selector(webTag)).focus()
-                console.log(document.activeElement)
+                setTimeout(() => {
+                    // $(activeE).focus()
+                    $(".td-inputbox").focus()
+                    console.log(document.activeElement)
+                }, 3000);
                 resolve("focus done")
             } else if (key == 'blur') {
                 console.log('bluring outttttttttttttttttttt')
