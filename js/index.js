@@ -282,9 +282,11 @@ $(document).ready(function () {
         if (dialog["from"]) {
             let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
             let appName = $("#td-right div.td-chat-title").attr("data-app-name")
-            let avatarUrl = $("#td-left \
+            let avatarUrl = dialog["avatar"] === undefined ? 
+            $("#td-left \
             div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
-            div.td-avatar").css('background-image').slice(5, -2)
+            div.td-avatar").css('background-image').slice(5, -2) 
+            : dialog["avatar"]
 
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\

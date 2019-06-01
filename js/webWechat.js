@@ -80,6 +80,7 @@ window.onload = function () {
         let time = new Date(MSG["CreateTime"] * 1000 + indexMSG % 1000)
 
 
+        let avatar = undefined
         let remarkName = ''
         let nickName = ''
         if( fromUserName.substr(0,2) == "@@"){
@@ -216,7 +217,8 @@ window.onload = function () {
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
-            "message": content
+            "message": content,
+            "avatar" : avatar
         }
 
 
