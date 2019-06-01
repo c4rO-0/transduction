@@ -1965,6 +1965,7 @@ $(document).ready(function () {
         if (event.which == 13) {
             // enter pressed
             $('#debug-send').click()
+            return false
         }
         if (event.ctrlKey && event.which == 10) {
             pasteHtmlAtCaret("</br>", 'div.td-inputbox')
