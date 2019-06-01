@@ -80,9 +80,22 @@ window.onload = function () {
         let time = new Date(MSG["CreateTime"] * 1000 + indexMSG % 1000)
 
 
-
         let remarkName = ''
-        if (contacts[fromUserName] != undefined) {
+        let nickName = ''
+        if( fromUserName.substr(0,2) == "@@"){
+            // 聊天群
+            let memberList = (contacts[fromUserName])['MemberList'] 
+            let foundName = false
+            memberList.forEach(member => {
+                if(!foundName && member['UserName'] == MSG['MMActualSender']){
+                    remarkName = member['DisplayName']
+                    nickName = member['DisplayName']
+                    avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + member['HeadImgUrl']
+                    foundName = true
+                }
+            })
+            
+        }else if (contacts[fromUserName] != undefined) {
             remarkName = (contacts[fromUserName])["RemarkName"]
             nickName = (contacts[fromUserName])["NickName"]
         }
