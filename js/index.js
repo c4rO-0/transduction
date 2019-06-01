@@ -491,7 +491,7 @@ $(document).ready(function () {
 
                     // 取消unread
                     console.log('focusing innnnnnnnnnnn')
-                    $(webTag2Selector(webTag)).focus()
+                    // $(webTag2Selector(webTag)).focus()
                     console.log(document.activeElement)
 
                     console.log('bluring outttttttttttttttttttt')
@@ -540,7 +540,7 @@ $(document).ready(function () {
                         }
                         // setTimeout(() => {
                         // console.info("focusssssss")
-                        $(webTag2Selector(webTag)).focus()
+                        // $(webTag2Selector(webTag)).focus()
                         // }, 10000);
 
                     }
@@ -1574,7 +1574,7 @@ $(document).ready(function () {
             $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
 
-            $(webTag2Selector(webTag)).focus()
+            // $(webTag2Selector(webTag)).focus()
             if (
                 $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
                 && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
@@ -1619,7 +1619,7 @@ $(document).ready(function () {
                     throw error
                 })
             }
-            $(webTag2Selector(webTag)).focus()
+            // $(webTag2Selector(webTag)).focus()
             // 判断sending条
             if (sendingList[webTag + ':' + userID] && sendingList[webTag + ':' + userID] > 0) {
                 $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
@@ -1794,7 +1794,7 @@ $(document).ready(function () {
                 }
 
                 arraySend.unshift(userID)
-                $(webTag2Selector(webTag)).focus()
+                // $(webTag2Selector(webTag)).focus()
                 core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
 
                     console.log("send finished. ", sendingList[webTag + ':' + userID], ' messages sending')
@@ -1906,7 +1906,7 @@ $(document).ready(function () {
 
         })
 
-        $(webTag2Selector("skype")).focus()
+        // $(webTag2Selector("skype")).focus()
         core.HostSendToWeb(webTag2Selector("skype"), { 'logoff': '' }).then((obj) => {
 
         })
