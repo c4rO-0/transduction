@@ -83,19 +83,23 @@ window.onload = function () {
         let avatar = undefined
         let remarkName = ''
         let nickName = ''
-        if( fromUserName.substr(0,2) == "@@"){
+        if( MSG["FromUserName"].substr(0, 2) == "@@"){
+            // console.log("MSG is group")
             // 聊天群
-            let memberList = (contacts[fromUserName])['MemberList'] 
+            let memberList = (contacts[MSG["FromUserName"]])['MemberList'] 
             let foundName = false
             memberList.forEach(member => {
+                // console.log('member name : ', member['UserName'] ,  MSG['MMActualSender'],member['UserName'] == MSG['MMActualSender'] )
                 if(!foundName && member['UserName'] == MSG['MMActualSender']){
                     remarkName = member['DisplayName']
-                    nickName = member['DisplayName']
+                    nickName = member['NickName']
+                    // console.log("find Name : ",member, member['DisplayName'],  member['DisplayName'])
                     avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + member['HeadImgUrl']
                     foundName = true
                 }
             })
-            
+            // console.log('member name : ', remarkName, nickName)
+            // console.log('memberlist : ', memberList)
         }else if (contacts[fromUserName] != undefined) {
             remarkName = (contacts[fromUserName])["RemarkName"]
             nickName = (contacts[fromUserName])["NickName"]
@@ -209,7 +213,7 @@ window.onload = function () {
 
         let posUsername = usernameStr.indexOf('username')
         let meinUsername = usernameStr.slice(posUsername + 'username='.length, usernameStr.indexOf('&', posUsername))
-        console.log("mein name : ", meinUsername)
+        // console.log("mein name : ", meinUsername)
 
         // console.log(remarkName, MSGID, type, content, time)
         return {
