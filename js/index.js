@@ -56,6 +56,11 @@ function listWebview() {
     })
 }
 
+function modalImage(event) {
+    document.getElementById('modal-image').querySelector('img').src = event.target.src
+    $("#modal-image").modal()
+}
+
 let tdPinCoord = [0, 0]
 
 
@@ -244,7 +249,7 @@ $(document).ready(function () {
         } else if (dialog['type'] == 'img') {
             content =
                 '<div class="td-chatImg">\
-                    <img src="' + dialog['message'] + '"></img>\
+                    <img src="' + dialog['message'] + '" onclick="modalImage(event)"></img>\
                 </div>'
         } else if (dialog['type'] == 'url') {
             if (dialog['message'].search('https://send.firefox.com/download') !== -1) {
