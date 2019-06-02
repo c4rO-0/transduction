@@ -287,9 +287,11 @@ $(document).ready(function () {
         if (dialog["from"]) {
             let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
             let appName = $("#td-right div.td-chat-title").attr("data-app-name")
-            let avatarUrl = $("#td-left \
+            let avatarUrl = dialog["avatar"] === undefined ? 
+            $("#td-left \
             div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
-            div.td-avatar").css('background-image').slice(5, -2)
+            div.td-avatar").css('background-image').slice(5, -2) 
+            : dialog["avatar"]
 
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
@@ -496,7 +498,7 @@ $(document).ready(function () {
 
                     // 取消unread
                     console.log('focusing innnnnnnnnnnn')
-                    $(webTag2Selector(webTag)).focus()
+                    // $(webTag2Selector(webTag)).focus()
                     console.log(document.activeElement)
 
                     console.log('bluring outttttttttttttttttttt')
@@ -545,7 +547,7 @@ $(document).ready(function () {
                         }
                         // setTimeout(() => {
                         // console.info("focusssssss")
-                        $(webTag2Selector(webTag)).focus()
+                        // $(webTag2Selector(webTag)).focus()
                         // }, 10000);
 
                     }
@@ -589,8 +591,13 @@ $(document).ready(function () {
                 resolve("copy that")
             } else if (key == 'focus') {
                 console.log('focusing innnnnnnnnnnn')
+                // let activeE = document.activeElement
                 $(webTag2Selector(webTag)).focus()
-                console.log(document.activeElement)
+                setTimeout(() => {
+                    // $(activeE).focus()
+                    $(".td-inputbox").focus()
+                    console.log(document.activeElement)
+                }, 3000);
                 resolve("focus done")
             } else if (key == 'blur') {
                 console.log('bluring outttttttttttttttttttt')
@@ -1579,7 +1586,7 @@ $(document).ready(function () {
             $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
 
-            $(webTag2Selector(webTag)).focus()
+            // $(webTag2Selector(webTag)).focus()
             if (
                 $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
                 && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
@@ -1624,7 +1631,7 @@ $(document).ready(function () {
                     throw error
                 })
             }
-            $(webTag2Selector(webTag)).focus()
+            // $(webTag2Selector(webTag)).focus()
             // 判断sending条
             if (sendingList[webTag + ':' + userID] && sendingList[webTag + ':' + userID] > 0) {
                 $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
@@ -1799,7 +1806,7 @@ $(document).ready(function () {
                 }
 
                 arraySend.unshift(userID)
-                $(webTag2Selector(webTag)).focus()
+                // $(webTag2Selector(webTag)).focus()
                 core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
 
                     console.log("send finished. ", sendingList[webTag + ':' + userID], ' messages sending')
@@ -1911,7 +1918,7 @@ $(document).ready(function () {
 
         })
 
-        $(webTag2Selector("skype")).focus()
+        // $(webTag2Selector("skype")).focus()
         core.HostSendToWeb(webTag2Selector("skype"), { 'logoff': '' }).then((obj) => {
 
         })
@@ -1970,6 +1977,7 @@ $(document).ready(function () {
         if (event.which == 13) {
             // enter pressed
             $('#debug-send').click()
+            return false
         }
         if (event.ctrlKey && event.which == 10) {
             pasteHtmlAtCaret("</br>", 'div.td-inputbox')
