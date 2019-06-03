@@ -1972,16 +1972,23 @@ $(document).ready(function () {
         // }else{
 
         // }
-        console.log('key press : ', event.which, event.ctrlKey)
-        $(".td-inputbox").focus()
-        if (event.which == 13) {
-            // enter pressed
-            $('#debug-send').click()
-            return false
+        // console.log('key press : ', event.which, event.ctrlKey)
+        // $(".td-inputbox").focus()
+
+        if($(document.activeElement).is(".td-inputbox")){
+            if (event.which == 13) {
+                // enter pressed
+                $('#debug-send').click()
+                return false
+            }
+            if (event.ctrlKey && event.which == 10) {
+                pasteHtmlAtCaret("</br>", 'div.td-inputbox')
+            }
+        }else{
+            // 闪烁
         }
-        if (event.ctrlKey && event.which == 10) {
-            pasteHtmlAtCaret("</br>", 'div.td-inputbox')
-        }
+
+
     })
 
 
