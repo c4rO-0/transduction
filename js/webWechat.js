@@ -94,7 +94,11 @@ window.onload = function () {
                     remarkName = member['DisplayName']
                     nickName = member['NickName']
                     // console.log("find Name : ",member, member['DisplayName'],  member['DisplayName'])
-                    avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + member['HeadImgUrl']
+                    // avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + member['HeadImgUrl']
+                    avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                    + "/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username=" + member['UserName']
+                    +"&chatroomid="+ (contacts[MSG["FromUserName"]])["EncryChatRoomId"]
+                    +"&skey="
                     foundName = true
                 }
             })
