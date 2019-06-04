@@ -642,8 +642,8 @@ $(document).ready(function () {
                         $('.td-chat-title > h2').text('')
                         $('.td-chat-title > img').attr('src','../res/pic/nothing.png')
 
-                        $('.td-chatLog').empty()
-                        $('.td-chatLog').append('\
+                        $('.td-chatLog[wintype="chatLog"]').empty()
+                        $('.td-chatLog[wintype="chatLog"]').append('\
                         <div class="td-default">\
                             <p>\
                                 商业合作，问题反馈，请联系c4r。\
