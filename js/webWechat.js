@@ -207,8 +207,11 @@ window.onload = function () {
             content = MSG["Url"]
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 6) {
             // 文件
-            type = 'url'
-            content = MSG["MMAppMsgDownloadUrl"]
+            if(MSG["MMAppMsgDownloadUrl"]){
+                type = 'url'
+                content = MSG["MMAppMsgDownloadUrl"]
+            }
+
         } else {
             type = 'unknown'
         }
@@ -630,7 +633,7 @@ window.onload = function () {
                             // console.log(objSlide[indexMSG])
                             // 发送中
                             let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
-                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif'], [ng-click='cancelUploadFile(message)']")
                             if ($(objSending).length == 0 ||
                                 $(objSending).is(':hidden')) {
 
