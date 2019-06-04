@@ -9,6 +9,8 @@ const path = require('path');
 const fs = require('fs');
 const URL = require('url').URL
 
+const core = require("./js/core.js")
+
 function createWindow() {
 
     let opts = { icon: './res/pic/ico.png' }
@@ -60,47 +62,53 @@ function createWindow() {
     })
 
 
-    // win.webContents.session.on('will-download', (event, item, webContents) => {
-    //     // Set the save path, making Electron not to prompt a save dialog.
-    //     item.setSavePath('/tmp/save.pdf')
-      
-    //     item.on('updated', (event, state) => {
-    //       if (state === 'interrupted') {
-    //         console.log('Download is interrupted but can be resumed')
-    //       } else if (state === 'progressing') {
-    //         if (item.isPaused()) {
-    //           console.log('Download is paused')
-    //         } else {
-    //           console.log(`Received bytes: ${item.getReceivedBytes()}`)
-    //         }
-    //       }
-    //     })
-    //     item.once('done', (event, state) => {
-    //       if (state === 'completed') {
-    //         console.log('Download successfully')
-    //       } else {
-    //         console.log(`Download failed: ${state}`)
-    //       }
-    //     })
-    //   })
+    win.webContents.session.on('will-download', (event, item, webContents) => {
+        // Set the save path, making Electron not to prompt a save dialog.
+        // item.setSavePath('/tmp/save.pdf')
+
+        item.on('updated', (event, state) => {
+          if (state === 'interrupted') {
+            console.log('Download is interrupted but can be resumed')
+          } else if (state === 'progressing') {
+            if (item.isPaused()) {
+              console.log('Download is paused')
+            } else {
+              console.log(`Received bytes: ${item.getReceivedBytes()}`)
+            }
+          }
+        })
+        item.once('done', (event, state) => {
+          if (state === 'completed') {
+            console.log('Download successfully')
+          } else {
+            console.log(`Download failed: ${state}`)
+          }
+        })
+      })
     //   win.webContents.downloadURL('https://trello-attachments.s3.amazonaws.com/5a4a24ad70082d09dedb3653/5cb2e3b37bd6da33a7570e19/bed48319600bb7979717b7e86c8b09d2/7RQwoJ8z83Zi65NDMvmHKVU0WxBJIrh9szeW_v63iawFYoRE7Ay499ylT0cvNrQJXKaYMxiB2PyOZKnR82h0yxAghk5JFmQ0uefdqFruKB4BMoMKE-JdDvD5FYDX6Y73GSz40nCj%3Ds0.png');      
 
 }
 
 app.on('ready', createWindow)
+//------------------------
+// 处理消息
+/**
+ * core.MainReply 处理消息的函数
+ * @param {String} key MSG的类别 : 
+ * MSG-Log : 收到右侧窗口聊天记录
+ * MSG-new : 左侧提示有新消息
+ * @param {Object} Obj 收到的具体消息
+ */
+function respFuncMainReply(key, Obj) {
+    return Promise.race([new Promise((resolve, reject) => {
+        if (key == 'Download') {
+            console.log("download : ", Obj)
+            let strDownload = Obj["url"]
+            win.webContents.downloadURL(Obj["url"]);      
+        }
+    })])
+}
 
-
-// 尝试禁止mainWindow加载url
-// app.on('web-contents-created', (event, contents) => {
-
-//     contents.on('will-navigate', (event, navigationUrl, isInPlace, isMainFrame) => {
-
-//         const parsedUrl = new URL(navigationUrl)
-
-//         if (parsedUrl.origin !== './html') {
-//             event.preventDefault()
-//         }
-
-//     })
-
-// })
+core.MainReply((key, arg) => {
+    return respFuncMainReply(key, arg)
+})

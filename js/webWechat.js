@@ -208,7 +208,7 @@ window.onload = function () {
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 6) {
             // 文件
             if(MSG["MMAppMsgDownloadUrl"]){
-                type = 'url'
+                type = 'file'
                 content = MSG["MMAppMsgDownloadUrl"]
             }
 

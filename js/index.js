@@ -268,6 +268,12 @@ $(document).ready(function () {
                     <p></p>\
                 </div>'
             }
+        } else if (dialog['type'] == 'file') {
+                content =
+                '<div class="td-chatText">\
+                <button href="'+ dialog['message']  + '" download>下载</button>\
+                <p></p>\
+            </div>'
         } else if (dialog['type'] == 'unknown') {
             content =
                 '<div class="td-chatText">\
@@ -1956,15 +1962,14 @@ $(document).ready(function () {
 
     });
 
-    // $(document).on('keydown', function (event) {
-    //     // console.log("focus text")
-    //     // if(document.activeElement == $(".td-inputbox").get(0)){
+    // 阻拦全部链接点击
+    $(document).on('click', 'button[download]', function (event) {
+        console.log('download : ', this)
+        core.sendToMain({'Download':{'url': $(this).attr('href'), 'path':'/temp/'}})
 
-    //     // }else{
+    });
 
-    //     // }
-    //     $(".td-inputbox").focus()
-    // })
+
     $(document).on('keypress', function (event) {
         // console.log("focus text")
         // if(document.activeElement == $(".td-inputbox").get(0)){
