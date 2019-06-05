@@ -268,6 +268,12 @@ $(document).ready(function () {
                     <p></p>\
                 </div>'
             }
+        } else if (dialog['type'] == 'file') {
+                content =
+                '<div class="td-chatText">\
+                <button href="'+ dialog['message']  + '" download>下载</button>\
+                <p></p>\
+            </div>'
         } else if (dialog['type'] == 'unknown') {
             content =
                 '<div class="td-chatText">\
@@ -642,8 +648,8 @@ $(document).ready(function () {
                         $('.td-chat-title > h2').text('')
                         $('.td-chat-title > img').attr('src','../res/pic/nothing.png')
 
-                        $('.td-chatLog').empty()
-                        $('.td-chatLog').append('\
+                        $('.td-chatLog[wintype="chatLog"]').empty()
+                        $('.td-chatLog[wintype="chatLog"]').append('\
                         <div class="td-default">\
                             <p>\
                                 商业合作，问题反馈，请联系c4r。\
@@ -1956,15 +1962,14 @@ $(document).ready(function () {
 
     });
 
-    // $(document).on('keydown', function (event) {
-    //     // console.log("focus text")
-    //     // if(document.activeElement == $(".td-inputbox").get(0)){
+    // 阻拦全部链接点击
+    $(document).on('click', 'button[download]', function (event) {
+        console.log('download : ', this)
+        core.sendToMain({'Download':{'url': $(this).attr('href'), 'path':'/temp/'}})
 
-    //     // }else{
+    });
 
-    //     // }
-    //     $(".td-inputbox").focus()
-    // })
+
     $(document).on('keypress', function (event) {
         // console.log("focus text")
         // if(document.activeElement == $(".td-inputbox").get(0)){
@@ -1972,16 +1977,23 @@ $(document).ready(function () {
         // }else{
 
         // }
-        console.log('key press : ', event.which, event.ctrlKey)
-        $(".td-inputbox").focus()
-        if (event.which == 13) {
-            // enter pressed
-            $('#debug-send').click()
-            return false
+        // console.log('key press : ', event.which, event.ctrlKey)
+        // $(".td-inputbox").focus()
+
+        if($(document.activeElement).is(".td-inputbox")){
+            if (event.which == 13) {
+                // enter pressed
+                $('#debug-send').click()
+                return false
+            }
+            if (event.ctrlKey && event.which == 10) {
+                pasteHtmlAtCaret("</br>", 'div.td-inputbox')
+            }
+        }else{
+            // 闪烁
         }
-        if (event.ctrlKey && event.which == 10) {
-            pasteHtmlAtCaret("</br>", 'div.td-inputbox')
-        }
+
+
     })
 
 
