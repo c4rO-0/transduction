@@ -63,6 +63,7 @@ function listWebview() {
 
 function modalImage(event) {
     document.getElementById('modal-image').querySelector('img').src = event.target.src
+    $('#modal-image button').attr('href', event.target.src)
     $("#modal-image").modal()
 }
 
