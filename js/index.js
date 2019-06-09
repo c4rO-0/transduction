@@ -50,6 +50,11 @@ function openDevtool(appName) {
     web.openDevTools();
 }
 
+function openExtensionDevtool(appName) {
+    let web = $("webview[data-extension-name='" + appName + "']")[0];
+    web.openDevTools();
+}
+
 function listWebview() {
     $("webview").toArray().forEach((e, i) => {
         console.log($(e).attr('data-app-name'))
@@ -270,8 +275,10 @@ $(document).ready(function () {
             }
         } else if (dialog['type'] == 'file') {
                 content =
-                '<div class="td-chatText">\
-                <button href="'+ dialog['message']  + '" download>下载</button>\
+                '<div class="td-chatText">'
+                + 'Name : ' +dialog['fileName']
+                + ' Size : ' + dialog['fileSize']/1000. + ' KB'
+                '<button href="'+ dialog['message']  + '" download>下载</button>\
                 <p></p>\
             </div>'
         } else if (dialog['type'] == 'unknown') {
@@ -773,7 +780,16 @@ $(document).ready(function () {
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
                 });
+                
+                // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
+                if($(webSelector).attr('src') != strUrl){
+                    $(webSelector).attr('src', strUrl)
+                }
+
                 $(webSelector).show()
+
+
+                
             } else {
                 // 隐藏所有webview
                 $(sectionSelector + " webview").each(function (index) {
@@ -783,7 +799,9 @@ $(document).ready(function () {
 
                 $(webSelector).attr("data-extension-name", extensionName)
 
+
                 $(webSelector).attr('src', strUrl)
+                // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
 
                 $(webSelector).attr('preload', strPathJS)
 
@@ -1938,26 +1956,37 @@ $(document).ready(function () {
         event.stopPropagation();
         // console.log(this.href.substring(0,4))
         if (this.href.substring(0, 4) == 'http') {
-            shell.openExternal(this.href);
-            // let options = {
-            //     type: 'info',
-            //     buttons: ['OK'],
-            //     defaultId: 2,
-            //     title: 'Question',
-            //     message: 'The link is opened in the default browser.',
-            //     // detail: 'It does not really matter',
-            //     // checkboxLabel: 'Remember my answer',
-            //     // checkboxChecked: true,
-            //   };
-            //   dialog.showMessageBox(null, options, (response, checkboxChecked) => {
-            //     console.log(response);
-            //     // console.log(checkboxChecked);
-            //   });
-            console.log(this)
-            let objBubble = $(this).closest("div.td-bubble")
-            if ($(objBubble).length > 0) {
-                $(objBubble).find("div.td-chatText p").text("opened in default browser.")
+
+            if(this.href.search('https://send.firefox.com/download') !== -1){
+                // 在extension打开
+                // console.log("click : ", this.href)
+
+                $(debug_firefox_send_str).click()
+
+                loadExtension("#td-right div.td-chatLog[winType='extension']", "firefox-send", this.href, '')
+            }else{
+                shell.openExternal(this.href);
+                // let options = {
+                //     type: 'info',
+                //     buttons: ['OK'],
+                //     defaultId: 2,
+                //     title: 'Question',
+                //     message: 'The link is opened in the default browser.',
+                //     // detail: 'It does not really matter',
+                //     // checkboxLabel: 'Remember my answer',
+                //     // checkboxChecked: true,
+                //   };
+                //   dialog.showMessageBox(null, options, (response, checkboxChecked) => {
+                //     console.log(response);
+                //     // console.log(checkboxChecked);
+                //   });
+                console.log(this)
+                let objBubble = $(this).closest("div.td-bubble")
+                if ($(objBubble).length > 0) {
+                    $(objBubble).find("div.td-chatText p").text("opened in default browser.")
+                }
             }
+
         }
 
     });

@@ -81,6 +81,8 @@ window.onload = function () {
 
 
         let avatar = undefined
+        let fileName = undefined
+        let fileSize = undefined
         let remarkName = ''
         let nickName = ''
         if( MSG["FromUserName"].substr(0, 2) == "@@"){
@@ -210,6 +212,8 @@ window.onload = function () {
             if(MSG["MMAppMsgDownloadUrl"]){
                 type = 'file'
                 content = MSG["MMAppMsgDownloadUrl"]
+                fileName = MSG["FileName"]
+                fileSize = parseFloat(MSG["FileSize"])
             }
 
         } else {
@@ -229,7 +233,9 @@ window.onload = function () {
             "time": time.getTime(),
             "type": type,
             "message": content,
-            "avatar" : avatar
+            "avatar" : avatar,
+            "fileName" : fileName,
+            "fileSize" : fileSize
         }
 
 
