@@ -270,8 +270,10 @@ $(document).ready(function () {
             }
         } else if (dialog['type'] == 'file') {
                 content =
-                '<div class="td-chatText">\
-                <button href="'+ dialog['message']  + '" download>下载</button>\
+                '<div class="td-chatText">'
+                + 'Name : ' +dialog['fileName']
+                + ' Size : ' + dialog['fileSize']/1000. + ' KB'
+                '<button href="'+ dialog['message']  + '" download>下载</button>\
                 <p></p>\
             </div>'
         } else if (dialog['type'] == 'unknown') {
