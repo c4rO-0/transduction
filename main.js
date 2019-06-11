@@ -11,6 +11,9 @@ const URL = require('url').URL
 
 const core = require("./js/core.js")
 
+
+let win = undefined
+
 function createWindow() {
 
   let opts = { icon: './res/pic/ico.png' }
@@ -108,10 +111,16 @@ app.on('ready', createWindow)
  */
 function respFuncMainReply(key, Obj) {
   return Promise.race([new Promise((resolve, reject) => {
-    if (key == 'Download') {
+    if (key == 'download') {
       console.log("download : ", Obj)
       let strDownload = Obj["url"]
       win.webContents.downloadURL(Obj["url"]);
+    } else if (key == 'flash') {
+      if (!win.isFocused()) {
+        // win.showInactive();
+        win.flashFrame(true);
+        // win.setIcon('./res/pic/ico_count.png')
+      }
     }
   })])
 }
