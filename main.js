@@ -16,7 +16,8 @@ let win = undefined
 
 function createWindow() {
 
-  let opts = { icon: './res/pic/ico.png' }
+  let opts = { icon: './res/pic/ico.png', webPreferences : {
+    nodeIntegration: true , webviewTag: true} }
   Object.assign(opts, config.get('winBounds'))
   // console.log(opts)  
   win = new BrowserWindow(opts)
