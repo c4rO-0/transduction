@@ -63,6 +63,7 @@ function listWebview() {
 
 function modalImage(event) {
     document.getElementById('modal-image').querySelector('img').src = event.target.src
+    $('#modal-image button').attr('href', event.target.src)
     $("#modal-image").modal()
 }
 
@@ -201,7 +202,7 @@ $(document).ready(function () {
         let avatar = convo.avatar == undefined ? '../res/pic/weird.png' : convo.avatar
 
         return '\
-        <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + '>\
+        <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + ' muted=' + convo.muted + '>\
             <div class="col-appLogo">\
                 <img src="../res/pic/'+ appName + '.png">\
             </div>\
@@ -356,6 +357,9 @@ $(document).ready(function () {
                         case "time":
                             $(objConvo).find("div.col-timestamp").text(convo.time.toTimeString().slice(0, 5))
                             break;
+                        case "muted":
+                            $(objConvo).attr('muted', convo.muted)
+                            break;                            
                         default:
                             break;
                     }
@@ -579,6 +583,11 @@ $(document).ready(function () {
 
 
 
+                }
+                
+
+                if(Convo.counter > 0 && !Convo.muted){
+                    core.sendToMain({'flash':''})
                 }
 
                 if (Convo.action === 'a') {
@@ -1994,7 +2003,7 @@ $(document).ready(function () {
     // 阻拦全部链接点击
     $(document).on('click', 'button[download]', function (event) {
         console.log('download : ', this)
-        core.sendToMain({'Download':{'url': $(this).attr('href'), 'path':'/temp/'}})
+        core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
 
     });
 
