@@ -16,7 +16,7 @@ let win = undefined
 
 function createWindow() {
 
-  let opts = { icon: './res/pic/ico.png', webPreferences : {
+  let opts = { icon: path.join(__dirname, '/res/pic/ico.png'), webPreferences : {
     nodeIntegration: true , webviewTag: true} }
   Object.assign(opts, config.get('winBounds'))
   // console.log(opts)  
@@ -91,14 +91,14 @@ function createWindow() {
   })
   //   win.webContents.downloadURL('https://trello-attachments.s3.amazonaws.com/5a4a24ad70082d09dedb3653/5cb2e3b37bd6da33a7570e19/bed48319600bb7979717b7e86c8b09d2/7RQwoJ8z83Zi65NDMvmHKVU0WxBJIrh9szeW_v63iawFYoRE7Ay499ylT0cvNrQJXKaYMxiB2PyOZKnR82h0yxAghk5JFmQ0uefdqFruKB4BMoMKE-JdDvD5FYDX6Y73GSz40nCj%3Ds0.png');      
 
-  win.on('focus', ()=>{
-    win.setIcon('./res/pic/ico.png')
-  })
+  // win.on('focus', ()=>{
+  //   win.setIcon('./res/pic/ico.png')
+  // })
 
-  win.on('blur', ()=>{
-    console.log('blur')
-    win.setIcon('./res/pic/ico_count.png', 'blur')
-  })
+  // win.on('blur', ()=>{
+  //   console.log('blur')
+  //   win.setIcon('./res/pic/ico_count.png', 'blur')
+  // })
 }
 
 app.on('ready', createWindow)
