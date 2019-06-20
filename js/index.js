@@ -2007,6 +2007,16 @@ $(document).ready(function () {
 
     });
 
+    $(document).on('click', 'button[reload]', function (event) {
+        console.log('reload : ', $(this), $(this).closest('modal-content').find('webview'))
+        // core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
+        let webview = $(this).closest('.modal-content').find('webview')
+        if(webview){
+            $(webview).get(0).reload()
+        }
+
+    });
+
 
     $(document).on('keypress', function (event) {
         // console.log("focus text")
