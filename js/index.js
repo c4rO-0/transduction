@@ -105,7 +105,10 @@ $(document).ready(function () {
     if(tdPinCoord === undefined){
         tdPinCoord = [0, 0]
     }
-    console.log('load tdPinCoord : ', tdPinCoord)
+    //console.log('load tdPinCoord : ', tdPinCoord)
+    document.getElementById('td-pin').style.left = tdPinCoord[0] + 'px'
+    document.getElementById('td-pin').style.bottom = tdPinCoord[1] + 'px'
+
 
 
     // =========================class===========================
