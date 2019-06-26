@@ -117,10 +117,12 @@ function createWindow() {
   ])
   tray.setContextMenu(contextMenu)
 
-
   // console.log(contextMenu)
   tray.setToolTip('transduction')
-
+  
+  tray.on('click', () => {
+    win.isVisible() ? win.hide() : win.show()
+  })
 
   win.on('focus', () => {
     tray.setImage(path.join(__dirname, '/res/pic/ico.png'))
