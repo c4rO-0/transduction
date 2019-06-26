@@ -14,11 +14,15 @@ const core = require("./js/core.js")
 
 let win = undefined
 let tray = null
+let isQuiting = false
 
 function createWindow() {
 
-  let opts = { icon: path.join(__dirname, '/res/pic/ico.png'), webPreferences : {
-    nodeIntegration: true , webviewTag: true} }
+  let opts = {
+    icon: path.join(__dirname, '/res/pic/ico.png'), webPreferences: {
+      nodeIntegration: true, webviewTag: true
+    }
+  }
   Object.assign(opts, config.get('winBounds'))
   // console.log(opts)  
   win = new BrowserWindow(opts)
@@ -31,41 +35,45 @@ function createWindow() {
     win.setMenu(null)
   }
 
-  win.on('close', () => {
+  win.on('close', (event) => {
     // 清理temp文件夹
-    console.log("cleaning temp folder...")
-    function removeDir(dir) {
-      if (fs.existsSync(dir)) {
-        let files = fs.readdirSync(dir)
-        for (var i = 0; i < files.length; i++) {
-          let childPath = path.join(dir, files[i]);
-          let stat = fs.statSync(childPath)
-          if (stat.isDirectory()) {
-            // 递归
-            // console.log("children : ", childPath)
-            removeDir(childPath);
-          } else {
-            //删除文件
-            // console.log("del file : ", childPath)
-            fs.unlinkSync(childPath);
+    if (!isQuiting) {
+      event.preventDefault();
+      win.hide();
+    } else {
+      console.log("cleaning temp folder...")
+      function removeDir(dir) {
+        if (fs.existsSync(dir)) {
+          let files = fs.readdirSync(dir)
+          for (var i = 0; i < files.length; i++) {
+            let childPath = path.join(dir, files[i]);
+            let stat = fs.statSync(childPath)
+            if (stat.isDirectory()) {
+              // 递归
+              // console.log("children : ", childPath)
+              removeDir(childPath);
+            } else {
+              //删除文件
+              // console.log("del file : ", childPath)
+              fs.unlinkSync(childPath);
+            }
           }
-        }
 
-        fs.rmdirSync(dir)
+          fs.rmdirSync(dir)
+        }
       }
 
+      console.log(path.join(os.tmpdir(), 'transduction'))
+      removeDir(path.join(os.tmpdir(), 'transduction'))
 
-
+      // 储存窗口位置
+      console.log("saving configurations...")
+      config.set('winBounds', win.getBounds())
     }
 
-    console.log(path.join(os.tmpdir(), 'transduction'))
-    removeDir(path.join(os.tmpdir(), 'transduction'))
-
-    // 储存窗口位置
-    console.log("saving configurations...")
-    config.set('winBounds', win.getBounds())
 
   })
+
 
 
   win.webContents.session.on('will-download', (event, item, webContents) => {
@@ -95,20 +103,26 @@ function createWindow() {
 
 
   tray = new Tray(path.join(__dirname, '/res/pic/ico.png'))
-  
+
 
   const contextMenu = Menu.buildFromTemplate([
-    { id: 'app', label: 'main window', click() { win.show() } },
+    { id: 'main', label: 'main window', click() { win.show() } },
+    {
+      id: 'quit', label: 'quit', click() {
+        isQuiting = true;
+        app.quit();
+      }
+    },
     { type: 'separator' }
   ])
   tray.setContextMenu(contextMenu)
 
-  
-  // console.log(contextMenu)
-  tray.setToolTip('transduction')  
 
-  
-  win.on('focus', ()=>{
+  // console.log(contextMenu)
+  tray.setToolTip('transduction')
+
+
+  win.on('focus', () => {
     tray.setImage(path.join(__dirname, '/res/pic/ico.png'))
   })
 
@@ -142,15 +156,20 @@ function respFuncMainReply(key, Obj) {
         // win.setIcon('./res/pic/ico_count.png')
         tray.setImage(path.join(__dirname, '/res/pic/ico_count.png'))
       }
-    } else if (key == 'taryMenu'){
-      if(Obj.action == 'update' ){
+    } else if (key == 'taryMenu') {
+      if (Obj.action == 'update') {
         contextMenu.append(new MenuItem(Obj.item))
-      }else if(Obj.action == 'delete' ){
-        
+      } else if (Obj.action == 'delete') {
+
       }
     }
   })])
 }
+
+
+app.on('before-quit', function () {
+  isQuiting = true;
+});
 
 core.MainReply((key, arg) => {
   return respFuncMainReply(key, arg)
