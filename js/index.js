@@ -50,6 +50,11 @@ function openDevtool(appName) {
     web.openDevTools();
 }
 
+function openExtensionDevtool(appName) {
+    let web = $("webview[data-extension-name='" + appName + "']")[0];
+    web.openDevTools();
+}
+
 function listWebview() {
     $("webview").toArray().forEach((e, i) => {
         console.log($(e).attr('data-app-name'))
@@ -58,10 +63,10 @@ function listWebview() {
 
 function modalImage(event) {
     document.getElementById('modal-image').querySelector('img').src = event.target.src
+    $('#modal-image button').attr('href', event.target.src)
     $("#modal-image").modal()
 }
 
-let tdPinCoord = [0, 0]
 
 
 
@@ -71,6 +76,9 @@ $(document).ready(function () {
 
     const core = require("../js/core.js")
     const { nativeImage, dialog, shell } = require('electron').remote
+    const Store = require('electron-store');
+    const store = new Store();
+
     // const  = require('electron').shell;
     // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
@@ -90,6 +98,14 @@ $(document).ready(function () {
     let debug_goBackChat_str = "#debug-goBackChat"
 
     let sendingList = {};
+
+    let tdPinCoord = undefined
+
+    tdPinCoord = store.get('tdPinCoord')
+    if(tdPinCoord === undefined){
+        tdPinCoord = [0, 0]
+    }
+    console.log('load tdPinCoord : ', tdPinCoord)
 
 
     // =========================class===========================
@@ -196,7 +212,7 @@ $(document).ready(function () {
         let avatar = convo.avatar == undefined ? '../res/pic/weird.png' : convo.avatar
 
         return '\
-        <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + '>\
+        <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + ' muted=' + convo.muted + '>\
             <div class="col-appLogo">\
                 <img src="../res/pic/'+ appName + '.png">\
             </div>\
@@ -268,6 +284,14 @@ $(document).ready(function () {
                     <p></p>\
                 </div>'
             }
+        } else if (dialog['type'] == 'file') {
+                content =
+                '<div class="td-chatText">'
+                + 'Name : ' +dialog['fileName']
+                + ' Size : ' + dialog['fileSize']/1000. + ' KB'
+                '<button href="'+ dialog['message']  + '" download>下载</button>\
+                <p></p>\
+            </div>'
         } else if (dialog['type'] == 'unknown') {
             content =
                 '<div class="td-chatText">\
@@ -287,9 +311,11 @@ $(document).ready(function () {
         if (dialog["from"]) {
             let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
             let appName = $("#td-right div.td-chat-title").attr("data-app-name")
-            let avatarUrl = $("#td-left \
+            let avatarUrl = dialog["avatar"] === undefined ? 
+            $("#td-left \
             div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
-            div.td-avatar").css('background-image').slice(5, -2)
+            div.td-avatar").css('background-image').slice(5, -2) 
+            : dialog["avatar"]
 
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
@@ -341,6 +367,9 @@ $(document).ready(function () {
                         case "time":
                             $(objConvo).find("div.col-timestamp").text(convo.time.toTimeString().slice(0, 5))
                             break;
+                        case "muted":
+                            $(objConvo).attr('muted', convo.muted)
+                            break;                            
                         default:
                             break;
                     }
@@ -496,7 +525,7 @@ $(document).ready(function () {
 
                     // 取消unread
                     console.log('focusing innnnnnnnnnnn')
-                    $(webTag2Selector(webTag)).focus()
+                    // $(webTag2Selector(webTag)).focus()
                     console.log(document.activeElement)
 
                     console.log('bluring outttttttttttttttttttt')
@@ -545,7 +574,7 @@ $(document).ready(function () {
                         }
                         // setTimeout(() => {
                         // console.info("focusssssss")
-                        $(webTag2Selector(webTag)).focus()
+                        // $(webTag2Selector(webTag)).focus()
                         // }, 10000);
 
                     }
@@ -564,6 +593,11 @@ $(document).ready(function () {
 
 
 
+                }
+                
+
+                if(Convo.counter > 0 && !Convo.muted){
+                    core.sendToMain({'flash':''})
                 }
 
                 if (Convo.action === 'a') {
@@ -589,8 +623,13 @@ $(document).ready(function () {
                 resolve("copy that")
             } else if (key == 'focus') {
                 console.log('focusing innnnnnnnnnnn')
+                // let activeE = document.activeElement
                 $(webTag2Selector(webTag)).focus()
-                console.log(document.activeElement)
+                setTimeout(() => {
+                    // $(activeE).focus()
+                    $(".td-inputbox").focus()
+                    console.log(document.activeElement)
+                }, 3000);
                 resolve("focus done")
             } else if (key == 'blur') {
                 console.log('bluring outttttttttttttttttttt')
@@ -635,8 +674,8 @@ $(document).ready(function () {
                         $('.td-chat-title > h2').text('')
                         $('.td-chat-title > img').attr('src','../res/pic/nothing.png')
 
-                        $('.td-chatLog').empty()
-                        $('.td-chatLog').append('\
+                        $('.td-chatLog[wintype="chatLog"]').empty()
+                        $('.td-chatLog[wintype="chatLog"]').append('\
                         <div class="td-default">\
                             <p>\
                                 商业合作，问题反馈，请联系c4r。\
@@ -760,7 +799,16 @@ $(document).ready(function () {
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
                 });
+                
+                // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
+                if($(webSelector).attr('src') != strUrl){
+                    $(webSelector).attr('src', strUrl)
+                }
+
                 $(webSelector).show()
+
+
+                
             } else {
                 // 隐藏所有webview
                 $(sectionSelector + " webview").each(function (index) {
@@ -770,7 +818,9 @@ $(document).ready(function () {
 
                 $(webSelector).attr("data-extension-name", extensionName)
 
+
                 $(webSelector).attr('src', strUrl)
+                // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
 
                 $(webSelector).attr('preload', strPathJS)
 
@@ -1439,7 +1489,8 @@ $(document).ready(function () {
         window.scrollTo(0, 0)
         document.getElementById('td-left').style.width = x + 'px'
         document.getElementById('td-input').style.height = window.innerHeight - y + 'px'
-
+        store.set('tdPinCoord', tdPinCoord)
+        // console.log('tdPinCoord changed to: ', tdPinCoord)
     }
 
     $('#td-pin').draggable({
@@ -1579,7 +1630,7 @@ $(document).ready(function () {
             $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
 
-            $(webTag2Selector(webTag)).focus()
+            // $(webTag2Selector(webTag)).focus()
             if (
                 $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
                 && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
@@ -1624,7 +1675,7 @@ $(document).ready(function () {
                     throw error
                 })
             }
-            $(webTag2Selector(webTag)).focus()
+            // $(webTag2Selector(webTag)).focus()
             // 判断sending条
             if (sendingList[webTag + ':' + userID] && sendingList[webTag + ':' + userID] > 0) {
                 $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
@@ -1799,7 +1850,7 @@ $(document).ready(function () {
                 }
 
                 arraySend.unshift(userID)
-                $(webTag2Selector(webTag)).focus()
+                // $(webTag2Selector(webTag)).focus()
                 core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
 
                     console.log("send finished. ", sendingList[webTag + ':' + userID], ' messages sending')
@@ -1911,7 +1962,7 @@ $(document).ready(function () {
 
         })
 
-        $(webTag2Selector("skype")).focus()
+        // $(webTag2Selector("skype")).focus()
         core.HostSendToWeb(webTag2Selector("skype"), { 'logoff': '' }).then((obj) => {
 
         })
@@ -1925,39 +1976,59 @@ $(document).ready(function () {
         event.stopPropagation();
         // console.log(this.href.substring(0,4))
         if (this.href.substring(0, 4) == 'http') {
-            shell.openExternal(this.href);
-            // let options = {
-            //     type: 'info',
-            //     buttons: ['OK'],
-            //     defaultId: 2,
-            //     title: 'Question',
-            //     message: 'The link is opened in the default browser.',
-            //     // detail: 'It does not really matter',
-            //     // checkboxLabel: 'Remember my answer',
-            //     // checkboxChecked: true,
-            //   };
-            //   dialog.showMessageBox(null, options, (response, checkboxChecked) => {
-            //     console.log(response);
-            //     // console.log(checkboxChecked);
-            //   });
-            console.log(this)
-            let objBubble = $(this).closest("div.td-bubble")
-            if ($(objBubble).length > 0) {
-                $(objBubble).find("div.td-chatText p").text("opened in default browser.")
+
+            if(this.href.search('https://send.firefox.com/download') !== -1){
+                // 在extension打开
+                // console.log("click : ", this.href)
+
+                $(debug_firefox_send_str).click()
+
+                loadExtension("#td-right div.td-chatLog[winType='extension']", "firefox-send", this.href, '')
+            }else{
+                shell.openExternal(this.href);
+                // let options = {
+                //     type: 'info',
+                //     buttons: ['OK'],
+                //     defaultId: 2,
+                //     title: 'Question',
+                //     message: 'The link is opened in the default browser.',
+                //     // detail: 'It does not really matter',
+                //     // checkboxLabel: 'Remember my answer',
+                //     // checkboxChecked: true,
+                //   };
+                //   dialog.showMessageBox(null, options, (response, checkboxChecked) => {
+                //     console.log(response);
+                //     // console.log(checkboxChecked);
+                //   });
+                console.log(this)
+                let objBubble = $(this).closest("div.td-bubble")
+                if ($(objBubble).length > 0) {
+                    $(objBubble).find("div.td-chatText p").text("opened in default browser.")
+                }
             }
+
         }
 
     });
 
-    // $(document).on('keydown', function (event) {
-    //     // console.log("focus text")
-    //     // if(document.activeElement == $(".td-inputbox").get(0)){
+    // 阻拦全部链接点击
+    $(document).on('click', 'button[download]', function (event) {
+        console.log('download : ', this)
+        core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
 
-    //     // }else{
+    });
 
-    //     // }
-    //     $(".td-inputbox").focus()
-    // })
+    $(document).on('click', 'button[reload]', function (event) {
+        console.log('reload : ', $(this), $(this).closest('modal-content').find('webview'))
+        // core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
+        let webview = $(this).closest('.modal-content').find('webview')
+        if(webview){
+            $(webview).get(0).reload()
+        }
+
+    });
+
+
     $(document).on('keypress', function (event) {
         // console.log("focus text")
         // if(document.activeElement == $(".td-inputbox").get(0)){
@@ -1965,15 +2036,23 @@ $(document).ready(function () {
         // }else{
 
         // }
-        console.log('key press : ', event.which, event.ctrlKey)
-        $(".td-inputbox").focus()
-        if (event.which == 13) {
-            // enter pressed
-            $('#debug-send').click()
+        // console.log('key press : ', event.which, event.ctrlKey)
+        // $(".td-inputbox").focus()
+
+        if($(document.activeElement).is(".td-inputbox")){
+            if (event.which == 13) {
+                // enter pressed
+                $('#debug-send').click()
+                return false
+            }
+            if (event.ctrlKey && event.which == 10) {
+                pasteHtmlAtCaret("</br>", 'div.td-inputbox')
+            }
+        }else{
+            // 闪烁
         }
-        if (event.ctrlKey && event.which == 10) {
-            pasteHtmlAtCaret("</br>", 'div.td-inputbox')
-        }
+
+
     })
 
 

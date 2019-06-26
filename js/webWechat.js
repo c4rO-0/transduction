@@ -80,9 +80,33 @@ window.onload = function () {
         let time = new Date(MSG["CreateTime"] * 1000 + indexMSG % 1000)
 
 
-
+        let avatar = undefined
+        let fileName = undefined
+        let fileSize = undefined
         let remarkName = ''
-        if (contacts[fromUserName] != undefined) {
+        let nickName = ''
+        if( MSG["FromUserName"].substr(0, 2) == "@@"){
+            // console.log("MSG is group")
+            // 聊天群
+            let memberList = (contacts[MSG["FromUserName"]])['MemberList'] 
+            let foundName = false
+            memberList.forEach(member => {
+                // console.log('member name : ', member['UserName'] ,  MSG['MMActualSender'],member['UserName'] == MSG['MMActualSender'] )
+                if(!foundName && member['UserName'] == MSG['MMActualSender']){
+                    remarkName = member['DisplayName']
+                    nickName = member['NickName']
+                    // console.log("find Name : ",member, member['DisplayName'],  member['DisplayName'])
+                    // avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + member['HeadImgUrl']
+                    avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                    + "/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username=" + member['UserName']
+                    +"&chatroomid="+ (contacts[MSG["FromUserName"]])["EncryChatRoomId"]
+                    +"&skey="
+                    foundName = true
+                }
+            })
+            // console.log('member name : ', remarkName, nickName)
+            // console.log('memberlist : ', memberList)
+        }else if (contacts[fromUserName] != undefined) {
             remarkName = (contacts[fromUserName])["RemarkName"]
             nickName = (contacts[fromUserName])["NickName"]
         }
@@ -185,8 +209,13 @@ window.onload = function () {
             content = MSG["Url"]
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 6) {
             // 文件
-            type = 'url'
-            content = MSG["MMAppMsgDownloadUrl"]
+            if(MSG["MMAppMsgDownloadUrl"]){
+                type = 'file'
+                content = MSG["MMAppMsgDownloadUrl"]
+                fileName = MSG["FileName"]
+                fileSize = parseFloat(MSG["FileSize"])
+            }
+
         } else {
             type = 'unknown'
         }
@@ -195,7 +224,7 @@ window.onload = function () {
 
         let posUsername = usernameStr.indexOf('username')
         let meinUsername = usernameStr.slice(posUsername + 'username='.length, usernameStr.indexOf('&', posUsername))
-        console.log("mein name : ", meinUsername)
+        // console.log("mein name : ", meinUsername)
 
         // console.log(remarkName, MSGID, type, content, time)
         return {
@@ -203,7 +232,10 @@ window.onload = function () {
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
-            "message": content
+            "message": content,
+            "avatar" : avatar,
+            "fileName" : fileName,
+            "fileSize" : fileSize
         }
 
 
@@ -607,7 +639,7 @@ window.onload = function () {
                             // console.log(objSlide[indexMSG])
                             // 发送中
                             let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
-                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif'], [ng-click='cancelUploadFile(message)']")
                             if ($(objSending).length == 0 ||
                                 $(objSending).is(':hidden')) {
 
