@@ -14,7 +14,7 @@ const core = require("./js/core.js")
 
 let win = undefined
 let tray = null
-let isQuiting = false
+let isQuitting = false
 
 function createWindow() {
 
@@ -37,7 +37,7 @@ function createWindow() {
 
   win.on('close', (event) => {
     // 清理temp文件夹
-    if (!isQuiting) {
+    if (!isQuitting) {
       event.preventDefault();
       win.hide();
     } else {
@@ -156,7 +156,7 @@ function respFuncMainReply(key, Obj) {
         // win.setIcon('./res/pic/ico_count.png')
         tray.setImage(path.join(__dirname, '/res/pic/ico_count.png'))
       }
-    } else if (key == 'taryMenu') {
+    } else if (key == 'trayMenu') {
       if (Obj.action == 'update') {
         contextMenu.append(new MenuItem(Obj.item))
       } else if (Obj.action == 'delete') {
@@ -168,7 +168,7 @@ function respFuncMainReply(key, Obj) {
 
 
 app.on('before-quit', function () {
-  isQuiting = true;
+  isQuitting = true;
 });
 
 core.MainReply((key, arg) => {
