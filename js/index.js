@@ -67,7 +67,6 @@ function modalImage(event) {
     $("#modal-image").modal()
 }
 
-let tdPinCoord = [0, 0]
 
 
 
@@ -77,6 +76,9 @@ $(document).ready(function () {
 
     const core = require("../js/core.js")
     const { nativeImage, dialog, shell } = require('electron').remote
+    const Store = require('electron-store');
+    const store = new Store();
+
     // const  = require('electron').shell;
     // const _ = require('../toolkit/lodash-4.17.11.js');
     console.log(process.versions.electron)
@@ -96,6 +98,14 @@ $(document).ready(function () {
     let debug_goBackChat_str = "#debug-goBackChat"
 
     let sendingList = {};
+
+    let tdPinCoord = undefined
+
+    tdPinCoord = store.get('tdPinCoord')
+    if(tdPinCoord === undefined){
+        tdPinCoord = [0, 0]
+    }
+    console.log('load tdPinCoord : ', tdPinCoord)
 
 
     // =========================class===========================
@@ -1479,7 +1489,8 @@ $(document).ready(function () {
         window.scrollTo(0, 0)
         document.getElementById('td-left').style.width = x + 'px'
         document.getElementById('td-input').style.height = window.innerHeight - y + 'px'
-
+        store.set('tdPinCoord', tdPinCoord)
+        // console.log('tdPinCoord changed to: ', tdPinCoord)
     }
 
     $('#td-pin').draggable({
