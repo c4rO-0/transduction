@@ -103,7 +103,7 @@ function createWindow() {
   ])
   tray.setContextMenu(contextMenu)
 
-
+  
   // console.log(contextMenu)
   tray.setToolTip('transduction')  
 
@@ -141,6 +141,12 @@ function respFuncMainReply(key, Obj) {
         win.flashFrame(true);
         // win.setIcon('./res/pic/ico_count.png')
         tray.setImage(path.join(__dirname, '/res/pic/ico_count.png'))
+      }
+    } else if (key == 'taryMenu'){
+      if(Obj.action == 'update' ){
+        contextMenu.append(new MenuItem(Obj.item))
+      }else if(Obj.action == 'delete' ){
+        
       }
     }
   })])
