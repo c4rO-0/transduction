@@ -20,7 +20,7 @@
         <div class="col-left" id="td-left" ondragstart="return false">
             <div id="td-settings">
                 <div class="td-buttons">
-                    <img src="../res/pic/settings.png">
+                    <img src="../res/pic/settings.png" onclick="$('#modal-settings').modal()">
                     <img id="weird" src="../res/pic/weird.png">
                 </div>
                 <div class="td-app-status">
@@ -243,6 +243,20 @@
                         <img style="object-fit: cover; height: 100%; width: 100%;">
                     </div>
                     <button download href>保存</button>
+                </div>
+            </div>
+        </div>
+        <div id="modal-settings" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <h2>settings</h2>
+                        <hr>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="customSwitch1">
+                            <label class="custom-control-label" for="customSwitch1">Close to status bar</label>
+                          </div>
+                    </div>
                 </div>
             </div>
         </div>
