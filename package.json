@@ -7,7 +7,9 @@
     "start": "electron .",
     "debug": "electron . --debug",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "dist-win": "electron-builder --win",
+    "dist-linux": "electron-builder --linux"
   },
   "author": "c4r",
   "devDependencies": {
@@ -17,5 +19,14 @@
   "dependencies": {
     "electron-store": "^2.0.0",
     "mkdirp": "^0.5.1"
+  },
+  "build": {
+    "appId": "com.aaronlenoir.gnucash-reporter",
+    "win": {
+      "target": [
+        "zip"
+      ]
+    }
   }
+  
 }
