@@ -1569,9 +1569,23 @@ $(document).ready(function () {
             console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
             $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
                 $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text() + '...</div>')
+
             setTimeout(() => {
                 $("#td-warning").remove()
             }, 5000);
+            setTimeout(() => {
+                let webTagSelector = '#modal-' + webTag
+                $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+                $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+        
+                if (this.matches('.app-offline')) {
+                    $(webTagSelector).modal('show')
+                }
+                if (this.matches('.app-online')) {
+                    $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
+                    $(webTagSelector).modal('show')
+                }                
+            }, 2000);
         }
 
     })
