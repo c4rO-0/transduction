@@ -85,28 +85,28 @@ window.onload = function () {
         let fileSize = undefined
         let remarkName = ''
         let nickName = ''
-        if( MSG["FromUserName"].substr(0, 2) == "@@"){
+        if (MSG["FromUserName"].substr(0, 2) == "@@") {
             // console.log("MSG is group")
             // 聊天群
-            let memberList = (contacts[MSG["FromUserName"]])['MemberList'] 
+            let memberList = (contacts[MSG["FromUserName"]])['MemberList']
             let foundName = false
             memberList.forEach(member => {
                 // console.log('member name : ', member['UserName'] ,  MSG['MMActualSender'],member['UserName'] == MSG['MMActualSender'] )
-                if(!foundName && member['UserName'] == MSG['MMActualSender']){
+                if (!foundName && member['UserName'] == MSG['MMActualSender']) {
                     remarkName = member['DisplayName']
                     nickName = member['NickName']
                     // console.log("find Name : ",member, member['DisplayName'],  member['DisplayName'])
                     // avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + member['HeadImgUrl']
                     avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                    + "/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username=" + member['UserName']
-                    +"&chatroomid="+ (contacts[MSG["FromUserName"]])["EncryChatRoomId"]
-                    +"&skey="
+                        + "/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username=" + member['UserName']
+                        + "&chatroomid=" + (contacts[MSG["FromUserName"]])["EncryChatRoomId"]
+                        + "&skey="
                     foundName = true
                 }
             })
             // console.log('member name : ', remarkName, nickName)
             // console.log('memberlist : ', memberList)
-        }else if (contacts[fromUserName] != undefined) {
+        } else if (contacts[fromUserName] != undefined) {
             remarkName = (contacts[fromUserName])["RemarkName"]
             nickName = (contacts[fromUserName])["NickName"]
         }
@@ -115,34 +115,38 @@ window.onload = function () {
         // let unread = strUnread == '' ? 0 : parseInt(strUnread)
         let type = ""
 
-        let contentObj = jQuery.parseHTML(MSG["MMDigest"])
         let content = ""
-        // 对content进行处理, 目前只发现emoji在里面
-        contentObj.forEach((c, i) => {
-            // 将内容进行切割, 判断是否为img emoji进行处理
 
-            let nodeName = $(c).prop('nodeName')
-            if (nodeName == "IMG") {
-                // 对左侧栏筛选字符表情
-                if ($(c).hasClass("qqemoji")) {
-                    // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                    let strEmoji = $(c).attr("text")
-                    console.log(strEmoji, strEmoji.substr(0, strEmoji.length - 4))
-                    strEmoji = strEmoji.substr(0, strEmoji.length - 4)
-                    content = content + strEmoji
-                } else if ($(c).hasClass("emoji")) {
-                    // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                    content = content + "[emoji]"
-                } else {
-                    content = content + "[image]"
+        if (MSG["MMDigest"].length > 0) {
+            let contentObj = jQuery.parseHTML(MSG["MMDigest"])
+            // 对content进行处理, 目前只发现emoji在里面
+            contentObj.forEach((c, i) => {
+                // 将内容进行切割, 判断是否为img emoji进行处理
+
+                let nodeName = $(c).prop('nodeName')
+                if (nodeName == "IMG") {
+                    // 对左侧栏筛选字符表情
+                    if ($(c).hasClass("qqemoji")) {
+                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        let strEmoji = $(c).attr("text")
+                        console.log(strEmoji, strEmoji.substr(0, strEmoji.length - 4))
+                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
+                        content = content + strEmoji
+                    } else if ($(c).hasClass("emoji")) {
+                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        content = content + "[emoji]"
+                    } else {
+                        content = content + "[image]"
+                    }
                 }
-            }
 
-            // 链接文字
-            content = content + $(c).text()
+                // 链接文字
+                content = content + $(c).text()
 
 
-        })
+            })
+        }
+
 
         let MSGID = MSG["MsgId"]
 
@@ -209,7 +213,7 @@ window.onload = function () {
             content = MSG["Url"]
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 6) {
             // 文件
-            if(MSG["MMAppMsgDownloadUrl"]){
+            if (MSG["MMAppMsgDownloadUrl"]) {
                 type = 'file'
                 content = MSG["MMAppMsgDownloadUrl"]
                 fileName = MSG["FileName"]
@@ -233,9 +237,9 @@ window.onload = function () {
             "time": time.getTime(),
             "type": type,
             "message": content,
-            "avatar" : avatar,
-            "fileName" : fileName,
-            "fileSize" : fileSize
+            "avatar": avatar,
+            "fileName": fileName,
+            "fileSize": fileSize
         }
 
 
@@ -532,15 +536,15 @@ window.onload = function () {
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "show": {} })
 
-            let callbackobsLogin = function(mutationList, observer){
+            let callbackobsLogin = function (mutationList, observer) {
                 // console.log("log status changed : ", $("div.login").is(':visible'))
-                if($('div[data-username="filehelper"]').length > 0){
+                if ($('div[data-username="filehelper"]').length > 0) {
                     logStatus.status = "online"
                     console.log("=======================online=====================================")
                     // console.log($("div.login"))
                     core.WebToHost({ "logStatus": logStatus })
                     core.WebToHost({ "hide": {} })
-        
+
                     // =====skey=========
                     obsHead.observe($("head")[0], {
                         childList: true,
@@ -559,7 +563,7 @@ window.onload = function () {
                 characterData: false,
                 // attributeFilter: ["style"],
                 attributes: false, attributeOldValue: false
-            });            
+            });
 
             // ====处理聊天记录====
 

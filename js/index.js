@@ -295,7 +295,7 @@ $(document).ready(function () {
         } else if (dialog['type'] == 'unknown') {
             content =
                 '<div class="td-chatText">\
-                    <span class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</span>\
+                    <a class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</a>\
                     <p>'
                 + dialog['message'] +
                 '</p>\
@@ -1557,21 +1557,35 @@ $(document).ready(function () {
             let webTagSelector = '#modal-' + webTag
             $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
             $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
-
+    
             if (this.matches('.app-offline')) {
                 $(webTagSelector).modal('show')
             }
             if (this.matches('.app-online')) {
                 $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
                 $(webTagSelector).modal('show')
-            }
+            }            
         } else {
             console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
             $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
                 $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text() + '...</div>')
+
             setTimeout(() => {
                 $("#td-warning").remove()
-            }, 5000);
+            }, 5000);     
+            setTimeout(() => {
+                let webTagSelector = '#modal-' + webTag
+                $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+                $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+        
+                if (this.matches('.app-offline')) {
+                    $(webTagSelector).modal('show')
+                }
+                if (this.matches('.app-online')) {
+                    $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
+                    $(webTagSelector).modal('show')
+                }                
+            }, 2000);
         }
 
     })
@@ -2008,6 +2022,16 @@ $(document).ready(function () {
             }
 
         }
+
+    });
+
+    $(document).on('click', 'a.badge.badge-pill.badge-warning', function (event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+        // console.log(this.href.substring(0,4))
+        let webTag = $('#td-right > div.td-chat-title').attr('data-app-name')
+        $('#app-'+webTag).click()
 
     });
 
