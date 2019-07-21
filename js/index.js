@@ -1604,7 +1604,10 @@ $(document).ready(function () {
     core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
         return respFuncWinReplyWeb("skype", key, arg)
     })
-
+    // dingtalk
+    core.WinReplyWeb(webTag2Selector("dingtalk"), (key, arg) => {
+        return respFuncWinReplyWeb("dingtalk", key, arg)
+    })
 
     // 点击convo
     $('#td-convo-container').on('click', 'div.td-convo', function () {
