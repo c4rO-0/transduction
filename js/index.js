@@ -783,7 +783,7 @@ $(document).ready(function () {
             $(sectionSelector + " webview").each(function (index) {
                 $(this).hide();
             });
-            $(sectionSelector).append("<webview data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
+            $(sectionSelector).append("<webview style='width:100%; height:100%' data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
 
             $(webSelector).attr("data-extension-name", extensionName)
 
