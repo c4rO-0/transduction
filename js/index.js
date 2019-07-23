@@ -783,7 +783,7 @@ $(document).ready(function () {
             $(sectionSelector + " webview").each(function (index) {
                 $(this).hide();
             });
-            $(sectionSelector).append("<webview data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
+            $(sectionSelector).append("<webview style='width:100%; height:100%' data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
 
             $(webSelector).attr("data-extension-name", extensionName)
 
@@ -1472,6 +1472,7 @@ $(document).ready(function () {
 
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://web.wechat.com/", core.strUserAgentWin)
+    loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
     // openDevtool("skype")
     // openDevtool("wechat")
@@ -1603,7 +1604,10 @@ $(document).ready(function () {
     core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
         return respFuncWinReplyWeb("skype", key, arg)
     })
-
+    // dingtalk
+    core.WinReplyWeb(webTag2Selector("dingtalk"), (key, arg) => {
+        return respFuncWinReplyWeb("dingtalk", key, arg)
+    })
 
     // 点击convo
     $('#td-convo-container').on('click', 'div.td-convo', function () {
