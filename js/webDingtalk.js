@@ -9,21 +9,69 @@ window.onload = function () {
     let logStatus = { "status": "offline" }
 
 
-    function callbackChat(mutationList, observer) {
-        console.log('dingtalk left : ', mutationList)
-        mutationList.forEach((mutation, index) => {
-            if($(mutation.target).is('span.ng-binding.ng-hide')){
-                // 未读消息数增加
-                console.log('dingtalk convo changed : ', mutation, $(mutation.target).closest('conv-item'))
-                // ========爬取左边=========
-            }
-            if(mutation.type ==  "characterData"){
-                if($(mutation.target).parent('span.time').length > 0){
-                    // 时间戳发生变化
-                    console.log('dingtalk convo text changed : ', mutation)
-                }
-                
+   /**
+     * 通过左侧边栏读取消息
+     * @param {Object} obj 左侧边栏.chat_item.slide-left.ng-scope 元素
+     * @returns {Object} 返回"新消息"类型
+     * 
+     */
+    function grepNewMSG(obj) {
 
+        let userID = $(obj).attr('con-id')
+        // let time = 
+
+        // return {
+        //     "userID": userID,
+        //     "time": time.getTime(),
+        //     "message": "",
+        //     "nickName": nickName,
+        //     "avatar": avatar,
+        //     "counter": 0,
+        //     "action": "r",
+        //     "muted": true,
+        //     "index": 0
+        // }
+    }
+
+    function addConvoObjToArray(arrayConvoObj, convoObj) {
+        if (convoObj.length > 0) {
+            let existed = false
+            arrayConvoObj.forEach((currentValue, index) => {
+
+                if (!existed && $(currentValue).is(convoObj)) {
+                    existed = true
+                }
+
+            })
+            if (!existed) {
+                arrayConvoObj.push(convoObj)
+            }
+        }
+    }
+
+    function callbackChat(mutationList, observer) {
+
+        let arrayConvoObj = new Array();
+        let arrayContent = new Array();
+
+        // console.log('dingtalk left : ', mutationList)
+
+        mutationList.forEach((mutation, index) => {
+            if(mutation.type ==  "childList"){
+                if($(mutation.target).is('span.ng-binding:not(.ng-hide, .name-title)') ){
+                    // 未读消息数增加
+                    // console.log('dingtalk convo changed : ', mutation, $(mutation.target).closest('conv-item'))
+                    addConvoObjToArray(arrayConvoObj ,$(mutation.target).closest('conv-item'))
+                }
+            }
+            if(mutation.type ==  "characterData" ){
+                if($(mutation.target).parent('span.time').length > 0             
+                && mutation.oldValue != '' 
+                && mutation.oldValue != '{{convItem.conv.updateTime|dateTime}}'){
+                    // 时间戳发生变化
+                    // console.log('dingtalk convo text changed : ', mutation)
+                    addConvoObjToArray(arrayConvoObj ,$(mutation.target).closest('conv-item'))                  
+                }
             }
 
             // mutation.addedNodes.forEach( (node,index) =>{
@@ -39,6 +87,19 @@ window.onload = function () {
             //     }
             // }
         })
+        // arrayConvoObj.forEach((convoObj, index) => {
+        //     // console.log("debug : ", index)
+        //     arrayContent.push(grepNewMSG(convoObj))
+        // })
+
+        // arrayContent.forEach((currentValue, index) => {
+        //     // 向index发出新消息提醒
+        //     core.WebToHost({ "Convo-new": currentValue }).then((res) => {
+        //         console.log(res)
+        //     }).catch((error) => {
+        //         throw error
+        //     });
+        // })        
     }
 
     $(document).ready(function () {
@@ -69,8 +130,8 @@ window.onload = function () {
                         characterData: true,
                         characterDataOldValue: true,
                         // attributeFilter: ["data-username"],
-                        attributes: false
-                        //  attributeOldValue: true
+                        attributes: false,
+                        attributeOldValue: false
                     });                    
                 }
             }
@@ -92,11 +153,11 @@ window.onload = function () {
             obsChat.observe(document.getElementById('sub-menu-pannel'), {
                 childList: true,
                 subtree: true,
-                characterData: false,
-                // characterDataOldValue: true,
+                characterData: true,
+                characterDataOldValue: true,
                 // attributeFilter: ["data-username"],
-                attributes: false
-                // attributeOldValue: true
+                attributes: false,
+                attributeOldValue: false
             });
 
         }
