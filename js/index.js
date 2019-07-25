@@ -596,7 +596,7 @@ $(document).ready(function () {
                 }
                 
 
-                if(Convo.counter > 0 && !Convo.muted){
+                if(!Convo.muted){
                     core.sendToMain({'flash':''})
                 }
 
