@@ -10,13 +10,19 @@ window.onload = function () {
 
 
     function callbackChat(mutationList, observer) {
-        // console.log('dingtalk left : ', mutationList)
+        console.log('dingtalk left : ', mutationList)
         mutationList.forEach((mutation, index) => {
             if($(mutation.target).is('span.ng-binding.ng-hide')){
                 // 未读消息数增加
                 console.log('dingtalk convo changed : ', mutation, $(mutation.target).closest('conv-item'))
-
                 // ========爬取左边=========
+            }
+            if(mutation.type ==  "characterData"){
+                if($(mutation.target).parent('span.time').length > 0){
+                    // 时间戳发生变化
+                    console.log('dingtalk convo text changed : ', mutation)
+                }
+                
 
             }
 
