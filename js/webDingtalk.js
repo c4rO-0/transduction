@@ -46,6 +46,25 @@ window.onload = function () {
 
     $(document).ready(function () {
 
+        core.WebReply((key, arg) => {
+            return new Promise((resolve, reject) => {
+                if (key == 'queryDialog') {
+                    // 索取右侧
+                } else if (key == 'sendDialog') {
+                    // 键入消息
+                } else if (key == 'queryLogStatus') {
+                    console.log("resolve back")
+                    resolve(logStatus)
+                } else if (key == 'logoff') {
+                    // 登出
+                } else {
+                    reject('unknown key')
+                }
+
+            })
+
+        })        
+
     })
 
 }
