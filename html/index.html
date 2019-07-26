@@ -26,6 +26,7 @@
                 <div class="td-app-status">
                     <img id="app-skype" class="app-offline" src="../res/pic/skype.png">
                     <img id="app-wechat" class="app-offline" src="../res/pic/wechat.png">
+                    <img id="app-dingtalk" class="app-offline" src="../res/pic/dingtalk.png">
                     <img id="td-request-status" src="../res/pic/refreshing.png">
                 </div>
             </div>
@@ -236,6 +237,17 @@
                 </div>
             </div>
         </div>
+        <div id="modal-dingtalk" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <webview data-app-name="dingtalk" preload="../js/webDingtalk.js" style="width:800px; height:800px">
+                        </webview>
+                    </div>
+                    <button reload>reload</button>
+                </div>
+            </div>
+        </div>        
         <div id="modal-image" class="modal fade" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
