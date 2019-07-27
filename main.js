@@ -1,6 +1,7 @@
 const { app, BrowserWindow, Tray, Menu, MenuItem } = require('electron')
-const Config = require('electron-store')
-const config = new Config()
+const Store = require('electron-store')
+const config = new Store()
+const store = new Store()
 
 const debug = /--debug/.test(process.argv[2])
 
@@ -36,11 +37,18 @@ function createWindow() {
   }
 
   win.on('close', (event) => {
-    // 清理temp文件夹
+    let tdSettings = store.get('tdSettings')
+    // console.log('tdSettings : ', tdSettings)
+
+    if(tdSettings == undefined || !tdSettings.swTray){
+      isQuitting = true
+    }
+
     if (!isQuitting) {
       event.preventDefault();
       win.hide();
     } else {
+      // 清理temp文件夹
       console.log("cleaning temp folder...")
       function removeDir(dir) {
         if (fs.existsSync(dir)) {

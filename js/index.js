@@ -1608,12 +1608,14 @@ $(document).ready(function () {
         if(tdSettings.swTray){
             
         }
-
     }
 
     document.getElementById('swTray').addEventListener('click', function () {
         console.warn('UIsettings:', this.checked)
         let tdSettings = store.get('tdSettings')
+        if(tdSettings == undefined){
+            tdSettings = new Object()
+        }
         tdSettings.swTray = this.checked
         store.set('tdSettings', tdSettings)
         applySettings()
