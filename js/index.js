@@ -1603,6 +1603,12 @@ $(document).ready(function () {
     })
 
     //==========================UI_settingsPage=====================
+    function loadSettings(){
+        let tdSettings = store.get('tdSettings')
+        document.getElementById('swTray').checked = tdSettings.swTray
+    }
+    loadSettings()
+
     function applySettings(){
         let tdSettings = store.get('tdSettings')
         if(tdSettings.swTray){
@@ -1611,7 +1617,7 @@ $(document).ready(function () {
     }
 
     document.getElementById('swTray').addEventListener('click', function () {
-        console.warn('UIsettings:', this.checked)
+        // console.warn('UIsettings:', this.checked)
         let tdSettings = store.get('tdSettings')
         if(tdSettings == undefined){
             tdSettings = new Object()
