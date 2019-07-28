@@ -126,13 +126,12 @@ $(document).ready(function () {
             this.userID = userID
             this.nickName = nickName
 
+            // time为str
             if (time === undefined) {
                 this.time = time
             } else if (typeof (time) === 'number') {
-                this.time = new Date(time)
+                this.time = (new Date(time)).toTimeString().slice(0, 5)
             } else if (typeof (time) == "string") {
-                this.time = new Date(time)
-            } else if (typeof (time) == "object") {
                 this.time = time
             } else {
                 console.log("error : conversation :  wrong type of time : ", typeof (time), time)
@@ -241,7 +240,7 @@ $(document).ready(function () {
                 <div class="m-0 td-text">'+ convo.message + '</div>\
             </div>\
         <div class="col-auto pl-0 col-timestamp justify-content-end">\
-            '+ convo.time.toTimeString().slice(0, 5) + '\
+            '+ convo.time + '\
             </div>\
         </div > '
     }
@@ -376,7 +375,7 @@ $(document).ready(function () {
                             $(objConvo).find("div.td-text").text(convo.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").text(convo.time.toTimeString().slice(0, 5))
+                            $(objConvo).find("div.col-timestamp").text(convo.time)
                             break;
                         case "muted":
                             $(objConvo).attr('muted', convo.muted)
