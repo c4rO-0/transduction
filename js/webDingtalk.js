@@ -18,19 +18,26 @@ window.onload = function () {
     function grepNewMSG(obj) {
 
         let userID = $(obj).attr('con-id')
-        // let time = 
+        let time = $(obj).find('span.time').text()
+        let nickName = $(obj).find('span.name-title').text()
+        let avatarStyle = $(obj).find('div.user-avatar').attr('style')
+        let avatar = undefined
+        if(avatarStyle.includes('https')){
+            avatar = avatarStyle.slice(("background-image: url(\"").length, -3)
+        }
 
-        // return {
-        //     "userID": userID,
-        //     "time": time.getTime(),
-        //     "message": "",
-        //     "nickName": nickName,
-        //     "avatar": avatar,
-        //     "counter": 0,
-        //     "action": "r",
-        //     "muted": true,
-        //     "index": 0
-        // }
+
+        return {
+            "userID": userID,
+            "time": time,
+            "message": "",
+            "nickName": nickName,
+            "avatar": avatar,
+            "counter": 0,
+            "action": "a",
+            "muted": false,
+            "index": 0
+        }
     }
 
     function addConvoObjToArray(arrayConvoObj, convoObj) {
@@ -87,19 +94,19 @@ window.onload = function () {
             //     }
             // }
         })
-        // arrayConvoObj.forEach((convoObj, index) => {
-        //     // console.log("debug : ", index)
-        //     arrayContent.push(grepNewMSG(convoObj))
-        // })
+        arrayConvoObj.forEach((convoObj, index) => {
+            // console.log("debug : ", index)
+            arrayContent.push(grepNewMSG(convoObj))
+        })
 
-        // arrayContent.forEach((currentValue, index) => {
-        //     // 向index发出新消息提醒
-        //     core.WebToHost({ "Convo-new": currentValue }).then((res) => {
-        //         console.log(res)
-        //     }).catch((error) => {
-        //         throw error
-        //     });
-        // })        
+        arrayContent.forEach((currentValue, index) => {
+            // 向index发出新消息提醒
+            core.WebToHost({ "Convo-new": currentValue }).then((res) => {
+                console.log(res)
+            }).catch((error) => {
+                throw error
+            });
+        })        
     }
 
     $(document).ready(function () {
