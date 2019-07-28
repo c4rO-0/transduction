@@ -100,12 +100,23 @@ $(document).ready(function () {
     let sendingList = {};
 
     let tdPinCoord = undefined
+    let tdSettings = undefined
 
     tdPinCoord = store.get('tdPinCoord')
-    if(tdPinCoord === undefined){
+    if (tdPinCoord === undefined) {
         tdPinCoord = [0, 0]
     }
-    console.log('load tdPinCoord : ', tdPinCoord)
+
+    tdSettings = store.get('tdSettings')
+    if (tdSettings === undefined) {
+        tdSettings = {
+            swTray: true
+        }
+    }
+    //console.log('load tdPinCoord : ', tdPinCoord)
+    document.getElementById('td-pin').style.left = tdPinCoord[0] + 'px'
+    document.getElementById('td-pin').style.bottom = tdPinCoord[1] + 'px'
+
 
 
     // =========================class===========================
@@ -285,11 +296,11 @@ $(document).ready(function () {
                 </div>'
             }
         } else if (dialog['type'] == 'file') {
-                content =
+            content =
                 '<div class="td-chatText">'
-                + 'Name : ' +dialog['fileName']
-                + ' Size : ' + dialog['fileSize']/1000. + ' KB'
-                '<button href="'+ dialog['message']  + '" download>下载</button>\
+                + 'Name : ' + dialog['fileName']
+                + ' Size : ' + dialog['fileSize'] / 1000. + ' KB'
+            '<button href="' + dialog['message'] + '" download>下载</button>\
                 <p></p>\
             </div>'
         } else if (dialog['type'] == 'unknown') {
@@ -311,11 +322,11 @@ $(document).ready(function () {
         if (dialog["from"]) {
             let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
             let appName = $("#td-right div.td-chat-title").attr("data-app-name")
-            let avatarUrl = dialog["avatar"] === undefined ? 
-            $("#td-left \
+            let avatarUrl = dialog["avatar"] === undefined ?
+                $("#td-left \
             div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
-            div.td-avatar").css('background-image').slice(5, -2) 
-            : dialog["avatar"]
+            div.td-avatar").css('background-image').slice(5, -2)
+                : dialog["avatar"]
 
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
@@ -369,7 +380,7 @@ $(document).ready(function () {
                             break;
                         case "muted":
                             $(objConvo).attr('muted', convo.muted)
-                            break;                            
+                            break;
                         default:
                             break;
                     }
@@ -594,10 +605,10 @@ $(document).ready(function () {
 
 
                 }
-                
 
-                if(!Convo.muted){
-                    core.sendToMain({'flash':''})
+
+                if (!Convo.muted) {
+                    core.sendToMain({ 'flash': '' })
                 }
 
                 if (Convo.action === 'a') {
@@ -672,7 +683,7 @@ $(document).ready(function () {
                         $('.td-chat-title').removeAttr('data-user-i-d')
                         $('.td-chat-title').removeAttr('data-app-name')
                         $('.td-chat-title > h2').text('')
-                        $('.td-chat-title > img').attr('src','../res/pic/nothing.png')
+                        $('.td-chat-title > img').attr('src', '../res/pic/nothing.png')
 
                         $('.td-chatLog[wintype="chatLog"]').empty()
                         $('.td-chatLog[wintype="chatLog"]').append('\
@@ -799,16 +810,16 @@ $(document).ready(function () {
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
                 });
-                
+
                 // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
-                if($(webSelector).attr('src') != strUrl){
+                if ($(webSelector).attr('src') != strUrl) {
                     $(webSelector).attr('src', strUrl)
                 }
 
                 $(webSelector).show()
 
 
-                
+
             } else {
                 // 隐藏所有webview
                 $(sectionSelector + " webview").each(function (index) {
@@ -1559,14 +1570,14 @@ $(document).ready(function () {
             let webTagSelector = '#modal-' + webTag
             $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
             $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
-    
+
             if (this.matches('.app-offline')) {
                 $(webTagSelector).modal('show')
             }
             if (this.matches('.app-online')) {
                 $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
                 $(webTagSelector).modal('show')
-            }            
+            }
         } else {
             console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
             $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
@@ -1574,25 +1585,48 @@ $(document).ready(function () {
 
             setTimeout(() => {
                 $("#td-warning").remove()
-            }, 5000);     
+            }, 5000);
             setTimeout(() => {
                 let webTagSelector = '#modal-' + webTag
                 $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
                 $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
-        
+
                 if (this.matches('.app-offline')) {
                     $(webTagSelector).modal('show')
                 }
                 if (this.matches('.app-online')) {
                     $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
                     $(webTagSelector).modal('show')
-                }                
+                }
             }, 2000);
         }
 
     })
 
+    //==========================UI_settingsPage=====================
+    function loadSettings(){
+        let tdSettings = store.get('tdSettings')
+        document.getElementById('swTray').checked = tdSettings.swTray
+    }
+    loadSettings()
 
+    function applySettings(){
+        let tdSettings = store.get('tdSettings')
+        if(tdSettings.swTray){
+            
+        }
+    }
+
+    document.getElementById('swTray').addEventListener('click', function () {
+        // console.warn('UIsettings:', this.checked)
+        let tdSettings = store.get('tdSettings')
+        if(tdSettings == undefined){
+            tdSettings = new Object()
+        }
+        tdSettings.swTray = this.checked
+        store.set('tdSettings', tdSettings)
+        applySettings()
+    })
 
     // ===========================接收消息===========================
 
@@ -1835,9 +1869,9 @@ $(document).ready(function () {
         $('.td-toolbox > input[type="file"]').get(0).click()
     })
 
-    $('.td-toolbox > input[type="file"]').on("change", function(event){ 
+    $('.td-toolbox > input[type="file"]').on("change", function (event) {
         processFileList(event.target.files)
-     });
+    });
 
     // ===========================发送消息===========================
     $(debug_send_str).on('click', event => {
@@ -1996,14 +2030,14 @@ $(document).ready(function () {
         // console.log(this.href.substring(0,4))
         if (this.href.substring(0, 4) == 'http') {
 
-            if(this.href.search('https://send.firefox.com/download') !== -1){
+            if (this.href.search('https://send.firefox.com/download') !== -1) {
                 // 在extension打开
                 // console.log("click : ", this.href)
 
                 $(debug_firefox_send_str).click()
 
                 loadExtension("#td-right div.td-chatLog[winType='extension']", "firefox-send", this.href, '')
-            }else{
+            } else {
                 shell.openExternal(this.href);
                 // let options = {
                 //     type: 'info',
@@ -2036,14 +2070,14 @@ $(document).ready(function () {
         event.stopPropagation();
         // console.log(this.href.substring(0,4))
         let webTag = $('#td-right > div.td-chat-title').attr('data-app-name')
-        $('#app-'+webTag).click()
+        $('#app-' + webTag).click()
 
     });
 
     // 阻拦全部链接点击
     $(document).on('click', 'button[download]', function (event) {
         console.log('download : ', this)
-        core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
+        core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
 
     });
 
@@ -2051,7 +2085,7 @@ $(document).ready(function () {
         console.log('reload : ', $(this), $(this).closest('modal-content').find('webview'))
         // core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
         let webview = $(this).closest('.modal-content').find('webview')
-        if(webview){
+        if (webview) {
             $(webview).get(0).reload()
         }
 
@@ -2068,7 +2102,7 @@ $(document).ready(function () {
         // console.log('key press : ', event.which, event.ctrlKey)
         // $(".td-inputbox").focus()
 
-        if($(document.activeElement).is(".td-inputbox")){
+        if ($(document.activeElement).is(".td-inputbox")) {
             if (event.which == 13) {
                 // enter pressed
                 $('#debug-send').click()
@@ -2077,7 +2111,7 @@ $(document).ready(function () {
             if (event.ctrlKey && event.which == 10) {
                 pasteHtmlAtCaret("</br>", 'div.td-inputbox')
             }
-        }else{
+        } else {
             // 闪烁
         }
 
