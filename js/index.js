@@ -1487,6 +1487,7 @@ $(document).ready(function () {
 
     // openDevtool("skype")
     // openDevtool("wechat")
+    openDevtool("dingtalk")
 
 
     //==============================UI==============================

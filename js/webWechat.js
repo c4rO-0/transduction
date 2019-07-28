@@ -231,6 +231,7 @@ window.onload = function () {
         // console.log("mein name : ", meinUsername)
 
         // console.log(remarkName, MSGID, type, content, time)
+        // console.log(content)
         return {
             "from": MSG["FromUserName"] == meinUsername ? undefined : (remarkName == '' ? nickName : remarkName),
             "msgID": MSGID,
@@ -644,8 +645,9 @@ window.onload = function () {
                             // 发送中
                             let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
                                 .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif'], [ng-click='cancelUploadFile(message)']")
-                            if ($(objSending).length == 0 ||
-                                $(objSending).is(':hidden')) {
+                            if ( $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0 && 
+                                ($(objSending).length == 0 ||
+                                $(objSending).is(':hidden'))) {
 
                                 let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
                                 MSGList.push(MSG)
