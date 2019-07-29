@@ -49,10 +49,10 @@ window.onload = function () {
 
         let index = 0
         if($('.conv-lists:eq(0)').has(obj).length > 0){
-            console.log('has obj')
+            // console.log('has obj')
             index = $(obj).index()
         }else{
-            console.log('no obj')
+            // console.log('no obj')
             index = $(obj).index() + $('.conv-lists:eq(0)').children().length
         }
 
@@ -94,11 +94,12 @@ window.onload = function () {
 
         mutationList.forEach((mutation, index) => {
             if(mutation.type ==  "childList"){
-                if($(mutation.target).is('span.ng-binding:not(.ng-hide)') ){
+                if($(mutation.target).is('span.ng-binding:not(.ng-hide), div.noti') ){
                     // 未读消息数增加
                     // console.log('dingtalk convo changed : ', mutation, $(mutation.target).closest('conv-item'))
                     addConvoObjToArray(arrayConvoObj ,$(mutation.target).closest('conv-item'))
                 }
+
             }
             if(mutation.type ==  "characterData" ){
                 if($(mutation.target).parent('span.time').length > 0             
