@@ -17,26 +17,55 @@ window.onload = function () {
      */
     function grepNewMSG(obj) {
 
+        // console.log("--------------MSG-----------")
+        // console.log($(obj).html())
+
         let userID = $(obj).attr('con-id')
         let time = $(obj).find('span.time').text()
         let nickName = $(obj).find('span.name-title').text()
         let avatarStyle = $(obj).find('div.user-avatar').attr('style')
         let avatar = undefined
-        if(avatarStyle.includes('https')){
+        if(avatarStyle && avatarStyle.includes('https')){
             avatar = avatarStyle.slice(("background-image: url(\"").length, -3)
         }
 
+        let message = $(obj).find('.latest-msg-info span[ng-bind-html="convItem.conv.lastMessageContent|emoj"]').text()
+
+        let muted = false
+
+        if($(obj).find('.latest-msg-info i.icon-conv-mute').is(":visible")){
+            muted = true
+        }else{
+            muted = false
+        }
+
+        let counter = 0
+        let counterObj = $(obj).find('.latest-msg-info em[ng-show="!convItem.conv.notificationOff"]') 
+        if(counterObj.length ==0 || $(counterObj).text().trim() == ''){
+            counter = 0
+        }else{
+            counter = parseInt($(counterObj).text().trim())
+        }
+
+        let index = 0
+        if($('.conv-lists:eq(0)').has(obj).length > 0){
+            console.log('has obj')
+            index = $(obj).index()
+        }else{
+            console.log('no obj')
+            index = $(obj).index() + $('.conv-lists:eq(0)').children().length
+        }
 
         return {
             "userID": userID,
             "time": time,
-            "message": "",
+            "message": message,
             "nickName": nickName,
             "avatar": avatar,
-            "counter": 0,
+            "counter": counter,
             "action": "a",
-            "muted": false,
-            "index": 0
+            "muted": muted,
+            "index": index
         }
     }
 
@@ -65,7 +94,7 @@ window.onload = function () {
 
         mutationList.forEach((mutation, index) => {
             if(mutation.type ==  "childList"){
-                if($(mutation.target).is('span.ng-binding:not(.ng-hide, .name-title)') ){
+                if($(mutation.target).is('span.ng-binding:not(.ng-hide)') ){
                     // 未读消息数增加
                     // console.log('dingtalk convo changed : ', mutation, $(mutation.target).closest('conv-item'))
                     addConvoObjToArray(arrayConvoObj ,$(mutation.target).closest('conv-item'))
@@ -96,7 +125,10 @@ window.onload = function () {
         })
         arrayConvoObj.forEach((convoObj, index) => {
             // console.log("debug : ", index)
-            arrayContent.push(grepNewMSG(convoObj))
+            if($('.conv-lists:eq(0)').has(convoObj).length > 0){
+                arrayContent.push(grepNewMSG(convoObj))
+            }
+            
         })
 
         arrayContent.forEach((currentValue, index) => {
