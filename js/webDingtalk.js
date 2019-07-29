@@ -56,6 +56,11 @@ window.onload = function () {
             index = $(obj).index() + $('.conv-lists:eq(0)').children().length
         }
 
+        let action = "a"
+        if($("div.conv-lists-box").find('[con-id="'+ userID + '"]').length ==0){
+            action = 'r'
+        }
+
         return {
             "userID": userID,
             "time": time,
@@ -63,14 +68,14 @@ window.onload = function () {
             "nickName": nickName,
             "avatar": avatar,
             "counter": counter,
-            "action": "a",
+            "action": action,
             "muted": muted,
             "index": index
         }
     }
 
     function addConvoObjToArray(arrayConvoObj, convoObj) {
-        if (convoObj.length > 0) {
+        if ($(convoObj).length > 0) {
             let existed = false
             arrayConvoObj.forEach((currentValue, index) => {
 
@@ -82,6 +87,8 @@ window.onload = function () {
             if (!existed) {
                 arrayConvoObj.push(convoObj)
             }
+        }else{
+            console.log('convoObj.length ==0')
         }
     }
 
@@ -117,18 +124,19 @@ window.onload = function () {
             //         console.log('dingtalk convo changed : ', $(node))
             //     }
             // })
-            // if(mutation.removedNodes.length > 0){
-            //     if($(mutation.target).is('span.ng-binding.ng-hide')){
-            //         // 未读消息数增加
-            //         console.log('dingtalk convo changed : ', mutation, $(mutation.target).closest('conv-item'))
-            //     }
-            // }
+            mutation.removedNodes.forEach( (node,index) =>{
+                if($(node).is('conv-item')){
+                    console.log('remove convo')
+                    addConvoObjToArray(arrayConvoObj ,node) 
+                }
+            })
+
         })
         arrayConvoObj.forEach((convoObj, index) => {
             // console.log("debug : ", index)
-            if($('.conv-lists:eq(0)').has(convoObj).length > 0){
+            // if($('.conv-lists:eq(0)').has(convoObj).length > 0){
                 arrayContent.push(grepNewMSG(convoObj))
-            }
+            // }
             
         })
 
