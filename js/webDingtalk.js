@@ -59,6 +59,12 @@ window.onload = function () {
         let action = "a"
         if($("div.conv-lists-box").find('[con-id="'+ userID + '"]').length ==0){
             action = 'r'
+        }else{
+            if(counter > 0 || $('.conv-lists:eq(0)').has(obj).length > 0){
+                action = "a"
+            }else{
+                action ='c' 
+            }
         }
 
         return {
