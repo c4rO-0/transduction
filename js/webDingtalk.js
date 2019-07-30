@@ -60,7 +60,7 @@ window.onload = function () {
         if($("div.conv-lists-box").find('[con-id="'+ userID + '"]').length ==0){
             action = 'r'
         }else{
-            if(counter > 0 || $('.conv-lists:eq(0)').has(obj).length > 0){
+            if(counter > 0 || $('.conv-lists:eq(0)').has(obj).length > 0 || $(obj).find('div.list-item.active').length > 0){
                 action = "a"
             }else{
                 action ='c' 
@@ -121,6 +121,11 @@ window.onload = function () {
                     // 时间戳发生变化
                     // console.log('dingtalk convo text changed : ', mutation)
                     addConvoObjToArray(arrayConvoObj ,$(mutation.target).closest('conv-item'))                  
+                }
+            }
+            if(mutation.type == "attributes"){
+                if($(mutation.target).is('div.list-item.active')  ){
+                    addConvoObjToArray(arrayConvoObj ,$(mutation.target).closest('conv-item')) 
                 }
             }
 
@@ -184,7 +189,7 @@ window.onload = function () {
                         characterData: true,
                         characterDataOldValue: true,
                         // attributeFilter: ["data-username"],
-                        attributes: false,
+                        attributes: true,
                         attributeOldValue: false
                     });                    
                 }
@@ -210,7 +215,7 @@ window.onload = function () {
                 characterData: true,
                 characterDataOldValue: true,
                 // attributeFilter: ["data-username"],
-                attributes: false,
+                attributes: true,
                 attributeOldValue: false
             });
 
