@@ -17,24 +17,71 @@ window.onload = function () {
      */
     function grepNewMSG(obj) {
 
-        let userID = $(obj).attr('con-id')
-        // let time = 
+        // console.log("--------------MSG-----------")
+        // console.log($(obj).html())
 
-        // return {
-        //     "userID": userID,
-        //     "time": time.getTime(),
-        //     "message": "",
-        //     "nickName": nickName,
-        //     "avatar": avatar,
-        //     "counter": 0,
-        //     "action": "r",
-        //     "muted": true,
-        //     "index": 0
-        // }
+        let userID = $(obj).attr('con-id')
+        let time = $(obj).find('span.time').text()
+        let nickName = $(obj).find('span.name-title').text()
+        let avatarStyle = $(obj).find('div.user-avatar').attr('style')
+        let avatar = undefined
+        if(avatarStyle && avatarStyle.includes('https')){
+            avatar = avatarStyle.slice(("background-image: url(\"").length, -3)
+        }
+
+        let message = $(obj).find('.latest-msg-info span[ng-bind-html="convItem.conv.lastMessageContent|emoj"]').text()
+
+        let muted = false
+
+        if($(obj).find('.latest-msg-info i.icon-conv-mute').is(":visible")){
+            muted = true
+        }else{
+            muted = false
+        }
+
+        let counter = 0
+        let counterObj = $(obj).find('.latest-msg-info em[ng-show="!convItem.conv.notificationOff"]') 
+        if(counterObj.length ==0 || $(counterObj).text().trim() == ''){
+            counter = 0
+        }else{
+            counter = parseInt($(counterObj).text().trim())
+        }
+
+        let index = 0
+        if($('.conv-lists:eq(0)').has(obj).length > 0){
+            // console.log('has obj')
+            index = $(obj).index()
+        }else{
+            // console.log('no obj')
+            index = $(obj).index() + $('.conv-lists:eq(0)').children().length
+        }
+
+        let action = "a"
+        if($("div.conv-lists-box").find('[con-id="'+ userID + '"]').length ==0){
+            action = 'r'
+        }else{
+            if(counter > 0 || $('.conv-lists:eq(0)').has(obj).length > 0 || $(obj).find('div.list-item.active').length > 0){
+                action = "a"
+            }else{
+                action ='c' 
+            }
+        }
+
+        return {
+            "userID": userID,
+            "time": time,
+            "message": message,
+            "nickName": nickName,
+            "avatar": avatar,
+            "counter": counter,
+            "action": action,
+            "muted": muted,
+            "index": index
+        }
     }
 
     function addConvoObjToArray(arrayConvoObj, convoObj) {
-        if (convoObj.length > 0) {
+        if ($(convoObj).length > 0) {
             let existed = false
             arrayConvoObj.forEach((currentValue, index) => {
 
@@ -46,6 +93,8 @@ window.onload = function () {
             if (!existed) {
                 arrayConvoObj.push(convoObj)
             }
+        }else{
+            console.log('convoObj.length ==0')
         }
     }
 
@@ -58,11 +107,12 @@ window.onload = function () {
 
         mutationList.forEach((mutation, index) => {
             if(mutation.type ==  "childList"){
-                if($(mutation.target).is('span.ng-binding:not(.ng-hide, .name-title)') ){
+                if($(mutation.target).is('span.ng-binding:not(.ng-hide), div.noti') ){
                     // 未读消息数增加
                     // console.log('dingtalk convo changed : ', mutation, $(mutation.target).closest('conv-item'))
                     addConvoObjToArray(arrayConvoObj ,$(mutation.target).closest('conv-item'))
                 }
+
             }
             if(mutation.type ==  "characterData" ){
                 if($(mutation.target).parent('span.time').length > 0             
@@ -73,6 +123,11 @@ window.onload = function () {
                     addConvoObjToArray(arrayConvoObj ,$(mutation.target).closest('conv-item'))                  
                 }
             }
+            if(mutation.type == "attributes"){
+                if($(mutation.target).is('div.list-item.active')  ){
+                    addConvoObjToArray(arrayConvoObj ,$(mutation.target).closest('conv-item')) 
+                }
+            }
 
             // mutation.addedNodes.forEach( (node,index) =>{
             //     if($(node).is('conv-item')){
@@ -80,26 +135,30 @@ window.onload = function () {
             //         console.log('dingtalk convo changed : ', $(node))
             //     }
             // })
-            // if(mutation.removedNodes.length > 0){
-            //     if($(mutation.target).is('span.ng-binding.ng-hide')){
-            //         // 未读消息数增加
-            //         console.log('dingtalk convo changed : ', mutation, $(mutation.target).closest('conv-item'))
-            //     }
-            // }
-        })
-        // arrayConvoObj.forEach((convoObj, index) => {
-        //     // console.log("debug : ", index)
-        //     arrayContent.push(grepNewMSG(convoObj))
-        // })
+            mutation.removedNodes.forEach( (node,index) =>{
+                if($(node).is('conv-item')){
+                    console.log('remove convo')
+                    addConvoObjToArray(arrayConvoObj ,node) 
+                }
+            })
 
-        // arrayContent.forEach((currentValue, index) => {
-        //     // 向index发出新消息提醒
-        //     core.WebToHost({ "Convo-new": currentValue }).then((res) => {
-        //         console.log(res)
-        //     }).catch((error) => {
-        //         throw error
-        //     });
-        // })        
+        })
+        arrayConvoObj.forEach((convoObj, index) => {
+            // console.log("debug : ", index)
+            // if($('.conv-lists:eq(0)').has(convoObj).length > 0){
+                arrayContent.push(grepNewMSG(convoObj))
+            // }
+            
+        })
+
+        arrayContent.forEach((currentValue, index) => {
+            // 向index发出新消息提醒
+            core.WebToHost({ "Convo-new": currentValue }).then((res) => {
+                console.log(res)
+            }).catch((error) => {
+                throw error
+            });
+        })        
     }
 
     $(document).ready(function () {
@@ -130,7 +189,7 @@ window.onload = function () {
                         characterData: true,
                         characterDataOldValue: true,
                         // attributeFilter: ["data-username"],
-                        attributes: false,
+                        attributes: true,
                         attributeOldValue: false
                     });                    
                 }
@@ -156,7 +215,7 @@ window.onload = function () {
                 characterData: true,
                 characterDataOldValue: true,
                 // attributeFilter: ["data-username"],
-                attributes: false,
+                attributes: true,
                 attributeOldValue: false
             });
 
@@ -167,6 +226,16 @@ window.onload = function () {
             return new Promise((resolve, reject) => {
                 if (key == 'queryDialog') {
                     // 索取右侧
+                    console.log("debug : ", "---获取用户聊天记录----")
+                    // 下面开始模拟点击
+                    let userID = arg.userID
+
+                    if ($('[con-id="'+ userID + '"]').length == 0) reject("user not existed")
+
+                    $('[con-id="'+ userID + '"]').click();     
+
+                    // =========未完 : 右侧============
+
                 } else if (key == 'sendDialog') {
                     // 键入消息
                 } else if (key == 'queryLogStatus') {

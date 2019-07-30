@@ -443,7 +443,7 @@ window.onload = function () {
 
             let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
             // console.log( obj  )    
-            if (obj.length > 0) {
+            if ($(obj).length > 0) {
                 let existed = false
                 arrayObjUser.forEach((currentValue, index) => {
 
