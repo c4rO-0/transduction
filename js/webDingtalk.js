@@ -226,6 +226,14 @@ window.onload = function () {
             return new Promise((resolve, reject) => {
                 if (key == 'queryDialog') {
                     // 索取右侧
+                    console.log("debug : ", "---获取用户聊天记录----")
+                    // 下面开始模拟点击
+                    let userID = arg.userID
+
+                    if ($('[con-id="'+ userID + '"]').length == 0) reject("user not existed")
+
+                    $('[con-id="'+ userID + '"]').click();     
+
                 } else if (key == 'sendDialog') {
                     // 键入消息
                 } else if (key == 'queryLogStatus') {
