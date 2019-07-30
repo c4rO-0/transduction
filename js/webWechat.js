@@ -313,8 +313,8 @@ window.onload = function () {
         let avatar = $(obj).find("div.avatar img").get(0).src
 
 
-
-        if ($("div[data-username='" + userID + "']").length == 0) {
+        // console.log("convo exist : ", $("div[ng-click][data-username='" + userID + "']").length, $("div[data-username='" + userID + "']"))
+        if ($("div[ng-click][data-username='" + userID + "']").length == 0) {
             // 元素被删除了
             return {
                 "userID": userID,
