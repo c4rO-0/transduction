@@ -1605,7 +1605,7 @@ $(document).ready(function () {
     //==========================UI_settingsPage=====================
     function loadSettings(){
         let tdSettings = store.get('tdSettings')
-        document.getElementById('swTray').checked = tdSettings.swTray
+        document.getElementById('swTray').checked = tdSettings == undefined ? false : tdSettings.swTray
     }
     loadSettings()
 
