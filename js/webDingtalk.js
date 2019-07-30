@@ -234,6 +234,8 @@ window.onload = function () {
 
                     $('[con-id="'+ userID + '"]').click();     
 
+                    // =========未完 : 右侧============
+
                 } else if (key == 'sendDialog') {
                     // 键入消息
                 } else if (key == 'queryLogStatus') {
