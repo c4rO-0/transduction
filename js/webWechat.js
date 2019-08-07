@@ -51,20 +51,6 @@ window.onload = function () {
     }
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
-    // 通过RemarkName查找用户ID
-    function getUsernameByRemarkName(remarkName) {
-        // let contact = window._contacts
-        for (let username in contact) {
-            // console.log(contact[username])
-            // console.log((contact[username]))
-            if ((_contacts[username])["RemarkName"] == remarkName) {
-                return username
-            }
-
-        }
-
-        return undefined
-    }
 
     /**
      * 根据微信储存的变量_chatcontent读取消息
@@ -409,10 +395,12 @@ window.onload = function () {
     }
 
     // 联系人发生变更
-    var callbackContact = function (records) {
+    var callbackContact = function (records, observer) {
 
+        
         if ($("#navContact").scrollTop() + $("#navContact")[0].clientHeight != $("#navContact")[0].scrollHeight) {
             console.log("debug : ", "----------contact change----------")
+            // console.log($("#navContact").scrollTop() , $("#navContact")[0].clientHeight, $("#navContact")[0].scrollHeight)
             $("#navContact").scrollTop(0)
             $("#navContact").scrollTop($("#navContact")[0].scrollHeight)
 
@@ -423,7 +411,7 @@ window.onload = function () {
 
             // 临时放在这
             // let username = getUsernameByRemarkName(remarkName)
-
+            observer.disconnect()
         }
     };
 
