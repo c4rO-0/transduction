@@ -98,6 +98,41 @@ window.onload = function () {
         }
     }
 
+
+    function grepAndSendRight() {
+
+        let objActiveUser = $('div.list-item.conv-item.context-menu.active')
+        if (objActiveUser.length > 0) {
+            let ID = objActiveUser.attr('menu-data')
+
+            let MSGList = new Array()
+
+            $("div.msg-items > div").each((index, element)=>{
+                let objSending = $('ng-if="msg.msgModel.sendStatus === msg.SendStatus.SENDING"')
+                if (($(objSending).length == 0 ||
+                        $(objSending).is(':hidden'))) {
+
+                    let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
+                    MSGList.push(MSG)
+                }
+            })
+
+            if (MSGList.length > 0) {
+                console.log("debug : dialog-----------");
+                (MSGList[0])["userID"] = ID;
+                // console.log(MSGList[0])
+                // console.log(ID)
+                // console.log(typeof(ID))
+                core.WebToHost({ "Dialog": MSGList }).then((res) => {
+                    console.log(res)
+                }).catch((error) => {
+                    throw error
+                });
+            }
+        }
+
+    }    
+
     function callbackChat(mutationList, observer) {
 
         let arrayConvoObj = new Array();
@@ -161,6 +196,29 @@ window.onload = function () {
         })        
     }
 
+    var callbackRight = function (mutationList) {
+
+        console.log("debug : ===========Right changed============")
+        // console.log(mutationList)
+        // grepAndSendRight()
+        let addedNewBubble = false
+        mutationList.forEach((mutation, index) => {
+
+            mutation.addedNodes.forEach( (node,index) =>{
+                if($(node).is('div.msg-box')){
+                    // console.log($(node))
+                    addedNewBubble = addedNewBubble || true
+                    
+                    // return
+                }
+            })
+        })
+
+        if(addedNewBubble){
+            grepAndSendRight()
+        }
+    }
+
     $(document).ready(function () {
 
 
@@ -221,6 +279,7 @@ window.onload = function () {
 
         }
 
+        let obsRight = new MutationObserver(callbackRight);
 
         core.WebReply((key, arg) => {
             return new Promise((resolve, reject) => {
@@ -236,6 +295,17 @@ window.onload = function () {
 
                     // =========未完 : 右侧============
 
+
+                    setTimeout(() => {
+                        // 获取内容
+                        // grepAndSendRight()
+                    
+                        obsRight.disconnect()
+                        obsRight.observe($("div.msg-items")[0], {
+                            subtree: false, childList: true, characterData: false, attributes: false,
+                            attributeOldValue: false, characterDataOldValue: false
+                        })
+                    }, 100);
                 } else if (key == 'sendDialog') {
                     // 键入消息
                 } else if (key == 'queryLogStatus') {
