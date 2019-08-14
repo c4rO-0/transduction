@@ -98,6 +98,85 @@ window.onload = function () {
         }
     }
 
+   /**
+     * 根据微信储存的变量_chatcontent读取消息
+     * @param {Object} objBubble 微信单条消息
+     * @returns {Object} 拿到我们关系的内容
+     * @param {Integer} indexBubble MSG在_chatcontent里位置
+     */
+    function grepMSG(objBubble, indexBubble) {
+
+
+        let fromUserName = undefined
+        if($(objBubble).find('> div.me').length > 0){
+            fromUserName = undefined
+        }else if( $(objBubble).find('user-ding-title-list').length > 0){
+            fromUserName = $('div.conv-title div.title').text()
+
+        }else if( $(objBubble).find('user-name').length > 0){
+            fromUserName = $(objBubble).find('user-name span').attr('title')
+        }
+
+
+        let time = new Date( 
+            (new Date()).getFullYear() 
+            + " " + $(objBubble).find('span.chat-time').text()
+            + ':' + (indexBubble % 1000))
+
+        let MSGID = $(objBubble).find('div.chat-item').attr('msg-id')
+
+        let avatarStyle = $(objBubble).find('div.avatar > div.normal').attr('style')
+        let avatar = undefined
+        if(avatarStyle && avatarStyle.includes('https')){
+            avatar = avatarStyle.slice(("background-image: url(\"").length, -3)
+        }
+
+        let type = 'unknown'
+        let objContent = $(objBubble).find('div.msg-bubble-area > div')
+        let typeStr = $(objContent).find('> [ng-switch-when]').attr('ng-switch-when')
+
+        let content = ''
+
+        let fileName = undefined
+        let fileSize = undefined
+
+
+        if(typeStr == 'msg-text'){
+            // 文字内容
+            type = 'text'
+            content = $(objContent).find('div.msg-bubble > pre').text()
+        }else if(typeStr == 'msg-img'){
+            // 图片内容
+        }else if(typeStr == 'msg-img-text'){
+            // 图文内容
+        }else if(typeStr == 'msg-file'){
+            // 普通文件内容(旧数据)
+        }else if(typeStr == 'msg-space-file'){
+            //  云盘内容
+        }else if(typeStr == 'ding-text'){
+            // ding文字   
+        }else if(typeStr == 'msg-encrypt-img'){
+            // 加密文件
+        }else if(type == 'msg-encrypt-img'){
+            // 加密图片
+        }else{
+
+        }
+
+        return {
+            "from": fromUserName,
+            "msgID": MSGID,
+            "time": time.getTime(),
+            "type": type,
+            "message": content,
+            "avatar": avatar,
+            "fileName": fileName,
+            "fileSize": fileSize
+        }
+
+
+    }
+
 
     function grepAndSendRight() {
 
@@ -108,11 +187,11 @@ window.onload = function () {
             let MSGList = new Array()
 
             $("div.msg-items > div").each((index, element)=>{
-                let objSending = $('ng-if="msg.msgModel.sendStatus === msg.SendStatus.SENDING"')
+                let objSending = $(element).find('div[progress-bar]')
                 if (($(objSending).length == 0 ||
                         $(objSending).is(':hidden'))) {
 
-                    let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
+                    let MSG = grepMSG(element, index)
                     MSGList.push(MSG)
                 }
             })
@@ -133,7 +212,7 @@ window.onload = function () {
 
     }    
 
-    function callbackChat(mutationList, observer) {
+    function callbackChatRight(mutationList, observer) {
 
         let arrayConvoObj = new Array();
         let arrayContent = new Array();
@@ -223,7 +302,7 @@ window.onload = function () {
 
 
         // 观察左侧消息变动
-        let obsChat = new MutationObserver(callbackChat);
+        let obsChatRight = new MutationObserver(callbackChatRight);
 
         if ($('#menu-pannel').length == 0) {
             console.log("********************offline***************************************")
@@ -241,7 +320,7 @@ window.onload = function () {
                     core.WebToHost({ "hide": {} })
                     observer.disconnect()
 
-                    obsChat.observe(document.getElementById('sub-menu-pannel'), {
+                    obsChatRight.observe(document.getElementById('sub-menu-pannel'), {
                         childList: true,
                         subtree: true,
                         characterData: true,
@@ -267,7 +346,7 @@ window.onload = function () {
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "hide": {} })
 
-            obsChat.observe(document.getElementById('sub-menu-pannel'), {
+            obsChatRight.observe(document.getElementById('sub-menu-pannel'), {
                 childList: true,
                 subtree: true,
                 characterData: true,
@@ -298,7 +377,7 @@ window.onload = function () {
 
                     setTimeout(() => {
                         // 获取内容
-                        // grepAndSendRight()
+                        grepAndSendRight()
                     
                         obsRight.disconnect()
                         obsRight.observe($("div.msg-items")[0], {
