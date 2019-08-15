@@ -117,11 +117,23 @@ window.onload = function () {
             fromUserName = $(objBubble).find('user-name span').attr('title')
         }
 
+        let timeStr = $(objBubble).find('span.chat-time').text()
 
-        let time = new Date( 
-            (new Date()).getFullYear() 
-            + " " + $(objBubble).find('span.chat-time').text()
-            + ':' + (indexBubble % 1000))
+        let time = new Date()
+        if(timeStr.includes('-')){
+            time = new Date( 
+                (new Date()).getFullYear() 
+                + " " + $(objBubble).find('span.chat-time').text()
+                + ':' + (indexBubble % 1000))
+        }else{
+            time = new Date( 
+                time.getFullYear() 
+                + " " + (time.getMonth()+1)
+                + "-" + time.getDate()
+                + " " + $(objBubble).find('span.chat-time').text()
+                + ':' + (indexBubble % 1000))            
+        }
+        
 
         let MSGID = undefined
         if(indexBubble > 0){
@@ -148,7 +160,16 @@ window.onload = function () {
         if(typeStr == 'msg-text'){
             // 文字内容
             type = 'text'
-            content = $(objContent).find('div.msg-bubble > pre').text()
+            if($(objContent).find('div.msg-bubble > pre').length > 0){
+                content = $(objContent).find('div.msg-bubble > pre').text()
+            }else if($(objContent).find('div.msg-bubble > code-snippet-container').length > 0){
+                content = ''
+                $(objContent).find('span[role="presentation"]').each((index,element)=>{
+                    content = content + $(element).text() +'\n\r'
+                })
+                
+            }
+            
         }else if(typeStr == 'msg-img'){
             // 图片内容
             type = 'img'
