@@ -147,6 +147,11 @@ window.onload = function () {
             content = $(objContent).find('div.msg-bubble > pre').text()
         }else if(typeStr == 'msg-img'){
             // 图片内容
+            type = 'img'
+            let fullImgUrl = $(objContent).find('img.chat-img').attr('src')
+            // 
+            content = fullImgUrl.substring(0, fullImgUrl.indexOf('?'))
+            content = content.substring(0, content.lastIndexOf('_'))
         }else if(typeStr == 'msg-img-text'){
             // 图文内容
         }else if(typeStr == 'msg-file'){
