@@ -123,7 +123,11 @@ window.onload = function () {
             + " " + $(objBubble).find('span.chat-time').text()
             + ':' + (indexBubble % 1000))
 
-        let MSGID = $(objBubble).find('div.chat-item').attr('msg-id')
+        let MSGID = undefined
+        if(indexBubble > 0){
+            MSGID = $(objBubble).find('div.chat-item').attr('msg-id')
+        }
+        
 
         let avatarStyle = $(objBubble).find('div.avatar > div.normal').attr('style')
         let avatar = undefined
@@ -194,7 +198,10 @@ window.onload = function () {
             $("div.msg-items > div").each((index, element)=>{
                 let objSending = $(element).find('div[progress-bar]')
                 if (($(objSending).length == 0 ||
-                        $(objSending).is(':hidden'))) {
+                        $(objSending).is(':hidden'))
+                        && index > 0 ) {
+                    //  sending 排除
+                    //  第一个bubble去掉, 里面没有内容
 
                     let MSG = grepMSG(element, index)
                     MSGList.push(MSG)
