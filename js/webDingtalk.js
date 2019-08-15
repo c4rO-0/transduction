@@ -119,6 +119,7 @@ window.onload = function () {
 
         let timeStr = $(objBubble).find('span.chat-time').text()
 
+        // bug : 如果时间是一年前, 没办法分辨
         let time = new Date()
         if(timeStr.includes('-')){
             time = new Date( 
