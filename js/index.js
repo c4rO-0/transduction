@@ -508,7 +508,7 @@ $(document).ready(function () {
                         }
 
                         let timeWaitInsert = timeObj.getTime()
-                        // console.log("debug : timeWaitInsert", timeWaitInsert)
+                        // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
 
                         // 在index对应的bubble之前插入
                         let currentInsertIndex = 0
@@ -518,19 +518,28 @@ $(document).ready(function () {
                                 currentInsertIndex = -(indexOfExistBubble + 1)
                             }
                             if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
+                                // console.log("later : ", indexOfExistBubble, arrayExistBubble[indexOfExistBubble].msgTime)
                                 currentInsertIndex = indexOfExistBubble
                             }
                         }
 
+                        // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
+
                         if (currentInsertIndex >= 0) {
-                            if (arrayExistBubble.length > 1 && currentInsertIndex == arrayExistBubble.length - 1) {
+                            if (currentInsertIndex == arrayExistBubble.length - 1 
+                                && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1 ].msgTime) {
+
                                 $(dialogSelector).append(AddDialogHtml(value))
+
+                                arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                             } else {
                                 $(AddDialogHtml(value))
                                     .insertBefore(
                                         dialogSelector
                                         + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
                                     )
+
+                                arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                             }
 
                         } else {
@@ -539,6 +548,7 @@ $(document).ready(function () {
                                 + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
                                 .replaceWith(AddDialogHtml(value)
                                 )
+                            // arrayExistBubble[-currentInsertIndex - 1].msgTime
                         }
 
 
