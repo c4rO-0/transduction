@@ -508,6 +508,7 @@ $(document).ready(function () {
                         }
 
                         let timeWaitInsert = timeObj.getTime()
+                        // console.log("debug : timeWaitInsert", timeWaitInsert)
 
                         // 在index对应的bubble之前插入
                         let currentInsertIndex = 0
@@ -522,7 +523,7 @@ $(document).ready(function () {
                         }
 
                         if (currentInsertIndex >= 0) {
-                            if (currentInsertIndex == arrayExistBubble.length - 1) {
+                            if (arrayExistBubble.length > 1 && currentInsertIndex == arrayExistBubble.length - 1) {
                                 $(dialogSelector).append(AddDialogHtml(value))
                             } else {
                                 $(AddDialogHtml(value))

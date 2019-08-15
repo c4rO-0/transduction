@@ -394,10 +394,48 @@ window.onload = function () {
 
     }
 
+    function grepAndSendRight() {
+        if ($('div.chat_item.slide-left.active').length > 0) {
+            let ID = $('div.chat_item.slide-left.active').attr('data-username')
+
+            let objSlide = _chatContent[ID]
+            // console.log("objSlide : id : ", ID ,objSlide)
+            let MSGList = new Array()
+            for (let indexMSG in objSlide) {
+                // console.log("debug : ", indexMSG, "---->")
+                // console.log(objSlide[indexMSG])
+                // 发送中
+                let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
+                    .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif'], [ng-click='cancelUploadFile(message)']")
+                if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0 &&
+                    ($(objSending).length == 0 ||
+                        $(objSending).is(':hidden'))) {
+
+                    let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
+                    MSGList.push(MSG)
+                }
+
+            }
+            if (MSGList.length > 0) {
+                console.log("debug : dialog-----------");
+                (MSGList[0])["userID"] = ID;
+                // console.log(MSGList[0])
+                // console.log(ID)
+                // console.log(typeof(ID))
+                core.WebToHost({ "Dialog": MSGList }).then((res) => {
+                    console.log(res)
+                }).catch((error) => {
+                    throw error
+                });
+            }
+        }
+
+    }
+
     // 联系人发生变更
     var callbackContact = function (records, observer) {
 
-        
+
         if ($("#navContact").scrollTop() + $("#navContact")[0].clientHeight != $("#navContact")[0].scrollHeight) {
             console.log("debug : ", "----------contact change----------")
             // console.log($("#navContact").scrollTop() , $("#navContact")[0].clientHeight, $("#navContact")[0].scrollHeight)
@@ -414,6 +452,13 @@ window.onload = function () {
             observer.disconnect()
         }
     };
+
+    var callbackRight = function (records) {
+
+        console.log("debug : ===========Right changed============")
+        // console.log(records)
+        grepAndSendRight()
+    }
 
     // 消息发生变更
     var callbackChat = function (records) {
@@ -607,6 +652,9 @@ window.onload = function () {
             attributes: true, attributeOldValue: true
         });
 
+        let obsRight = new MutationObserver(callbackRight);
+
+
         // 接收上层消息
         core.WebReply((key, arg) => {
             return new Promise((resolve, reject) => {
@@ -621,42 +669,19 @@ window.onload = function () {
                     $("div.ng-scope div [data-username='" + ID + "']").click();
 
                     resolve("request received. MSG will send.")
+                    
+                    obsRight.disconnect()
+                    obsRight.observe($("div[mm-repeat='message in chatContent']")[0], {
+                        subtree: false, childList: true, characterData: false, attributes: false,
+                        attributeOldValue: false, characterDataOldValue: false
+                    })
 
                     setTimeout(() => {
                         // 获取内容
-                        let objSlide = _chatContent[ID]
-                        // console.log("objSlide : id : ", ID ,objSlide)
-                        let MSGList = new Array()
-                        for (let indexMSG in objSlide) {
-                            // console.log("debug : ", indexMSG, "---->")
-                            // console.log(objSlide[indexMSG])
-                            // 发送中
-                            let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
-                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif'], [ng-click='cancelUploadFile(message)']")
-                            if ( $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0 && 
-                                ($(objSending).length == 0 ||
-                                $(objSending).is(':hidden'))) {
-
-                                let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
-                                MSGList.push(MSG)
-                            }
-
-
-                        }
-                        if (MSGList.length > 0) {
-                            console.log("debug : dialog-----------");
-                            (MSGList[0])["userID"] = ID;
-                            // console.log(MSGList[0])
-                            // console.log(ID)
-                            // console.log(typeof(ID))
-                            core.WebToHost({ "Dialog": MSGList }).then((res) => {
-                                console.log(res)
-                            }).catch((error) => {
-                                throw error
-                            });
-                        }
+                        grepAndSendRight()
 
                     }, 100);
+
 
                 } else if (key == 'sendDialog') {
                     console.log("--------sendDialog---")
