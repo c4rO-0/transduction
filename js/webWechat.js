@@ -661,6 +661,11 @@ window.onload = function () {
         let obsRight = new MutationObserver(callbackRight);
 
 
+        $(document).on('click', 'a[download]', function () {
+            core.sendToMain({ 'download': { 'url': $(this).attr('href') } })
+        })
+
+
         // 接收上层消息
         core.WebReply((key, arg) => {
             return new Promise((resolve, reject) => {
