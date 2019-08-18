@@ -103,12 +103,12 @@ window.onload = function () {
 
         let content = ""
 
-        if (MSG["MMDigest"].length > 0) {
-            let contentObj = jQuery.parseHTML(MSG["MMDigest"])
+        if (MSG["MMActualContent"].length > 0) {
+            let contentObj = jQuery.parseHTML(MSG["MMActualContent"])
             // 对content进行处理, 目前只发现emoji在里面
             contentObj.forEach((c, i) => {
                 // 将内容进行切割, 判断是否为img emoji进行处理
-
+                // console.log("content contentObj ",$(c))
                 let nodeName = $(c).prop('nodeName')
                 if (nodeName == "IMG") {
                     // 对左侧栏筛选字符表情
@@ -124,6 +124,8 @@ window.onload = function () {
                     } else {
                         content = content + "[image]"
                     }
+                }else if(nodeName == "BR"){
+                    content = content + '\n'
                 }
 
                 // 链接文字
@@ -152,39 +154,43 @@ window.onload = function () {
                 type = "url"
             }
 
-        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_IMAGE) {
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_IMAGE || MSG["MsgType"] == wechatMSGType.MSGTYPE_EMOTICON) {
             // 缓存图片
             // console.log("type img")
             type = 'img'
-            if (MSG["MMThumbSrc"]) { //小图片, 直接原图
-                content = MSG["MMThumbSrc"]
-                // let scriptSrc = $("script[async][src*='skey']").attr("src")
-                // console.log(scriptSrc)
-                // let posskey =  scriptSrc.indexOf('skey')
-                // let skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
-                // console.log(skey)
-                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                    + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-                    + "&skey=" + skey
-                // console.log(imgUrl)
-                content = imgUrl
-            } else {
-                // 置换内容
-                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
-                if (imgUrl) {
-                    content = imgUrl
-                    // 还原为原始大小
-                    content = content.slice(0, -"&type=slave".length)
-                } else { // 找不到地址, 可能网页元素已经被删除
-                    content = MSG["MMThumbSrc"]
-                    let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                        + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-                        + "&skey=" + skey
-                    // console.log(imgUrl)
-                    content = imgUrl
-                }
-            }
-
+            // if (MSG["MMThumbSrc"]) { //小图片, 直接原图
+            //     content = MSG["MMThumbSrc"]
+            //     // let scriptSrc = $("script[async][src*='skey']").attr("src")
+            //     // console.log(scriptSrc)
+            //     // let posskey =  scriptSrc.indexOf('skey')
+            //     // let skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
+            //     // console.log(skey)
+            //     let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+            //         + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+            //         + "&skey=" + skey
+            //     // console.log(imgUrl)
+            //     content = imgUrl
+            // } else {
+            //     // 置换内容
+            //     let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+            //     if (imgUrl) {
+            //         content = imgUrl
+            //         // 还原为原始大小
+            //         content = content.slice(0, -"&type=slave".length)
+            //     } else { // 找不到地址, 可能网页元素已经被删除
+            //         content = MSG["MMThumbSrc"]
+            //         let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+            //             + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+            //             + "&skey=" + skey
+            //         // console.log(imgUrl)
+            //         content = imgUrl
+            //     }
+            // }
+            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+            + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+            + "&skey=" + skey
+            // console.log(imgUrl)
+            content = imgUrl
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
             // 小视频
             type = 'unknown'
