@@ -99,12 +99,12 @@ window.onload = function () {
     }
 
     /**
-      * 根据微信储存的变量_chatcontent读取消息
-      * @param {Object} objBubble 微信单条消息
+      * 
+      * @param {Object} objBubble 单条消息
       * @returns {Object} 拿到我们关系的内容
-      * @param {Integer} indexBubble MSG在_chatcontent里位置
+      * @param {Integer} indexBubble MSG位置
       */
-    function grepMSG(objBubble, indexBubble) {
+    function grepBubble(objBubble, indexBubble) {
 
 
         let fromUserName = undefined
@@ -162,8 +162,27 @@ window.onload = function () {
             // 文字内容
             type = 'text'
             if ($(objContent).find('div.msg-bubble > pre').length > 0) {
-                content = $(objContent).find('div.msg-bubble > pre').text()
+
+                contentObj = $(objContent).find('div.msg-bubble > pre')
+
+                content = ""
+                $(contentObj).contents().toArray().forEach((c, i) => {
+                    // 将内容进行切割, 判断是否为img
+    
+                    // console.log(c, $(c).prop('nodeName'))
+                    let nodeName = $(c).prop('nodeName')
+                    if (nodeName == "IMG") {
+                        // 筛选字符表情
+                        content = content + $(c).attr('title')
+                    }
+                    // 链接文字
+                    content = content + $(c).text()
+                    
+                })
+
             } else if ($(objContent).find('div.msg-bubble > code-snippet-container').length > 0) {
+                // console.log("found code -----")
+                // console.log($(objContent).html())
                 content = ''
                 $(objContent).find('span[role="presentation"]').each((index, element) => {
                     content = content + $(element).text() + '\n\r'
@@ -234,7 +253,7 @@ window.onload = function () {
         if (objActiveUser.length > 0) {
             let ID = objActiveUser.attr('menu-data')
 
-            let MSGList = new Array()
+            let bubbleList = new Array()
 
             $("div.msg-items > div").each((index, element) => {
                 let objSending = $(element).find('div[progress-bar]')
@@ -244,18 +263,18 @@ window.onload = function () {
                     //  sending 排除
                     //  第一个bubble去掉, 里面没有内容
 
-                    let MSG = grepMSG(element, index)
-                    MSGList.push(MSG)
+                    let bubble = grepBubble(element, index)
+                    bubbleList.push(bubble)
                 }
             })
 
-            if (MSGList.length > 0) {
+            if (bubbleList.length > 0) {
                 console.log("debug : dialog-----------");
-                (MSGList[0])["userID"] = ID;
-                // console.log(MSGList[0])
+                (bubbleList[0])["userID"] = ID;
+                // console.log(bubbleList[0])
                 // console.log(ID)
                 // console.log(typeof(ID))
-                core.WebToHost({ "Dialog": MSGList }).then((res) => {
+                core.WebToHost({ "Dialog": bubbleList }).then((res) => {
                     console.log(res)
                 }).catch((error) => {
                     throw error
@@ -347,7 +366,10 @@ window.onload = function () {
         })
 
         if (addedNewBubble) {
-            grepAndSendRight()
+            setTimeout(() => {
+                // 获取内容
+                grepAndSendRight()
+            }, 500);
         }
     }
 
@@ -437,7 +459,7 @@ window.onload = function () {
                             subtree: false, childList: true, characterData: false, attributes: false,
                             attributeOldValue: false, characterDataOldValue: false
                         })
-                    }, 100);
+                    }, 500);
                 } else if (key == 'sendDialog') {
                     // 键入消息
                 } else if (key == 'queryLogStatus') {
