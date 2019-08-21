@@ -126,13 +126,12 @@ $(document).ready(function () {
             this.userID = userID
             this.nickName = nickName
 
+            // time为str
             if (time === undefined) {
                 this.time = time
             } else if (typeof (time) === 'number') {
-                this.time = new Date(time)
+                this.time = (new Date(time)).toTimeString().slice(0, 5)
             } else if (typeof (time) == "string") {
-                this.time = new Date(time)
-            } else if (typeof (time) == "object") {
                 this.time = time
             } else {
                 console.log("error : conversation :  wrong type of time : ", typeof (time), time)
@@ -241,7 +240,7 @@ $(document).ready(function () {
                 <div class="m-0 td-text">'+ convo.message + '</div>\
             </div>\
         <div class="col-auto pl-0 col-timestamp justify-content-end">\
-            '+ convo.time.toTimeString().slice(0, 5) + '\
+            '+ convo.time + '\
             </div>\
         </div > '
     }
@@ -300,7 +299,7 @@ $(document).ready(function () {
                 '<div class="td-chatText">'
                 + 'Name : ' + dialog['fileName']
                 + ' Size : ' + dialog['fileSize'] / 1000. + ' KB'
-            '<button href="' + dialog['message'] + '" download>下载</button>\
+                + '<button href="' + dialog['message'] + '" download>下载</button>\
                 <p></p>\
             </div>'
         } else if (dialog['type'] == 'unknown') {
@@ -376,7 +375,7 @@ $(document).ready(function () {
                             $(objConvo).find("div.td-text").text(convo.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").text(convo.time.toTimeString().slice(0, 5))
+                            $(objConvo).find("div.col-timestamp").text(convo.time)
                             break;
                         case "muted":
                             $(objConvo).attr('muted', convo.muted)
@@ -388,6 +387,25 @@ $(document).ready(function () {
             }
             $('#td-convo-container').prepend(objConvo)
         }
+    }
+
+    function rightBackToDefault() {
+        // 右侧恢复到开始状态
+        $('.td-chat-title').removeAttr('data-user-i-d')
+        $('.td-chat-title').removeAttr('data-app-name')
+        $('.td-chat-title > h2').text('')
+        $('.td-chat-title > img').attr('src', '../res/pic/nothing.png')
+
+        $('.td-chatLog[wintype="chatLog"]').empty()
+        $('.td-chatLog[wintype="chatLog"]').append('\
+                         <div class="td-default">\
+                             <p>\
+                                 商业合作，问题反馈，请联系c4r。\
+                             </p>\
+                             <p>\
+                                 business cooperation, bug report, please contact c4r.\
+                             </p>\
+                         </div>')
     }
 
     //------------------------
@@ -490,6 +508,7 @@ $(document).ready(function () {
                         }
 
                         let timeWaitInsert = timeObj.getTime()
+                        // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
 
                         // 在index对应的bubble之前插入
                         let currentInsertIndex = 0
@@ -499,19 +518,28 @@ $(document).ready(function () {
                                 currentInsertIndex = -(indexOfExistBubble + 1)
                             }
                             if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
+                                // console.log("later : ", indexOfExistBubble, arrayExistBubble[indexOfExistBubble].msgTime)
                                 currentInsertIndex = indexOfExistBubble
                             }
                         }
 
+                        // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
+
                         if (currentInsertIndex >= 0) {
-                            if (currentInsertIndex == arrayExistBubble.length - 1) {
+                            if (currentInsertIndex == arrayExistBubble.length - 1 
+                                && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1 ].msgTime) {
+
                                 $(dialogSelector).append(AddDialogHtml(value))
+
+                                arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                             } else {
                                 $(AddDialogHtml(value))
                                     .insertBefore(
                                         dialogSelector
                                         + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
                                     )
+
+                                arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                             }
 
                         } else {
@@ -520,6 +548,7 @@ $(document).ready(function () {
                                 + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
                                 .replaceWith(AddDialogHtml(value)
                                 )
+                            // arrayExistBubble[-currentInsertIndex - 1].msgTime
                         }
 
 
@@ -629,6 +658,16 @@ $(document).ready(function () {
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
                     ChangeConvoHtml(webTag, Convo)
+                } else if (Convo.action === 'r') {
+                    console.log('going to remove convo')
+                    let active =
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
+                            .hasClass('theme-transduction-active')
+
+                    $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
+                    if (active) {
+                        rightBackToDefault()
+                    }
                 }
 
                 resolve("copy that")
@@ -680,21 +719,7 @@ $(document).ready(function () {
                             }
                         })
                         // 右侧恢复到开始状态
-                        $('.td-chat-title').removeAttr('data-user-i-d')
-                        $('.td-chat-title').removeAttr('data-app-name')
-                        $('.td-chat-title > h2').text('')
-                        $('.td-chat-title > img').attr('src', '../res/pic/nothing.png')
-
-                        $('.td-chatLog[wintype="chatLog"]').empty()
-                        $('.td-chatLog[wintype="chatLog"]').append('\
-                        <div class="td-default">\
-                            <p>\
-                                商业合作，问题反馈，请联系c4r。\
-                            </p>\
-                            <p>\
-                                business cooperation, bug report, please contact c4r.\
-                            </p>\
-                        </div>')
+                        rightBackToDefault()
 
                         // 空白页
 
@@ -1487,6 +1512,7 @@ $(document).ready(function () {
 
     // openDevtool("skype")
     // openDevtool("wechat")
+    // openDevtool("dingtalk")
 
 
     //==============================UI==============================
@@ -1603,23 +1629,23 @@ $(document).ready(function () {
     })
 
     //==========================UI_settingsPage=====================
-    function loadSettings(){
+    function loadSettings() {
         let tdSettings = store.get('tdSettings')
         document.getElementById('swTray').checked = tdSettings == undefined ? false : tdSettings.swTray
     }
     loadSettings()
 
-    function applySettings(){
+    function applySettings() {
         let tdSettings = store.get('tdSettings')
-        if(tdSettings.swTray){
-            
+        if (tdSettings.swTray) {
+
         }
     }
 
     document.getElementById('swTray').addEventListener('click', function () {
         // console.warn('UIsettings:', this.checked)
         let tdSettings = store.get('tdSettings')
-        if(tdSettings == undefined){
+        if (tdSettings == undefined) {
             tdSettings = new Object()
         }
         tdSettings.swTray = this.checked
