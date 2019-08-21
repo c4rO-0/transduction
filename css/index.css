@@ -322,6 +322,10 @@ webview {
     display: none;
 }
 
+.td-invisible {
+    visibility: hidden;
+}
+
 .td-dropFile>img {
     align-self: center;
     width: 128px;
@@ -336,7 +340,8 @@ webview {
 }
 
 .col-text, .col-timestamp {
-    /* display: none; */
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     align-self: stretch;
 }

@@ -215,8 +215,12 @@ $(document).ready(function () {
      */
     function AddConvoHtml(appName, convo) {
         let displayCounter = "display: none;"
+        let visibility = "td-invisible"
         if (convo.counter) {
             displayCounter = ""
+        }
+        if(convo.muted) {
+            visibility = ""
         }
 
         let avatar = convo.avatar == undefined ? '../res/pic/weird.png' : convo.avatar
@@ -239,8 +243,9 @@ $(document).ready(function () {
                 <div class="m-0 td-nickname">'+ convo.nickName + '</div>\
                 <div class="m-0 td-text">'+ convo.message + '</div>\
             </div>\
-        <div class="col-auto pl-0 col-timestamp justify-content-end">\
-            '+ convo.time + '\
+            <div class="col-auto pl-0 col-timestamp justify-content-around">\
+                '+ convo.time + '\
+                <img class="' + visibility + ' align-self-center" src="../res/pic/mute.svg" height="18px">\
             </div>\
         </div > '
     }
