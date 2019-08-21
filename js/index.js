@@ -1558,6 +1558,9 @@ $(document).ready(function () {
     document.getElementById('modal-wechat').querySelector('webview').addEventListener('load-commit', function () {
         this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
+    document.getElementById('modal-wechat').querySelector('webview').addEventListener('dom-ready', function () {
+        this.insertCSS('.login.ng-scope{min-width: unset;}')
+    })
 
     /**
      * webview隐藏
