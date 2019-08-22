@@ -484,11 +484,11 @@ window.onload = function () {
                         if (typeof (value) == 'string') {
                             // console.log(value)
                             console.log("---send : text---")
-                            $('div.msg-box > textarea').text(value)
+                            $('div.msg-box > textarea').val(value)
 
                             $('div.action-area > a').get(0).click()
 
-                            // waitSend(arrayValue, index)
+                            waitSend(arrayValue, index)
 
                             // observer.disconnect()
                             // });
@@ -512,7 +512,7 @@ window.onload = function () {
                                         $(objSendButton).get(0).click()
                                     }
                                 
-                                // waitSend(arrayValue, index)
+                                waitSend(arrayValue, index)
                                 }, 200);
 
                             })
@@ -522,55 +522,38 @@ window.onload = function () {
 
                     function waitSend(arrayValue, index) {
                         // 等待发送完成
+                        let objSending = $('div[progress-bar]')
+                        if (($(objSending).length == 0 ||
+                            $(objSending).is(':hidden'))) {
+                            // 没有找到sending
+                            console.log("---next msg---")
+                            send(arrayValue, index + 1)
+                            return
+                        }
+
                         let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
 
-                            console.log("bubble changed : ", mutationList)
-                            mutationList.forEach((mutation, nodeIndex) => {
-                                let addedNodes = mutation.addedNodes
-                                console.log(addedNodes)
-                                if (addedNodes && $(addedNodes[0]).attr("ng-repeat") && $(addedNodes[0]).attr("ng-repeat") == "message in chatContent") {
-                                    console.log('---addedNodes----')
-                                    observer.disconnect()
-                                    let lastObj = $("div[ng-switch-default].me")
-                                        .last().find("div.bubble")
-                                    console.log("last me : ", $(lastObj).attr("class"), $(lastObj).attr("data-cm"))
-                                    if ($("div[ng-switch-default].me")
-                                        .last()
-                                        .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                                        .is(':hidden')) {
-                                        console.log('---send single 完成----', $("div[ng-switch-default].me")
-                                            .last().find('div.bubble').attr('data-cm'))
-                                        send(arrayValue, index + 1)
-                                    } else {
-                                        let obsFinished = new MutationObserver((mList, obs) => {
-                                            console.log('-------obs update--------')
-                                            console.log(mList)
-                                            if ($("div[ng-switch-default].me")
-                                                .last()
-                                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                                                .is(':hidden')) {
-                                                obs.disconnect()
-                                                send(arrayValue, index + 1)
-                                            }
-                                        })
 
-                                        obsFinished.observe($("div[ng-switch-default].me")
-                                            .last().find("div.bubble_cont.ng-scope")[0], {
-                                                // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
-                                                subtree: true, childList: true, characterData: true, attributes: true,
-                                                attributeOldValue: false, characterDataOldValue: false
-                                            });
-                                    }
-
-
-                                }
-                            })
+                            let objSending = $('div[progress-bar]')
+                            if (($(objSending).length == 0 ||
+                                $(objSending).is(':hidden'))) {
+                                // 没有找到sending
+                                console.log("---next msg---")
+                                send(arrayValue, index + 1)
+                                observer.disconnect()
+                                return
+                            }
 
                         })
-                        obsSwxUpdated.observe($("div[mm-repeat='message in chatContent']")[0], {
-                            subtree: false, childList: true, characterData: false, attributes: false,
-                            attributeOldValue: false, characterDataOldValue: false
-                        })
+                        obsSwxUpdated.observe(document.getElementById('sub-menu-pannel'), {
+                            childList: true,
+                            subtree: true,
+                            characterData: true,
+                            characterDataOldValue: true,
+                            // attributeFilter: ["data-username"],
+                            attributes: true,
+                            attributeOldValue: false
+                        });
 
                     }
 
