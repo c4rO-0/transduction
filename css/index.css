@@ -289,6 +289,7 @@ webview {
     flex: 1;
     overflow: auto;
     word-break: break-word;
+    white-space: pre-wrap;
 }
 
 .td-send {
