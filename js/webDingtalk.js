@@ -356,7 +356,7 @@ window.onload = function () {
         mutationList.forEach((mutation, index) => {
 
             mutation.addedNodes.forEach((node, index) => {
-                if ($(node).is('div.msg-box')) {
+                if ($(node).is('div.msg-box, div.msg-menu-box')) {
                     // console.log($(node))
                     addedNewBubble = addedNewBubble || true
 
@@ -456,7 +456,7 @@ window.onload = function () {
 
                         obsRight.disconnect()
                         obsRight.observe($("div.msg-items")[0], {
-                            subtree: false, childList: true, characterData: false, attributes: false,
+                            subtree: true, childList: true, characterData: false, attributes: false,
                             attributeOldValue: false, characterDataOldValue: false
                         })
                     }, 500);
