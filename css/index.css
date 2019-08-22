@@ -326,6 +326,10 @@ webview {
     visibility: hidden;
 }
 
+.td-none {
+    display: none;
+}
+
 .td-dropFile>img {
     align-self: center;
     width: 128px;

@@ -290,28 +290,35 @@ $(document).ready(function () {
                         <img src="../res/pic/ffsend.logo.svg" height="15px">\
                     </span>\
                     <a href="'+ dialog['message'] + '">' + dialog['message'] + '</a>\
-                    <p></p>\
+                    <p style="margin:0;"></p>\
                 </div>'
             } else {
                 content =
                     '<div class="td-chatText">\
                     <a  href="' + dialog['message'] + '">' + dialog['message'] + '</a>\
-                    <p></p>\
+                    <p style="margin:0;"></p>\
                 </div>'
             }
         } else if (dialog['type'] == 'file') {
             content =
-                '<div class="td-chatText">'
-                + 'Name : ' + dialog['fileName']
-                + ' Size : ' + dialog['fileSize'] / 1000. + ' KB'
-                + '<button href="' + dialog['message'] + '" download>下载</button>\
-                <p></p>\
-            </div>'
+                '<div class="td-chatText">\
+                    <div style="display: flex; flex-direction: row;">\
+                        <img src="../res/pic/document.svg" height="56px">\
+                        <div style="display: flex; flex-direction: column;">\
+                            <p style="margin:0 0 0 1rem;">' + dialog['fileName'] + '</p>\
+                            <div style="display: flex; flex-direction:row; justify-content: space-around;">\
+                                <p style="margin:0;">' + dialog['fileSize'] / 1000. + ' KB' + '</p>\
+                                <button href="' + dialog['message'] + '" class="btn p-0 btn-link" download>下载</button>\
+                            </div>\
+                        </div>\
+                    </div>\
+                    <p style="margin:0;"></p>\
+                </div>'
         } else if (dialog['type'] == 'unknown') {
             content =
                 '<div class="td-chatText">\
                     <a class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</a>\
-                    <p>'
+                    <p style="margin:0;">'
                 + dialog['message'] +
                 '</p>\
                 </div>'
