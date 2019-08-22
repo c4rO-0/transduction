@@ -462,6 +462,120 @@ window.onload = function () {
                     }, 500);
                 } else if (key == 'sendDialog') {
                     // 键入消息
+                    console.log("--------sendDialog---")
+                    // 检查
+                    if (!$("div.list-item.conv-item.context-menu[menu-data='" + arg[0] + "']").hasClass("active")) {
+
+                        reject("user not active")
+                        return
+                    }
+
+
+                    function send(arrayValue, index = 0) {
+
+                        console.log("index : ", index)
+                        if (index == arrayValue.length) {
+                            console.log("sendDialog finished")
+                            resolve("Dialog send")
+                            return
+                        }
+
+                        value = arrayValue[index]
+                        if (typeof (value) == 'string') {
+                            // console.log(value)
+                            console.log("---send : text---")
+                            $('div.msg-box > textarea').text(value)
+
+                            $('div.action-area > a').get(0).click()
+
+                            // waitSend(arrayValue, index)
+
+                            // observer.disconnect()
+                            // });
+                            // obsSend.observe($('div.send-button-holder button')[0], {
+                            //     subtree: false, childList: false, characterData: false, attributes: true,
+                            //     attributeOldValue: false, characterDataOldValue: false
+                            // });
+
+                        } else {
+                            // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
+                            // $('input.webuploader-element-invisible').click()
+
+                            core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
+                                console.log("---file---")
+                                setTimeout(() => {
+                                    let objSendButton = $('div.file-area-box').closest('div.modal-content').find('div.foot button')
+                                    if($(objSendButton).length ==0){
+                                        reject("no send button")
+                                        return
+                                    }else{
+                                        $(objSendButton).get(0).click()
+                                    }
+                                
+                                // waitSend(arrayValue, index)
+                                }, 200);
+
+                            })
+                        }
+
+                    }
+
+                    function waitSend(arrayValue, index) {
+                        // 等待发送完成
+                        let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
+
+                            console.log("bubble changed : ", mutationList)
+                            mutationList.forEach((mutation, nodeIndex) => {
+                                let addedNodes = mutation.addedNodes
+                                console.log(addedNodes)
+                                if (addedNodes && $(addedNodes[0]).attr("ng-repeat") && $(addedNodes[0]).attr("ng-repeat") == "message in chatContent") {
+                                    console.log('---addedNodes----')
+                                    observer.disconnect()
+                                    let lastObj = $("div[ng-switch-default].me")
+                                        .last().find("div.bubble")
+                                    console.log("last me : ", $(lastObj).attr("class"), $(lastObj).attr("data-cm"))
+                                    if ($("div[ng-switch-default].me")
+                                        .last()
+                                        .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                                        .is(':hidden')) {
+                                        console.log('---send single 完成----', $("div[ng-switch-default].me")
+                                            .last().find('div.bubble').attr('data-cm'))
+                                        send(arrayValue, index + 1)
+                                    } else {
+                                        let obsFinished = new MutationObserver((mList, obs) => {
+                                            console.log('-------obs update--------')
+                                            console.log(mList)
+                                            if ($("div[ng-switch-default].me")
+                                                .last()
+                                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
+                                                .is(':hidden')) {
+                                                obs.disconnect()
+                                                send(arrayValue, index + 1)
+                                            }
+                                        })
+
+                                        obsFinished.observe($("div[ng-switch-default].me")
+                                            .last().find("div.bubble_cont.ng-scope")[0], {
+                                                // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                                subtree: true, childList: true, characterData: true, attributes: true,
+                                                attributeOldValue: false, characterDataOldValue: false
+                                            });
+                                    }
+
+
+                                }
+                            })
+
+                        })
+                        obsSwxUpdated.observe($("div[mm-repeat='message in chatContent']")[0], {
+                            subtree: false, childList: true, characterData: false, attributes: false,
+                            attributeOldValue: false, characterDataOldValue: false
+                        })
+
+                    }
+
+                    // 开始发送消息
+                    send(arg, 1)                    
                 } else if (key == 'queryLogStatus') {
                     console.log("resolve back")
                     resolve(logStatus)
