@@ -1376,7 +1376,7 @@ $(document).ready(function () {
             // console.log(index, typeof (value), '----')
             // console.log(value)
             if (typeof (value) != 'string') {
-                strInput = arrayInput.slice(fileIndex + 1, index).join('')
+                strInput = arrayInput.slice(fileIndex + 1, index).join('\n')
                 if (strInput.length > 0) arraySimpleInput.push(strInput)
 
                 arraySimpleInput.push(value)
@@ -1384,7 +1384,7 @@ $(document).ready(function () {
             }
         })
 
-        strInput = arrayInput.slice(fileIndex + 1).join('')
+        strInput = arrayInput.slice(fileIndex + 1).join('\n')
         if (strInput.length > 0) arraySimpleInput.push(strInput)
 
         return arraySimpleInput
@@ -2151,11 +2151,15 @@ $(document).ready(function () {
 
             if (event.which == 13) {
                 // enter pressed
-                $('#debug-send').click()
+                $(debug_send_str).click()
                 return false
             }
             if (event.ctrlKey && event.which == 10) {
-                pasteHtmlAtCaret("</br></br>", 'div.td-inputbox')
+                arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
+                if(($(arrayIn)[arrayIn.length-1].nodeName != 'BR')) {
+                    $('div.td-inputbox').append('<br>')
+                }
+                pasteHtmlAtCaret("<br>", 'div.td-inputbox')
             }
         } else {
             // 闪烁
