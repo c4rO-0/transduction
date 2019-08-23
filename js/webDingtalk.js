@@ -499,7 +499,7 @@ window.onload = function () {
 
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
-                            // $('input.webuploader-element-invisible').click()
+                            $('input.normal-file').get(0).click()
 
                             core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
                                 console.log("---file---")
