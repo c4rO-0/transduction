@@ -2151,11 +2151,15 @@ $(document).ready(function () {
 
             if (event.which == 13) {
                 // enter pressed
-                $('#debug-send').click()
+                $(debug_send_str).click()
                 return false
             }
             if (event.ctrlKey && event.which == 10) {
-                pasteHtmlAtCaret("</br></br>", 'div.td-inputbox')
+                arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
+                if(($(arrayIn)[arrayIn.length-1].nodeName != 'BR')) {
+                    $('div.td-inputbox').append('<br>')
+                }
+                pasteHtmlAtCaret("<br>", 'div.td-inputbox')
             }
         } else {
             // 闪烁
