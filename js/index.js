@@ -215,8 +215,12 @@ $(document).ready(function () {
      */
     function AddConvoHtml(appName, convo) {
         let displayCounter = "display: none;"
+        let visibility = "td-invisible"
         if (convo.counter) {
             displayCounter = ""
+        }
+        if(convo.muted) {
+            visibility = ""
         }
 
         let avatar = convo.avatar == undefined ? '../res/pic/weird.png' : convo.avatar
@@ -239,8 +243,9 @@ $(document).ready(function () {
                 <div class="m-0 td-nickname">'+ convo.nickName + '</div>\
                 <div class="m-0 td-text">'+ convo.message + '</div>\
             </div>\
-        <div class="col-auto pl-0 col-timestamp justify-content-end">\
-            '+ convo.time + '\
+            <div class="col-auto pl-0 col-timestamp justify-content-around">\
+                '+ convo.time + '\
+                <img class="' + visibility + ' align-self-center" src="../res/pic/mute.svg" height="18px">\
             </div>\
         </div > '
     }
@@ -285,28 +290,35 @@ $(document).ready(function () {
                         <img src="../res/pic/ffsend.logo.svg" height="15px">\
                     </span>\
                     <a href="'+ dialog['message'] + '">' + dialog['message'] + '</a>\
-                    <p></p>\
+                    <p style="margin:0;"></p>\
                 </div>'
             } else {
                 content =
                     '<div class="td-chatText">\
                     <a  href="' + dialog['message'] + '">' + dialog['message'] + '</a>\
-                    <p></p>\
+                    <p style="margin:0;"></p>\
                 </div>'
             }
         } else if (dialog['type'] == 'file') {
             content =
-                '<div class="td-chatText">'
-                + 'Name : ' + dialog['fileName']
-                + ' Size : ' + dialog['fileSize'] / 1000. + ' KB'
-                + '<button href="' + dialog['message'] + '" download>下载</button>\
-                <p></p>\
-            </div>'
+                '<div class="td-chatText">\
+                    <div style="display: flex; flex-direction: row;">\
+                        <img src="../res/pic/document.svg" height="56px">\
+                        <div style="display: flex; flex-direction: column;">\
+                            <p style="margin:0 0 0 1rem;">' + dialog['fileName'] + '</p>\
+                            <div style="display: flex; flex-direction:row; justify-content: space-around;">\
+                                <p style="margin:0;">' + dialog['fileSize'] / 1000. + ' KB' + '</p>\
+                                <button href="' + dialog['message'] + '" class="btn p-0 btn-link" download>下载</button>\
+                            </div>\
+                        </div>\
+                    </div>\
+                    <p style="margin:0;"></p>\
+                </div>'
         } else if (dialog['type'] == 'unknown') {
             content =
                 '<div class="td-chatText">\
                     <a class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</a>\
-                    <p>'
+                    <p style="margin:0;">'
                 + dialog['message'] +
                 '</p>\
                 </div>'
@@ -1551,6 +1563,9 @@ $(document).ready(function () {
     })
 
     document.getElementById('modal-wechat').querySelector('webview').addEventListener('load-commit', function () {
+        this.insertCSS('.login.ng-scope{min-width: unset;}')
+    })
+    document.getElementById('modal-wechat').querySelector('webview').addEventListener('dom-ready', function () {
         this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
 

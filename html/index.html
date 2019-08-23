@@ -31,7 +31,7 @@
                 </div>
             </div>
             <div id="td-convo-container" style="overflow: auto;">
-                <!-- <div class="td-convo theme-transduction td-font">
+                <div class="td-convo theme-transduction td-font" style="display: none">
                     <div class="col-appLogo">
                         <img src="../res/pic/skype.png">
                     </div>
@@ -57,12 +57,13 @@
                             这个人afsadf啰 嗦地说了一大堆不知所云的废话，脑子有洞？
                         </div>
                     </div>
-                    <div class="col-auto pl-0 col-timestamp justify-content-end">
+                    <div class="col-auto pl-0 col-timestamp justify-content-around">
                         7:32 PM
+                        <img class="td-invisible align-self-center" src="../res/pic/mute.svg" height="18px">
                     </div>
                 </div>
 
-                <div class="td-convo theme-transduction td-font">
+                <div class="td-convo theme-transduction td-font" style="display: none">
                     <div class="col-appLogo">
                         <img src="../res/pic/wechat.png">
                     </div>
@@ -87,7 +88,7 @@
                     <div class="col-auto pl-0 col-timestamp justify-content-end">
                         7:32 PM
                     </div>
-                </div> -->
+                </div>
             </div>
         </div>
         <div class="col-right td-font" id="td-right">
@@ -98,7 +99,7 @@
             <div class="td-chat" winType="td-chat">
                 <img id="td-pin" src="../res/pic/pin.png">
                 <div class="td-chatLog" winType="chatLog" ondragstart="return false">
-                    <div style="display: none;">
+                    <div class="td-none">
                     <div class="td-bubble">
                         <p class="m-0">猜猜我是谁</p>
                         <div class="td-them">
@@ -107,18 +108,12 @@
                                     src="https://api.asm.skype.com/v1/objects/0-ea-d5-beb6f294abc5bdbd372f46002006dd6a/views/swx_avatar">
                                 <p class="m-0">05:45</p>
                             </div>
-                            <div class="td-chatText">
-                                奥拉奥拉
-                                <!-- 噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈 -->
-                            </div>
+                            <div class="td-chatText">奥拉奥拉<!-- 噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈噢哈哈哈哈哈 --></div>
                         </div>
                     </div>
                     <div class="td-bubble">
                         <div class="td-me">
-                            <div class="td-chatText">
-                                木大木大
-                                <!-- 木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大 -->
-                            </div>
+                            <div class="td-chatText">木大木大<!-- 木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大 --></div>
                             <!-- <div class="td-chatAvatar"> -->
                             <p class="m-0">06:23</p>
                             <!-- </div> -->
@@ -127,11 +122,9 @@
                     <div class="td-bubble" msgid="6006027547129611817">
                         <div class="td-me">
                             <div class="td-chatText">
-                                <a href="https://www.bilibili.com">
-                                    https://www.bilibili.com
-                                </a>
+                                <a href="https://www.bilibili.com">https://www.bilibili.com</a>
                                 <!-- p用来添加提示 : 链接在浏览器里打开 -->
-                                <p></p>
+                                <p style="margin:0;"></p>
                             </div>
                             <p class="m-0">16:35</p>
                         </div>
@@ -146,9 +139,7 @@
                             </div>
                             <div class="td-chatText">
                                 <span class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</span>
-                                <p>
-                                    奥拉奥拉
-                                </p>
+                                <p style="margin:0;">奥拉奥拉</p>
                             </div>
                         </div>
                     </div>
@@ -164,12 +155,31 @@
                                 <span class="badge badge-pill badge-light py-0 mt-1">
                                     <img src="../res/pic/ffsend.logo.svg" height="15px">
                                 </span>
-                                <a href="https://send.firefox.com/download/3499f894d8cfc804/#JSH2QG29lkhTH4x91kNoUw">
-                                    https://send.firefox.com/download/3499f894d8cfc804/#JSH2QG29lkhTH4x91kNoUw
-                                </a>
-                                <p>
-                                    奥拉奥拉
-                                </p>
+                                <a href="https://send.firefox.com/download/3499f894d8cfc804/#JSH2QG29lkhTH4x91kNoUw">https://send.firefox.com/download/3499f894d8cfc804/#JSH2QG29lkhTH4x91kNoUw</a>
+                                <p>奥拉奥拉</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="td-bubble">
+                        <p class="m-0">download file</p>
+                        <div class="td-them">
+                            <div class="td-chatAvatar">
+                                <img
+                                    src="https://api.asm.skype.com/v1/objects/0-ea-d5-beb6f294abc5bdbd372f46002006dd6a/views/swx_avatar">
+                                <p class="m-0">05:45</p>
+                            </div>
+                            <div class="td-chatText">
+                                <div style="display: flex; flex-direction: row;">
+                                        <img src="../res/pic/document.svg" height="56px">
+                                        <div style="display: flex; flex-direction: column;">
+                                            <p style="margin:0 0 0 1rem;">File Name: main_analyseData.ipynb</p>
+                                            <div style="display: flex; flex-direction:row; justify-content: space-around;">
+                                                <p style="margin:0;">Size : 211.92 KB</p>
+                                                <button class="btn p-0 btn-link" download>下载</button>
+                                            </div>
+                                        </div>
+                                </div>
+                                <p style="margin:0;"></p>
                             </div>
                         </div>
                     </div>
@@ -177,7 +187,7 @@
                             Sending...
                     </div>
                     </div>
-                    <div class="td-default">
+                    <div class="td-default td-none">
                         <p>
                             商业合作，问题反馈，请联系c4r。
                         </p>
