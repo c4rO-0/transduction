@@ -1376,7 +1376,7 @@ $(document).ready(function () {
             // console.log(index, typeof (value), '----')
             // console.log(value)
             if (typeof (value) != 'string') {
-                strInput = arrayInput.slice(fileIndex + 1, index).join('')
+                strInput = arrayInput.slice(fileIndex + 1, index).join('\n')
                 if (strInput.length > 0) arraySimpleInput.push(strInput)
 
                 arraySimpleInput.push(value)
@@ -1384,7 +1384,7 @@ $(document).ready(function () {
             }
         })
 
-        strInput = arrayInput.slice(fileIndex + 1).join('')
+        strInput = arrayInput.slice(fileIndex + 1).join('\n')
         if (strInput.length > 0) arraySimpleInput.push(strInput)
 
         return arraySimpleInput
