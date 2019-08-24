@@ -198,7 +198,7 @@ window.onload = function () {
             // type = 'img'
             // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
             // // 置换内容
-            // content = imgUrl
+            content = '[视频]'
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 5) {
             // 公众号链接
             type = 'url'

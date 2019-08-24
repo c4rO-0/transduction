@@ -1376,7 +1376,7 @@ $(document).ready(function () {
             // console.log(index, typeof (value), '----')
             // console.log(value)
             if (typeof (value) != 'string') {
-                strInput = arrayInput.slice(fileIndex + 1, index).join('')
+                strInput = arrayInput.slice(fileIndex + 1, index).join('\n')
                 if (strInput.length > 0) arraySimpleInput.push(strInput)
 
                 arraySimpleInput.push(value)
@@ -1384,7 +1384,7 @@ $(document).ready(function () {
             }
         })
 
-        strInput = arrayInput.slice(fileIndex + 1).join('')
+        strInput = arrayInput.slice(fileIndex + 1).join('\n')
         if (strInput.length > 0) arraySimpleInput.push(strInput)
 
         return arraySimpleInput
@@ -1886,9 +1886,10 @@ $(document).ready(function () {
         console.log('drop')
         $('.td-dropFile').addClass('hide')
         event.preventDefault();
-        processDataTransfer(event.originalEvent.dataTransfer).then(
+        processDataTransfer(event.originalEvent.dataTransfer).then(() => {
+            $(".td-inputbox").focus()
             console.log("insert input done")
-        )
+        })
     })
 
 
@@ -1898,9 +1899,10 @@ $(document).ready(function () {
         // event.stopPropagation();
 
         let clipData = event.originalEvent.clipboardData || window.clipboardData;
-        processDataTransfer(clipData).then(
+        processDataTransfer(clipData).then(() => {
+            $(".td-inputbox").focus()
             console.log("paste insert input done")
-        )
+        })
 
     });
 
@@ -1910,7 +1912,10 @@ $(document).ready(function () {
     })
 
     $('.td-toolbox > input[type="file"]').on("change", function (event) {
-        processFileList(event.target.files)
+        processFileList(event.target.files).then(() => {
+            $(".td-inputbox").focus()
+            console.log("insert input done")
+        })
     });
 
     // ===========================发送消息===========================
@@ -2139,17 +2144,22 @@ $(document).ready(function () {
         // }else{
 
         // }
-        // console.log('key press : ', event.which, event.ctrlKey)
+        console.log('focus : ',$(document.activeElement).is(".td-inputbox"), ' key press : ', event.which, event.ctrlKey)
         // $(".td-inputbox").focus()
 
         if ($(document.activeElement).is(".td-inputbox")) {
+
             if (event.which == 13) {
                 // enter pressed
-                $('#debug-send').click()
+                $(debug_send_str).click()
                 return false
             }
             if (event.ctrlKey && event.which == 10) {
-                pasteHtmlAtCaret("</br>", 'div.td-inputbox')
+                arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
+                if(($(arrayIn)[arrayIn.length-1].nodeName != 'BR')) {
+                    $('div.td-inputbox').append('<br>')
+                }
+                pasteHtmlAtCaret("<br>", 'div.td-inputbox')
             }
         } else {
             // 闪烁
