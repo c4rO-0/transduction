@@ -790,6 +790,13 @@ document.body.appendChild(el);}")
 
         })
 
-    }
-
+    },
+    /**
+     * HTML encode
+     * @param {String} str 
+     * @returns encode HTML
+     */
+    htmlEntities: function(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 }
