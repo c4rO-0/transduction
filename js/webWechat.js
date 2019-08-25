@@ -564,7 +564,6 @@ window.onload = function () {
         })
     }
 
-
     $(document).ready(function () {
 
         let obsHead = new MutationObserver(callbackHead);
@@ -718,7 +717,9 @@ window.onload = function () {
                             // console.log(value)
 
                             // $('#editArea').text(value)
-                            angular.element('pre:last').scope().editAreaCtn = value
+                            angular.element('pre:last').scope().editAreaCtn = core.htmlEntities(value)
+
+                            // angular.element('pre:last').scope().editAreaCtn = $('#editArea').html()
 
                             // let e = $.Event("keydown", { keyCode: 64 }); //64没有对应按键
                             // $("#chatInputAreaWithQuotes").trigger(e);
