@@ -67,21 +67,6 @@ function modalImage(event) {
     $("#modal-image").modal()
 }
 
-var tagsToReplace = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;'
-};
-
-function replaceTag(tag) {
-    return tagsToReplace[tag] || tag;
-}
-
-function safe_tags_replace(str) {
-    return str.replace(/[&<>]/g, replaceTag);
-}
-
-
 
 
 $(document).ready(function () {
@@ -253,7 +238,7 @@ $(document).ready(function () {
             </div >\
         <div class="col col-text flex-column justify-content-center">\
                 <div class="m-0 td-nickname">'+ convo.nickName + '</div>\
-                <div class="m-0 td-text">'+ safe_tags_replace(convo.message) + '</div>\
+                <div class="m-0 td-text">'+ core.htmlEntities(convo.message) + '</div>\
             </div>\
             <div class="col-auto pl-0 col-timestamp justify-content-around">\
                 '+ convo.time + '\
@@ -287,7 +272,7 @@ $(document).ready(function () {
         if (dialog['type'] == 'text') {
             content =
                 '<div class="td-chatText">'
-                + safe_tags_replace(dialog['message']) +
+                + core.htmlEntities(dialog['message']) +
                 '</div>'
         } else if (dialog['type'] == 'img') {
             content =

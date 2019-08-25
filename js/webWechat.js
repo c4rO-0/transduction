@@ -564,20 +564,6 @@ window.onload = function () {
         })
     }
 
-    var tagsToReplace = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;'
-    };
-    
-    function replaceTag(tag) {
-        return tagsToReplace[tag] || tag;
-    }
-    
-    function safe_tags_replace(str) {
-        return str.replace(/[&<>]/g, replaceTag);
-    }
-
     $(document).ready(function () {
 
         let obsHead = new MutationObserver(callbackHead);
@@ -731,7 +717,7 @@ window.onload = function () {
                             // console.log(value)
 
                             // $('#editArea').text(value)
-                            angular.element('pre:last').scope().editAreaCtn = safe_tags_replace(value)
+                            angular.element('pre:last').scope().editAreaCtn = core.htmlEntities(value)
 
                             // angular.element('pre:last').scope().editAreaCtn = $('#editArea').html()
 
