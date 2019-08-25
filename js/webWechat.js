@@ -564,6 +564,19 @@ window.onload = function () {
         })
     }
 
+    var tagsToReplace = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;'
+    };
+    
+    function replaceTag(tag) {
+        return tagsToReplace[tag] || tag;
+    }
+    
+    function safe_tags_replace(str) {
+        return str.replace(/[&<>]/g, replaceTag);
+    }
 
     $(document).ready(function () {
 
@@ -718,7 +731,9 @@ window.onload = function () {
                             // console.log(value)
 
                             // $('#editArea').text(value)
-                            angular.element('pre:last').scope().editAreaCtn = value
+                            angular.element('pre:last').scope().editAreaCtn = safe_tags_replace(value)
+
+                            // angular.element('pre:last').scope().editAreaCtn = $('#editArea').html()
 
                             // let e = $.Event("keydown", { keyCode: 64 }); //64没有对应按键
                             // $("#chatInputAreaWithQuotes").trigger(e);
