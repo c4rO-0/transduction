@@ -1457,39 +1457,44 @@ $(document).ready(function () {
     function attachInputFile(webSelector, inputSelector, filePath) {
 
 
+        
 
         let wc = $(webSelector).get(0).getWebContents();
 
-        console.log("---attachInputFile----")
-        try {
-            if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.1");
-            }
-        } catch (err) {
-            console.error("Debugger attach failed : ", err);
-        };
+        wc.executeJavaScript('$("'+inputSelector+'").get(0).click(); console.log("click from index");', true);
 
-
-
-        wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
-            wc.debugger.sendCommand("DOM.querySelector", {
-                nodeId: res.root.nodeId,
-                selector: inputSelector  // CSS selector of input[type=file] element                                        
-            }, function (err, res) {
-                if (res) { // 防止不存在inputSelector
-                    wc.debugger.sendCommand("DOM.setFileInputFiles", {
-                        nodeId: res.nodeId,
-                        files: [filePath]  // Actual list of paths                                                        
-                    }, function (err, res) {
-
-                        wc.debugger.detach();
-                    });
-                } else {
-                    console.log("error : attachInputFile : inputSelector : '", inputSelector, "' not exist.")
+        setTimeout(() => {
+            console.log("---attachInputFile----")
+            try {
+                if (!wc.debugger.isAttached()) {
+                    wc.debugger.attach("1.1");
                 }
+            } catch (err) {
+                console.error("Debugger attach failed : ", err);
+            };
+    
+    
+            wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
+                wc.debugger.sendCommand("DOM.querySelector", {
+                    nodeId: res.root.nodeId,
+                    selector: inputSelector  // CSS selector of input[type=file] element                                        
+                }, function (err, res) {
+                    if (res) { // 防止不存在inputSelector
+                        wc.debugger.sendCommand("DOM.setFileInputFiles", {
+                            nodeId: res.nodeId,
+                            files: [filePath]  // Actual list of paths                                                        
+                        }, function (err, res) {
+    
+                            wc.debugger.detach();
+                        });
+                    } else {
+                        console.log("error : attachInputFile : inputSelector : '", inputSelector, "' not exist.")
+                    }
+                });
+    
             });
+        }, 3000);
 
-        });
 
     }
 
