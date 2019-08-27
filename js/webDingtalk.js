@@ -510,7 +510,7 @@ window.onload = function () {
 
                                 if($(objSendButton).length > 0){
                                     if($(objFileSize).length > 0 && $(objFileSize).text() != ''){
-                                        console.log("发送...")
+                                        console.log("点击发送...")
                                         $(objSendButton).get(0).click()
                                         isClickSend = true
 
@@ -523,7 +523,7 @@ window.onload = function () {
                                 }
 
                                 if(isClickSend && $(objSendButton).length == 0){
-                                    console.log("waitsend-----")
+                                    // console.log("waitsend-----")
                                     waitSend(arrayValue, index)
                                     observer.disconnect()
                                 }
@@ -546,6 +546,7 @@ window.onload = function () {
                     function waitSend(arrayValue, index) {
                         // 等待发送完成
                         let objSending = $('div[progress-bar]')
+
                         if (($(objSending).length == 0 ||
                             $(objSending).is(':hidden'))) {
                             // 没有找到sending
@@ -568,7 +569,7 @@ window.onload = function () {
                             }
 
                         })
-                        obsSwxUpdated.observe(document.getElementById('sub-menu-pannel'), {
+                        obsSwxUpdated.observe(document.getElementById('content-pannel'), {
                             childList: true,
                             subtree: true,
                             characterData: true,
