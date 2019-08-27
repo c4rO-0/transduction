@@ -518,7 +518,9 @@ window.onload = function () {
                                         // 重新发送
                                         console.log("重新发送")
                                         isClickSend = false
-                                        core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } })
+                                        core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
+
+                                        })
                                     }
                                 }
 
@@ -535,7 +537,9 @@ window.onload = function () {
                             });
 
                             // setTimeout(() => {
-                            core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } })
+                            core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
+
+                            })
                             // }, 5000);
                             
 
