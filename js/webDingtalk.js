@@ -499,29 +499,45 @@ window.onload = function () {
 
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
-                            setTimeout(() => {
+
                                 // console.log("click")
                                 // $('i[ng-click="upload.sendNormalFile()"]').get(0).click()
-                                setTimeout(() => {
-                                    console.log("add...")
-                                    core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
-                                        console.log("---file---")
-                                        setTimeout(() => {
-                                            let objSendButton = $('div.file-area-box').closest('div.modal-content').find('div.foot button')
-                                            if($(objSendButton).length ==0){
-                                                reject("no send button")
-                                                return
-                                            }else{
-                                                // $(objSendButton).get(0).click()
-                                            }
-                                        
-                                        waitSend(arrayValue, index)
-                                        }, 200);
-        
-                                    })
-                                }, 3000);
+                            let isClickSend = false
+                            let obsSendPic = new MutationObserver((mutationList, observer) => {
+                                console.log("body changed------")
+                                let objSendButton = $('div.file-area-box').closest('div.modal-content').find('div.foot button')
+                                let objFileSize = $('p.file-info-item')
 
-                            }, 10000);
+                                if($(objSendButton).length > 0){
+                                    if($(objFileSize).length > 0 && $(objFileSize).text() != ''){
+                                        console.log("发送...")
+                                        $(objSendButton).get(0).click()
+                                        isClickSend = true
+
+                                    }else{
+                                        // 重新发送
+                                        console.log("重新发送")
+                                        isClickSend = false
+                                        core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } })
+                                    }
+                                }
+
+                                if(isClickSend && $(objSendButton).length == 0){
+                                    console.log("waitsend-----")
+                                    waitSend(arrayValue, index)
+                                    observer.disconnect()
+                                }
+                            })
+                            obsSendPic.observe($("body")[0], {
+                                // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                subtree: false, childList: true, characterData: false, attributes: false,
+                                attributeOldValue: false, characterDataOldValue: false
+                            });
+
+                            // setTimeout(() => {
+                            core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } })
+                            // }, 5000);
+                            
 
                         }
 
