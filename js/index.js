@@ -118,7 +118,6 @@ $(document).ready(function () {
     document.getElementById('td-pin').style.bottom = tdPinCoord[1] + 'px'
 
 
-
     // =========================class===========================
     class conversation {
         constructor(action, userID, nickName, time, avatar, message, counter, index, muted) {
@@ -197,6 +196,155 @@ $(document).ready(function () {
         }
 
     }
+
+    class Bubble {
+        constructor() {
+            this.bTextL = ''
+            this.bTextR = ''
+            this.bUrlL = ''
+            this.bUrlR =''
+            this.bUnknownL =''
+            this.bUnknownR =''
+            this.bFSendL =''
+            this.bFSendR =''
+            this.bFileL =''
+            this.bFileR =''
+            this.bImgL =''
+            this.bImgR =''
+        }
+
+        initialize(){
+
+            this.bTextL = $('div[msgid="bTextL"]').clone()
+            this.bTextR = $('div[msgid="bTextR"]').clone()
+
+            this.bUrlL = $('div[msgid="bUrlL"]').clone()
+            this.bUrlR = $('div[msgid="bUrlR"]').clone()
+
+            this.bUnknownL = $('div[msgid="bUnknownL"]').clone()
+            this.bUnknownR = $('div[msgid="bUnknownR"]').clone()
+
+            this.bFSendL = $('div[msgid="bFSendL"]').clone()
+            this.bFSendL = $('div[msgid="bFSendR"]').clone()
+
+            this.bFileL = $('div[msgid="bFileL"]').clone()
+            this.bFileR = $('div[msgid="bFileR"]').clone()
+
+            this.bImgL = $('div[msgid="bImgL"]').clone()
+            this.bImgR = $('div[msgid="bImgR"]').clone()
+        }
+
+        createBubble(dialog){
+
+            let timeObj = undefined
+
+            if (typeof (dialog["time"]) === 'number') {
+                timeObj = new Date(dialog["time"])
+            } else if (typeof (dialog["time"]) == "string") {
+                timeObj = new Date(dialog["time"])
+            } else if (typeof (dialog["time"]) == "object") {
+                timeObj = dialog["time"]
+            } else {
+                timeObj = new Date()
+            }
+            let time = timeObj.toTimeString().slice(0, 5)
+    
+            let bubble
+            if (dialog['type'] == 'text') {
+
+                if (dialog["from"]) {
+                    bubble = $(this.bTextL).clone()
+                }else{
+                    bubble = $(this.bTextR).clone()
+                }
+                
+                $(bubble).find('div.td-chatText').text(dialog['message'])
+
+            } else if (dialog['type'] == 'img') {
+
+                if (dialog["from"]) {
+                    bubble = $(this.bImgL).clone()
+                }else{
+                    bubble = $(this.bImgR).clone()
+                }
+                
+                $(bubble).find('div.td-chatImg img').attr('src', dialog['message'])
+
+            } else if (dialog['type'] == 'url') {
+
+
+                if (dialog['message'].search('https://send.firefox.com/download') !== -1) {
+                    if (dialog["from"]) {
+                        bubble = $(this.bFSendL).clone()
+                    }else{
+                        bubble = $(this.bFSendR).clone()
+                    }
+                } else {
+                    if (dialog["from"]) {
+                        bubble = $(this.bUrlL).clone()
+                    }else{
+                        bubble = $(this.bUrlR).clone()
+                    }
+                }
+                    
+                $(bubble).find('div.td-chatText a').attr('href', dialog['message'])
+                $(bubble).find('div.td-chatText a').text(dialog['message'])
+
+            } else if (dialog['type'] == 'file') {
+                if (dialog["from"]) {
+                    bubble = $(this.bFileL).clone()
+                }else{
+                    bubble = $(this.bFileR).clone()
+                }
+                $(bubble).find('div.td-chatText > div > div > p').text("File Name: " + dialog['fileName'])
+                $(bubble).find('div.td-chatText > div > div > div > p').text("Size: " + dialog['fileSize'] / 1000. + ' KB')
+                $(bubble).find('div.td-chatText button').attr('href',  dialog['message'] )
+
+            } else if (dialog['type'] == 'unknown') {
+                if (dialog["from"]) {
+                    bubble = $(this.bUnknownL).clone()
+                }else{
+                    bubble = $(this.bUnknownR).clone()
+                }
+                $(bubble).find('div.td-chatText').text(dialog['message'])
+
+            } else {
+                if (dialog["from"]) {
+                    bubble = $(this.bUnknownL).clone()
+                }else{
+                    bubble = $(this.bUnknownR).clone()
+                }
+                $(bubble).find('div.td-chatText').text(dialog['message'])
+            }
+    
+            if (dialog["from"]) {
+                let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+                let appName = $("#td-right div.td-chat-title").attr("data-app-name")
+                let avatarUrl = dialog["avatar"] === undefined ?
+                    $("#td-left \
+                div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
+                div.td-avatar").css('background-image').slice(5, -2)
+                    : dialog["avatar"]
+    
+                $(bubble).attr("msgID", dialog['msgID'])
+                $(bubble).find("div.td-chatAvatar img", avatarUrl)
+
+            } 
+
+            $(bubble).find('p.m-0').text(time)
+            $(bubble).attr('msgTime', timeObj.getTime())
+            $(bubble).attr('msgid',  dialog['msgID'])
+
+            console.log("create bubble from : ", dialog)
+
+            return $(bubble)[0].outerHTML
+
+        }
+    }
+
+    let bubble = new Bubble
+    bubble.initialize()
+
 
     // ============================function===================
     /**
@@ -475,7 +623,7 @@ $(document).ready(function () {
                 if ($(dialogSelector + " div.td-bubble").length == 0) {
                     // 窗口已被清空, 直接附加
                     Obj.forEach((value, index) => {
-                        $(dialogSelector).append(AddDialogHtml(value))
+                        $(dialogSelector).append(bubble.createBubble(value))
                     })
 
                     // 滑动到最下面
@@ -541,11 +689,11 @@ $(document).ready(function () {
                             if (currentInsertIndex == arrayExistBubble.length - 1 
                                 && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1 ].msgTime) {
 
-                                $(dialogSelector).append(AddDialogHtml(value))
+                                $(dialogSelector).append(bubble.createBubble(value))
 
                                 arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                             } else {
-                                $(AddDialogHtml(value))
+                                $(bubble.createBubble(value))
                                     .insertBefore(
                                         dialogSelector
                                         + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
@@ -558,7 +706,7 @@ $(document).ready(function () {
                             // 重复的ID, 替换成新的
                             $(dialogSelector
                                 + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
-                                .replaceWith(AddDialogHtml(value)
+                                .replaceWith(bubble.createBubble(value)
                                 )
                             // arrayExistBubble[-currentInsertIndex - 1].msgTime
                         }
