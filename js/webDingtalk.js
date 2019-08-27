@@ -499,23 +499,30 @@ window.onload = function () {
 
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
-                            $('input.normal-file').get(0).click()
-
-                            core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
-                                console.log("---file---")
+                            setTimeout(() => {
+                                // console.log("click")
+                                // $('i[ng-click="upload.sendNormalFile()"]').get(0).click()
                                 setTimeout(() => {
-                                    let objSendButton = $('div.file-area-box').closest('div.modal-content').find('div.foot button')
-                                    if($(objSendButton).length ==0){
-                                        reject("no send button")
-                                        return
-                                    }else{
-                                        $(objSendButton).get(0).click()
-                                    }
-                                
-                                waitSend(arrayValue, index)
-                                }, 200);
+                                    console.log("add...")
+                                    core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
+                                        console.log("---file---")
+                                        setTimeout(() => {
+                                            let objSendButton = $('div.file-area-box').closest('div.modal-content').find('div.foot button')
+                                            if($(objSendButton).length ==0){
+                                                reject("no send button")
+                                                return
+                                            }else{
+                                                // $(objSendButton).get(0).click()
+                                            }
+                                        
+                                        waitSend(arrayValue, index)
+                                        }, 200);
+        
+                                    })
+                                }, 3000);
 
-                            })
+                            }, 10000);
+
                         }
 
                     }
