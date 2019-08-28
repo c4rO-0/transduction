@@ -121,12 +121,26 @@ window.onload = function () {
 
         // bug : 如果时间是一年前, 没办法分辨
         let time = new Date()
-        if (timeStr.includes('-')) {
+
+        // console.log('date : ', timeStr)
+        if(timeStr.includes('昨天') || timeStr.includes('Yesterday')){
+            // console.log('date : ', '昨天')
+            time = new Date(
+                time.getFullYear()
+                + " " + (time.getMonth() + 1)
+                + "-" + time.getDate()
+                + " " + $(objBubble).find('span.chat-time').text().split(" ")[1]
+                + ':' + (indexBubble % 1000))
+            time = new Date( time.getTime() -24*60*60*1000)
+
+        }else if(timeStr.includes('-')) {
+            // console.log('date : ', '日期')
             time = new Date(
                 (new Date()).getFullYear()
                 + " " + $(objBubble).find('span.chat-time').text()
                 + ':' + (indexBubble % 1000))
         } else {
+            // console.log('date : ', '标准')
             time = new Date(
                 time.getFullYear()
                 + " " + (time.getMonth() + 1)
