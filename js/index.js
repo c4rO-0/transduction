@@ -1573,7 +1573,9 @@ $(document).ready(function () {
      * webview隐藏
      */
     $('.modal:hidden').each((index, element) => {
-        $('>div.modal-dialog', element).removeClass('modal-xl')
+        if(!element.matches('#modal-image')&&!element.matches('#modal-settings')){
+            $('>div.modal-dialog', element).removeClass('modal-xl')
+        }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(element).css('left', '100000px')
         $(element).show()
@@ -1582,7 +1584,9 @@ $(document).ready(function () {
         $(webTag2Selector(element.id.substring(6))).height("800px")
     })
     $('.modal').on('hidden.bs.modal', function (e) {
-        $('>div.modal-dialog', this).removeClass('modal-xl')
+        if(!element.matches('#modal-image')&&!element.matches('#modal-settings')){
+            $('>div.modal-dialog', this).removeClass('modal-xl')
+        }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(this).css('left', '100000px')
         $(this).show()
