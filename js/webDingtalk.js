@@ -383,7 +383,7 @@ window.onload = function () {
             setTimeout(() => {
                 // 获取内容
                 grepAndSendRight()
-            }, 500);
+            }, 30);
         }
     }
 
@@ -473,7 +473,7 @@ window.onload = function () {
                             subtree: true, childList: true, characterData: false, attributes: false,
                             attributeOldValue: false, characterDataOldValue: false
                         })
-                    }, 500);
+                    }, 30);
                 } else if (key == 'sendDialog') {
                     // 键入消息
                     console.log("--------sendDialog---")
