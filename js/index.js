@@ -326,9 +326,14 @@ $(document).ready(function () {
                 $(bubble).attr("msgID", dialog['msgID'])
                 $(bubble).find("div.td-chatAvatar img", avatarUrl)
 
-            } 
+                $(bubble).find('> p.m-0').text(dialog["from"])
+                $(bubble).find('div.td-them p.m-0').text(time)
 
-            $(bubble).find('p.m-0').text(time)
+            }else{
+                $(bubble).find('p.m-0').text(time)
+            }
+
+            
             $(bubble).attr('msgTime', timeObj.getTime())
             $(bubble).attr('msgid',  dialog['msgID'])
 
