@@ -239,8 +239,8 @@ webview {
 }
 
 .td-chatImg {
-    width: 8rem;
-    height: 8rem;
+    /* max-width: 80%; */
+    /* max-height: 80%; */
 }
 
 .td-chatImg>img {
