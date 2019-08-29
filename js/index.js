@@ -1846,7 +1846,8 @@ $(document).ready(function () {
     // 点击convo
     $('#td-convo-container').on('click', 'div.td-convo', function () {
 
-
+        $(".td-inputbox").focus()
+        
         // 识别webtag
         // console.log($(this).find("div.td-nickname").text())        
         let webTag = $(this).attr("data-app-name")
