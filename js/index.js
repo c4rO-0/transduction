@@ -1846,8 +1846,9 @@ $(document).ready(function () {
     // 点击convo
     $('#td-convo-container').on('click', 'div.td-convo', function () {
 
+        // 先focus输入框
         $(".td-inputbox").focus()
-        
+
         // 识别webtag
         // console.log($(this).find("div.td-nickname").text())        
         let webTag = $(this).attr("data-app-name")
@@ -2046,6 +2047,9 @@ $(document).ready(function () {
         console.log('drop')
         $('.td-dropFile').addClass('hide')
         event.preventDefault();
+
+        $(".td-inputbox").focus()
+        
         processDataTransfer(event.originalEvent.dataTransfer).then(() => {
 
             // arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
