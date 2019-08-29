@@ -324,7 +324,7 @@ $(document).ready(function () {
                     : dialog["avatar"]
     
                 $(bubble).attr("msgID", dialog['msgID'])
-                $(bubble).find("div.td-chatAvatar img", avatarUrl)
+                $(bubble).find("div.td-chatAvatar img").attr('src', avatarUrl)
 
                 $(bubble).find('> p.m-0').text(dialog["from"])
                 $(bubble).find('div.td-them p.m-0').text(time)
@@ -337,7 +337,7 @@ $(document).ready(function () {
             $(bubble).attr('msgTime', timeObj.getTime())
             $(bubble).attr('msgid',  dialog['msgID'])
 
-            console.log("create bubble from : ", dialog)
+            // console.log("create bubble from : ", dialog)
 
             return $(bubble)[0].outerHTML
 
