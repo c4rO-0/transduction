@@ -1846,6 +1846,8 @@ $(document).ready(function () {
     // 点击convo
     $('#td-convo-container').on('click', 'div.td-convo', function () {
 
+        // 先focus输入框
+        $(".td-inputbox").focus()
 
         // 识别webtag
         // console.log($(this).find("div.td-nickname").text())        
@@ -2045,8 +2047,19 @@ $(document).ready(function () {
         console.log('drop')
         $('.td-dropFile').addClass('hide')
         event.preventDefault();
+
+        $(".td-inputbox").focus()
+
         processDataTransfer(event.originalEvent.dataTransfer).then(() => {
+
+            // arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
+            // if(($(arrayIn)[arrayIn.length-1].nodeName != 'BR')) {
+            //     $('div.td-inputbox').append('<br>')
+            // }
             $(".td-inputbox").focus()
+            
+            core.sendToMain({"focus":""})
+
             console.log("insert input done")
         })
     })
@@ -2297,13 +2310,13 @@ $(document).ready(function () {
 
 
     $(document).on('keypress', function (event) {
-        // console.log("focus text")
+        // console.log("keypress",event )
         // if(document.activeElement == $(".td-inputbox").get(0)){
 
         // }else{
 
         // }
-        console.log('focus : ',$(document.activeElement).is(".td-inputbox"), ' key press : ', event.which, event.ctrlKey)
+        // console.log('focus : ',$(document.activeElement).is(".td-inputbox"), ' key press : ', event.which, event.ctrlKey)
         // $(".td-inputbox").focus()
 
         if ($(document.activeElement).is(".td-inputbox")) {
@@ -2313,6 +2326,7 @@ $(document).ready(function () {
                 $(debug_send_str).click()
                 return false
             }
+            // ctr+enter : newline
             if (event.ctrlKey && event.which == 10) {
                 arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
                 if(($(arrayIn)[arrayIn.length-1].nodeName != 'BR')) {
@@ -2320,11 +2334,41 @@ $(document).ready(function () {
                 }
                 pasteHtmlAtCaret("<br>", 'div.td-inputbox')
             }
+
+
         } else {
             // 闪烁
         }
 
 
+    })
+
+
+    $(document).keydown(function(event) {
+
+        // console.log("keydown",event )
+        if ($(document.activeElement).is(".td-inputbox")) {
+
+            // tab 只能激活keydown, 不能激活keypress
+            if( !event.ctrlKey &&  event.which == 9 ) {
+                // console.log("tab down")
+                // $('div.td-inputbox').append('&nbsp;')
+                event.preventDefault();
+                event.stopPropagation();
+                pasteHtmlAtCaret("\t", 'div.td-inputbox')
+            }
+
+        }
+
+
+        // ctr+tab 切换convo
+        // if( event.ctrlKey &&  event.which == 9 ) {
+        //     // console.log("tab down")
+        //     event.preventDefault();
+        //     event.stopPropagation();
+
+        //     // 
+        // }
     })
 
 

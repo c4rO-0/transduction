@@ -172,6 +172,8 @@ function respFuncMainReply(key, Obj) {
       } else if (Obj.action == 'delete') {
 
       }
+    } else if (key == 'focus') {
+      win.focus()
     }
   })])
 }
