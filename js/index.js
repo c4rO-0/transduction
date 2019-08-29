@@ -2046,7 +2046,15 @@ $(document).ready(function () {
         $('.td-dropFile').addClass('hide')
         event.preventDefault();
         processDataTransfer(event.originalEvent.dataTransfer).then(() => {
+
+            // arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
+            // if(($(arrayIn)[arrayIn.length-1].nodeName != 'BR')) {
+            //     $('div.td-inputbox').append('<br>')
+            // }
             $(".td-inputbox").focus()
+            
+            core.sendToMain({"focus":""})
+
             console.log("insert input done")
         })
     })
