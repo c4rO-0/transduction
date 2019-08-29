@@ -69,9 +69,6 @@ function modalImage(event) {
 
 
 
-
-
-
 $(document).ready(function () {
 
     const core = require("../js/core.js")
@@ -327,15 +324,20 @@ $(document).ready(function () {
                     : dialog["avatar"]
     
                 $(bubble).attr("msgID", dialog['msgID'])
-                $(bubble).find("div.td-chatAvatar img", avatarUrl)
+                $(bubble).find("div.td-chatAvatar img").attr('src', avatarUrl)
 
-            } 
+                $(bubble).find('> p.m-0').text(dialog["from"])
+                $(bubble).find('div.td-them p.m-0').text(time)
 
-            $(bubble).find('p.m-0').text(time)
+            }else{
+                $(bubble).find('p.m-0').text(time)
+            }
+
+            
             $(bubble).attr('msgTime', timeObj.getTime())
             $(bubble).attr('msgid',  dialog['msgID'])
 
-            console.log("create bubble from : ", dialog)
+            // console.log("create bubble from : ", dialog)
 
             return $(bubble)[0].outerHTML
 
@@ -389,7 +391,7 @@ $(document).ready(function () {
             </div >\
         <div class="col col-text flex-column justify-content-center">\
                 <div class="m-0 td-nickname">'+ convo.nickName + '</div>\
-                <div class="m-0 td-text">'+ convo.message + '</div>\
+                <div class="m-0 td-text">'+ core.htmlEntities(convo.message) + '</div>\
             </div>\
             <div class="col-auto pl-0 col-timestamp justify-content-around">\
                 '+ convo.time + '\
@@ -423,7 +425,7 @@ $(document).ready(function () {
         if (dialog['type'] == 'text') {
             content =
                 '<div class="td-chatText">'
-                + dialog['message'] +
+                + core.htmlEntities(dialog['message']) +
                 '</div>'
         } else if (dialog['type'] == 'img') {
             content =
@@ -1608,9 +1610,13 @@ $(document).ready(function () {
     function attachInputFile(webSelector, inputSelector, filePath) {
 
 
+        
 
         let wc = $(webSelector).get(0).getWebContents();
 
+        // wc.executeJavaScript('$("'+inputSelector+'").get(0).click(); console.log("click from index");', true);
+
+        // setTimeout(() => {
         console.log("---attachInputFile----")
         try {
             if (!wc.debugger.isAttached()) {
@@ -1619,7 +1625,6 @@ $(document).ready(function () {
         } catch (err) {
             console.error("Debugger attach failed : ", err);
         };
-
 
 
         wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
@@ -1641,6 +1646,8 @@ $(document).ready(function () {
             });
 
         });
+        // }, 3000);
+
 
     }
 

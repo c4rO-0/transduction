@@ -25,7 +25,8 @@
     "win": {
       "target": [
         "zip"
-      ]
+      ],
+      "icon": "res/pic/Tr.ico"
     }
   }
   

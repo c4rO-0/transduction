@@ -121,12 +121,26 @@ window.onload = function () {
 
         // bug : 如果时间是一年前, 没办法分辨
         let time = new Date()
-        if (timeStr.includes('-')) {
+
+        // console.log('date : ', timeStr)
+        if(timeStr.includes('昨天') || timeStr.includes('Yesterday')){
+            // console.log('date : ', '昨天')
+            time = new Date(
+                time.getFullYear()
+                + " " + (time.getMonth() + 1)
+                + "-" + time.getDate()
+                + " " + $(objBubble).find('span.chat-time').text().split(" ")[1]
+                + ':' + (indexBubble % 1000))
+            time = new Date( time.getTime() -24*60*60*1000)
+
+        }else if(timeStr.includes('-')) {
+            // console.log('date : ', '日期')
             time = new Date(
                 (new Date()).getFullYear()
                 + " " + $(objBubble).find('span.chat-time').text()
                 + ':' + (indexBubble % 1000))
         } else {
+            // console.log('date : ', '标准')
             time = new Date(
                 time.getFullYear()
                 + " " + (time.getMonth() + 1)
@@ -356,7 +370,7 @@ window.onload = function () {
         mutationList.forEach((mutation, index) => {
 
             mutation.addedNodes.forEach((node, index) => {
-                if ($(node).is('div.msg-box')) {
+                if ($(node).is('div.msg-box, div.msg-menu-box')) {
                     // console.log($(node))
                     addedNewBubble = addedNewBubble || true
 
@@ -369,7 +383,7 @@ window.onload = function () {
             setTimeout(() => {
                 // 获取内容
                 grepAndSendRight()
-            }, 500);
+            }, 30);
         }
     }
 
@@ -456,12 +470,137 @@ window.onload = function () {
 
                         obsRight.disconnect()
                         obsRight.observe($("div.msg-items")[0], {
-                            subtree: false, childList: true, characterData: false, attributes: false,
+                            subtree: true, childList: true, characterData: false, attributes: false,
                             attributeOldValue: false, characterDataOldValue: false
                         })
-                    }, 500);
+                    }, 30);
                 } else if (key == 'sendDialog') {
                     // 键入消息
+                    console.log("--------sendDialog---")
+                    // 检查
+                    if (!$("div.list-item.conv-item.context-menu[menu-data='" + arg[0] + "']").hasClass("active")) {
+
+                        reject("user not active")
+                        return
+                    }
+
+
+                    function send(arrayValue, index = 0) {
+
+                        console.log("index : ", index)
+                        if (index == arrayValue.length) {
+                            console.log("sendDialog finished")
+                            resolve("Dialog send")
+                            return
+                        }
+
+                        value = arrayValue[index]
+                        if (typeof (value) == 'string') {
+                            // console.log(value)
+                            console.log("---send : text---")
+                            $('div.msg-box > textarea').val(value)
+
+                            $('div.action-area > a').get(0).click()
+
+                            waitSend(arrayValue, index)
+
+                            // observer.disconnect()
+                            // });
+                            // obsSend.observe($('div.send-button-holder button')[0], {
+                            //     subtree: false, childList: false, characterData: false, attributes: true,
+                            //     attributeOldValue: false, characterDataOldValue: false
+                            // });
+
+                        } else {
+                            // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
+
+                                // console.log("click")
+                                // $('i[ng-click="upload.sendNormalFile()"]').get(0).click()
+                            let isClickSend = false
+                            let obsSendPic = new MutationObserver((mutationList, observer) => {
+                                console.log("body changed------")
+                                let objSendButton = $('div.file-area-box').closest('div.modal-content').find('div.foot button')
+                                let objFileSize = $('p.file-info-item')
+
+                                if($(objSendButton).length > 0){
+                                    if($(objFileSize).length > 0 && $(objFileSize).text() != ''){
+                                        console.log("点击发送...")
+                                        $(objSendButton).get(0).click()
+                                        isClickSend = true
+
+                                    }else{
+                                        // 重新发送
+                                        console.log("重新发送")
+                                        isClickSend = false
+                                        core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
+
+                                        })
+                                    }
+                                }
+
+                                if(isClickSend && $(objSendButton).length == 0){
+                                    // console.log("waitsend-----")
+                                    waitSend(arrayValue, index)
+                                    observer.disconnect()
+                                }
+                            })
+                            obsSendPic.observe($("body")[0], {
+                                // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                subtree: false, childList: true, characterData: false, attributes: false,
+                                attributeOldValue: false, characterDataOldValue: false
+                            });
+
+                            // setTimeout(() => {
+                            core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
+
+                            })
+                            // }, 5000);
+                            
+
+                        }
+
+                    }
+
+                    function waitSend(arrayValue, index) {
+                        // 等待发送完成
+                        let objSending = $('div[progress-bar]')
+
+                        if (($(objSending).length == 0 ||
+                            $(objSending).is(':hidden'))) {
+                            // 没有找到sending
+                            console.log("---next msg---")
+                            send(arrayValue, index + 1)
+                            return
+                        }
+
+                        let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
+
+
+                            let objSending = $('div[progress-bar]')
+                            if (($(objSending).length == 0 ||
+                                $(objSending).is(':hidden'))) {
+                                // 没有找到sending
+                                console.log("---next msg---")
+                                send(arrayValue, index + 1)
+                                observer.disconnect()
+                                return
+                            }
+
+                        })
+                        obsSwxUpdated.observe(document.getElementById('content-pannel'), {
+                            childList: true,
+                            subtree: true,
+                            characterData: true,
+                            characterDataOldValue: true,
+                            // attributeFilter: ["data-username"],
+                            attributes: true,
+                            attributeOldValue: false
+                        });
+
+                    }
+
+                    // 开始发送消息
+                    send(arg, 1)                    
                 } else if (key == 'queryLogStatus') {
                     console.log("resolve back")
                     resolve(logStatus)
