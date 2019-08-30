@@ -1739,7 +1739,7 @@ $(document).ready(function () {
         $(webTag2Selector(element.id.substring(6))).height("800px")
     })
     $('.modal').on('hidden.bs.modal', function (e) {
-        if(!element.matches('#modal-image')&&!element.matches('#modal-settings')){
+        if(!this.matches('#modal-image')&&!this.matches('#modal-settings')){
             $('>div.modal-dialog', this).removeClass('modal-xl')
         }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
