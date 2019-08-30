@@ -93,6 +93,8 @@ $(document).ready(function () {
     let debug_send_str = "#debug-send"
     let debug_latex_str = "#debug-latex2png"
     let debug_goBackChat_str = "#debug-goBackChat"
+    let classTactive = 'theme-transduction-active-tran'
+
 
     let sendingList = {};
 
@@ -2310,7 +2312,7 @@ $(document).ready(function () {
 
 
     $(document).on('keypress', function (event) {
-        // console.log("keypress",event )
+        console.log("keypress",event.which )
         // if(document.activeElement == $(".td-inputbox").get(0)){
 
         // }else{
@@ -2340,13 +2342,11 @@ $(document).ready(function () {
             // 闪烁
         }
 
-
     })
-
 
     $(document).keydown(function(event) {
 
-        // console.log("keydown",event )
+        console.log("keydown",event.which )
         if ($(document.activeElement).is(".td-inputbox")) {
 
             // tab 只能激活keydown, 不能激活keypress
@@ -2361,14 +2361,89 @@ $(document).ready(function () {
         }
 
 
-        // ctr+tab 切换convo
-        // if( event.ctrlKey &&  event.which == 9 ) {
-        //     // console.log("tab down")
-        //     event.preventDefault();
-        //     event.stopPropagation();
+        // ctrl+up/down 切换convo
+        if( event.ctrlKey &&  (event.which == 38 || event.which == 40)  ) {
+            // console.log("tab down")
+            event.preventDefault();
+            event.stopPropagation();
+            // 
+            // console.log("切换联系人")
+            let lengthConvo = $('.td-convo:visible').length
+            let classTactive = 'theme-transduction-active-tran'
+            let cStrSelector = '.'+classTactive
 
-        //     // 
-        // }
+            let convoSelector = '.td-convo:visible'
+
+            if(lengthConvo > 0 ){
+
+                let activePos = $(convoSelector).index($('.theme-transduction-active'))
+            
+                let TactivePos = $(convoSelector).index($(cStrSelector))
+
+                $(convoSelector).removeClass(classTactive)
+    
+                if( ( activePos ==-1 && TactivePos == -1) ){
+                    // 既没有active也没有临时(Tactive), Tactive放在第一位 
+                    // console.log("add tactive at 0")
+                    $(convoSelector).eq(0).addClass(classTactive)
+                }else if(lengthConvo > 1 && activePos > -1 && TactivePos == -1){
+                    // 有active, 没有Tactive : 根据方向键选择active的邻近一个
+                    if(event.which == 38){
+                        // up
+                        let nextP = core.periodicPos(activePos-1, lengthConvo)
+                        $(convoSelector).eq(nextP).addClass(classTactive)
+
+                    }else if(event.which == 40){
+                        // down
+                        let nextP = core.periodicPos(activePos+1, lengthConvo)
+                        $(convoSelector).eq(nextP).addClass(classTactive)                     
+                    }
+                }else if(lengthConvo > 1 && TactivePos > -1){
+                    if(event.which == 38){
+                        // up
+                        let nextP = core.periodicPos(TactivePos-1, lengthConvo)
+                        if(nextP == activePos){
+
+                        }else{
+                            $(convoSelector).eq(nextP).addClass(classTactive)
+                        }
+                        
+                    }else if(event.which == 40){
+                        // down
+                        let nextP = core.periodicPos(TactivePos+1, lengthConvo)
+                        if(nextP == activePos){
+
+                        }else{
+                            $(convoSelector).eq(nextP).addClass(classTactive)
+                        }                    
+                    }
+                }
+            }
+
+        }
+    })
+
+
+    $(document).keyup(function(event) {
+        // console.log("keyup",event.which )
+
+        if(event.which == 17){
+            // control 抬起
+
+            let cStrSelector = '.'+classTactive
+            let convoSelector = '.td-convo:visible'
+
+            if($(cStrSelector).length > 0){
+                // tacitve存在, 切换联系人
+                event.preventDefault();
+                event.stopPropagation();
+
+                let TactivePos = $(convoSelector).index($(cStrSelector))
+                $(convoSelector).removeClass(classTactive)
+                $(convoSelector).eq(TactivePos).get(0).click()
+            }
+        }
+
     })
 
 
