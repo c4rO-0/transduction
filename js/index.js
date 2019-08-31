@@ -1849,7 +1849,10 @@ $(document).ready(function () {
     $('#td-convo-container').on('click', 'div.td-convo', function () {
 
         // 先focus输入框
+        let inputHtml = $(".td-inputbox").html()
+        $(".td-inputbox").empty()
         $(".td-inputbox").focus()
+        $(".td-inputbox").append(inputHtml)
 
         // 识别webtag
         // console.log($(this).find("div.td-nickname").text())        
@@ -1944,6 +1947,8 @@ $(document).ready(function () {
                 $("#td-warning").remove()
             }, 5000);
         }
+
+        // $(".td-inputbox").focus()
 
     });
 
@@ -2312,7 +2317,7 @@ $(document).ready(function () {
 
 
     $(document).on('keypress', function (event) {
-        console.log("keypress",event.which )
+        // console.log("keypress",event.which )
         // if(document.activeElement == $(".td-inputbox").get(0)){
 
         // }else{
@@ -2346,7 +2351,7 @@ $(document).ready(function () {
 
     $(document).keydown(function(event) {
 
-        console.log("keydown",event.which )
+        // console.log("keydown",event.which )
         if ($(document.activeElement).is(".td-inputbox")) {
 
             // tab 只能激活keydown, 不能激活keypress
