@@ -99,7 +99,7 @@
             <div class="td-chat" winType="td-chat">
                 <img id="td-pin" src="../res/pic/pin.png">
                 <div class="td-chatLog" winType="chatLog" ondragstart="return false">
-                    <div class="td-none">
+                    <div class="td-">
                     <div class="td-bubble" msgid="bTextL">
                         <p class="m-0">猜猜我是谁</p>
                         <div class="td-them">
@@ -113,6 +113,9 @@
                     </div>
                     <div class="td-bubble" msgid="bTextR">
                         <div class="td-me">
+                            <div class="td-bubbleStatus td-none">
+                                <img src="../res/pic/bubble_sending.svg">
+                            </div>
                             <div class="td-chatText">木大木大<!-- 木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大木大 --></div>
                             <!-- <div class="td-chatAvatar"> -->
                             <p class="m-0">06:23</p>
@@ -135,6 +138,9 @@
                     </div>
                     <div class="td-bubble" msgid="bUrlR">
                         <div class="td-me">
+                            <div class="td-bubbleStatus td-none">
+                                <img src="../res/pic/bubble_sending.svg">
+                            </div>
                             <div class="td-chatText">
                                 <a href="https://www.bilibili.com">https://www.bilibili.com</a>
                                 <!-- p用来添加提示 : 链接在浏览器里打开 -->
@@ -159,6 +165,9 @@
                     </div>
                     <div class="td-bubble" msgid="bUnknownR">
                         <div class="td-me">
+                            <div class="td-bubbleStatus td-none">
+                                <img src="../res/pic/bubble_sending.svg">
+                            </div>
                             <div class="td-chatText">
                                 <span class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</span>
                                 <p style="margin:0;">奥拉奥拉</p>
@@ -185,6 +194,9 @@
                     </div>
                     <div class="td-bubble" msgid="bFSendR">
                         <div class="td-me">
+                            <div class="td-bubbleStatus td-none">
+                                <img src="../res/pic/bubble_sending.svg">
+                            </div>
                             <div class="td-chatText">
                                 <span class="badge badge-pill badge-light py-0 mt-1">
                                     <img src="../res/pic/ffsend.logo.svg" height="15px">
@@ -221,6 +233,9 @@
                     </div>
                     <div class="td-bubble" msgid="bFileR">
                         <div class="td-me">
+                            <div class="td-bubbleStatus td-none">
+                                <img src="../res/pic/bubble_sending.svg">
+                            </div>
                             <div class="td-chatText">
                                 <div style="display: flex; flex-direction: row;">
                                     <img src="../res/pic/document.svg" height="56px">
@@ -252,6 +267,9 @@
                     </div>
                     <div class="td-bubble" msgid="bImgR">
                         <div class="td-me">
+                            <div class="td-bubbleStatus td-none">
+                                <img src="../res/pic/bubble_sending.svg">
+                            </div>
                             <div class="td-chatImg">
                                 <img src="../graphic/design_right_side.png" onclick="modalImage(event)"></img>
                                 <p style="margin:0;"></p>
@@ -259,7 +277,7 @@
                             <p class="m-0">05:45</p>
                         </div>
                     </div>
-                    <div class="td-" id="td-sending">
+                    <div class="td-" id="td-sending td-none">
                             Sending...
                     </div>
                     </div>

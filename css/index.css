@@ -270,6 +270,26 @@ webview {
     min-height: 4rem;
     align-self: flex-end;
     display: flex;
+    position: relative;
+}
+
+.td-me .td-bubbleStatus {
+    height: 2rem;
+    width: 2rem;
+    position: absolute;
+    left: -1.8rem;
+    bottom: -0.55rem;
+}
+
+.td-bubbleStatus.bubbleError {
+    height: 2rem;
+    width: 2rem;
+    background-image: url('../res/pic/bubble_error.svg');
+    position: absolute;
+    left: -1.8rem;
+    bottom: -0.55rem;
+    box-sizing: border-box;
+    padding-left: 2rem;
 }
 
 .td-me>p {
