@@ -446,6 +446,10 @@ webview {
     /* background-color: #91ed61; */
 }
 
+.theme-dingtalk {
+    background-color: #008cee;
+}
+
 #td-right, .td-toolbox {
     border-left: 1px solid #c0c0c0;
 }
