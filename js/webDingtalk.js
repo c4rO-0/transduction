@@ -153,7 +153,7 @@ window.onload = function () {
         let MSGID = undefined
         if (indexBubble > 0) {
             MSGID = $(objBubble).find('div.chat-item').attr('msg-id')
-            console.log("debug : MSGID.length ", MSGID.length)
+            // console.log("debug : MSGID.length ", MSGID.length)
             if(MSGID.length == 16){
                 return undefined
             }
@@ -509,7 +509,7 @@ window.onload = function () {
 
                             $('div.action-area > a').get(0).click()
 
-                            waitSend(arrayValue, index)
+                            // waitSend(arrayValue, index)
 
                             // observer.disconnect()
                             // });
@@ -517,6 +517,7 @@ window.onload = function () {
                             //     subtree: false, childList: false, characterData: false, attributes: true,
                             //     attributeOldValue: false, characterDataOldValue: false
                             // });
+                            send(arrayValue, index + 1)
 
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
@@ -537,17 +538,19 @@ window.onload = function () {
 
                                     }else{
                                         // 重新发送
-                                        console.log("重新发送")
-                                        isClickSend = false
-                                        core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
+                                        // console.log("重新发送")
+                                        // isClickSend = false
+                                        // core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
 
-                                        })
+                                        // })
+                                        console.log("发送失败")
                                     }
                                 }
 
                                 if(isClickSend && $(objSendButton).length == 0){
                                     // console.log("waitsend-----")
-                                    waitSend(arrayValue, index)
+                                    // waitSend(arrayValue, index)
+                                    send(arrayValue, index + 1)
                                     observer.disconnect()
                                 }
                             })
@@ -569,6 +572,7 @@ window.onload = function () {
                     }
 
                     function waitSend(arrayValue, index) {
+
                         // 等待发送完成
                         let objSending = $('div[progress-bar]')
 

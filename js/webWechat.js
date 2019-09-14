@@ -729,7 +729,10 @@ window.onload = function () {
                             angular.element('pre:last').scope().sendTextMessage();
 
                             console.log("---text---")
-                            waitSend(arrayValue, index)
+                            // waitSend(arrayValue, index)
+                            // send(arrayValue, index + 1)
+
+                            send(arrayValue, index + 1)
 
                             // observer.disconnect()
                             // });
@@ -740,11 +743,15 @@ window.onload = function () {
 
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
-                            $('input.webuploader-element-invisible').click()
+                            // $('input.webuploader-element-invisible').click()
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
-                                console.log("---file---")
-                                waitSend(arrayValue, index)
+                                console.log("---file---", value)
+                                // waitSend(arrayValue, index)
+
+                                send(arrayValue, index + 1)
+
                             })
+                            
                         }
 
                     }
@@ -760,6 +767,7 @@ window.onload = function () {
                                 if (addedNodes && $(addedNodes[0]).attr("ng-repeat") && $(addedNodes[0]).attr("ng-repeat") == "message in chatContent") {
                                     console.log('---addedNodes----')
                                     observer.disconnect()
+                                                              
                                     let lastObj = $("div[ng-switch-default].me")
                                         .last().find("div.bubble")
                                     console.log("last me : ", $(lastObj).attr("class"), $(lastObj).attr("data-cm"))
