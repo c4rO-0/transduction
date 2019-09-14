@@ -1360,16 +1360,23 @@ $(document).ready(function () {
                     item.localSave().then(() => {
                         console.log("debug : path : ", item.path, "-----------------------------------")
                         fileList[item.fileID] = item
-                        if (pasteHtmlAtCaret(
-                            "<img data-file-ID='"
-                            + item.fileID
-                            + "' contenteditable=false src='"
-                            + item.path
-                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
-                            resolve("")
-                        } else {
-                            reject("error : itemToHTML : pasteHtmlAtCaret")
-                        }
+
+                        sendInput("<img data-file-ID='"
+                        + item.fileID
+                        + "' contenteditable=false src='"
+                        + item.path
+                        + "' height='" + newSize.height + "' width='" + newSize.width + "' >")
+
+                        // if (pasteHtmlAtCaret(
+                        //     "<img data-file-ID='"
+                        //     + item.fileID
+                        //     + "' contenteditable=false src='"
+                        //     + item.path
+                        //     + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
+                        //     resolve("")
+                        // } else {
+                        //     reject("error : itemToHTML : pasteHtmlAtCaret")
+                        // }
                     }).catch((err) => {
                         console.log("error : itemToHTML : localSave ")
                         console.log(err)
@@ -1542,6 +1549,36 @@ $(document).ready(function () {
         return arraySimpleInput
     }
 
+    /**
+     * 从给定的html中直接拿到sending
+     * @param {String} innerHTML 
+     * @returns {Array} 以数组形式储存, 只含有string和File. 
+     */
+    function getInputFromHtml(innerHTML) {
+        let arrayInput = simpleInput(innerHTML)
+        let arraySimpleInput = new Array()
+
+
+        let fileIndex = -1
+        let strInput = ''
+        arrayInput.forEach((value, index) => {
+            // console.log(index, typeof (value), '----')
+            // console.log(value)
+            if (typeof (value) != 'string') {
+                strInput = arrayInput.slice(fileIndex + 1, index).join('\n')
+                if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+                arraySimpleInput.push(value)
+                fileIndex = index
+            }
+        })
+
+        strInput = arrayInput.slice(fileIndex + 1).join('\n')
+        if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+        return arraySimpleInput
+    }    
+
 
     /**
      * chrome debugger for key : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
@@ -1671,6 +1708,87 @@ $(document).ready(function () {
 
 
 
+
+    /**
+     * 获取发送内容, 并发送
+     * 如果给fromHtml, 那就从fromHtml中抓取消息发送
+     * @param {String} fromHtml 
+     */
+    function sendInput(fromHtml = undefined){
+
+        
+        // 获取appname
+        let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+        let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
+
+
+        if (userID && webTag) {
+            let arraySend = undefined
+            if(fromHtml == undefined){
+                arraySend = getInput('div.td-inputbox')
+            }else{
+                arraySend = getInputFromHtml(fromHtml)
+            }
+            
+            // 清理消息
+            $("div.td-inputbox").empty()
+            // console.log('-----send-----')
+            if (arraySend.length > 0) {
+
+                if (sendingList[webTag + ':' + userID]) {
+
+                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] + 1
+                } else {
+                    sendingList[webTag + ':' + userID] = 1
+                }
+                // console.log("sending num : ", sendingList[webTag+':'+userID])
+
+                // 添加send
+                if ($("#td-sending").length == 0) {
+                    console.log("attach sending-----")
+                    $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
+                }
+
+                arraySend.unshift(userID)
+                // $(webTag2Selector(webTag)).focus()
+                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
+
+                    console.log("send finished. ", sendingList[webTag + ':' + userID], ' messages sending')
+                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] - 1
+                    if (sendingList[webTag + ':' + userID] <= 0) {
+                        $("#td-sending").remove()
+                    }
+                    // 索取新的dialog
+                    core.HostSendToWeb(
+                        webTag2Selector(webTag),
+                        { "queryDialog": { "userID": userID } }
+                    ).then((res) => {
+                        console.log("queryDialog : webReply : ", res)
+
+                    }).catch((error) => {
+                        throw error
+                    })
+
+                    //删除File list
+                    arraySend.forEach((value, index) => {
+                        console.log(index, typeof (value))
+                        if (typeof (value) != 'string') {
+                            console.log("file : ", value.fileID)
+                            fileList[value.fileID].clear()
+                            delete fileList[value.fileID]
+                        }
+                    })
+
+                }).catch((err) => {
+                    console.log("send failed", err)
+
+                    // $("#td-sending").remove()                    
+                })
+            }
+        }
+
+
+    }
 
     // =============================程序主体=============================
 
@@ -2097,74 +2215,11 @@ $(document).ready(function () {
         })
     });
 
+
     // ===========================发送消息===========================
     $(debug_send_str).on('click', event => {
 
-        // 获取appname
-        let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
-        let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
-
-
-        if (userID && webTag) {
-            let arraySend = getInput('div.td-inputbox')
-            // 清理消息
-            $("div.td-inputbox").empty()
-            // console.log('-----send-----')
-            if (arraySend.length > 0) {
-
-                if (sendingList[webTag + ':' + userID]) {
-
-                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] + 1
-                } else {
-                    sendingList[webTag + ':' + userID] = 1
-                }
-                // console.log("sending num : ", sendingList[webTag+':'+userID])
-
-                // 添加send
-                if ($("#td-sending").length == 0) {
-                    console.log("attach sending-----")
-                    $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
-                }
-
-                arraySend.unshift(userID)
-                // $(webTag2Selector(webTag)).focus()
-                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
-
-                    console.log("send finished. ", sendingList[webTag + ':' + userID], ' messages sending')
-                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] - 1
-                    if (sendingList[webTag + ':' + userID] <= 0) {
-                        $("#td-sending").remove()
-                    }
-                    // 索取新的dialog
-                    core.HostSendToWeb(
-                        webTag2Selector(webTag),
-                        { "queryDialog": { "userID": userID } }
-                    ).then((res) => {
-                        console.log("queryDialog : webReply : ", res)
-
-                    }).catch((error) => {
-                        throw error
-                    })
-
-                    //删除File list
-                    arraySend.forEach((value, index) => {
-                        console.log(index, typeof (value))
-                        if (typeof (value) != 'string') {
-                            console.log("file : ", value.fileID)
-                            fileList[value.fileID].clear()
-                            delete fileList[value.fileID]
-                        }
-                    })
-
-                }).catch((err) => {
-                    console.log("send failed", err)
-
-                    // $("#td-sending").remove()                    
-                })
-            }
-        }
-
-
+        sendInput()
         // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
         // console.log(fileList)
     })
