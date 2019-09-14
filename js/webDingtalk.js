@@ -153,6 +153,10 @@ window.onload = function () {
         let MSGID = undefined
         if (indexBubble > 0) {
             MSGID = $(objBubble).find('div.chat-item').attr('msg-id')
+            console.log("debug : MSGID.length ", MSGID.length)
+            if(MSGID.length == 16){
+                return undefined
+            }
         }
 
 
@@ -278,7 +282,10 @@ window.onload = function () {
                     //  第一个bubble去掉, 里面没有内容
 
                     let bubble = grepBubble(element, index)
-                    bubbleList.push(bubble)
+                    if(bubble != undefined){
+                        bubbleList.push(bubble)
+                    }
+                    
                 }
             })
 
