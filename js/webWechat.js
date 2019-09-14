@@ -124,7 +124,7 @@ window.onload = function () {
                     } else {
                         content = content + "[image]"
                     }
-                }else if(nodeName == "BR"){
+                } else if (nodeName == "BR") {
                     content = content + '\n'
                 }
 
@@ -187,8 +187,8 @@ window.onload = function () {
             //     }
             // }
             let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-            + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-            + "&skey=" + skey
+                + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+                + "&skey=" + skey
             // console.log(imgUrl)
             content = imgUrl
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
@@ -224,6 +224,25 @@ window.onload = function () {
 
         // console.log(remarkName, MSGID, type, content, time)
         // console.log(content)
+
+        // 获取状态
+        let status = undefined
+
+
+        if ($(MSGObj).length > 0) {
+
+            if (($(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").length > 0 && $(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").is(':visible'))
+                || ($(MSGObj).find("[ng-click='cancelUploadFile(message)']").length > 0 && $(MSGObj).find("[ng-click='cancelUploadFile(message)']").is(':visible')) ) {
+                status = 'sending'
+            }else if ( ($(MSGObj).find(".ico_fail.web_wechat_message_fail").length > 0 && $(MSGObj).find(".ico_fail.web_wechat_message_fail").is(':visible'))
+            || ($(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").length > 0 && $(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").is(':visible')) ) {
+                status = 'failed'
+            } else {
+                status = 'done'
+            }
+        }
+
+
         return {
             "from": MSG["FromUserName"] == meinUsername ? undefined : (remarkName == '' ? nickName : remarkName),
             "msgID": MSGID,
@@ -232,7 +251,8 @@ window.onload = function () {
             "message": content,
             "avatar": avatar,
             "fileName": fileName,
-            "fileSize": fileSize
+            "fileSize": fileSize,
+            "status": status
         }
 
 
@@ -413,10 +433,10 @@ window.onload = function () {
                 // 发送中
                 let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
                     .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif'], [ng-click='cancelUploadFile(message)']")
-                if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0 &&
-                    ($(objSending).length == 0 ||
-                        $(objSending).is(':hidden'))) {
-
+                // if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0 &&
+                //     ($(objSending).length == 0 ||
+                //         $(objSending).is(':hidden'))) {
+                if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
                     let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
                     MSGList.push(MSG)
                 }
@@ -679,7 +699,7 @@ window.onload = function () {
                     $("div.ng-scope div [data-username='" + ID + "']").click();
 
                     resolve("request received. MSG will send.")
-                    
+
                     obsRight.disconnect()
                     obsRight.observe($("div[mm-repeat='message in chatContent']")[0], {
                         subtree: false, childList: true, characterData: false, attributes: false,
@@ -751,7 +771,7 @@ window.onload = function () {
                                 send(arrayValue, index + 1)
 
                             })
-                            
+
                         }
 
                     }
@@ -767,7 +787,7 @@ window.onload = function () {
                                 if (addedNodes && $(addedNodes[0]).attr("ng-repeat") && $(addedNodes[0]).attr("ng-repeat") == "message in chatContent") {
                                     console.log('---addedNodes----')
                                     observer.disconnect()
-                                                              
+
                                     let lastObj = $("div[ng-switch-default].me")
                                         .last().find("div.bubble")
                                     console.log("last me : ", $(lastObj).attr("class"), $(lastObj).attr("data-cm"))
@@ -793,10 +813,10 @@ window.onload = function () {
 
                                         obsFinished.observe($("div[ng-switch-default].me")
                                             .last().find("div.bubble_cont.ng-scope")[0], {
-                                                // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
-                                                subtree: true, childList: true, characterData: true, attributes: true,
-                                                attributeOldValue: false, characterDataOldValue: false
-                                            });
+                                            // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                            subtree: true, childList: true, characterData: true, attributes: true,
+                                            attributeOldValue: false, characterDataOldValue: false
+                                        });
                                     }
 
 
