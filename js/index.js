@@ -96,8 +96,6 @@ $(document).ready(function () {
     let classTactive = 'theme-transduction-active-tran'
 
 
-    let sendingList = {};
-
     let tdPinCoord = undefined
     let tdSettings = undefined
 
@@ -1360,16 +1358,23 @@ $(document).ready(function () {
                     item.localSave().then(() => {
                         console.log("debug : path : ", item.path, "-----------------------------------")
                         fileList[item.fileID] = item
-                        if (pasteHtmlAtCaret(
-                            "<img data-file-ID='"
-                            + item.fileID
-                            + "' contenteditable=false src='"
-                            + item.path
-                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
-                            resolve("")
-                        } else {
-                            reject("error : itemToHTML : pasteHtmlAtCaret")
-                        }
+
+                        sendInput("<img data-file-ID='"
+                        + item.fileID
+                        + "' contenteditable=false src='"
+                        + item.path
+                        + "' height='" + newSize.height + "' width='" + newSize.width + "' >")
+
+                        // if (pasteHtmlAtCaret(
+                        //     "<img data-file-ID='"
+                        //     + item.fileID
+                        //     + "' contenteditable=false src='"
+                        //     + item.path
+                        //     + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
+                        //     resolve("")
+                        // } else {
+                        //     reject("error : itemToHTML : pasteHtmlAtCaret")
+                        // }
                     }).catch((err) => {
                         console.log("error : itemToHTML : localSave ")
                         console.log(err)
@@ -1542,6 +1547,36 @@ $(document).ready(function () {
         return arraySimpleInput
     }
 
+    /**
+     * 从给定的html中直接拿到sending
+     * @param {String} innerHTML 
+     * @returns {Array} 以数组形式储存, 只含有string和File. 
+     */
+    function getInputFromHtml(innerHTML) {
+        let arrayInput = simpleInput(innerHTML)
+        let arraySimpleInput = new Array()
+
+
+        let fileIndex = -1
+        let strInput = ''
+        arrayInput.forEach((value, index) => {
+            // console.log(index, typeof (value), '----')
+            // console.log(value)
+            if (typeof (value) != 'string') {
+                strInput = arrayInput.slice(fileIndex + 1, index).join('\n')
+                if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+                arraySimpleInput.push(value)
+                fileIndex = index
+            }
+        })
+
+        strInput = arrayInput.slice(fileIndex + 1).join('\n')
+        if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+        return arraySimpleInput
+    }    
+
 
     /**
      * chrome debugger for key : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
@@ -1672,6 +1707,68 @@ $(document).ready(function () {
 
 
 
+    /**
+     * 获取发送内容, 并发送
+     * 如果给fromHtml, 那就从fromHtml中抓取消息发送
+     * @param {String} fromHtml 
+     */
+    function sendInput(fromHtml = undefined){
+
+        
+        // 获取appname
+        let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+        let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
+
+
+        if (userID && webTag) {
+            let arraySend = undefined
+            if(fromHtml == undefined){
+                arraySend = getInput('div.td-inputbox')
+            }else{
+                arraySend = getInputFromHtml(fromHtml)
+            }
+            
+            // 清理消息
+            $("div.td-inputbox").empty()
+            // console.log('-----send-----')
+            if (arraySend.length > 0) {
+
+                arraySend.unshift(userID)
+                // $(webTag2Selector(webTag)).focus()
+                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
+
+                    // 索取新的dialog
+                    core.HostSendToWeb(
+                        webTag2Selector(webTag),
+                        { "queryDialog": { "userID": userID } }
+                    ).then((res) => {
+                        console.log("queryDialog : webReply : ", res)
+
+                    }).catch((error) => {
+                        throw error
+                    })
+
+                    //删除File list
+                    // arraySend.forEach((value, index) => {
+                    //     console.log(index, typeof (value))
+                    //     if (typeof (value) != 'string') {
+                    //         console.log("file : ", value.fileID)
+                    //         fileList[value.fileID].clear()
+                    //         delete fileList[value.fileID]
+                    //     }
+                    // })
+
+                }).catch((err) => {
+                    console.log("send failed", err)
+
+                    // $("#td-sending").remove()                    
+                })
+            }
+        }
+
+
+    }
+
     // =============================程序主体=============================
 
 
@@ -1758,49 +1855,18 @@ $(document).ready(function () {
     $('.td-app-status img[class]').on('click', function () {
         let webTag = this.id.substring(4)
 
-        let sendingUserID = undefined
-        // 正在发消息不能打开后台
-        for (let key in sendingList) {
-            if (key.startsWith(webTag + ':') && sendingList[key] > 0) {
-                sendingUserID = key.substr((webTag + ':').length)
-            }
+        let webTagSelector = '#modal-' + webTag
+        $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+        $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+
+        if (this.matches('.app-offline')) {
+            $(webTagSelector).modal('show')
+        }
+        if (this.matches('.app-online')) {
+            $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
+            $(webTagSelector).modal('show')
         }
 
-
-        if (sendingUserID === undefined) {
-            let webTagSelector = '#modal-' + webTag
-            $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
-            $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
-
-            if (this.matches('.app-offline')) {
-                $(webTagSelector).modal('show')
-            }
-            if (this.matches('.app-online')) {
-                $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
-                $(webTagSelector).modal('show')
-            }
-        } else {
-            console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
-            $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
-                $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text() + '...</div>')
-
-            setTimeout(() => {
-                $("#td-warning").remove()
-            }, 5000);
-            setTimeout(() => {
-                let webTagSelector = '#modal-' + webTag
-                $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
-                $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
-
-                if (this.matches('.app-offline')) {
-                    $(webTagSelector).modal('show')
-                }
-                if (this.matches('.app-online')) {
-                    $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
-                    $(webTagSelector).modal('show')
-                }
-            }, 2000);
-        }
 
     })
 
@@ -1860,93 +1926,72 @@ $(document).ready(function () {
         let userID = $(this).attr("data-user-i-d")
         let nickName = $(this).find("div.td-nickname").text()
 
-        let sendingUserID = undefined
-        // 该webtag下, 有个不是当前点击的userID在发送文件, 则不允许点击
-        // 比如微信正在给a发送消息, 那么可以点击skype下任意用户, 但是微信只允许点击a用户.
-        // 点击其他用户会把后台正在等待发消息的函数给停掉.
-        for (let key in sendingList) {
-            if (key.startsWith(webTag + ':') && key != webTag + ':' + userID && sendingList[key] > 0) {
-                sendingUserID = key.substr((webTag + ':').length)
-            }
+
+        $('#td-convo-container div.td-convo').removeClass('theme-transduction-active')
+        $(this).addClass('theme-transduction-active')
+
+
+        if (webTag == undefined || userID == undefined) {
+            console.log("error : click obj error.")
+            console.log("obj : ", this)
+            console.log("userID : ", userID)
+            return
         }
 
-        if (sendingUserID === undefined) {
-            $('#td-convo-container div.td-convo').removeClass('theme-transduction-active')
-            $(this).addClass('theme-transduction-active')
+        // 加载dialog(当前可能显示的是extension)
+        $(debug_goBackChat_str).click()
+        // 滑动条拖到最后
+        let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+        $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
 
-            if (webTag == undefined || userID == undefined) {
-                console.log("error : click obj error.")
-                console.log("obj : ", this)
-                console.log("userID : ", userID)
-                return
-            }
+        // $(webTag2Selector(webTag)).focus()
+        if (
+            $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
+            && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
+            && $("#td-right div.td-chat-title h2").text() == nickName
+        ) {
+            // 当前聊天内容不需要清空, 只需要补充
+            core.HostSendToWeb(
+                webTag2Selector(webTag),
+                { "queryDialog": { "userID": userID } }
+            ).then((res) => {
+                console.log("queryDialog : webReply : ", res)
 
-            // 加载dialog(当前可能显示的是extension)
-            $(debug_goBackChat_str).click()
-            // 滑动条拖到最后
-            let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
-            $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+            }).catch((error) => {
+                throw error
+            })
 
-
-            // $(webTag2Selector(webTag)).focus()
-            if (
-                $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
-                && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
-                && $("#td-right div.td-chat-title h2").text() == nickName
-            ) {
-                // 当前聊天内容不需要清空, 只需要补充
-                core.HostSendToWeb(
-                    webTag2Selector(webTag),
-                    { "queryDialog": { "userID": userID } }
-                ).then((res) => {
-                    console.log("queryDialog : webReply : ", res)
-
-                }).catch((error) => {
-                    throw error
-                })
-
-            } else {
-                // ---------右侧标题-----------
-                $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
-                $("#td-right div.td-chat-title").attr("data-app-name", webTag)
-                $("#td-right div.td-chat-title h2").text(nickName)
-                $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
-                $("#td-right div.td-chatLog[wintype='chatLog']").empty()
-
-
-                // $(webTag2Selector(webTag)).focus()
-                core.HostSendToWeb(
-                    webTag2Selector(webTag),
-                    { "queryDialog": { "userID": userID } }
-                ).then((res) => {
-                    console.log("queryDialog : webReply : ", res)
-
-                    // setTimeout(() => {
-                    //     console.log('bluring outtttttttttttttttttttttttt')
-                    //     $(webTag2Selector(webTag)).blur()
-                    // }, 1300)
-                    // console.log('focusing innnnnnnnnnnn')
-                    // $(webTag2Selector(webTag)).focus()
-
-
-                }).catch((error) => {
-                    throw error
-                })
-            }
-            // $(webTag2Selector(webTag)).focus()
-            // 判断sending条
-            if (sendingList[webTag + ':' + userID] && sendingList[webTag + ':' + userID] > 0) {
-                $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
-            }
         } else {
-            console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
-            $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
-                $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text() + '...</div>')
-            setTimeout(() => {
-                $("#td-warning").remove()
-            }, 5000);
+            // ---------右侧标题-----------
+            $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
+            $("#td-right div.td-chat-title").attr("data-app-name", webTag)
+            $("#td-right div.td-chat-title h2").text(nickName)
+            $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
+            $("#td-right div.td-chatLog[wintype='chatLog']").empty()
+
+
+            // $(webTag2Selector(webTag)).focus()
+            core.HostSendToWeb(
+                webTag2Selector(webTag),
+                { "queryDialog": { "userID": userID } }
+            ).then((res) => {
+                console.log("queryDialog : webReply : ", res)
+
+                // setTimeout(() => {
+                //     console.log('bluring outtttttttttttttttttttttttt')
+                //     $(webTag2Selector(webTag)).blur()
+                // }, 1300)
+                // console.log('focusing innnnnnnnnnnn')
+                // $(webTag2Selector(webTag)).focus()
+
+
+            }).catch((error) => {
+                throw error
+            })
         }
+        // $(webTag2Selector(webTag)).focus()
+        
 
         // $(".td-inputbox").focus()
 
@@ -2097,74 +2142,11 @@ $(document).ready(function () {
         })
     });
 
+
     // ===========================发送消息===========================
     $(debug_send_str).on('click', event => {
 
-        // 获取appname
-        let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
-        let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
-
-
-        if (userID && webTag) {
-            let arraySend = getInput('div.td-inputbox')
-            // 清理消息
-            $("div.td-inputbox").empty()
-            // console.log('-----send-----')
-            if (arraySend.length > 0) {
-
-                if (sendingList[webTag + ':' + userID]) {
-
-                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] + 1
-                } else {
-                    sendingList[webTag + ':' + userID] = 1
-                }
-                // console.log("sending num : ", sendingList[webTag+':'+userID])
-
-                // 添加send
-                if ($("#td-sending").length == 0) {
-                    console.log("attach sending-----")
-                    $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
-                }
-
-                arraySend.unshift(userID)
-                // $(webTag2Selector(webTag)).focus()
-                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
-
-                    console.log("send finished. ", sendingList[webTag + ':' + userID], ' messages sending')
-                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] - 1
-                    if (sendingList[webTag + ':' + userID] <= 0) {
-                        $("#td-sending").remove()
-                    }
-                    // 索取新的dialog
-                    core.HostSendToWeb(
-                        webTag2Selector(webTag),
-                        { "queryDialog": { "userID": userID } }
-                    ).then((res) => {
-                        console.log("queryDialog : webReply : ", res)
-
-                    }).catch((error) => {
-                        throw error
-                    })
-
-                    //删除File list
-                    arraySend.forEach((value, index) => {
-                        console.log(index, typeof (value))
-                        if (typeof (value) != 'string') {
-                            console.log("file : ", value.fileID)
-                            fileList[value.fileID].clear()
-                            delete fileList[value.fileID]
-                        }
-                    })
-
-                }).catch((err) => {
-                    console.log("send failed", err)
-
-                    // $("#td-sending").remove()                    
-                })
-            }
-        }
-
-
+        sendInput()
         // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
         // console.log(fileList)
     })
