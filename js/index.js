@@ -323,7 +323,6 @@ $(document).ready(function () {
                 div.td-avatar").css('background-image').slice(5, -2)
                     : dialog["avatar"]
 
-                $(bubble).attr("msgID", dialog['msgID'])
                 $(bubble).find("div.td-chatAvatar img").attr('src', avatarUrl)
 
                 $(bubble).find('> p.m-0').text(dialog["from"])
@@ -331,6 +330,15 @@ $(document).ready(function () {
 
             } else {
                 $(bubble).find('p.m-0').text(time)
+
+                if(dialog["status"] == "done"){
+                    
+                }else if(dialog["status"] == "sending"){
+                    $(bubble).find('.td-bubbleStatus').removeClass('td-none')
+                }else if(dialog["status"] == "failed"){
+                    $(bubble).find('.td-bubbleStatus').removeClass('td-none')
+                    $(bubble).find('.td-bubbleStatus').addClass('bubbleError')
+                }
             }
 
 
@@ -629,7 +637,6 @@ $(document).ready(function () {
                     })
 
                     // 滑动到最下面
-                    $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
                     atBottom = true
                 } else {
 
@@ -733,13 +740,13 @@ $(document).ready(function () {
                     $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
                     // 取消unread
-                    console.log('focusing innnnnnnnnnnn')
-                    // $(webTag2Selector(webTag)).focus()
-                    console.log(document.activeElement)
+                    // console.log('focusing innnnnnnnnnnn')
+                    // // $(webTag2Selector(webTag)).focus()
+                    // console.log(document.activeElement)
 
-                    console.log('bluring outttttttttttttttttttt')
-                    $(webTag2Selector(webTag)).blur()
-                    console.log(document.activeElement)
+                    // console.log('bluring outttttttttttttttttttt')
+                    // $(webTag2Selector(webTag)).blur()
+                    // console.log(document.activeElement)
                 } else {
 
                     console.log("dialog updated. new bubble(s) not display...")

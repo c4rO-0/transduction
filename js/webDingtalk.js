@@ -209,11 +209,16 @@ window.onload = function () {
             // 图片内容
             type = 'img'
             let fullImgUrl = $(objContent).find('img.chat-img').attr('src')
-            if(fullImgUrl == undefined || fullImgUrl.includes('img/filelogo/pic.p')){
+            if(fullImgUrl == undefined ){
                 content = ''
             }else{
-                content = fullImgUrl.slice(0, fullImgUrl.indexOf('?'))
-                content = content.slice(0, content.lastIndexOf('_'))
+                if(fullImgUrl.includes('img/filelogo/pic.p') || fullImgUrl.indexOf('?') <0 || fullImgUrl.lastIndexOf('_') < 0 ){
+                    content = fullImgUrl
+                }else{
+                    content = fullImgUrl.slice(0, fullImgUrl.indexOf('?'))
+                    content = content.slice(0, content.lastIndexOf('_'))
+                }
+
             }
 
         } else if (typeStr == 'msg-img-text') {
