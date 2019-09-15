@@ -232,10 +232,10 @@ window.onload = function () {
         if ($(MSGObj).length > 0) {
 
             if (($(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").length > 0 && $(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").is(':visible'))
-                || ($(MSGObj).find("[ng-click='cancelUploadFile(message)']").length > 0 && $(MSGObj).find("[ng-click='cancelUploadFile(message)']").is(':visible')) ) {
+                || ($(MSGObj).find("[ng-click='cancelUploadFile(message)']").length > 0 && $(MSGObj).find("[ng-click='cancelUploadFile(message)']").is(':visible'))) {
                 status = 'sending'
-            }else if ( ($(MSGObj).find(".ico_fail.web_wechat_message_fail").length > 0 && $(MSGObj).find(".ico_fail.web_wechat_message_fail").is(':visible'))
-            || ($(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").length > 0 && $(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").is(':visible')) ) {
+            } else if (($(MSGObj).find(".ico_fail.web_wechat_message_fail").length > 0 && $(MSGObj).find(".ico_fail.web_wechat_message_fail").is(':visible'))
+                || ($(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").length > 0 && $(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").is(':visible'))) {
                 status = 'failed'
             } else {
                 status = 'done'
@@ -420,7 +420,7 @@ window.onload = function () {
 
     }
 
-    function grepAndSendRight() {
+    function grepAndSendRight(MSGID = undefined) {
         if ($('div.chat_item.slide-left.active').length > 0) {
             let ID = $('div.chat_item.slide-left.active').attr('data-username')
 
@@ -436,10 +436,19 @@ window.onload = function () {
                 // if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0 &&
                 //     ($(objSending).length == 0 ||
                 //         $(objSending).is(':hidden'))) {
-                if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
-                    let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
-                    MSGList.push(MSG)
+                if (MSGID == undefined) {
+                    if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
+                        let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
+                        MSGList.push(MSG)
+                    }
+                } else {
+                    if ((objSlide[indexMSG])["MsgId"] == MSGID &&
+                        $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
+                        let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
+                        MSGList.push(MSG)
+                    }
                 }
+
 
             }
             if (MSGList.length > 0) {
@@ -479,11 +488,67 @@ window.onload = function () {
         }
     };
 
-    var callbackRight = function (records) {
+    /**
+     * 从形如
+     * {"type":"message","actualSender":"@09ff76c19a9a106126e4e72f67494ed888b3844f432374bcc84e3238745892ec",↵                 "msgType":"1","subType":0,"msgId":"15685617865120817"}
+     * 中获得msgID
+     * @param {*} rawStr 
+     */
+    function getMSGIDFromString(rawStr) {
+        return rawStr.slice(
+            rawStr.indexOf('"msgId":') + ('"msgId":"').length,
+            rawStr.indexOf('"', rawStr.indexOf('"msgId":') + ('"msgId":"').length))
+    }
+
+    var callbackRight = function (mutationList) {
 
         console.log("debug : ===========Right changed============")
-        // console.log(records)
-        grepAndSendRight()
+        // console.log(mutationList)
+
+        addedNewBubble = false
+        // msgIDChanged = false
+        mutationList.forEach((mutation, index) => {
+
+            if ($(mutation.target).is('div.ng-scope')) {
+                mutation.addedNodes.forEach((node, index) => {
+                    if ($(node).is(' div.ng-scope')) {
+                        // console.log($(node))
+                        addedNewBubble = addedNewBubble || true
+                    }
+                })
+            }
+
+            if ($(mutation.target).is('div.bubble.js_message_bubble') &&
+                mutation.oldValue.includes('msgId')) {
+
+                if ($('div.chat_item.slide-left.active').length > 0) {
+                    let ID = $('div.chat_item.slide-left.active').attr('data-username')
+
+                    let objSlide = _chatContent[ID]
+                    for (let indexMSG in objSlide) {
+
+                        if ((objSlide[indexMSG])["MsgId"] == getMSGIDFromString($(mutation.target).attr('data-cm')) &&
+                            $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
+                            let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
+                            MSG["userID"] = ID;
+                            MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
+                            core.WebToHost({ "Dialog": [MSG] }).then((res) => {
+                                console.log(res)
+                            }).catch((error) => {
+                                throw error
+                            });
+                        }
+                    }
+                }
+
+            }
+        })
+
+        if (addedNewBubble) {
+            grepAndSendRight()
+        }
+
+
     }
 
     // 消息发生变更
@@ -702,8 +767,9 @@ window.onload = function () {
 
                     obsRight.disconnect()
                     obsRight.observe($("div[mm-repeat='message in chatContent']")[0], {
-                        subtree: false, childList: true, characterData: false, attributes: false,
-                        attributeOldValue: false, characterDataOldValue: false
+                        subtree: true, childList: true, characterData: false, attributes: true,
+                        attributeFilter: ["data-cm"],
+                        attributeOldValue: true, characterDataOldValue: false
                     })
 
                     setTimeout(() => {

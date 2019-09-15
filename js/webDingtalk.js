@@ -154,9 +154,6 @@ window.onload = function () {
         if (indexBubble > 0) {
             MSGID = $(objBubble).find('div.chat-item').attr('msg-id')
             // console.log("debug : MSGID.length ", MSGID.length)
-            if(MSGID.length == 16){
-                return undefined
-            }
         }
 
 
@@ -384,6 +381,34 @@ window.onload = function () {
                     // return
                 }
             })
+
+            if ($(mutation.target).is('div.chat-item.ng-scope.me.responsive-box') &&
+            mutation.oldValue != '{{msg.info.msg.getId()}}') {
+                
+                let objActiveUser = $('div.list-item.conv-item.context-menu.active')
+                if (objActiveUser.length > 0) {
+                    let ID = objActiveUser.attr('menu-data')
+
+                    $("div.msg-items > div").each((index, element) => {
+                        if (index > 0 
+                            && $(element).find('div.chat-item[msg-id="'
+                            + $(mutation.target).attr('msg-id') + '"]').length > 0) {
+
+                            let bubble = grepBubble(element, index)
+                            if(bubble != undefined){
+                                bubble["userID"] = ID;
+                                bubble["oldMsgID"] = mutation.oldValue
+                                core.WebToHost({ "Dialog": [bubble] }).then((res) => {
+                                    console.log(res)
+                                }).catch((error) => {
+                                    throw error
+                                });
+                            }
+                            
+                        }
+                    })
+                }
+            }            
         })
 
         if (addedNewBubble) {
@@ -477,8 +502,9 @@ window.onload = function () {
 
                         obsRight.disconnect()
                         obsRight.observe($("div.msg-items")[0], {
-                            subtree: true, childList: true, characterData: false, attributes: false,
-                            attributeOldValue: false, characterDataOldValue: false
+                            subtree: true, childList: true, characterData: false, attributes: true,
+                            attributeFilter: ["msg-id"],
+                            attributeOldValue: true, characterDataOldValue: false
                         })
                     }, 30);
                 } else if (key == 'sendDialog') {
