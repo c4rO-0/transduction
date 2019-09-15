@@ -123,7 +123,7 @@ window.onload = function () {
         let time = new Date()
 
         // console.log('date : ', timeStr)
-        if(timeStr.includes('昨天') || timeStr.includes('Yesterday')){
+        if (timeStr.includes('昨天') || timeStr.includes('Yesterday')) {
             // console.log('date : ', '昨天')
             time = new Date(
                 time.getFullYear()
@@ -131,9 +131,9 @@ window.onload = function () {
                 + "-" + time.getDate()
                 + " " + $(objBubble).find('span.chat-time').text().split(" ")[1]
                 + ':' + (indexBubble % 1000))
-            time = new Date( time.getTime() -24*60*60*1000)
+            time = new Date(time.getTime() - 24 * 60 * 60 * 1000)
 
-        }else if(timeStr.includes('-')) {
+        } else if (timeStr.includes('-')) {
             // console.log('date : ', '日期')
             time = new Date(
                 (new Date()).getFullYear()
@@ -183,7 +183,7 @@ window.onload = function () {
                 content = ""
                 $(contentObj).contents().toArray().forEach((c, i) => {
                     // 将内容进行切割, 判断是否为img
-    
+
                     // console.log(c, $(c).prop('nodeName'))
                     let nodeName = $(c).prop('nodeName')
                     if (nodeName == "IMG") {
@@ -192,7 +192,7 @@ window.onload = function () {
                     }
                     // 链接文字
                     content = content + $(c).text()
-                    
+
                 })
 
             } else if ($(objContent).find('div.msg-bubble > code-snippet-container').length > 0) {
@@ -209,9 +209,13 @@ window.onload = function () {
             // 图片内容
             type = 'img'
             let fullImgUrl = $(objContent).find('img.chat-img').attr('src')
-            // 
-            content = fullImgUrl.slice(0, fullImgUrl.indexOf('?'))
-            content = content.slice(0, content.lastIndexOf('_'))
+            if(fullImgUrl == undefined || fullImgUrl.includes('img/filelogo/pic.p')){
+                content = ''
+            }else{
+                content = fullImgUrl.slice(0, fullImgUrl.indexOf('?'))
+                content = content.slice(0, content.lastIndexOf('_'))
+            }
+
         } else if (typeStr == 'msg-img-text') {
             // 图文内容
         } else if (typeStr == 'msg-file') {
@@ -225,14 +229,14 @@ window.onload = function () {
             fileName = $(objContent).find('p.file-name').text()
             fileSizeStr = $(objContent).find('p.file-size').text()
             if (fileSizeStr.includes(' B')) {
-                fileSize = parseFloat(fileSizeStr.slice(0,-2))
+                fileSize = parseFloat(fileSizeStr.slice(0, -2))
             } else if (fileSizeStr.includes(' KB')) {
-                fileSize = parseFloat(fileSizeStr.slice(0,-3))*1000.
+                fileSize = parseFloat(fileSizeStr.slice(0, -3)) * 1000.
             } else if (fileSizeStr.includes(' MB')) {
-                fileSize = parseFloat(fileSizeStr.slice(0,-3))*1000.*1000.
+                fileSize = parseFloat(fileSizeStr.slice(0, -3)) * 1000. * 1000.
             } else if (fileSizeStr.includes(' GB')) {
-                fileSize = parseFloat(fileSizeStr.slice(0,-3))*1000.*1000.*1000.
-            }else{
+                fileSize = parseFloat(fileSizeStr.slice(0, -3)) * 1000. * 1000. * 1000.
+            } else {
 
             }
 
@@ -247,6 +251,22 @@ window.onload = function () {
 
         }
 
+        // 获取状态
+        let status = undefined
+
+        if ($(objBubble).length > 0) {
+            let objSending = $(objBubble).find('div[progress-bar]')
+            let objFailed = $(objBubble).find('.icon-resend')
+
+            if ($(objSending).length > 0 && $(objSending).is(':visible')) {
+                status = 'sending'
+            } else if ( $(objFailed).length > 0 && $(objFailed).is(':visible') ) {
+                status = 'failed'
+            } else {
+                status = 'done'
+            }
+        }
+
         return {
             "from": fromUserName,
             "msgID": MSGID,
@@ -255,7 +275,8 @@ window.onload = function () {
             "message": content,
             "avatar": avatar,
             "fileName": fileName,
-            "fileSize": fileSize
+            "fileSize": fileSize,
+            "status" : status
         }
 
 
@@ -271,18 +292,19 @@ window.onload = function () {
             let bubbleList = new Array()
 
             $("div.msg-items > div").each((index, element) => {
-                let objSending = $(element).find('div[progress-bar]')
-                if (($(objSending).length == 0 ||
-                    $(objSending).is(':hidden'))
-                    && index > 0) {
+                // let objSending = $(element).find('div[progress-bar]')
+                // if (($(objSending).length == 0 ||
+                //     $(objSending).is(':hidden'))
+                //     && index > 0) {
+                if(index > 0){
                     //  sending 排除
                     //  第一个bubble去掉, 里面没有内容
 
                     let bubble = grepBubble(element, index)
-                    if(bubble != undefined){
+                    if (bubble != undefined) {
                         bubbleList.push(bubble)
                     }
-                    
+
                 }
             })
 
@@ -302,7 +324,7 @@ window.onload = function () {
 
     }
 
-    function callbackChatRight(mutationList, observer) {
+    function callbackChatLeft(mutationList, observer) {
 
         let arrayConvoObj = new Array();
         let arrayContent = new Array();
@@ -382,20 +404,20 @@ window.onload = function () {
                 }
             })
 
-            if ($(mutation.target).is('div.chat-item.ng-scope.me.responsive-box') &&
-            mutation.oldValue != '{{msg.info.msg.getId()}}') {
-                
+            if (mutation.attributeName == "msg-id" &&
+                !mutation.oldValue.includes('{{')) {
+
                 let objActiveUser = $('div.list-item.conv-item.context-menu.active')
                 if (objActiveUser.length > 0) {
                     let ID = objActiveUser.attr('menu-data')
 
                     $("div.msg-items > div").each((index, element) => {
-                        if (index > 0 
+                        if (index > 0
                             && $(element).find('div.chat-item[msg-id="'
-                            + $(mutation.target).attr('msg-id') + '"]').length > 0) {
+                                + $(mutation.target).attr('msg-id') + '"]').length > 0) {
 
                             let bubble = grepBubble(element, index)
-                            if(bubble != undefined){
+                            if (bubble != undefined) {
                                 bubble["userID"] = ID;
                                 bubble["oldMsgID"] = mutation.oldValue
                                 core.WebToHost({ "Dialog": [bubble] }).then((res) => {
@@ -404,11 +426,11 @@ window.onload = function () {
                                     throw error
                                 });
                             }
-                            
+
                         }
                     })
                 }
-            }            
+            }
         })
 
         if (addedNewBubble) {
@@ -423,7 +445,7 @@ window.onload = function () {
 
 
         // 观察左侧消息变动
-        let obsChatRight = new MutationObserver(callbackChatRight);
+        let obsChatLeft = new MutationObserver(callbackChatLeft);
 
         if ($('#menu-pannel').length == 0) {
             console.log("********************offline***************************************")
@@ -441,7 +463,7 @@ window.onload = function () {
                     core.WebToHost({ "hide": {} })
                     observer.disconnect()
 
-                    obsChatRight.observe(document.getElementById('sub-menu-pannel'), {
+                    obsChatLeft.observe(document.getElementById('sub-menu-pannel'), {
                         childList: true,
                         subtree: true,
                         characterData: true,
@@ -467,7 +489,7 @@ window.onload = function () {
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "hide": {} })
 
-            obsChatRight.observe(document.getElementById('sub-menu-pannel'), {
+            obsChatLeft.observe(document.getElementById('sub-menu-pannel'), {
                 childList: true,
                 subtree: true,
                 characterData: true,
@@ -548,21 +570,21 @@ window.onload = function () {
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
 
-                                // console.log("click")
-                                // $('i[ng-click="upload.sendNormalFile()"]').get(0).click()
+                            // console.log("click")
+                            // $('i[ng-click="upload.sendNormalFile()"]').get(0).click()
                             let isClickSend = false
                             let obsSendPic = new MutationObserver((mutationList, observer) => {
                                 console.log("body changed------")
                                 let objSendButton = $('div.file-area-box').closest('div.modal-content').find('div.foot button')
                                 let objFileSize = $('p.file-info-item')
 
-                                if($(objSendButton).length > 0){
-                                    if($(objFileSize).length > 0 && $(objFileSize).text() != ''){
+                                if ($(objSendButton).length > 0) {
+                                    if ($(objFileSize).length > 0 && $(objFileSize).text() != '') {
                                         console.log("点击发送...")
                                         $(objSendButton).get(0).click()
                                         isClickSend = true
 
-                                    }else{
+                                    } else {
                                         // 重新发送
                                         // console.log("重新发送")
                                         // isClickSend = false
@@ -573,7 +595,7 @@ window.onload = function () {
                                     }
                                 }
 
-                                if(isClickSend && $(objSendButton).length == 0){
+                                if (isClickSend && $(objSendButton).length == 0) {
                                     // console.log("waitsend-----")
                                     // waitSend(arrayValue, index)
                                     send(arrayValue, index + 1)
@@ -591,7 +613,7 @@ window.onload = function () {
 
                             })
                             // }, 5000);
-                            
+
 
                         }
 
@@ -637,7 +659,7 @@ window.onload = function () {
                     }
 
                     // 开始发送消息
-                    send(arg, 1)                    
+                    send(arg, 1)
                 } else if (key == 'queryLogStatus') {
                     console.log("resolve back")
                     resolve(logStatus)

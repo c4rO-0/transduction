@@ -58,7 +58,7 @@ window.onload = function () {
      * @returns {Object} 拿到我们关系的内容
      * @param {Integer} indexMSG MSG在_chatcontent里位置
      */
-    function grepMSG(contacts, MSG, indexMSG) {
+    function grepBubble(contacts, MSG, indexMSG) {
 
 
         let fromUserName = MSG["MMActualSender"]
@@ -139,6 +139,23 @@ window.onload = function () {
         let MSGID = MSG["MsgId"]
 
         let MSGObj = $("div[data-cm*='" + MSGID + "']")
+
+        // 获取状态
+        let status = undefined
+
+        if ($(MSGObj).length > 0) {
+
+            if (($(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").length > 0 && $(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").is(':visible'))
+                || ($(MSGObj).find("[ng-click='cancelUploadFile(message)']").length > 0 && $(MSGObj).find("[ng-click='cancelUploadFile(message)']").is(':visible'))) {
+                status = 'sending'
+            } else if (($(MSGObj).find(".ico_fail.web_wechat_message_fail").length > 0 && $(MSGObj).find(".ico_fail.web_wechat_message_fail").is(':visible'))
+                || ($(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").length > 0 && $(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").is(':visible'))) {
+                status = 'failed'
+            } else {
+                status = 'done'
+            }
+        }
+
         // console.log("text : ", MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT && 
         // ((! MSG["SubMsgType"])  || ( MSG["SubMsgType"] == 0)) )
         if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT &&
@@ -186,11 +203,21 @@ window.onload = function () {
             //         content = imgUrl
             //     }
             // }
-            let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-                + "&skey=" + skey
-            // console.log(imgUrl)
-            content = imgUrl
+            if (status == 'sending' || status == 'failed') {
+                if (MSG["MMThumbSrc"]) { 
+                        content = MSG["MMThumbSrc"]
+                }else{
+                    content = ''
+                }
+            } else {
+                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+                    + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+                    + "&skey=" + skey
+
+                // console.log(imgUrl)
+                content = imgUrl
+            }
+
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
             // 小视频
             type = 'unknown'
@@ -225,22 +252,7 @@ window.onload = function () {
         // console.log(remarkName, MSGID, type, content, time)
         // console.log(content)
 
-        // 获取状态
-        let status = undefined
 
-
-        if ($(MSGObj).length > 0) {
-
-            if (($(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").length > 0 && $(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").is(':visible'))
-                || ($(MSGObj).find("[ng-click='cancelUploadFile(message)']").length > 0 && $(MSGObj).find("[ng-click='cancelUploadFile(message)']").is(':visible'))) {
-                status = 'sending'
-            } else if (($(MSGObj).find(".ico_fail.web_wechat_message_fail").length > 0 && $(MSGObj).find(".ico_fail.web_wechat_message_fail").is(':visible'))
-                || ($(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").length > 0 && $(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").is(':visible'))) {
-                status = 'failed'
-            } else {
-                status = 'done'
-            }
-        }
 
 
         return {
@@ -438,13 +450,13 @@ window.onload = function () {
                 //         $(objSending).is(':hidden'))) {
                 if (MSGID == undefined) {
                     if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
-                        let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
+                        let MSG = grepBubble(_contacts, objSlide[indexMSG], indexMSG)
                         MSGList.push(MSG)
                     }
                 } else {
                     if ((objSlide[indexMSG])["MsgId"] == MSGID &&
                         $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
-                        let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
+                        let MSG = grepBubble(_contacts, objSlide[indexMSG], indexMSG)
                         MSGList.push(MSG)
                     }
                 }
@@ -518,8 +530,9 @@ window.onload = function () {
                 })
             }
 
-            if ($(mutation.target).is('div.bubble.js_message_bubble') &&
-                mutation.oldValue.includes('msgId')) {
+            if (mutation.attributeName == 'data-cm' &&
+                mutation.oldValue.includes('msgId')
+                && getMSGIDFromString($(mutation.target).attr('data-cm')) != "{{message.MsgId}}") {
 
                 if ($('div.chat_item.slide-left.active').length > 0) {
                     let ID = $('div.chat_item.slide-left.active').attr('data-username')
@@ -529,14 +542,18 @@ window.onload = function () {
 
                         if ((objSlide[indexMSG])["MsgId"] == getMSGIDFromString($(mutation.target).attr('data-cm')) &&
                             $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
-                            let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
-                            MSG["userID"] = ID;
-                            MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
-                            core.WebToHost({ "Dialog": [MSG] }).then((res) => {
-                                console.log(res)
-                            }).catch((error) => {
-                                throw error
-                            });
+                            let MSG = grepBubble(_contacts, objSlide[indexMSG], indexMSG)
+                            if (MSG != undefined) {
+
+                                MSG["userID"] = ID;
+                                MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
+                                core.WebToHost({ "Dialog": [MSG] }).then((res) => {
+                                    console.log(res)
+                                }).catch((error) => {
+                                    throw error
+                                });
+                            }
+
                         }
                     }
                 }
