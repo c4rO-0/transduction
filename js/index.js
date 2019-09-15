@@ -744,8 +744,8 @@ $(document).ready(function () {
                     // // $(webTag2Selector(webTag)).focus()
                     // console.log(document.activeElement)
 
-                    // console.log('bluring outttttttttttttttttttt')
-                    // $(webTag2Selector(webTag)).blur()
+                    console.log('bluring outttttttttttttttttttt')
+                    $(webTag2Selector(webTag)).blur()
                     // console.log(document.activeElement)
                 } else {
 
