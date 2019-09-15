@@ -895,9 +895,11 @@ $(document).ready(function () {
                             }
                         })
                         // 右侧恢复到开始状态
-                        rightBackToDefault()
+                        if($('.app-online').length == 0){
+                            // 空白页
+                            rightBackToDefault()
+                        }
 
-                        // 空白页
 
 
                     } else if (Obj.status == 'online') {
