@@ -270,6 +270,26 @@ webview {
     min-height: 4rem;
     align-self: flex-end;
     display: flex;
+    position: relative;
+}
+
+.td-me .td-bubbleStatus {
+    height: 2rem;
+    width: 2rem;
+    position: absolute;
+    left: -1.8rem;
+    bottom: -0.4rem;
+}
+
+.td-bubbleStatus.bubbleError {
+    height: 2rem;
+    width: 2rem;
+    background-image: url('../res/pic/bubble_error.svg');
+    position: absolute;
+    left: -1.8rem;
+    bottom: -0.4rem;
+    box-sizing: border-box;
+    padding-left: 2rem;
 }
 
 .td-me>p {
@@ -444,6 +464,10 @@ webview {
     background-color: #1aad19;
     /* background-color: #2ba245; */
     /* background-color: #91ed61; */
+}
+
+.theme-dingtalk {
+    background-color: #008cee;
 }
 
 #td-right, .td-toolbox {

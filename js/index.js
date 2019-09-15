@@ -1829,6 +1829,24 @@ $(document).ready(function () {
     document.getElementById('modal-wechat').querySelector('webview').addEventListener('dom-ready', function () {
         this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
+    document.getElementById('modal-dingtalk').querySelector('webview').addEventListener('dom-ready', function(){
+        this.insertCSS('\
+        #layout-main {\
+            width:-webkit-fill-available !important;\
+            min-width:490px;\
+            max-width:1000px;\
+        }\
+        #content-pannel {\
+            flex:1 !important;\
+        }\
+        #menu-pannel {\
+            width:50px !important;\
+        }\
+        #chat-box > div > div {\
+            min-width: 320px;\
+        }\
+        ')
+    })
 
     /**
      * webview隐藏
