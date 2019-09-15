@@ -199,18 +199,18 @@ $(document).ready(function () {
             this.bTextL = ''
             this.bTextR = ''
             this.bUrlL = ''
-            this.bUrlR =''
-            this.bUnknownL =''
-            this.bUnknownR =''
-            this.bFSendL =''
-            this.bFSendR =''
-            this.bFileL =''
-            this.bFileR =''
-            this.bImgL =''
-            this.bImgR =''
+            this.bUrlR = ''
+            this.bUnknownL = ''
+            this.bUnknownR = ''
+            this.bFSendL = ''
+            this.bFSendR = ''
+            this.bFileL = ''
+            this.bFileR = ''
+            this.bImgL = ''
+            this.bImgR = ''
         }
 
-        initialize(){
+        initialize() {
 
             this.bTextL = $('div[msgid="bTextL"]').clone()
             this.bTextR = $('div[msgid="bTextR"]').clone()
@@ -231,7 +231,7 @@ $(document).ready(function () {
             this.bImgR = $('div[msgid="bImgR"]').clone()
         }
 
-        createBubble(dialog){
+        createBubble(dialog) {
 
             let timeObj = undefined
 
@@ -245,26 +245,26 @@ $(document).ready(function () {
                 timeObj = new Date()
             }
             let time = timeObj.toTimeString().slice(0, 5)
-    
+
             let bubble
             if (dialog['type'] == 'text') {
 
                 if (dialog["from"]) {
                     bubble = $(this.bTextL).clone()
-                }else{
+                } else {
                     bubble = $(this.bTextR).clone()
                 }
-                
+
                 $(bubble).find('div.td-chatText').text(dialog['message'])
 
             } else if (dialog['type'] == 'img') {
 
                 if (dialog["from"]) {
                     bubble = $(this.bImgL).clone()
-                }else{
+                } else {
                     bubble = $(this.bImgR).clone()
                 }
-                
+
                 $(bubble).find('div.td-chatImg img').attr('src', dialog['message'])
 
             } else if (dialog['type'] == 'url') {
@@ -273,34 +273,34 @@ $(document).ready(function () {
                 if (dialog['message'].search('https://send.firefox.com/download') !== -1) {
                     if (dialog["from"]) {
                         bubble = $(this.bFSendL).clone()
-                    }else{
+                    } else {
                         bubble = $(this.bFSendR).clone()
                     }
                 } else {
                     if (dialog["from"]) {
                         bubble = $(this.bUrlL).clone()
-                    }else{
+                    } else {
                         bubble = $(this.bUrlR).clone()
                     }
                 }
-                    
+
                 $(bubble).find('div.td-chatText a').attr('href', dialog['message'])
                 $(bubble).find('div.td-chatText a').text(dialog['message'])
 
             } else if (dialog['type'] == 'file') {
                 if (dialog["from"]) {
                     bubble = $(this.bFileL).clone()
-                }else{
+                } else {
                     bubble = $(this.bFileR).clone()
                 }
                 $(bubble).find('div.td-chatText > div > div > p').text("File Name: " + dialog['fileName'])
                 $(bubble).find('div.td-chatText > div > div > div > p').text("Size: " + dialog['fileSize'] / 1000. + ' KB')
-                $(bubble).find('div.td-chatText button').attr('href',  dialog['message'] )
+                $(bubble).find('div.td-chatText button').attr('href', dialog['message'])
 
             } else if (dialog['type'] == 'unknown') {
                 if (dialog["from"]) {
                     bubble = $(this.bUnknownL).clone()
-                }else{
+                } else {
                     bubble = $(this.bUnknownR).clone()
                 }
                 $(bubble).find('div.td-chatText').text(dialog['message'])
@@ -308,12 +308,12 @@ $(document).ready(function () {
             } else {
                 if (dialog["from"]) {
                     bubble = $(this.bUnknownL).clone()
-                }else{
+                } else {
                     bubble = $(this.bUnknownR).clone()
                 }
                 $(bubble).find('div.td-chatText').text(dialog['message'])
             }
-    
+
             if (dialog["from"]) {
                 let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
                 let appName = $("#td-right div.td-chat-title").attr("data-app-name")
@@ -322,20 +322,28 @@ $(document).ready(function () {
                 div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
                 div.td-avatar").css('background-image').slice(5, -2)
                     : dialog["avatar"]
-    
-                $(bubble).attr("msgID", dialog['msgID'])
+
                 $(bubble).find("div.td-chatAvatar img").attr('src', avatarUrl)
 
                 $(bubble).find('> p.m-0').text(dialog["from"])
                 $(bubble).find('div.td-them p.m-0').text(time)
 
-            }else{
+            } else {
                 $(bubble).find('p.m-0').text(time)
+
+                if(dialog["status"] == "done"){
+                    
+                }else if(dialog["status"] == "sending"){
+                    $(bubble).find('.td-bubbleStatus').removeClass('td-none')
+                }else if(dialog["status"] == "failed"){
+                    $(bubble).find('.td-bubbleStatus').removeClass('td-none')
+                    $(bubble).find('.td-bubbleStatus').addClass('bubbleError')
+                }
             }
 
-            
+
             $(bubble).attr('msgTime', timeObj.getTime())
-            $(bubble).attr('msgid',  dialog['msgID'])
+            $(bubble).attr('msgid', dialog['msgID'])
 
             // console.log("create bubble from : ", dialog)
 
@@ -369,7 +377,7 @@ $(document).ready(function () {
         if (convo.counter) {
             displayCounter = ""
         }
-        if(convo.muted) {
+        if (convo.muted) {
             visibility = ""
         }
 
@@ -629,7 +637,6 @@ $(document).ready(function () {
                     })
 
                     // 滑动到最下面
-                    $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
                     atBottom = true
                 } else {
 
@@ -641,6 +648,13 @@ $(document).ready(function () {
                         console.log("滑条 : ", $(dialogSelector).scrollTop(), $(dialogSelector)[0].clientHeight, $(dialogSelector)[0].scrollHeight)
                         console.log("不滚动啊.......")
                     }
+
+                    // 首先检查有没有msgID变更
+                    Obj.forEach((value, index) => {
+                        if (value.oldMsgID != undefined) {
+                            $(dialogSelector+ " [msgID='" + value['oldMsgID'] + "']").attr('msgID', value.msgID)          
+                        }
+                    })
 
                     // 拿到已有bubble的时间, 并且按照顺序储存
                     let arrayExistBubble = new Array()
@@ -688,8 +702,8 @@ $(document).ready(function () {
                         // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
 
                         if (currentInsertIndex >= 0) {
-                            if (currentInsertIndex == arrayExistBubble.length - 1 
-                                && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1 ].msgTime) {
+                            if (currentInsertIndex == arrayExistBubble.length - 1
+                                && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
 
                                 $(dialogSelector).append(bubble.createBubble(value))
 
@@ -726,13 +740,13 @@ $(document).ready(function () {
                     $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
                     // 取消unread
-                    console.log('focusing innnnnnnnnnnn')
-                    // $(webTag2Selector(webTag)).focus()
-                    console.log(document.activeElement)
+                    // console.log('focusing innnnnnnnnnnn')
+                    // // $(webTag2Selector(webTag)).focus()
+                    // console.log(document.activeElement)
 
-                    console.log('bluring outttttttttttttttttttt')
-                    $(webTag2Selector(webTag)).blur()
-                    console.log(document.activeElement)
+                    // console.log('bluring outttttttttttttttttttt')
+                    // $(webTag2Selector(webTag)).blur()
+                    // console.log(document.activeElement)
                 } else {
 
                     console.log("dialog updated. new bubble(s) not display...")
@@ -1360,10 +1374,10 @@ $(document).ready(function () {
                         fileList[item.fileID] = item
 
                         sendInput("<img data-file-ID='"
-                        + item.fileID
-                        + "' contenteditable=false src='"
-                        + item.path
-                        + "' height='" + newSize.height + "' width='" + newSize.width + "' >")
+                            + item.fileID
+                            + "' contenteditable=false src='"
+                            + item.path
+                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >")
 
                         // if (pasteHtmlAtCaret(
                         //     "<img data-file-ID='"
@@ -1575,7 +1589,7 @@ $(document).ready(function () {
         if (strInput.length > 0) arraySimpleInput.push(strInput)
 
         return arraySimpleInput
-    }    
+    }
 
 
     /**
@@ -1647,7 +1661,7 @@ $(document).ready(function () {
     function attachInputFile(webSelector, inputSelector, filePath) {
 
 
-        
+
 
         let wc = $(webSelector).get(0).getWebContents();
 
@@ -1712,9 +1726,9 @@ $(document).ready(function () {
      * 如果给fromHtml, 那就从fromHtml中抓取消息发送
      * @param {String} fromHtml 
      */
-    function sendInput(fromHtml = undefined){
+    function sendInput(fromHtml = undefined) {
 
-        
+
         // 获取appname
         let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
         let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
@@ -1722,12 +1736,12 @@ $(document).ready(function () {
 
         if (userID && webTag) {
             let arraySend = undefined
-            if(fromHtml == undefined){
+            if (fromHtml == undefined) {
                 arraySend = getInput('div.td-inputbox')
-            }else{
+            } else {
                 arraySend = getInputFromHtml(fromHtml)
             }
-            
+
             // 清理消息
             $("div.td-inputbox").empty()
             // console.log('-----send-----')
@@ -1845,7 +1859,7 @@ $(document).ready(function () {
      * webview隐藏
      */
     $('.modal:hidden').each((index, element) => {
-        if(!element.matches('#modal-image')&&!element.matches('#modal-settings')){
+        if (!element.matches('#modal-image') && !element.matches('#modal-settings')) {
             $('>div.modal-dialog', element).removeClass('modal-xl')
         }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
@@ -1856,7 +1870,7 @@ $(document).ready(function () {
         $(webTag2Selector(element.id.substring(6))).height("800px")
     })
     $('.modal').on('hidden.bs.modal', function (e) {
-        if(!this.matches('#modal-image')&&!this.matches('#modal-settings')){
+        if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
             $('>div.modal-dialog', this).removeClass('modal-xl')
         }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
@@ -2009,7 +2023,7 @@ $(document).ready(function () {
             })
         }
         // $(webTag2Selector(webTag)).focus()
-        
+
 
         // $(".td-inputbox").focus()
 
@@ -2127,8 +2141,8 @@ $(document).ready(function () {
             //     $('div.td-inputbox').append('<br>')
             // }
             $(".td-inputbox").focus()
-            
-            core.sendToMain({"focus":""})
+
+            core.sendToMain({ "focus": "" })
 
             console.log("insert input done")
         })
@@ -2336,7 +2350,7 @@ $(document).ready(function () {
             // ctr+enter : newline
             if (event.ctrlKey && event.which == 10) {
                 arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
-                if(($(arrayIn)[arrayIn.length-1].nodeName != 'BR')) {
+                if (($(arrayIn)[arrayIn.length - 1].nodeName != 'BR')) {
                     $('div.td-inputbox').append('<br>')
                 }
                 pasteHtmlAtCaret("<br>", 'div.td-inputbox')
@@ -2349,13 +2363,13 @@ $(document).ready(function () {
 
     })
 
-    $(document).keydown(function(event) {
+    $(document).keydown(function (event) {
 
         // console.log("keydown",event.which )
         if ($(document.activeElement).is(".td-inputbox")) {
 
             // tab 只能激活keydown, 不能激活keypress
-            if( !event.ctrlKey &&  event.which == 9 ) {
+            if (!event.ctrlKey && event.which == 9) {
                 // console.log("tab down")
                 // $('div.td-inputbox').append('&nbsp;')
                 event.preventDefault();
@@ -2367,7 +2381,7 @@ $(document).ready(function () {
 
 
         // ctrl+up/down 切换convo
-        if( event.ctrlKey &&  (event.which == 38 || event.which == 40)  ) {
+        if (event.ctrlKey && (event.which == 38 || event.which == 40)) {
             // console.log("tab down")
             event.preventDefault();
             event.stopPropagation();
@@ -2375,52 +2389,52 @@ $(document).ready(function () {
             // console.log("切换联系人")
             let lengthConvo = $('.td-convo:visible').length
             let classTactive = 'theme-transduction-active-tran'
-            let cStrSelector = '.'+classTactive
+            let cStrSelector = '.' + classTactive
 
             let convoSelector = '.td-convo:visible'
 
-            if(lengthConvo > 0 ){
+            if (lengthConvo > 0) {
 
                 let activePos = $(convoSelector).index($('.theme-transduction-active'))
-            
+
                 let TactivePos = $(convoSelector).index($(cStrSelector))
 
                 $(convoSelector).removeClass(classTactive)
-    
-                if( ( activePos ==-1 && TactivePos == -1) ){
+
+                if ((activePos == -1 && TactivePos == -1)) {
                     // 既没有active也没有临时(Tactive), Tactive放在第一位 
                     // console.log("add tactive at 0")
                     $(convoSelector).eq(0).addClass(classTactive)
-                }else if(lengthConvo > 1 && activePos > -1 && TactivePos == -1){
+                } else if (lengthConvo > 1 && activePos > -1 && TactivePos == -1) {
                     // 有active, 没有Tactive : 根据方向键选择active的邻近一个
-                    if(event.which == 38){
+                    if (event.which == 38) {
                         // up
-                        let nextP = core.periodicPos(activePos-1, lengthConvo)
+                        let nextP = core.periodicPos(activePos - 1, lengthConvo)
                         $(convoSelector).eq(nextP).addClass(classTactive)
 
-                    }else if(event.which == 40){
+                    } else if (event.which == 40) {
                         // down
-                        let nextP = core.periodicPos(activePos+1, lengthConvo)
-                        $(convoSelector).eq(nextP).addClass(classTactive)                     
+                        let nextP = core.periodicPos(activePos + 1, lengthConvo)
+                        $(convoSelector).eq(nextP).addClass(classTactive)
                     }
-                }else if(lengthConvo > 1 && TactivePos > -1){
-                    if(event.which == 38){
+                } else if (lengthConvo > 1 && TactivePos > -1) {
+                    if (event.which == 38) {
                         // up
-                        let nextP = core.periodicPos(TactivePos-1, lengthConvo)
-                        if(nextP == activePos){
+                        let nextP = core.periodicPos(TactivePos - 1, lengthConvo)
+                        if (nextP == activePos) {
 
-                        }else{
+                        } else {
                             $(convoSelector).eq(nextP).addClass(classTactive)
                         }
-                        
-                    }else if(event.which == 40){
-                        // down
-                        let nextP = core.periodicPos(TactivePos+1, lengthConvo)
-                        if(nextP == activePos){
 
-                        }else{
+                    } else if (event.which == 40) {
+                        // down
+                        let nextP = core.periodicPos(TactivePos + 1, lengthConvo)
+                        if (nextP == activePos) {
+
+                        } else {
                             $(convoSelector).eq(nextP).addClass(classTactive)
-                        }                    
+                        }
                     }
                 }
             }
@@ -2429,16 +2443,16 @@ $(document).ready(function () {
     })
 
 
-    $(document).keyup(function(event) {
+    $(document).keyup(function (event) {
         // console.log("keyup",event.which )
 
-        if(event.which == 17){
+        if (event.which == 17) {
             // control 抬起
 
-            let cStrSelector = '.'+classTactive
+            let cStrSelector = '.' + classTactive
             let convoSelector = '.td-convo:visible'
 
-            if($(cStrSelector).length > 0){
+            if ($(cStrSelector).length > 0) {
                 // tacitve存在, 切换联系人
                 event.preventDefault();
                 event.stopPropagation();
