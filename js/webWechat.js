@@ -780,7 +780,7 @@ window.onload = function () {
 
                     $("div.ng-scope div [data-username='" + ID + "']").click();
 
-                    resolve("request received. MSG will send.")
+                    
 
                     obsRight.disconnect()
                     obsRight.observe($("div[mm-repeat='message in chatContent']")[0], {
@@ -795,6 +795,7 @@ window.onload = function () {
 
                     }, 100);
 
+                    resolve("request received. MSG will send.")
 
                 } else if (key == 'sendDialog') {
                     console.log("--------sendDialog---")
