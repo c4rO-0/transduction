@@ -67,21 +67,22 @@ function modalImage(event) {
     $("#modal-image").modal()
 }
 
-let tdPinCoord = [0, 0]
-
-
-
 
 
 $(document).ready(function () {
 
     const core = require("../js/core.js")
     const { nativeImage, dialog, shell } = require('electron').remote
-    // const  = require('electron').shell;
-    // const _ = require('../toolkit/lodash-4.17.11.js');
+    const Store = require('electron-store');
+    const store = new Store();
+
     console.log(process.versions.electron)
 
-    let fileList = {}; //临时储存file object
+    /** 储存要发送的file object
+     *  为了能够保证文件能够顺利的发送, fileList不会清除
+     */
+    let fileList = {};
+
 
     let inputImgHeightLimit = 100
     let inputImgWeightLimit = 600
@@ -94,8 +95,32 @@ $(document).ready(function () {
     let debug_send_str = "#debug-send"
     let debug_latex_str = "#debug-latex2png"
     let debug_goBackChat_str = "#debug-goBackChat"
+    let classTactive = 'theme-transduction-active-tran'
 
-    let sendingList = {};
+
+    /**----------------------
+     * 储存图钉位置
+     */
+    let tdPinCoord = undefined
+    let tdSettings = undefined
+
+    tdPinCoord = store.get('tdPinCoord')
+    if (tdPinCoord === undefined) {
+        tdPinCoord = [0, 0]
+    }
+
+    tdSettings = store.get('tdSettings')
+    if (tdSettings === undefined) {
+        tdSettings = {
+            swTray: true
+        }
+    }
+    //console.log('load tdPinCoord : ', tdPinCoord)
+    document.getElementById('td-pin').style.left = tdPinCoord[0] + 'px'
+    document.getElementById('td-pin').style.bottom = tdPinCoord[1] + 'px'
+    //-------------------------------
+
+
 
 
     // =========================class===========================
@@ -105,13 +130,12 @@ $(document).ready(function () {
             this.userID = userID
             this.nickName = nickName
 
+            // time为str
             if (time === undefined) {
                 this.time = time
             } else if (typeof (time) === 'number') {
-                this.time = new Date(time)
+                this.time = (new Date(time)).toTimeString().slice(0, 5)
             } else if (typeof (time) == "string") {
-                this.time = new Date(time)
-            } else if (typeof (time) == "object") {
                 this.time = time
             } else {
                 console.log("error : conversation :  wrong type of time : ", typeof (time), time)
@@ -178,6 +202,203 @@ $(document).ready(function () {
 
     }
 
+    class Bubble {
+        constructor() {
+            this.bTextL = ''
+            this.bTextR = ''
+            this.bUrlL = ''
+            this.bUrlR = ''
+            this.bUnknownL = ''
+            this.bUnknownR = ''
+            this.bFSendL = ''
+            this.bFSendR = ''
+            this.bFileL = ''
+            this.bFileR = ''
+            this.bImgL = ''
+            this.bImgR = ''
+        }
+
+        initialize() {
+
+            this.bTextL = $('div[msgid="bTextL"]').clone()
+            this.bTextR = $('div[msgid="bTextR"]').clone()
+
+            this.bUrlL = $('div[msgid="bUrlL"]').clone()
+            this.bUrlR = $('div[msgid="bUrlR"]').clone()
+
+            this.bUnknownL = $('div[msgid="bUnknownL"]').clone()
+            this.bUnknownR = $('div[msgid="bUnknownR"]').clone()
+
+            this.bFSendL = $('div[msgid="bFSendL"]').clone()
+            this.bFSendL = $('div[msgid="bFSendR"]').clone()
+
+            this.bFileL = $('div[msgid="bFileL"]').clone()
+            this.bFileR = $('div[msgid="bFileR"]').clone()
+
+            this.bImgL = $('div[msgid="bImgL"]').clone()
+            this.bImgR = $('div[msgid="bImgR"]').clone()
+        }
+
+        createBubble(dialog) {
+
+            let timeObj = undefined
+
+            if (typeof (dialog["time"]) === 'number') {
+                timeObj = new Date(dialog["time"])
+            } else if (typeof (dialog["time"]) == "string") {
+                timeObj = new Date(dialog["time"])
+            } else if (typeof (dialog["time"]) == "object") {
+                timeObj = dialog["time"]
+            } else {
+                timeObj = new Date()
+            }
+            let time = timeObj.toTimeString().slice(0, 5)
+
+            let bubble
+            if (dialog['type'] == 'text') {
+
+                if (dialog["from"]) {
+                    bubble = $(this.bTextL).clone()
+                } else {
+                    bubble = $(this.bTextR).clone()
+                }
+
+                $(bubble).find('div.td-chatText').text(dialog['message'])
+
+            } else if (dialog['type'] == 'img') {
+
+                if (dialog["from"]) {
+                    bubble = $(this.bImgL).clone()
+                } else {
+                    bubble = $(this.bImgR).clone()
+                }
+
+                $(bubble).find('div.td-chatImg img').attr('src', dialog['message'])
+
+            } else if (dialog['type'] == 'url') {
+
+
+                if (dialog['message'].search('https://send.firefox.com/download') !== -1) {
+                    if (dialog["from"]) {
+                        bubble = $(this.bFSendL).clone()
+                    } else {
+                        bubble = $(this.bFSendR).clone()
+                    }
+                } else {
+                    if (dialog["from"]) {
+                        bubble = $(this.bUrlL).clone()
+                    } else {
+                        bubble = $(this.bUrlR).clone()
+                    }
+                }
+
+                $(bubble).find('div.td-chatText a').attr('href', dialog['message'])
+                $(bubble).find('div.td-chatText a').text(dialog['message'])
+
+            } else if (dialog['type'] == 'file') {
+                if (dialog["from"]) {
+                    bubble = $(this.bFileL).clone()
+                } else {
+                    bubble = $(this.bFileR).clone()
+                }
+                $(bubble).find('div.td-chatText > div > div > p').text("File Name: " + dialog['fileName'])
+                $(bubble).find('div.td-chatText > div > div > div > p').text("Size: " + dialog['fileSize'] / 1000. + ' KB')
+                $(bubble).find('div.td-chatText button').attr('href', dialog['message'])
+
+            } else if (dialog['type'] == 'unknown') {
+                if (dialog["from"]) {
+                    bubble = $(this.bUnknownL).clone()
+                } else {
+                    bubble = $(this.bUnknownR).clone()
+                }
+                $(bubble).find('div.td-chatText').text(dialog['message'])
+
+            } else {
+                if (dialog["from"]) {
+                    bubble = $(this.bUnknownL).clone()
+                } else {
+                    bubble = $(this.bUnknownR).clone()
+                }
+                $(bubble).find('div.td-chatText').text(dialog['message'])
+            }
+
+            if (dialog["from"]) {
+                let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+                let appName = $("#td-right div.td-chat-title").attr("data-app-name")
+                let avatarUrl = dialog["avatar"] === undefined ?
+                    $("#td-left \
+                div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
+                div.td-avatar").css('background-image').slice(5, -2)
+                    : dialog["avatar"]
+
+                $(bubble).find("div.td-chatAvatar img").attr('src', avatarUrl)
+
+                $(bubble).find('> p.m-0').text(dialog["from"])
+                $(bubble).find('div.td-them p.m-0').text(time)
+
+            } else {
+                $(bubble).find('p.m-0').text(time)
+
+                if (dialog["status"] == "done") {
+
+                } else if (dialog["status"] == "sending") {
+                    $(bubble).find('.td-bubbleStatus').removeClass('td-none')
+                } else if (dialog["status"] == "failed") {
+                    $(bubble).find('.td-bubbleStatus').removeClass('td-none')
+                    $(bubble).find('.td-bubbleStatus').addClass('bubbleError')
+                }
+            }
+
+
+            $(bubble).attr('msgTime', timeObj.getTime())
+            $(bubble).attr('msgid', dialog['msgID'])
+
+            // console.log("create bubble from : ", dialog)
+
+            return $(bubble)[0].outerHTML
+
+        }
+    }
+
+    let bubble = new Bubble
+    bubble.initialize()
+
+
+    /**
+     * input草稿
+     * 以字典的形式储存字符串
+     * ["webtag+ID":"content"]
+     */
+    class InputDraft {
+        constructor() {
+            this.list = []
+        }
+
+        query(webTag, userID) {
+            return this.list[webTag + userID]
+        }
+
+        /**
+         * 储存草稿, 如果webTag+userID重复, 将会覆盖内容
+         * @param {*} webTag 
+         * @param {*} userID 
+         * @param {*} content 
+         */
+        add(webTag, userID, content) {
+            this.list[webTag + userID] = content
+        }
+        /**
+         * 删除草稿
+         * @param {*} webTag 
+         * @param {*} userID 
+         */
+        pop(webTag, userID) {
+            delete this.list[webTag + userID]
+        }
+    }
+    let inputDraft = new InputDraft()
+
+
     // ============================function===================
     /**
      * 
@@ -195,8 +416,12 @@ $(document).ready(function () {
      */
     function AddConvoHtml(appName, convo) {
         let displayCounter = "display: none;"
+        let visibility = "td-invisible"
         if (convo.counter) {
             displayCounter = ""
+        }
+        if (convo.muted) {
+            visibility = ""
         }
 
         let avatar = convo.avatar == undefined ? '../res/pic/weird.png' : convo.avatar
@@ -217,10 +442,11 @@ $(document).ready(function () {
             </div >\
         <div class="col col-text flex-column justify-content-center">\
                 <div class="m-0 td-nickname">'+ convo.nickName + '</div>\
-                <div class="m-0 td-text">'+ convo.message + '</div>\
+                <div class="m-0 td-text">'+ core.htmlEntities(convo.message) + '</div>\
             </div>\
-        <div class="col-auto pl-0 col-timestamp justify-content-end">\
-            '+ convo.time.toTimeString().slice(0, 5) + '\
+            <div class="col-auto pl-0 col-timestamp justify-content-around">\
+                '+ convo.time + '\
+                <img class="' + visibility + ' align-self-center" src="../res/pic/mute.svg" height="18px">\
             </div>\
         </div > '
     }
@@ -250,7 +476,7 @@ $(document).ready(function () {
         if (dialog['type'] == 'text') {
             content =
                 '<div class="td-chatText">'
-                + dialog['message'] +
+                + core.htmlEntities(dialog['message']) +
                 '</div>'
         } else if (dialog['type'] == 'img') {
             content =
@@ -265,28 +491,35 @@ $(document).ready(function () {
                         <img src="../res/pic/ffsend.logo.svg" height="15px">\
                     </span>\
                     <a href="'+ dialog['message'] + '">' + dialog['message'] + '</a>\
-                    <p></p>\
+                    <p style="margin:0;"></p>\
                 </div>'
             } else {
                 content =
                     '<div class="td-chatText">\
                     <a  href="' + dialog['message'] + '">' + dialog['message'] + '</a>\
-                    <p></p>\
+                    <p style="margin:0;"></p>\
                 </div>'
             }
         } else if (dialog['type'] == 'file') {
-                content =
-                '<div class="td-chatText">'
-                + 'Name : ' +dialog['fileName']
-                + ' Size : ' + dialog['fileSize']/1000. + ' KB'
-                '<button href="'+ dialog['message']  + '" download>下载</button>\
-                <p></p>\
-            </div>'
+            content =
+                '<div class="td-chatText">\
+                    <div style="display: flex; flex-direction: row;">\
+                        <img src="../res/pic/document.svg" height="56px">\
+                        <div style="display: flex; flex-direction: column;">\
+                            <p style="margin:0 0 0 1rem;">' + dialog['fileName'] + '</p>\
+                            <div style="display: flex; flex-direction:row; justify-content: space-around;">\
+                                <p style="margin:0;">' + dialog['fileSize'] / 1000. + ' KB' + '</p>\
+                                <button href="' + dialog['message'] + '" class="btn p-0 btn-link" download>下载</button>\
+                            </div>\
+                        </div>\
+                    </div>\
+                    <p style="margin:0;"></p>\
+                </div>'
         } else if (dialog['type'] == 'unknown') {
             content =
                 '<div class="td-chatText">\
-                    <span class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</span>\
-                    <p>'
+                    <a class="badge badge-pill badge-warning mt-1">Unsupported MSG Type</a>\
+                    <p style="margin:0;">'
                 + dialog['message'] +
                 '</p>\
                 </div>'
@@ -301,11 +534,11 @@ $(document).ready(function () {
         if (dialog["from"]) {
             let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
             let appName = $("#td-right div.td-chat-title").attr("data-app-name")
-            let avatarUrl = dialog["avatar"] === undefined ? 
-            $("#td-left \
+            let avatarUrl = dialog["avatar"] === undefined ?
+                $("#td-left \
             div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
-            div.td-avatar").css('background-image').slice(5, -2) 
-            : dialog["avatar"]
+            div.td-avatar").css('background-image').slice(5, -2)
+                : dialog["avatar"]
 
             strHtml =
                 '<div class="td-bubble" msgID="' + dialog['msgID'] + '"  msgTime="' + timeObj.getTime() + '">\
@@ -355,11 +588,11 @@ $(document).ready(function () {
                             $(objConvo).find("div.td-text").text(convo.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").text(convo.time.toTimeString().slice(0, 5))
+                            $(objConvo).find("div.col-timestamp").text(convo.time)
                             break;
                         case "muted":
                             $(objConvo).attr('muted', convo.muted)
-                            break;                            
+                            break;
                         default:
                             break;
                     }
@@ -367,6 +600,25 @@ $(document).ready(function () {
             }
             $('#td-convo-container').prepend(objConvo)
         }
+    }
+
+    function rightBackToDefault() {
+        // 右侧恢复到开始状态
+        $('.td-chat-title').removeAttr('data-user-i-d')
+        $('.td-chat-title').removeAttr('data-app-name')
+        $('.td-chat-title > h2').text('')
+        $('.td-chat-title > img').attr('src', '../res/pic/nothing.png')
+
+        $('.td-chatLog[wintype="chatLog"]').empty()
+        $('.td-chatLog[wintype="chatLog"]').append('\
+                         <div class="td-default">\
+                             <p>\
+                                 商业合作，问题反馈，请联系c4r。\
+                             </p>\
+                             <p>\
+                                 business cooperation, bug report, please contact c4r.\
+                             </p>\
+                         </div>')
     }
 
     //------------------------
@@ -424,11 +676,10 @@ $(document).ready(function () {
                 if ($(dialogSelector + " div.td-bubble").length == 0) {
                     // 窗口已被清空, 直接附加
                     Obj.forEach((value, index) => {
-                        $(dialogSelector).append(AddDialogHtml(value))
+                        $(dialogSelector).append(bubble.createBubble(value))
                     })
 
                     // 滑动到最下面
-                    $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
                     atBottom = true
                 } else {
 
@@ -440,6 +691,13 @@ $(document).ready(function () {
                         console.log("滑条 : ", $(dialogSelector).scrollTop(), $(dialogSelector)[0].clientHeight, $(dialogSelector)[0].scrollHeight)
                         console.log("不滚动啊.......")
                     }
+
+                    // 首先检查有没有msgID变更
+                    Obj.forEach((value, index) => {
+                        if (value.oldMsgID != undefined) {
+                            $(dialogSelector + " [msgID='" + value['oldMsgID'] + "']").attr('msgID', value.msgID)
+                        }
+                    })
 
                     // 拿到已有bubble的时间, 并且按照顺序储存
                     let arrayExistBubble = new Array()
@@ -469,6 +727,7 @@ $(document).ready(function () {
                         }
 
                         let timeWaitInsert = timeObj.getTime()
+                        // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
 
                         // 在index对应的bubble之前插入
                         let currentInsertIndex = 0
@@ -478,27 +737,37 @@ $(document).ready(function () {
                                 currentInsertIndex = -(indexOfExistBubble + 1)
                             }
                             if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
+                                // console.log("later : ", indexOfExistBubble, arrayExistBubble[indexOfExistBubble].msgTime)
                                 currentInsertIndex = indexOfExistBubble
                             }
                         }
 
+                        // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
+
                         if (currentInsertIndex >= 0) {
-                            if (currentInsertIndex == arrayExistBubble.length - 1) {
-                                $(dialogSelector).append(AddDialogHtml(value))
+                            if (currentInsertIndex == arrayExistBubble.length - 1
+                                && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
+
+                                $(dialogSelector).append(bubble.createBubble(value))
+
+                                arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                             } else {
-                                $(AddDialogHtml(value))
+                                $(bubble.createBubble(value))
                                     .insertBefore(
                                         dialogSelector
                                         + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
                                     )
+
+                                arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                             }
 
                         } else {
                             // 重复的ID, 替换成新的
                             $(dialogSelector
                                 + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
-                                .replaceWith(AddDialogHtml(value)
+                                .replaceWith(bubble.createBubble(value)
                                 )
+                            // arrayExistBubble[-currentInsertIndex - 1].msgTime
                         }
 
 
@@ -513,14 +782,12 @@ $(document).ready(function () {
                     // 滑动到最下面
                     $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
 
-                    // 取消unread
-                    console.log('focusing innnnnnnnnnnn')
-                    // $(webTag2Selector(webTag)).focus()
-                    console.log(document.activeElement)
-
+                    // fixme : -----------------------
+                    // 目前程序已经去除对webview focus, 理论上来说不需要blur
                     console.log('bluring outttttttttttttttttttt')
                     $(webTag2Selector(webTag)).blur()
-                    console.log(document.activeElement)
+                    //--------------------------------
+
                 } else {
 
                     console.log("dialog updated. new bubble(s) not display...")
@@ -584,10 +851,10 @@ $(document).ready(function () {
 
 
                 }
-                
 
-                if(Convo.counter > 0 && !Convo.muted){
-                    core.sendToMain({'flash':''})
+
+                if (!Convo.muted) {
+                    core.sendToMain({ 'flash': '' })
                 }
 
                 if (Convo.action === 'a') {
@@ -608,6 +875,16 @@ $(document).ready(function () {
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
                     ChangeConvoHtml(webTag, Convo)
+                } else if (Convo.action === 'r') {
+                    console.log('going to remove convo')
+                    let active =
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
+                            .hasClass('theme-transduction-active')
+
+                    $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
+                    if (active) {
+                        rightBackToDefault()
+                    }
                 }
 
                 resolve("copy that")
@@ -659,23 +936,11 @@ $(document).ready(function () {
                             }
                         })
                         // 右侧恢复到开始状态
-                        $('.td-chat-title').removeAttr('data-user-i-d')
-                        $('.td-chat-title').removeAttr('data-app-name')
-                        $('.td-chat-title > h2').text('')
-                        $('.td-chat-title > img').attr('src','../res/pic/nothing.png')
+                        if ($('.app-online').length == 0) {
+                            // 空白页
+                            rightBackToDefault()
+                        }
 
-                        $('.td-chatLog[wintype="chatLog"]').empty()
-                        $('.td-chatLog[wintype="chatLog"]').append('\
-                        <div class="td-default">\
-                            <p>\
-                                商业合作，问题反馈，请联系c4r。\
-                            </p>\
-                            <p>\
-                                business cooperation, bug report, please contact c4r.\
-                            </p>\
-                        </div>')
-
-                        // 空白页
 
 
                     } else if (Obj.status == 'online') {
@@ -773,7 +1038,7 @@ $(document).ready(function () {
             $(sectionSelector + " webview").each(function (index) {
                 $(this).hide();
             });
-            $(sectionSelector).append("<webview data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
+            $(sectionSelector).append("<webview style='width:100%; height:100%' data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
 
             $(webSelector).attr("data-extension-name", extensionName)
 
@@ -789,16 +1054,16 @@ $(document).ready(function () {
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
                 });
-                
+
                 // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
-                if($(webSelector).attr('src') != strUrl){
+                if ($(webSelector).attr('src') != strUrl) {
                     $(webSelector).attr('src', strUrl)
                 }
 
                 $(webSelector).show()
 
 
-                
+
             } else {
                 // 隐藏所有webview
                 $(sectionSelector + " webview").each(function (index) {
@@ -1150,16 +1415,23 @@ $(document).ready(function () {
                     item.localSave().then(() => {
                         console.log("debug : path : ", item.path, "-----------------------------------")
                         fileList[item.fileID] = item
-                        if (pasteHtmlAtCaret(
-                            "<img data-file-ID='"
+
+                        sendInput("<img data-file-ID='"
                             + item.fileID
                             + "' contenteditable=false src='"
                             + item.path
-                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
-                            resolve("")
-                        } else {
-                            reject("error : itemToHTML : pasteHtmlAtCaret")
-                        }
+                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >")
+
+                        // if (pasteHtmlAtCaret(
+                        //     "<img data-file-ID='"
+                        //     + item.fileID
+                        //     + "' contenteditable=false src='"
+                        //     + item.path
+                        //     + "' height='" + newSize.height + "' width='" + newSize.width + "' >", 'div.td-inputbox')) {
+                        //     resolve("")
+                        // } else {
+                        //     reject("error : itemToHTML : pasteHtmlAtCaret")
+                        // }
                     }).catch((err) => {
                         console.log("error : itemToHTML : localSave ")
                         console.log(err)
@@ -1275,6 +1547,31 @@ $(document).ready(function () {
     }
 
     /**
+     * 光标移动到最后
+     * https://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity/3866442#3866442
+     * @param {*} contentEditableElement 
+     */
+    function setEndOfContenteditable(contentEditableElement) {
+        var range, selection;
+        if (document.createRange)//Firefox, Chrome, Opera, Safari, IE 9+
+        {
+            range = document.createRange();//Create a range (a range is a like the selection but invisible)
+            range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
+            range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+            selection = window.getSelection();//get the selection object (allows you to change selection)
+            selection.removeAllRanges();//remove any selections already made
+            selection.addRange(range);//make the range you have just created the visible selection
+        }
+        else if (document.selection)//IE 8 and lower
+        {
+            range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
+            range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
+            range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+            range.select();//Select the range (make it the visible selection
+        }
+    }
+
+    /**
      * 去掉input html中的tag
      * getInput函数调用该函数
      * @param {String} HTML 
@@ -1318,7 +1615,7 @@ $(document).ready(function () {
             // console.log(index, typeof (value), '----')
             // console.log(value)
             if (typeof (value) != 'string') {
-                strInput = arrayInput.slice(fileIndex + 1, index).join('')
+                strInput = arrayInput.slice(fileIndex + 1, index).join('\n')
                 if (strInput.length > 0) arraySimpleInput.push(strInput)
 
                 arraySimpleInput.push(value)
@@ -1326,7 +1623,37 @@ $(document).ready(function () {
             }
         })
 
-        strInput = arrayInput.slice(fileIndex + 1).join('')
+        strInput = arrayInput.slice(fileIndex + 1).join('\n')
+        if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+        return arraySimpleInput
+    }
+
+    /**
+     * 从给定的html中直接拿到sending
+     * @param {String} innerHTML 
+     * @returns {Array} 以数组形式储存, 只含有string和File. 
+     */
+    function getInputFromHtml(innerHTML) {
+        let arrayInput = simpleInput(innerHTML)
+        let arraySimpleInput = new Array()
+
+
+        let fileIndex = -1
+        let strInput = ''
+        arrayInput.forEach((value, index) => {
+            // console.log(index, typeof (value), '----')
+            // console.log(value)
+            if (typeof (value) != 'string') {
+                strInput = arrayInput.slice(fileIndex + 1, index).join('\n')
+                if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+                arraySimpleInput.push(value)
+                fileIndex = index
+            }
+        })
+
+        strInput = arrayInput.slice(fileIndex + 1).join('\n')
         if (strInput.length > 0) arraySimpleInput.push(strInput)
 
         return arraySimpleInput
@@ -1403,8 +1730,12 @@ $(document).ready(function () {
 
 
 
+
         let wc = $(webSelector).get(0).getWebContents();
 
+        // wc.executeJavaScript('$("'+inputSelector+'").get(0).click(); console.log("click from index");', true);
+
+        // setTimeout(() => {
         console.log("---attachInputFile----")
         try {
             if (!wc.debugger.isAttached()) {
@@ -1413,7 +1744,6 @@ $(document).ready(function () {
         } catch (err) {
             console.error("Debugger attach failed : ", err);
         };
-
 
 
         wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
@@ -1435,6 +1765,8 @@ $(document).ready(function () {
             });
 
         });
+        // }, 3000);
+
 
     }
 
@@ -1457,14 +1789,78 @@ $(document).ready(function () {
 
 
 
+    /**
+     * 获取发送内容, 并发送
+     * 如果给fromHtml, 那就从fromHtml中抓取消息发送
+     * @param {String} fromHtml 
+     */
+    function sendInput(fromHtml = undefined) {
+
+
+        // 获取appname
+        let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+        let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
+
+
+        if (userID && webTag) {
+            let arraySend = undefined
+            if (fromHtml == undefined) {
+                arraySend = getInput('div.td-inputbox')
+            } else {
+                arraySend = getInputFromHtml(fromHtml)
+            }
+
+            // 清理消息
+            $("div.td-inputbox").empty()
+            // console.log('-----send-----')
+            if (arraySend.length > 0) {
+
+                arraySend.unshift(userID)
+                // $(webTag2Selector(webTag)).focus()
+                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
+
+                    // 索取新的dialog
+                    core.HostSendToWeb(
+                        webTag2Selector(webTag),
+                        { "queryDialog": { "userID": userID } }
+                    ).then((res) => {
+                        console.log("queryDialog : webReply : ", res)
+
+                    }).catch((error) => {
+                        throw error
+                    })
+
+                    //删除File list
+                    // arraySend.forEach((value, index) => {
+                    //     console.log(index, typeof (value))
+                    //     if (typeof (value) != 'string') {
+                    //         console.log("file : ", value.fileID)
+                    //         fileList[value.fileID].clear()
+                    //         delete fileList[value.fileID]
+                    //     }
+                    // })
+
+                }).catch((err) => {
+                    console.log("send failed", err)
+
+                    // $("#td-sending").remove()                    
+                })
+            }
+        }
+
+
+    }
+
     // =============================程序主体=============================
 
 
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://web.wechat.com/", core.strUserAgentWin)
+    loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
     // openDevtool("skype")
     // openDevtool("wechat")
+    // openDevtool("dingtalk")
 
 
     //==============================UI==============================
@@ -1479,7 +1875,8 @@ $(document).ready(function () {
         window.scrollTo(0, 0)
         document.getElementById('td-left').style.width = x + 'px'
         document.getElementById('td-input').style.height = window.innerHeight - y + 'px'
-
+        store.set('tdPinCoord', tdPinCoord)
+        // console.log('tdPinCoord changed to: ', tdPinCoord)
     }
 
     $('#td-pin').draggable({
@@ -1504,12 +1901,35 @@ $(document).ready(function () {
     document.getElementById('modal-wechat').querySelector('webview').addEventListener('load-commit', function () {
         this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
+    document.getElementById('modal-wechat').querySelector('webview').addEventListener('dom-ready', function () {
+        this.insertCSS('.login.ng-scope{min-width: unset;}')
+    })
+    document.getElementById('modal-dingtalk').querySelector('webview').addEventListener('dom-ready', function () {
+        this.insertCSS('\
+        #layout-main {\
+            width:-webkit-fill-available !important;\
+            min-width:490px;\
+            max-width:1000px;\
+        }\
+        #content-pannel {\
+            flex:1 !important;\
+        }\
+        #menu-pannel {\
+            width:50px !important;\
+        }\
+        #chat-box > div > div {\
+            min-width: 320px;\
+        }\
+        ')
+    })
 
     /**
      * webview隐藏
      */
     $('.modal:hidden').each((index, element) => {
-        $('>div.modal-dialog', element).removeClass('modal-xl')
+        if (!element.matches('#modal-image') && !element.matches('#modal-settings')) {
+            $('>div.modal-dialog', element).removeClass('modal-xl')
+        }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(element).css('left', '100000px')
         $(element).show()
@@ -1518,7 +1938,9 @@ $(document).ready(function () {
         $(webTag2Selector(element.id.substring(6))).height("800px")
     })
     $('.modal').on('hidden.bs.modal', function (e) {
-        $('>div.modal-dialog', this).removeClass('modal-xl')
+        if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
+            $('>div.modal-dialog', this).removeClass('modal-xl')
+        }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(this).css('left', '100000px')
         $(this).show()
@@ -1533,39 +1955,45 @@ $(document).ready(function () {
     $('.td-app-status img[class]').on('click', function () {
         let webTag = this.id.substring(4)
 
-        let sendingUserID = undefined
-        // 正在发消息不能打开后台
-        for (let key in sendingList) {
-            if (key.startsWith(webTag + ':') && sendingList[key] > 0) {
-                sendingUserID = key.substr((webTag + ':').length)
-            }
+        let webTagSelector = '#modal-' + webTag
+        $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+        $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+
+        if (this.matches('.app-offline')) {
+            $(webTagSelector).modal('show')
+        }
+        if (this.matches('.app-online')) {
+            $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
+            $(webTagSelector).modal('show')
         }
 
-
-        if (sendingUserID === undefined) {
-            let webTagSelector = '#modal-' + webTag
-            $(webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
-            $(webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
-
-            if (this.matches('.app-offline')) {
-                $(webTagSelector).modal('show')
-            }
-            if (this.matches('.app-online')) {
-                $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
-                $(webTagSelector).modal('show')
-            }
-        } else {
-            console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
-            $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
-                $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text() + '...</div>')
-            setTimeout(() => {
-                $("#td-warning").remove()
-            }, 5000);
-        }
 
     })
 
+    //==========================UI_settingsPage=====================
+    function loadSettings() {
+        let tdSettings = store.get('tdSettings')
+        document.getElementById('swTray').checked = tdSettings == undefined ? false : tdSettings.swTray
+    }
+    loadSettings()
 
+    function applySettings() {
+        let tdSettings = store.get('tdSettings')
+        if (tdSettings.swTray) {
+
+        }
+    }
+
+    document.getElementById('swTray').addEventListener('click', function () {
+        // console.warn('UIsettings:', this.checked)
+        let tdSettings = store.get('tdSettings')
+        if (tdSettings == undefined) {
+            tdSettings = new Object()
+        }
+        tdSettings.swTray = this.checked
+        store.set('tdSettings', tdSettings)
+        applySettings()
+    })
 
     // ===========================接收消息===========================
 
@@ -1578,122 +2006,108 @@ $(document).ready(function () {
     core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
         return respFuncWinReplyWeb("skype", key, arg)
     })
+    // dingtalk
+    core.WinReplyWeb(webTag2Selector("dingtalk"), (key, arg) => {
+        return respFuncWinReplyWeb("dingtalk", key, arg)
+    })
 
 
     // 点击convo
     $('#td-convo-container').on('click', 'div.td-convo', function () {
 
-
         // 识别webtag
-        // console.log($(this).find("div.td-nickname").text())        
+        let cWebTag = $("div.td-chat-title").attr("data-app-name")
+        let cUserID = $("div.td-chat-title").attr("data-user-i-d")
         let webTag = $(this).attr("data-app-name")
         let userID = $(this).attr("data-user-i-d")
         let nickName = $(this).find("div.td-nickname").text()
 
-        let sendingUserID = undefined
-        // 该webtag下, 有个不是当前点击的userID在发送文件, 则不允许点击
-        // 比如微信正在给a发送消息, 那么可以点击skype下任意用户, 但是微信只允许点击a用户.
-        // 点击其他用户会把后台正在等待发消息的函数给停掉.
-        for (let key in sendingList) {
-            if (key.startsWith(webTag + ':') && key != webTag + ':' + userID && sendingList[key] > 0) {
-                sendingUserID = key.substr((webTag + ':').length)
-            }
+        if (webTag == undefined || userID == undefined) {
+            console.log("error : click obj error.")
+            console.log("obj : ", this)
+            console.log("userID : ", userID)
+            return
         }
 
-        if (sendingUserID === undefined) {
-            $('#td-convo-container div.td-convo').removeClass('theme-transduction-active')
-            $(this).addClass('theme-transduction-active')
+        $('#td-convo-container div.td-convo').removeClass('theme-transduction-active')
+        $(this).addClass('theme-transduction-active')
 
+        // 读取和临时储存草稿
+        //去掉focus, focus在向后台发送查询后再添加
+        $(".td-inputbox").blur()
+        let inputHtml = $(".td-inputbox").html()
+        if (cWebTag != undefined && cUserID != undefined) {
+            inputDraft.add(cWebTag, cUserID, inputHtml)
+        }
 
-            if (webTag == undefined || userID == undefined) {
-                console.log("error : click obj error.")
-                console.log("obj : ", this)
-                console.log("userID : ", userID)
-                return
-            }
-
-            // 加载dialog(当前可能显示的是extension)
-            $(debug_goBackChat_str).click()
-            // 滑动条拖到最后
-            let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
-            $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
-
-
-            // $(webTag2Selector(webTag)).focus()
-            if (
-                $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
-                && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
-                && $("#td-right div.td-chat-title h2").text() == nickName
-            ) {
-                // 当前聊天内容不需要清空, 只需要补充
-                core.HostSendToWeb(
-                    webTag2Selector(webTag),
-                    { "queryDialog": { "userID": userID } }
-                ).then((res) => {
-                    console.log("queryDialog : webReply : ", res)
-
-                }).catch((error) => {
-                    throw error
-                })
-
-            } else {
-                // ---------右侧标题-----------
-                $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
-                $("#td-right div.td-chat-title").attr("data-app-name", webTag)
-                $("#td-right div.td-chat-title h2").text(nickName)
-                $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
-                $("#td-right div.td-chatLog[wintype='chatLog']").empty()
-
-
-                // $(webTag2Selector(webTag)).focus()
-                core.HostSendToWeb(
-                    webTag2Selector(webTag),
-                    { "queryDialog": { "userID": userID } }
-                ).then((res) => {
-                    console.log("queryDialog : webReply : ", res)
-
-                    // setTimeout(() => {
-                    //     console.log('bluring outtttttttttttttttttttttttt')
-                    //     $(webTag2Selector(webTag)).blur()
-                    // }, 1300)
-                    // console.log('focusing innnnnnnnnnnn')
-                    // $(webTag2Selector(webTag)).focus()
-
-
-                }).catch((error) => {
-                    throw error
-                })
-            }
-            // $(webTag2Selector(webTag)).focus()
-            // 判断sending条
-            if (sendingList[webTag + ':' + userID] && sendingList[webTag + ':' + userID] > 0) {
-                $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
-            }
+        if (inputDraft.query(webTag, userID) != undefined) {
+            inputHtml = inputDraft.query(webTag, userID)
         } else {
-            console.log('warning ..... ', sendingUserID, $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text())
-            $("div.td-chatLog[wintype='chatLog']").append('<div id="td-warning">sending to' +
-                $('div[data-user-i-d="' + sendingUserID + '"] div.td-nickname').text() + '...</div>')
-            setTimeout(() => {
-                $("#td-warning").remove()
-            }, 5000);
+            inputHtml = ''
         }
+        $(".td-inputbox").empty()
+        $(".td-inputbox").append(inputHtml)
 
+
+        // 加载dialog(当前可能显示的是extension)
+        $(debug_goBackChat_str).click()
+        // 滑动条拖到最后
+        let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+        $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+
+        if (
+            $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
+            && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
+            && $("#td-right div.td-chat-title h2").text() == nickName
+        ) {
+            // 当前聊天内容不需要清空, 只需要补充
+            core.HostSendToWeb(
+                webTag2Selector(webTag),
+                { "queryDialog": { "userID": userID } }
+            ).then((res) => {
+                console.log("queryDialog : webReply : ", res)
+
+            }).catch((error) => {
+                throw error
+            })
+
+        } else {
+            // ---------右侧标题-----------
+            $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
+            $("#td-right div.td-chat-title").attr("data-app-name", webTag)
+            $("#td-right div.td-chat-title h2").text(nickName)
+            $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
+            $("#td-right div.td-chatLog[wintype='chatLog']").empty()
+
+            core.HostSendToWeb(
+                webTag2Selector(webTag),
+                { "queryDialog": { "userID": userID } }
+            ).then((res) => {
+                console.log("queryDialog : webReply : ", res)
+
+                $(".td-inputbox").focus()
+                setEndOfContenteditable($(".td-inputbox").get(0))
+
+            }).catch((error) => {
+                $(".td-inputbox").focus()
+                $(".td-inputbox").get(0).setSelectionRange($(".td-inputbox").html().length, $(".td-inputbox").html().length)
+                setEndOfContenteditable($(".td-inputbox").get(0))
+
+                throw error
+
+            })
+        }
     });
 
 
-    // console.log("toggle")
-    // toggleWebview()
-    // openDevtool('skype')
+
     window.onresize = () => {
         // console.log("===window resize====")
         document.getElementById('td-pin').style.left = window.getComputedStyle(document.getElementById('td-left')).getPropertyValue('width')
         document.getElementById('td-pin').style.bottom = window.getComputedStyle(document.getElementById('td-input')).getPropertyValue('height')
         // console.log(window.getComputedStyle(document.getElementById('td-left')).getPropertyValue('width'))
     }
-    // $(window).resize(function () {
-    //     document.getElementById('td-pin').style.left = tdPinCoord[0] + 'px'
-    //     document.getElementById('td-pin').style.bottom = tdPinCoord[1] + 'px'
-    // })
+
 
 
     // =================extension click==================
@@ -1733,58 +2147,37 @@ $(document).ready(function () {
     // ======================拖入东西==========================
     // 检测到拖入到东西
     // 当extension打开的时候, 只接受输入框位置拖入
-    // $("#td-right").on("dragenter", (event) => {
-    //     if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
-
-    //     } else {
-    //         $("#td-right").hide()
-    //         $("div[winType='dropFile']").show()
-    //     }
-    // })
     $('#td-right').on('dragenter', (event) => {
         // $('.td-dropFile').show()
         $('.td-dropFile').removeClass('hide')
     })
-    // $("div.td-inputbox").on("dragenter", (event) => {
-    //     if ($("#td-right div.td-chatLog[winType='chatLog']").css("display") == "none") {
-    //         $("#td-right").hide()
-    //         $("div[winType='dropFile']").show()
-    //     } else {
 
-    //     }
-    // })
     $('div.td-inputbox').on('dragenter', (event) => {
         $('.td-dropFile').removeClass('hide')
     })
 
     // 拖出右侧还原
-    // $("div[winType='dropFile']").on("dragleave", (event) => {
-    //     $("div[winType='dropFile']").hide()
-    //     $("#td-right").show()
-    // })
     $('.td-dropFile').on('dragleave', (event) => {
         $('.td-dropFile').addClass('hide')
     })
 
 
     //识别到放下东西
-    // $("div[winType='dropFile']").on("drop", (event) => {
-    //     console.log("drop")
-    //     $("div[winType='dropFile']").hide()
-    //     $("#td-right").show()
-    //     // Prevent default behavior (Prevent file from being opened)
-    //     event.preventDefault();
-    //     processDataTransfer(event.originalEvent.dataTransfer).then(
-    //         console.log("insert input done")
-    //     )
-    // })
     $('.td-dropFile').on('drop', (event) => {
         console.log('drop')
         $('.td-dropFile').addClass('hide')
         event.preventDefault();
-        processDataTransfer(event.originalEvent.dataTransfer).then(
+
+        $(".td-inputbox").focus()
+
+        processDataTransfer(event.originalEvent.dataTransfer).then(() => {
+
+            $(".td-inputbox").focus()
+
+            core.sendToMain({ "focus": "" })
+
             console.log("insert input done")
-        )
+        })
     })
 
 
@@ -1794,9 +2187,10 @@ $(document).ready(function () {
         // event.stopPropagation();
 
         let clipData = event.originalEvent.clipboardData || window.clipboardData;
-        processDataTransfer(clipData).then(
+        processDataTransfer(clipData).then(() => {
+            $(".td-inputbox").focus()
             console.log("paste insert input done")
-        )
+        })
 
     });
 
@@ -1805,117 +2199,20 @@ $(document).ready(function () {
         $('.td-toolbox > input[type="file"]').get(0).click()
     })
 
-    $('.td-toolbox > input[type="file"]').on("change", function(event){ 
-        processFileList(event.target.files)
-     });
+    $('.td-toolbox > input[type="file"]').on("change", function (event) {
+        processFileList(event.target.files).then(() => {
+            $(".td-inputbox").focus()
+            console.log("insert input done")
+        })
+    });
+
 
     // ===========================发送消息===========================
     $(debug_send_str).on('click', event => {
 
-        // 获取appname
-        let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
-        let webTag = $("#td-right div.td-chat-title").attr("data-app-name")
-
-
-        if (userID && webTag) {
-            let arraySend = getInput('div.td-inputbox')
-            // 清理消息
-            $("div.td-inputbox").empty()
-            // console.log('-----send-----')
-            if (arraySend.length > 0) {
-
-                if (sendingList[webTag + ':' + userID]) {
-
-                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] + 1
-                } else {
-                    sendingList[webTag + ':' + userID] = 1
-                }
-                // console.log("sending num : ", sendingList[webTag+':'+userID])
-
-                // 添加send
-                if ($("#td-sending").length == 0) {
-                    console.log("attach sending-----")
-                    $("div.td-chatLog[wintype='chatLog']").append('<div id="td-sending">Sending...</div>')
-                }
-
-                arraySend.unshift(userID)
-                // $(webTag2Selector(webTag)).focus()
-                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
-
-                    console.log("send finished. ", sendingList[webTag + ':' + userID], ' messages sending')
-                    sendingList[webTag + ':' + userID] = sendingList[webTag + ':' + userID] - 1
-                    if (sendingList[webTag + ':' + userID] <= 0) {
-                        $("#td-sending").remove()
-                    }
-                    // 索取新的dialog
-                    core.HostSendToWeb(
-                        webTag2Selector(webTag),
-                        { "queryDialog": { "userID": userID } }
-                    ).then((res) => {
-                        console.log("queryDialog : webReply : ", res)
-
-                    }).catch((error) => {
-                        throw error
-                    })
-
-                    //删除File list
-                    arraySend.forEach((value, index) => {
-                        console.log(index, typeof (value))
-                        if (typeof (value) != 'string') {
-                            console.log("file : ", value.fileID)
-                            fileList[value.fileID].clear()
-                            delete fileList[value.fileID]
-                        }
-                    })
-
-                }).catch((err) => {
-                    console.log("send failed", err)
-
-                    // $("#td-sending").remove()                    
-                })
-            }
-        }
-
-
-        // attachInputFile(webTag2Selector("skype"), "input.fileInput", "")
-        // console.log(fileList)
+        sendInput()
     })
 
-    // ===查询后台登录情况===
-    // $("#test-1").on("click", () => {
-    //     console.log("====query logStatus=====")
-    //     $("webview[data-app-name]").each((index, el) => {
-    //         let webTag = $(el).attr("data-app-name")
-    //         // console.log()
-    //         core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
-    //             let color = 'red'
-    //             // console.log((obj['queryLogStatus'+":"+""]))
-    //             let logStatus = (obj['queryLogStatus' + ":" + ""])
-    //             if (logStatus.status == 'offline') {
-    //                 console.log(webTag + " not log yet.")
-    //             } else if (logStatus.status == 'online') {
-    //                 console.log(webTag + " is logged already.")
-    //                 color = 'green'
-    //             } else if (logStatus.status == 'failure') {
-    //                 console.log(webTag + " log failed")
-    //             }
-
-    //             // 修改登录状态
-    //             let selector = "#test-2 p[data-app-name='" + webTag + "']"
-    //             if ($(selector).length == 0) {
-    //                 $("#test-2").append(
-    //                     "<p data-app-name='" + webTag + "'>" + webTag + " : " + logStatus.status + "</p>")
-    //                 $(selector).css("background-color", color);
-    //             } else {
-    //                 $(selector).text(webTag + " : " + logStatus.status)
-    //                 $(selector).css("background-color", color);
-    //             }
-    //         }).catch((err) => {
-    //             console.log(webTag, "no response", err)
-    //         })
-    //     })
-
-    // })
 
     // ===查询后台登录情况===
     $("#td-request-status").on("click", () => {
@@ -1966,14 +2263,14 @@ $(document).ready(function () {
         // console.log(this.href.substring(0,4))
         if (this.href.substring(0, 4) == 'http') {
 
-            if(this.href.search('https://send.firefox.com/download') !== -1){
+            if (this.href.search('https://send.firefox.com/download') !== -1) {
                 // 在extension打开
                 // console.log("click : ", this.href)
 
                 $(debug_firefox_send_str).click()
 
                 loadExtension("#td-right div.td-chatLog[winType='extension']", "firefox-send", this.href, '')
-            }else{
+            } else {
                 shell.openExternal(this.href);
                 // let options = {
                 //     type: 'info',
@@ -2000,37 +2297,166 @@ $(document).ready(function () {
 
     });
 
+    $(document).on('click', 'a.badge.badge-pill.badge-warning', function (event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+        // console.log(this.href.substring(0,4))
+        let webTag = $('#td-right > div.td-chat-title').attr('data-app-name')
+        $('#app-' + webTag).click()
+
+    });
+
     // 阻拦全部链接点击
     $(document).on('click', 'button[download]', function (event) {
         console.log('download : ', this)
-        core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
+        core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
+
+    });
+
+    $(document).on('click', 'button[reload]', function (event) {
+        console.log('reload : ', $(this), $(this).closest('modal-content').find('webview'))
+        // core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
+        let webview = $(this).closest('.modal-content').find('webview')
+        if (webview) {
+            $(webview).get(0).reload()
+        }
 
     });
 
 
     $(document).on('keypress', function (event) {
-        // console.log("focus text")
+        // console.log("keypress",event.which )
         // if(document.activeElement == $(".td-inputbox").get(0)){
 
         // }else{
 
         // }
-        // console.log('key press : ', event.which, event.ctrlKey)
+        // console.log('focus : ',$(document.activeElement).is(".td-inputbox"), ' key press : ', event.which, event.ctrlKey)
         // $(".td-inputbox").focus()
 
-        if($(document.activeElement).is(".td-inputbox")){
+        if ($(document.activeElement).is(".td-inputbox")) {
+
             if (event.which == 13) {
                 // enter pressed
-                $('#debug-send').click()
+                $(debug_send_str).click()
                 return false
             }
+            // ctr+enter : newline
             if (event.ctrlKey && event.which == 10) {
-                pasteHtmlAtCaret("</br>", 'div.td-inputbox')
+                arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
+                if (($(arrayIn)[arrayIn.length - 1].nodeName != 'BR')) {
+                    $('div.td-inputbox').append('<br>')
+                }
+                pasteHtmlAtCaret("<br>", 'div.td-inputbox')
             }
-        }else{
+
+
+        } else {
             // 闪烁
         }
 
+    })
+
+    $(document).keydown(function (event) {
+
+        // console.log("keydown",event.which )
+        if ($(document.activeElement).is(".td-inputbox")) {
+
+            // tab 只能激活keydown, 不能激活keypress
+            if (!event.ctrlKey && event.which == 9) {
+                // console.log("tab down")
+                // $('div.td-inputbox').append('&nbsp;')
+                event.preventDefault();
+                event.stopPropagation();
+                pasteHtmlAtCaret("\t", 'div.td-inputbox')
+            }
+
+        }
+
+
+        // ctrl+up/down 切换convo
+        if (event.ctrlKey && (event.which == 38 || event.which == 40)) {
+            // console.log("tab down")
+            event.preventDefault();
+            event.stopPropagation();
+            // 
+            // console.log("切换联系人")
+            let lengthConvo = $('.td-convo:visible').length
+            let classTactive = 'theme-transduction-active-tran'
+            let cStrSelector = '.' + classTactive
+
+            let convoSelector = '.td-convo:visible'
+
+            if (lengthConvo > 0) {
+
+                let activePos = $(convoSelector).index($('.theme-transduction-active'))
+
+                let TactivePos = $(convoSelector).index($(cStrSelector))
+
+                $(convoSelector).removeClass(classTactive)
+
+                if ((activePos == -1 && TactivePos == -1)) {
+                    // 既没有active也没有临时(Tactive), Tactive放在第一位 
+                    // console.log("add tactive at 0")
+                    $(convoSelector).eq(0).addClass(classTactive)
+                } else if (lengthConvo > 1 && activePos > -1 && TactivePos == -1) {
+                    // 有active, 没有Tactive : 根据方向键选择active的邻近一个
+                    if (event.which == 38) {
+                        // up
+                        let nextP = core.periodicPos(activePos - 1, lengthConvo)
+                        $(convoSelector).eq(nextP).addClass(classTactive)
+
+                    } else if (event.which == 40) {
+                        // down
+                        let nextP = core.periodicPos(activePos + 1, lengthConvo)
+                        $(convoSelector).eq(nextP).addClass(classTactive)
+                    }
+                } else if (lengthConvo > 1 && TactivePos > -1) {
+                    if (event.which == 38) {
+                        // up
+                        let nextP = core.periodicPos(TactivePos - 1, lengthConvo)
+                        if (nextP == activePos) {
+
+                        } else {
+                            $(convoSelector).eq(nextP).addClass(classTactive)
+                        }
+
+                    } else if (event.which == 40) {
+                        // down
+                        let nextP = core.periodicPos(TactivePos + 1, lengthConvo)
+                        if (nextP == activePos) {
+
+                        } else {
+                            $(convoSelector).eq(nextP).addClass(classTactive)
+                        }
+                    }
+                }
+            }
+
+        }
+    })
+
+
+    $(document).keyup(function (event) {
+        // console.log("keyup",event.which )
+
+        if (event.which == 17) {
+            // control 抬起
+
+            let cStrSelector = '.' + classTactive
+            let convoSelector = '.td-convo:visible'
+
+            if ($(cStrSelector).length > 0) {
+                // tacitve存在, 切换联系人
+                event.preventDefault();
+                event.stopPropagation();
+
+                let TactivePos = $(convoSelector).index($(cStrSelector))
+                $(convoSelector).removeClass(classTactive)
+                $(convoSelector).eq(TactivePos).get(0).click()
+            }
+        }
 
     })
 

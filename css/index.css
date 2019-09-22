@@ -203,6 +203,7 @@ webview {
     align-items: center;
     justify-content: center;
     word-break: break-word;
+    white-space: pre-wrap;
 }
 
 #td-sending {
@@ -238,8 +239,10 @@ webview {
 }
 
 .td-chatImg {
-    width: 8rem;
-    height: 8rem;
+    max-width: 45vw;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    /* max-height: 80%; */
 }
 
 .td-chatImg>img {
@@ -269,6 +272,26 @@ webview {
     min-height: 4rem;
     align-self: flex-end;
     display: flex;
+    position: relative;
+}
+
+.td-me .td-bubbleStatus {
+    height: 2rem;
+    width: 2rem;
+    position: absolute;
+    left: -1.8rem;
+    bottom: -0.4rem;
+}
+
+.td-bubbleStatus.bubbleError {
+    height: 2rem;
+    width: 2rem;
+    background-image: url('../res/pic/bubble_error.svg');
+    position: absolute;
+    left: -1.8rem;
+    bottom: -0.4rem;
+    box-sizing: border-box;
+    padding-left: 2rem;
 }
 
 .td-me>p {
@@ -288,6 +311,7 @@ webview {
     flex: 1;
     overflow: auto;
     word-break: break-word;
+    white-space: pre-wrap;
 }
 
 .td-send {
@@ -310,8 +334,8 @@ webview {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: #9c9c9c;
-    opacity: 0.5;
+    background-color: #9c9c9c88;
+    /* opacity: 0.5; */
     display: flex;
     justify-content: center;
     overflow: hidden;
@@ -322,11 +346,12 @@ webview {
     display: none;
 }
 
-.td-dropFile>img {
-    align-self: center;
-    width: 128px;
-    height: 128px;
-    pointer-events: none;
+.td-invisible {
+    visibility: hidden;
+}
+
+.td-none {
+    display: none;
 }
 
 .col-left, .col-hint, .col-avatar, .col-right {
@@ -336,7 +361,8 @@ webview {
 }
 
 .col-text, .col-timestamp {
-    /* display: none; */
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     align-self: stretch;
 }
@@ -358,6 +384,7 @@ webview {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
+    position: relative;
 }
 
 .td-counter {
@@ -418,6 +445,11 @@ webview {
     /* background-color: #ffdeca; */
 }
 
+.theme-transduction-active-tran {
+    background-color: #5b6ca7;
+    /* background-color: #ffdeca; */
+}
+
 .theme-skype {
     background-color: #00aff0;
     /* background-color: #0078d7; */
@@ -427,6 +459,10 @@ webview {
     background-color: #1aad19;
     /* background-color: #2ba245; */
     /* background-color: #91ed61; */
+}
+
+.theme-dingtalk {
+    background-color: #008cee;
 }
 
 #td-right, .td-toolbox {

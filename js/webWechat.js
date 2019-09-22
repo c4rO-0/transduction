@@ -51,20 +51,6 @@ window.onload = function () {
     }
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
-    // 通过RemarkName查找用户ID
-    function getUsernameByRemarkName(remarkName) {
-        // let contact = window._contacts
-        for (let username in contact) {
-            // console.log(contact[username])
-            // console.log((contact[username]))
-            if ((_contacts[username])["RemarkName"] == remarkName) {
-                return username
-            }
-
-        }
-
-        return undefined
-    }
 
     /**
      * 根据微信储存的变量_chatcontent读取消息
@@ -72,7 +58,7 @@ window.onload = function () {
      * @returns {Object} 拿到我们关系的内容
      * @param {Integer} indexMSG MSG在_chatcontent里位置
      */
-    function grepMSG(contacts, MSG, indexMSG) {
+    function grepBubble(contacts, MSG, indexMSG) {
 
 
         let fromUserName = MSG["MMActualSender"]
@@ -85,28 +71,28 @@ window.onload = function () {
         let fileSize = undefined
         let remarkName = ''
         let nickName = ''
-        if( MSG["FromUserName"].substr(0, 2) == "@@"){
+        if (MSG["FromUserName"].substr(0, 2) == "@@") {
             // console.log("MSG is group")
             // 聊天群
-            let memberList = (contacts[MSG["FromUserName"]])['MemberList'] 
+            let memberList = (contacts[MSG["FromUserName"]])['MemberList']
             let foundName = false
             memberList.forEach(member => {
                 // console.log('member name : ', member['UserName'] ,  MSG['MMActualSender'],member['UserName'] == MSG['MMActualSender'] )
-                if(!foundName && member['UserName'] == MSG['MMActualSender']){
+                if (!foundName && member['UserName'] == MSG['MMActualSender']) {
                     remarkName = member['DisplayName']
                     nickName = member['NickName']
                     // console.log("find Name : ",member, member['DisplayName'],  member['DisplayName'])
                     // avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + member['HeadImgUrl']
                     avatar = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                    + "/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username=" + member['UserName']
-                    +"&chatroomid="+ (contacts[MSG["FromUserName"]])["EncryChatRoomId"]
-                    +"&skey="
+                        + "/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username=" + member['UserName']
+                        + "&chatroomid=" + (contacts[MSG["FromUserName"]])["EncryChatRoomId"]
+                        + "&skey="
                     foundName = true
                 }
             })
             // console.log('member name : ', remarkName, nickName)
             // console.log('memberlist : ', memberList)
-        }else if (contacts[fromUserName] != undefined) {
+        } else if (contacts[fromUserName] != undefined) {
             remarkName = (contacts[fromUserName])["RemarkName"]
             nickName = (contacts[fromUserName])["NickName"]
         }
@@ -115,38 +101,61 @@ window.onload = function () {
         // let unread = strUnread == '' ? 0 : parseInt(strUnread)
         let type = ""
 
-        let contentObj = jQuery.parseHTML(MSG["MMDigest"])
         let content = ""
-        // 对content进行处理, 目前只发现emoji在里面
-        contentObj.forEach((c, i) => {
-            // 将内容进行切割, 判断是否为img emoji进行处理
 
-            let nodeName = $(c).prop('nodeName')
-            if (nodeName == "IMG") {
-                // 对左侧栏筛选字符表情
-                if ($(c).hasClass("qqemoji")) {
-                    // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                    let strEmoji = $(c).attr("text")
-                    console.log(strEmoji, strEmoji.substr(0, strEmoji.length - 4))
-                    strEmoji = strEmoji.substr(0, strEmoji.length - 4)
-                    content = content + strEmoji
-                } else if ($(c).hasClass("emoji")) {
-                    // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                    content = content + "[emoji]"
-                } else {
-                    content = content + "[image]"
+        if (MSG["MMActualContent"].length > 0) {
+            let contentObj = jQuery.parseHTML(MSG["MMActualContent"])
+            // 对content进行处理, 目前只发现emoji在里面
+            contentObj.forEach((c, i) => {
+                // 将内容进行切割, 判断是否为img emoji进行处理
+                // console.log("content contentObj ",$(c))
+                let nodeName = $(c).prop('nodeName')
+                if (nodeName == "IMG") {
+                    // 对左侧栏筛选字符表情
+                    if ($(c).hasClass("qqemoji")) {
+                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        let strEmoji = $(c).attr("text")
+                        console.log(strEmoji, strEmoji.substr(0, strEmoji.length - 4))
+                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
+                        content = content + strEmoji
+                    } else if ($(c).hasClass("emoji")) {
+                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        content = content + "[emoji]"
+                    } else {
+                        content = content + "[image]"
+                    }
+                } else if (nodeName == "BR") {
+                    content = content + '\n'
                 }
-            }
 
-            // 链接文字
-            content = content + $(c).text()
+                // 链接文字
+                content = content + $(c).text()
 
 
-        })
+            })
+        }
+
 
         let MSGID = MSG["MsgId"]
 
         let MSGObj = $("div[data-cm*='" + MSGID + "']")
+
+        // 获取状态
+        let status = undefined
+
+        if ($(MSGObj).length > 0) {
+
+            if (($(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").length > 0 && $(MSGObj).find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']").is(':visible'))
+                || ($(MSGObj).find("[ng-click='cancelUploadFile(message)']").length > 0 && $(MSGObj).find("[ng-click='cancelUploadFile(message)']").is(':visible'))) {
+                status = 'sending'
+            } else if (($(MSGObj).find(".ico_fail.web_wechat_message_fail").length > 0 && $(MSGObj).find(".ico_fail.web_wechat_message_fail").is(':visible'))
+                || ($(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").length > 0 && $(MSGObj).find("[ng-if*='CONF.MM_SEND_FILE_STATUS_FAIL']").is(':visible'))) {
+                status = 'failed'
+            } else {
+                status = 'done'
+            }
+        }
+
         // console.log("text : ", MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT && 
         // ((! MSG["SubMsgType"])  || ( MSG["SubMsgType"] == 0)) )
         if (MSG["MsgType"] == wechatMSGType.MSGTYPE_TEXT &&
@@ -162,37 +171,51 @@ window.onload = function () {
                 type = "url"
             }
 
-        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_IMAGE) {
+        } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_IMAGE || MSG["MsgType"] == wechatMSGType.MSGTYPE_EMOTICON) {
             // 缓存图片
             // console.log("type img")
             type = 'img'
-            if (MSG["MMThumbSrc"]) { //小图片, 直接原图
-                content = MSG["MMThumbSrc"]
-                // let scriptSrc = $("script[async][src*='skey']").attr("src")
-                // console.log(scriptSrc)
-                // let posskey =  scriptSrc.indexOf('skey')
-                // let skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
-                // console.log(skey)
+            // if (MSG["MMThumbSrc"]) { //小图片, 直接原图
+            //     content = MSG["MMThumbSrc"]
+            //     // let scriptSrc = $("script[async][src*='skey']").attr("src")
+            //     // console.log(scriptSrc)
+            //     // let posskey =  scriptSrc.indexOf('skey')
+            //     // let skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
+            //     // console.log(skey)
+            //     let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+            //         + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+            //         + "&skey=" + skey
+            //     // console.log(imgUrl)
+            //     content = imgUrl
+            // } else {
+            //     // 置换内容
+            //     let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
+            //     if (imgUrl) {
+            //         content = imgUrl
+            //         // 还原为原始大小
+            //         content = content.slice(0, -"&type=slave".length)
+            //     } else { // 找不到地址, 可能网页元素已经被删除
+            //         content = MSG["MMThumbSrc"]
+            //         let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
+            //             + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
+            //             + "&skey=" + skey
+            //         // console.log(imgUrl)
+            //         content = imgUrl
+            //     }
+            // }
+            if (status == 'sending' || status == 'failed') {
+                if (MSG["MMThumbSrc"]) { 
+                        content = MSG["MMThumbSrc"]
+                }else{
+                    content = ''
+                }
+            } else {
                 let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
                     + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
                     + "&skey=" + skey
+
                 // console.log(imgUrl)
                 content = imgUrl
-            } else {
-                // 置换内容
-                let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
-                if (imgUrl) {
-                    content = imgUrl
-                    // 还原为原始大小
-                    content = content.slice(0, -"&type=slave".length)
-                } else { // 找不到地址, 可能网页元素已经被删除
-                    content = MSG["MMThumbSrc"]
-                    let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-                        + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-                        + "&skey=" + skey
-                    // console.log(imgUrl)
-                    content = imgUrl
-                }
             }
 
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_MICROVIDEO) {
@@ -202,14 +225,14 @@ window.onload = function () {
             // type = 'img'
             // let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
             // // 置换内容
-            // content = imgUrl
+            content = '[视频]'
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 5) {
             // 公众号链接
             type = 'url'
             content = MSG["Url"]
         } else if (MSG["MsgType"] == wechatMSGType.MSGTYPE_APP && MSG["AppMsgType"] == 6) {
             // 文件
-            if(MSG["MMAppMsgDownloadUrl"]){
+            if (MSG["MMAppMsgDownloadUrl"]) {
                 type = 'file'
                 content = MSG["MMAppMsgDownloadUrl"]
                 fileName = MSG["FileName"]
@@ -227,15 +250,21 @@ window.onload = function () {
         // console.log("mein name : ", meinUsername)
 
         // console.log(remarkName, MSGID, type, content, time)
+        // console.log(content)
+
+
+
+
         return {
             "from": MSG["FromUserName"] == meinUsername ? undefined : (remarkName == '' ? nickName : remarkName),
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
             "message": content,
-            "avatar" : avatar,
-            "fileName" : fileName,
-            "fileSize" : fileSize
+            "avatar": avatar,
+            "fileName": fileName,
+            "fileSize": fileSize,
+            "status": status
         }
 
 
@@ -308,8 +337,8 @@ window.onload = function () {
         let avatar = $(obj).find("div.avatar img").get(0).src
 
 
-
-        if ($("div[data-username='" + userID + "']").length == 0) {
+        // console.log("convo exist : ", $("div[ng-click][data-username='" + userID + "']").length, $("div[data-username='" + userID + "']"))
+        if ($("div[ng-click][data-username='" + userID + "']").length == 0) {
             // 元素被删除了
             return {
                 "userID": userID,
@@ -403,11 +432,60 @@ window.onload = function () {
 
     }
 
+    function grepAndSendRight(MSGID = undefined) {
+        if ($('div.chat_item.slide-left.active').length > 0) {
+            let ID = $('div.chat_item.slide-left.active').attr('data-username')
+
+            let objSlide = _chatContent[ID]
+            // console.log("objSlide : id : ", ID ,objSlide)
+            let MSGList = new Array()
+            for (let indexMSG in objSlide) {
+                // console.log("debug : ", indexMSG, "---->")
+                // console.log(objSlide[indexMSG])
+                // 发送中
+                let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
+                    .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif'], [ng-click='cancelUploadFile(message)']")
+                // if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0 &&
+                //     ($(objSending).length == 0 ||
+                //         $(objSending).is(':hidden'))) {
+                if (MSGID == undefined) {
+                    if ($("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
+                        let MSG = grepBubble(_contacts, objSlide[indexMSG], indexMSG)
+                        MSGList.push(MSG)
+                    }
+                } else {
+                    if ((objSlide[indexMSG])["MsgId"] == MSGID &&
+                        $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
+                        let MSG = grepBubble(_contacts, objSlide[indexMSG], indexMSG)
+                        MSGList.push(MSG)
+                    }
+                }
+
+
+            }
+            if (MSGList.length > 0) {
+                console.log("debug : dialog-----------");
+                (MSGList[0])["userID"] = ID;
+                // console.log(MSGList[0])
+                // console.log(ID)
+                // console.log(typeof(ID))
+                core.WebToHost({ "Dialog": MSGList }).then((res) => {
+                    console.log(res)
+                }).catch((error) => {
+                    throw error
+                });
+            }
+        }
+
+    }
+
     // 联系人发生变更
-    var callbackContact = function (records) {
+    var callbackContact = function (records, observer) {
+
 
         if ($("#navContact").scrollTop() + $("#navContact")[0].clientHeight != $("#navContact")[0].scrollHeight) {
             console.log("debug : ", "----------contact change----------")
+            // console.log($("#navContact").scrollTop() , $("#navContact")[0].clientHeight, $("#navContact")[0].scrollHeight)
             $("#navContact").scrollTop(0)
             $("#navContact").scrollTop($("#navContact")[0].scrollHeight)
 
@@ -418,9 +496,77 @@ window.onload = function () {
 
             // 临时放在这
             // let username = getUsernameByRemarkName(remarkName)
-
+            observer.disconnect()
         }
     };
+
+    /**
+     * 从形如
+     * {"type":"message","actualSender":"@09ff76c19a9a106126e4e72f67494ed888b3844f432374bcc84e3238745892ec",↵                 "msgType":"1","subType":0,"msgId":"15685617865120817"}
+     * 中获得msgID
+     * @param {*} rawStr 
+     */
+    function getMSGIDFromString(rawStr) {
+        return rawStr.slice(
+            rawStr.indexOf('"msgId":') + ('"msgId":"').length,
+            rawStr.indexOf('"', rawStr.indexOf('"msgId":') + ('"msgId":"').length))
+    }
+
+    var callbackRight = function (mutationList) {
+
+        console.log("debug : ===========Right changed============")
+        // console.log(mutationList)
+
+        addedNewBubble = false
+        // msgIDChanged = false
+        mutationList.forEach((mutation, index) => {
+
+            if ($(mutation.target).is('div.ng-scope')) {
+                mutation.addedNodes.forEach((node, index) => {
+                    if ($(node).is(' div.ng-scope')) {
+                        // console.log($(node))
+                        addedNewBubble = addedNewBubble || true
+                    }
+                })
+            }
+
+            if (mutation.attributeName == 'data-cm' &&
+                mutation.oldValue.includes('msgId')
+                && getMSGIDFromString($(mutation.target).attr('data-cm')) != "{{message.MsgId}}") {
+
+                if ($('div.chat_item.slide-left.active').length > 0) {
+                    let ID = $('div.chat_item.slide-left.active').attr('data-username')
+
+                    let objSlide = _chatContent[ID]
+                    for (let indexMSG in objSlide) {
+
+                        if ((objSlide[indexMSG])["MsgId"] == getMSGIDFromString($(mutation.target).attr('data-cm')) &&
+                            $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']").length > 0) {
+                            let MSG = grepBubble(_contacts, objSlide[indexMSG], indexMSG)
+                            if (MSG != undefined) {
+
+                                MSG["userID"] = ID;
+                                MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
+                                core.WebToHost({ "Dialog": [MSG] }).then((res) => {
+                                    console.log(res)
+                                }).catch((error) => {
+                                    throw error
+                                });
+                            }
+
+                        }
+                    }
+                }
+
+            }
+        })
+
+        if (addedNewBubble) {
+            grepAndSendRight()
+        }
+
+
+    }
 
     // 消息发生变更
     var callbackChat = function (records) {
@@ -438,7 +584,7 @@ window.onload = function () {
 
             let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
             // console.log( obj  )    
-            if (obj.length > 0) {
+            if ($(obj).length > 0) {
                 let existed = false
                 arrayObjUser.forEach((currentValue, index) => {
 
@@ -520,7 +666,6 @@ window.onload = function () {
         })
     }
 
-
     $(document).ready(function () {
 
         let obsHead = new MutationObserver(callbackHead);
@@ -532,15 +677,15 @@ window.onload = function () {
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "show": {} })
 
-            let callbackobsLogin = function(mutationList, observer){
+            let callbackobsLogin = function (mutationList, observer) {
                 // console.log("log status changed : ", $("div.login").is(':visible'))
-                if($('div[data-username="filehelper"]').length > 0){
+                if ($('div[data-username="filehelper"]').length > 0) {
                     logStatus.status = "online"
                     console.log("=======================online=====================================")
                     // console.log($("div.login"))
                     core.WebToHost({ "logStatus": logStatus })
                     core.WebToHost({ "hide": {} })
-        
+
                     // =====skey=========
                     obsHead.observe($("head")[0], {
                         childList: true,
@@ -559,7 +704,7 @@ window.onload = function () {
                 characterData: false,
                 // attributeFilter: ["style"],
                 attributes: false, attributeOldValue: false
-            });            
+            });
 
             // ====处理聊天记录====
 
@@ -614,6 +759,14 @@ window.onload = function () {
             attributes: true, attributeOldValue: true
         });
 
+        let obsRight = new MutationObserver(callbackRight);
+
+
+        $(document).on('click', 'a[download]', function () {
+            core.sendToMain({ 'download': { 'url': $(this).attr('href') } })
+        })
+
+
         // 接收上层消息
         core.WebReply((key, arg) => {
             return new Promise((resolve, reject) => {
@@ -627,42 +780,22 @@ window.onload = function () {
 
                     $("div.ng-scope div [data-username='" + ID + "']").click();
 
-                    resolve("request received. MSG will send.")
+                    
+
+                    obsRight.disconnect()
+                    obsRight.observe($("div[mm-repeat='message in chatContent']")[0], {
+                        subtree: true, childList: true, characterData: false, attributes: true,
+                        attributeFilter: ["data-cm"],
+                        attributeOldValue: true, characterDataOldValue: false
+                    })
 
                     setTimeout(() => {
                         // 获取内容
-                        let objSlide = _chatContent[ID]
-                        // console.log("objSlide : id : ", ID ,objSlide)
-                        let MSGList = new Array()
-                        for (let indexMSG in objSlide) {
-                            // console.log("debug : ", indexMSG, "---->")
-                            // console.log(objSlide[indexMSG])
-                            // 发送中
-                            let objSending = $("div[data-cm*='" + (objSlide[indexMSG])["MsgId"] + "']")
-                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif'], [ng-click='cancelUploadFile(message)']")
-                            if ($(objSending).length == 0 ||
-                                $(objSending).is(':hidden')) {
-
-                                let MSG = grepMSG(_contacts, objSlide[indexMSG], indexMSG)
-                                MSGList.push(MSG)
-                            }
-
-
-                        }
-                        if (MSGList.length > 0) {
-                            console.log("debug : dialog-----------");
-                            (MSGList[0])["userID"] = ID;
-                            // console.log(MSGList[0])
-                            // console.log(ID)
-                            // console.log(typeof(ID))
-                            core.WebToHost({ "Dialog": MSGList }).then((res) => {
-                                console.log(res)
-                            }).catch((error) => {
-                                throw error
-                            });
-                        }
+                        grepAndSendRight()
 
                     }, 100);
+
+                    resolve("request received. MSG will send.")
 
                 } else if (key == 'sendDialog') {
                     console.log("--------sendDialog---")
@@ -688,7 +821,9 @@ window.onload = function () {
                             // console.log(value)
 
                             // $('#editArea').text(value)
-                            angular.element('pre:last').scope().editAreaCtn = value
+                            angular.element('pre:last').scope().editAreaCtn = core.htmlEntities(value)
+
+                            // angular.element('pre:last').scope().editAreaCtn = $('#editArea').html()
 
                             // let e = $.Event("keydown", { keyCode: 64 }); //64没有对应按键
                             // $("#chatInputAreaWithQuotes").trigger(e);
@@ -698,7 +833,10 @@ window.onload = function () {
                             angular.element('pre:last').scope().sendTextMessage();
 
                             console.log("---text---")
-                            waitSend(arrayValue, index)
+                            // waitSend(arrayValue, index)
+                            // send(arrayValue, index + 1)
+
+                            send(arrayValue, index + 1)
 
                             // observer.disconnect()
                             // });
@@ -709,11 +847,15 @@ window.onload = function () {
 
                         } else {
                             // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
-                            $('input.webuploader-element-invisible').click()
+                            // $('input.webuploader-element-invisible').click()
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
-                                console.log("---file---")
-                                waitSend(arrayValue, index)
+                                console.log("---file---", value)
+                                // waitSend(arrayValue, index)
+
+                                send(arrayValue, index + 1)
+
                             })
+
                         }
 
                     }
@@ -729,6 +871,7 @@ window.onload = function () {
                                 if (addedNodes && $(addedNodes[0]).attr("ng-repeat") && $(addedNodes[0]).attr("ng-repeat") == "message in chatContent") {
                                     console.log('---addedNodes----')
                                     observer.disconnect()
+
                                     let lastObj = $("div[ng-switch-default].me")
                                         .last().find("div.bubble")
                                     console.log("last me : ", $(lastObj).attr("class"), $(lastObj).attr("data-cm"))
@@ -754,10 +897,10 @@ window.onload = function () {
 
                                         obsFinished.observe($("div[ng-switch-default].me")
                                             .last().find("div.bubble_cont.ng-scope")[0], {
-                                                // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
-                                                subtree: true, childList: true, characterData: true, attributes: true,
-                                                attributeOldValue: false, characterDataOldValue: false
-                                            });
+                                            // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
+                                            subtree: true, childList: true, characterData: true, attributes: true,
+                                            attributeOldValue: false, characterDataOldValue: false
+                                        });
                                     }
 
 

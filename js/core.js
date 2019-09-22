@@ -790,6 +790,23 @@ document.body.appendChild(el);}")
 
         })
 
+    },
+    /**
+     * HTML encode
+     * @param {String} str 
+     * @returns encode HTML
+     */
+    htmlEntities: function (str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    },
+    /**
+     * 转化位置到周期范围内
+     * @param {Int} index 非周期位置(可以是负数), 0代表开始位置
+     * @param {Int} length 周期长度
+     * @returns {Int} 0-(length-1)
+     */
+    periodicPos: function (index, length) {
+        // console.log("periodicPos : ", index, length, index%length, (index%length) + length, ((index%length) + length)%length)
+        return ((index % length) + length) % length
     }
-
 }
