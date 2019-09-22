@@ -2318,7 +2318,7 @@ $(document).ready(function () {
 
     });
 
-    $(document).on('click', 'button[reload]', function (event) {
+    $(document).on('click', 'img[reload]', function (event) {
         console.log('reload : ', $(this), $(this).closest('modal-content').find('webview'))
         // core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
         let webview = $(this).closest('.modal-content').find('webview')
