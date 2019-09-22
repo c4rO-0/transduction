@@ -18,7 +18,8 @@
   "dependencies": {
     "electron": "^5.0.4",
     "electron-store": "^2.0.0",
-    "mkdirp": "^0.5.1"
+    "mkdirp": "^0.5.1",
+    "request": "^2.88.0"
   },
   "build": {
     "appId": "com.aaronlenoir.gnucash-reporter",
@@ -29,5 +30,4 @@
       "icon": "res/pic/Tr.ico"
     }
   }
-  
 }
