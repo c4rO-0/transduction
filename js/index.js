@@ -75,6 +75,7 @@ $(document).ready(function () {
     const { nativeImage, dialog, shell } = require('electron').remote
     const Store = require('electron-store');
     const store = new Store();
+    const request = require('request') 
 
     console.log(process.versions.electron)
 
@@ -1136,9 +1137,9 @@ $(document).ready(function () {
                 } else if ((pathR.length > 9 && pathR.substring(0, 8) == 'https://') || (pathR.length > 8 && pathR.substring(0, 7) == 'http://')) {
                     arrayItem.push(new Promise(
                         (resolve, reject) => {
-                            var request = require('request').defaults({ encoding: null });
-
-                            request.get(pathR, function (error, response, body) {
+                            var valRequest = request.defaults({ encoding: null }); 
+ 
+                            valRequest.get(pathR, function (error, response, body) {
                                 if (!error && response.statusCode == 200) {
                                     let strRequest = new Buffer(body).toString('base64')
                                     let urldata = "data:" + response.headers["content-type"] + ";base64," + strRequest;
