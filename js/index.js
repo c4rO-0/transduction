@@ -1413,14 +1413,20 @@ $(document).ready(function () {
                 autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit).then((newSize) => {
 
                     item.localSave().then(() => {
-                        console.log("debug : path : ", item.path, "-----------------------------------")
+                        // console.log("debug : path : ", item.path, "-----------------------------------")
                         fileList[item.fileID] = item
 
-                        sendInput("<img data-file-ID='"
-                            + item.fileID
-                            + "' contenteditable=false src='"
-                            + item.path
-                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >")
+                        
+                        $("#td-right > div.td-dropFile > img:nth-child(1)").addClass("td-none")
+                        $('#td-right > div.td-dropFile > img:nth-child(2)').attr('src', item.path)
+                        $('#td-right > div.td-dropFile > img:nth-child(2)').attr('data-file-ID', item.fileID)
+                        $('.td-dropFile').removeClass('hide')
+
+                        // sendInput("<img data-file-ID='"
+                        //     + item.fileID
+                        //     + "' contenteditable=false src='"
+                        //     + item.path
+                        //     + "' height='" + newSize.height + "' width='" + newSize.width + "' >")
 
                         // if (pasteHtmlAtCaret(
                         //     "<img data-file-ID='"
@@ -2164,11 +2170,9 @@ $(document).ready(function () {
 
     //识别到放下东西
     $('.td-dropFile').on('drop', (event) => {
-        console.log('drop')
+        // console.log('drop')
         $('.td-dropFile').addClass('hide')
         event.preventDefault();
-
-        $(".td-inputbox").focus()
 
         processDataTransfer(event.originalEvent.dataTransfer).then(() => {
 
