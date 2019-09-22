@@ -63,7 +63,7 @@ function listWebview() {
 
 function modalImage(event) {
     document.getElementById('modal-image').querySelector('img').src = event.target.src
-    $('#modal-image button').attr('href', event.target.src)
+    $('#modal-image img[download]').attr('href', event.target.src)
     $("#modal-image").modal()
 }
 
@@ -614,10 +614,10 @@ $(document).ready(function () {
         $('.td-chatLog[wintype="chatLog"]').append('\
                          <div class="td-default">\
                              <p>\
-                                 商业合作，问题反馈，请联系c4r。\
+                                 问题反馈，请联系c4r。\
                              </p>\
                              <p>\
-                                 business cooperation, bug report, please contact c4r.\
+                                 bug report, please contact c4r.\
                              </p>\
                          </div>')
     }
@@ -2313,13 +2313,13 @@ $(document).ready(function () {
     });
 
     // 阻拦全部链接点击
-    $(document).on('click', 'button[download]', function (event) {
+    $(document).on('click', 'img[download]', function (event) {
         console.log('download : ', this)
         core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
 
     });
 
-    $(document).on('click', 'button[reload]', function (event) {
+    $(document).on('click', 'img[reload]', function (event) {
         console.log('reload : ', $(this), $(this).closest('modal-content').find('webview'))
         // core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
         let webview = $(this).closest('.modal-content').find('webview')
