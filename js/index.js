@@ -63,7 +63,7 @@ function listWebview() {
 
 function modalImage(event) {
     document.getElementById('modal-image').querySelector('img').src = event.target.src
-    $('#modal-image button').attr('href', event.target.src)
+    $('#modal-image img[download]').attr('href', event.target.src)
     $("#modal-image").modal()
 }
 
@@ -2312,7 +2312,7 @@ $(document).ready(function () {
     });
 
     // 阻拦全部链接点击
-    $(document).on('click', 'button[download]', function (event) {
+    $(document).on('click', 'img[download]', function (event) {
         console.log('download : ', this)
         core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
 
