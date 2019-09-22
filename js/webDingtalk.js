@@ -534,6 +534,8 @@ window.onload = function () {
                             attributeOldValue: true, characterDataOldValue: false
                         })
                     }, 30);
+
+                    resolve("request received. MSG will send.")
                 } else if (key == 'sendDialog') {
                     // 键入消息
                     console.log("--------sendDialog---")
