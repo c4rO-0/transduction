@@ -613,10 +613,10 @@ $(document).ready(function () {
         $('.td-chatLog[wintype="chatLog"]').append('\
                          <div class="td-default">\
                              <p>\
-                                 商业合作，问题反馈，请联系c4r。\
+                                 问题反馈，请联系c4r。\
                              </p>\
                              <p>\
-                                 business cooperation, bug report, please contact c4r.\
+                                 bug report, please contact c4r.\
                              </p>\
                          </div>')
     }
