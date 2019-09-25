@@ -63,7 +63,7 @@ function listWebview() {
 
 function modalImage(event) {
     document.getElementById('modal-image').querySelector('img').src = event.target.src
-    $('#modal-image button').attr('href', event.target.src)
+    $('#modal-image img[download]').attr('href', event.target.src)
     $("#modal-image").modal()
 }
 
@@ -614,10 +614,10 @@ $(document).ready(function () {
         $('.td-chatLog[wintype="chatLog"]').append('\
                          <div class="td-default">\
                              <p>\
-                                 商业合作，问题反馈，请联系c4r。\
+                                 问题反馈，请联系c4r。\
                              </p>\
                              <p>\
-                                 business cooperation, bug report, please contact c4r.\
+                                 bug report, please contact c4r.\
                              </p>\
                          </div>')
     }
@@ -1414,14 +1414,21 @@ $(document).ready(function () {
                 autoSizeImg(item.dataUrl, inputImgWeightLimit, inputImgHeightLimit).then((newSize) => {
 
                     item.localSave().then(() => {
-                        console.log("debug : path : ", item.path, "-----------------------------------")
+                        // console.log("debug : path : ", item.path, "-----------------------------------")
                         fileList[item.fileID] = item
 
-                        sendInput("<img data-file-ID='"
-                            + item.fileID
-                            + "' contenteditable=false src='"
-                            + item.path
-                            + "' height='" + newSize.height + "' width='" + newSize.width + "' >")
+                        
+                        $("div.td-dropFile > img").addClass("td-none")
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('src', item.path)
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
+                        $('div.td-dropFile > div').removeClass('td-none')
+                        $('.td-dropFile').removeClass('hide')
+
+                        // sendInput("<img data-file-ID='"
+                        //     + item.fileID
+                        //     + "' contenteditable=false src='"
+                        //     + item.path
+                        //     + "' height='" + newSize.height + "' width='" + newSize.width + "' >")
 
                         // if (pasteHtmlAtCaret(
                         //     "<img data-file-ID='"
@@ -1433,6 +1440,8 @@ $(document).ready(function () {
                         // } else {
                         //     reject("error : itemToHTML : pasteHtmlAtCaret")
                         // }
+
+                        resolve("")
                     }).catch((err) => {
                         console.log("error : itemToHTML : localSave ")
                         console.log(err)
@@ -1807,12 +1816,13 @@ $(document).ready(function () {
             let arraySend = undefined
             if (fromHtml == undefined) {
                 arraySend = getInput('div.td-inputbox')
+                
+                // 清理消息
+                $("div.td-inputbox").empty()
             } else {
                 arraySend = getInputFromHtml(fromHtml)
             }
 
-            // 清理消息
-            $("div.td-inputbox").empty()
             // console.log('-----send-----')
             if (arraySend.length > 0) {
 
@@ -2165,11 +2175,9 @@ $(document).ready(function () {
 
     //识别到放下东西
     $('.td-dropFile').on('drop', (event) => {
-        console.log('drop')
+        // console.log('drop')
         $('.td-dropFile').addClass('hide')
         event.preventDefault();
-
-        $(".td-inputbox").focus()
 
         processDataTransfer(event.originalEvent.dataTransfer).then(() => {
 
@@ -2214,6 +2222,29 @@ $(document).ready(function () {
         sendInput()
     })
 
+    // 发送图片
+    $('#debug-img-send').on('click', function () {
+        // console.log("send clicked------>")
+
+
+        sendInput($('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
+
+        $("div.td-dropFile > img").removeClass("td-none")
+        $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
+        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
+        $('div.td-dropFile > div').addClass('td-none')
+        $('.td-dropFile').addClass('hide')
+
+    })
+
+    //取消发送图片
+    $('#debug-img-cancel').on('click', function () {
+        $("div.td-dropFile > img").removeClass("td-none")
+        $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
+        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
+        $('div.td-dropFile > div').addClass('td-none')
+        $('.td-dropFile').addClass('hide')
+    })
 
     // ===查询后台登录情况===
     $("#td-request-status").on("click", () => {
@@ -2309,13 +2340,13 @@ $(document).ready(function () {
     });
 
     // 阻拦全部链接点击
-    $(document).on('click', 'button[download]', function (event) {
+    $(document).on('click', 'img[download]', function (event) {
         console.log('download : ', this)
         core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
 
     });
 
-    $(document).on('click', 'button[reload]', function (event) {
+    $(document).on('click', 'img[reload]', function (event) {
         console.log('reload : ', $(this), $(this).closest('modal-content').find('webview'))
         // core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
         let webview = $(this).closest('.modal-content').find('webview')
@@ -2433,6 +2464,16 @@ $(document).ready(function () {
                         }
                     }
                 }
+            }
+
+        }
+
+        // esc按下
+        if(event.which == 27){
+            // console.log('esc pressed')
+            // 图片确认界面
+            if( !$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible') ){
+                $('#debug-img-cancel').click()
             }
 
         }
