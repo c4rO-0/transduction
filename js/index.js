@@ -1418,9 +1418,10 @@ $(document).ready(function () {
                         fileList[item.fileID] = item
 
                         
-                        $("#td-right > div.td-dropFile > img:nth-child(1)").addClass("td-none")
-                        $('#td-right > div.td-dropFile > img:nth-child(2)').attr('src', item.path)
-                        $('#td-right > div.td-dropFile > img:nth-child(2)').attr('data-file-ID', item.fileID)
+                        $("div.td-dropFile > img").addClass("td-none")
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('src', item.path)
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
+                        $('div.td-dropFile > div').removeClass('td-none')
                         $('.td-dropFile').removeClass('hide')
 
                         // sendInput("<img data-file-ID='"
@@ -2218,6 +2219,23 @@ $(document).ready(function () {
         sendInput()
     })
 
+    // 发送图片
+    $('#debug-img-send').on('click', function () {
+        // console.log("send clicked------>")
+
+
+        sendInput($('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
+
+            
+        $("div.td-dropFile > img").removeClass("td-none")
+        $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
+        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
+        $('div.td-dropFile > div').addClass('td-none')
+        $('.td-dropFile').addClass('hide')
+
+
+
+    })
 
     // ===查询后台登录情况===
     $("#td-request-status").on("click", () => {
