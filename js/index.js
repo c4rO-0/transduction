@@ -1440,6 +1440,8 @@ $(document).ready(function () {
                         // } else {
                         //     reject("error : itemToHTML : pasteHtmlAtCaret")
                         // }
+
+                        resolve("")
                     }).catch((err) => {
                         console.log("error : itemToHTML : localSave ")
                         console.log(err)
