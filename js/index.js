@@ -1816,12 +1816,13 @@ $(document).ready(function () {
             let arraySend = undefined
             if (fromHtml == undefined) {
                 arraySend = getInput('div.td-inputbox')
+                
+                // 清理消息
+                $("div.td-inputbox").empty()
             } else {
                 arraySend = getInputFromHtml(fromHtml)
             }
 
-            // 清理消息
-            $("div.td-inputbox").empty()
             // console.log('-----send-----')
             if (arraySend.length > 0) {
 
