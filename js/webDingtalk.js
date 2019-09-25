@@ -290,6 +290,8 @@ window.onload = function () {
 
     function grepAndSendRight() {
 
+        document.activeElement.blur()
+
         let objActiveUser = $('div.list-item.conv-item.context-menu.active')
         if (objActiveUser.length > 0) {
             let ID = objActiveUser.attr('menu-data')
@@ -395,6 +397,7 @@ window.onload = function () {
     var callbackRight = function (mutationList) {
 
         console.log("debug : ===========Right changed============")
+        document.activeElement.blur()
         // console.log(mutationList)
         // grepAndSendRight()
         let addedNewBubble = false
@@ -442,6 +445,7 @@ window.onload = function () {
             setTimeout(() => {
                 // 获取内容
                 grepAndSendRight()
+                
             }, 30);
         }
     }
@@ -533,9 +537,15 @@ window.onload = function () {
                             attributeFilter: ["msg-id"],
                             attributeOldValue: true, characterDataOldValue: false
                         })
+                        
+                        setTimeout(() => {
+                            document.activeElement.blur()
+                            resolve("request received. MSG will send.") 
+                        }, 30);
+                        
                     }, 30);
-
-                    resolve("request received. MSG will send.")
+                    
+                    
                 } else if (key == 'sendDialog') {
                     // 键入消息
                     console.log("--------sendDialog---")
