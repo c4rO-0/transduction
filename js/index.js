@@ -2228,14 +2228,11 @@ $(document).ready(function () {
 
         sendInput($('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
 
-            
         $("div.td-dropFile > img").removeClass("td-none")
         $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
         $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
         $('div.td-dropFile > div').addClass('td-none')
         $('.td-dropFile').addClass('hide')
-
-
 
     })
 
@@ -2457,6 +2454,20 @@ $(document).ready(function () {
                         }
                     }
                 }
+            }
+
+        }
+
+        // esc按下
+        if(event.which == 27){
+            console.log('esc pressed')
+            // 图片确认界面
+            if( !$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible') ){
+                $("div.td-dropFile > img").removeClass("td-none")
+                $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
+                $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
+                $('div.td-dropFile > div').addClass('td-none')
+                $('.td-dropFile').addClass('hide')
             }
 
         }
