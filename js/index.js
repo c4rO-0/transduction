@@ -837,17 +837,17 @@ $(document).ready(function () {
 
                     }
 
-                    // 刷新dialog
-                    core.HostSendToWeb(
-                        webTag2Selector(webTag),
-                        { "queryDialog": { "userID": Convo.userID } }
-                    ).then((res) => {
-                        console.log("queryDialog : webReply : ", res)
+                    // // 刷新dialog
+                    // core.HostSendToWeb(
+                    //     webTag2Selector(webTag),
+                    //     { "queryDialog": { "userID": Convo.userID } }
+                    // ).then((res) => {
+                    //     console.log("queryDialog : webReply : ", res)
 
-                    }).catch((error) => {
-                        throw error
+                    // }).catch((error) => {
+                    //     throw error
 
-                    })
+                    // })
 
 
 
@@ -1831,15 +1831,15 @@ $(document).ready(function () {
                 core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
 
                     // 索取新的dialog
-                    core.HostSendToWeb(
-                        webTag2Selector(webTag),
-                        { "queryDialog": { "userID": userID } }
-                    ).then((res) => {
-                        console.log("queryDialog : webReply : ", res)
+                    // core.HostSendToWeb(
+                    //     webTag2Selector(webTag),
+                    //     { "queryDialog": { "userID": userID } }
+                    // ).then((res) => {
+                    //     console.log("queryDialog : webReply : ", res)
 
-                    }).catch((error) => {
-                        throw error
-                    })
+                    // }).catch((error) => {
+                    //     throw error
+                    // })
 
                     //删除File list
                     // arraySend.forEach((value, index) => {
