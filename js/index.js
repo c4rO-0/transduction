@@ -646,6 +646,7 @@ $(document).ready(function () {
             console.log("debug : ", "Convo from ", webTag)
             console.log(Obj)
 
+
             if (key == 'Dialog') {
                 // 收到某个用户聊天记录
                 console.log("debug : ", "==========Dialog============")
@@ -696,7 +697,7 @@ $(document).ready(function () {
 
                     // 首先检查有没有msgID变更
                     Obj.forEach((value, index) => {
-                        if (value.oldMsgID != undefined) {
+                        if (value.oldMsgID != undefined && $(dialogSelector + " [msgID='" + value['oldMsgID'] + "']").length > 0) {
                             $(dialogSelector + " [msgID='" + value['oldMsgID'] + "']").attr('msgID', value.msgID)
                         }
                     })
@@ -715,63 +716,66 @@ $(document).ready(function () {
 
                     Obj.forEach((value, index) => {
 
+                        if (value.oldMsgID != undefined && $(dialogSelector + " [msgID='" + value['msgID'] + "']").length == 0) {
+                            // 可能后台传上来一个oldMsgIDv不存在的消息
+                        }else{
 
-                        let timeObj = undefined
+                            let timeObj = undefined
 
-                        if (typeof (value["time"]) === 'number') {
-                            timeObj = new Date(value["time"])
-                        } else if (typeof (value["time"]) == "string") {
-                            timeObj = new Date(value["time"])
-                        } else if (typeof (value["time"]) == "object") {
-                            timeObj = value["time"]
-                        } else {
-                            timeObj = new Date()
-                        }
-
-                        let timeWaitInsert = timeObj.getTime()
-                        // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
-
-                        // 在index对应的bubble之前插入
-                        let currentInsertIndex = 0
-                        for (let indexOfExistBubble = 0;
-                            indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
-                            if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
-                                currentInsertIndex = -(indexOfExistBubble + 1)
-                            }
-                            if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
-                                // console.log("later : ", indexOfExistBubble, arrayExistBubble[indexOfExistBubble].msgTime)
-                                currentInsertIndex = indexOfExistBubble
-                            }
-                        }
-
-                        // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
-
-                        if (currentInsertIndex >= 0) {
-                            if (currentInsertIndex == arrayExistBubble.length - 1
-                                && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
-
-                                $(dialogSelector).append(bubble.createBubble(value))
-
-                                arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                            if (typeof (value["time"]) === 'number') {
+                                timeObj = new Date(value["time"])
+                            } else if (typeof (value["time"]) == "string") {
+                                timeObj = new Date(value["time"])
+                            } else if (typeof (value["time"]) == "object") {
+                                timeObj = value["time"]
                             } else {
-                                $(bubble.createBubble(value))
-                                    .insertBefore(
-                                        dialogSelector
-                                        + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
-                                    )
-
-                                arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                                timeObj = new Date()
                             }
-
-                        } else {
-                            // 重复的ID, 替换成新的
-                            $(dialogSelector
-                                + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
-                                .replaceWith(bubble.createBubble(value)
-                                )
-                            // arrayExistBubble[-currentInsertIndex - 1].msgTime
+    
+                            let timeWaitInsert = timeObj.getTime()
+                            // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
+    
+                            // 在index对应的bubble之前插入
+                            let currentInsertIndex = 0
+                            for (let indexOfExistBubble = 0;
+                                indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
+                                if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
+                                    currentInsertIndex = -(indexOfExistBubble + 1)
+                                }
+                                if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
+                                    // console.log("later : ", indexOfExistBubble, arrayExistBubble[indexOfExistBubble].msgTime)
+                                    currentInsertIndex = indexOfExistBubble
+                                }
+                            }
+    
+                            // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
+    
+                            if (currentInsertIndex >= 0) {
+                                if (currentInsertIndex == arrayExistBubble.length - 1
+                                    && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
+    
+                                    $(dialogSelector).append(bubble.createBubble(value))
+    
+                                    arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                                } else {
+                                    $(bubble.createBubble(value))
+                                        .insertBefore(
+                                            dialogSelector
+                                            + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
+                                        )
+    
+                                    arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                                }
+    
+                            } else {
+                                // 重复的ID, 替换成新的
+                                $(dialogSelector
+                                    + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
+                                    .replaceWith(bubble.createBubble(value)
+                                    )
+                                // arrayExistBubble[-currentInsertIndex - 1].msgTime
+                            }
                         }
-
 
                     })
                     // 
@@ -781,16 +785,23 @@ $(document).ready(function () {
 
                 // 判断用户当前所在位置, 如果用户在阅读之前的bubble就不应该滚动滑条
                 if (atBottom) {
-                    // 滑动到最下面, 延迟是等待bubble已经加载到div中
-                    setTimeout(() => {
-                        $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
-                    }, 10);
+
+                    $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+
 
                     // fixme : -----------------------
                     // 目前程序已经去除对webview focus, 理论上来说不需要blur
                     console.log('bluring outttttttttttttttttttt')
                     $(webTag2Selector(webTag)).blur()
                     //--------------------------------
+
+                    $(dialogSelector + " div.td-bubble").each((index, element) => {
+                        if($(element).find('.td-chatImg').length >0){
+                            ($(element).find('.td-chatImg > img').get(0)).onload = function(){
+                                $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                            }
+                        }
+                    })
                 } else {
 
                     // 该处不需要blur, 因为不滚动, 要保持未读消息数
@@ -2079,8 +2090,11 @@ $(document).ready(function () {
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
-
+                $(".td-inputbox").focus()
+                setEndOfContenteditable($(".td-inputbox").get(0))
             }).catch((error) => {
+                $(".td-inputbox").focus()
+                setEndOfContenteditable($(".td-inputbox").get(0))
                 throw error
             })
 
