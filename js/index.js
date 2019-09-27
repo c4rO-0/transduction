@@ -75,7 +75,7 @@ $(document).ready(function () {
     const { nativeImage, dialog, shell } = require('electron').remote
     const Store = require('electron-store');
     const store = new Store();
-    const request = require('request') 
+    const request = require('request')
 
     console.log(process.versions.electron)
 
@@ -688,6 +688,7 @@ $(document).ready(function () {
                         Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) < 64) {
                         atBottom = true
                         console.log("要滚动啊.......")
+
                     } else {
                         console.log("滑条 : ", $(dialogSelector).scrollTop(), $(dialogSelector)[0].clientHeight, $(dialogSelector)[0].scrollHeight)
                         console.log("不滚动啊.......")
@@ -780,20 +781,21 @@ $(document).ready(function () {
 
                 // 判断用户当前所在位置, 如果用户在阅读之前的bubble就不应该滚动滑条
                 if (atBottom) {
-                    // 滑动到最下面
-                    $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                    // 滑动到最下面, 延迟是等待bubble已经加载到div中
+                    setTimeout(() => {
+                        $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                    }, 10);
 
                     // fixme : -----------------------
                     // 目前程序已经去除对webview focus, 理论上来说不需要blur
                     console.log('bluring outttttttttttttttttttt')
                     $(webTag2Selector(webTag)).blur()
                     //--------------------------------
-
                 } else {
 
+                    // 该处不需要blur, 因为不滚动, 要保持未读消息数
                     console.log("dialog updated. new bubble(s) not display...")
                 }
-
 
 
 
@@ -1137,8 +1139,8 @@ $(document).ready(function () {
                 } else if ((pathR.length > 9 && pathR.substring(0, 8) == 'https://') || (pathR.length > 8 && pathR.substring(0, 7) == 'http://')) {
                     arrayItem.push(new Promise(
                         (resolve, reject) => {
-                            var valRequest = request.defaults({ encoding: null }); 
- 
+                            var valRequest = request.defaults({ encoding: null });
+
                             valRequest.get(pathR, function (error, response, body) {
                                 if (!error && response.statusCode == 200) {
                                     let strRequest = new Buffer(body).toString('base64')
@@ -1417,7 +1419,7 @@ $(document).ready(function () {
                         // console.log("debug : path : ", item.path, "-----------------------------------")
                         fileList[item.fileID] = item
 
-                        
+
                         $("div.td-dropFile > img").addClass("td-none")
                         $('div.td-dropFile > div > img:nth-child(1)').attr('src', item.path)
                         $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
@@ -1816,7 +1818,7 @@ $(document).ready(function () {
             let arraySend = undefined
             if (fromHtml == undefined) {
                 arraySend = getInput('div.td-inputbox')
-                
+
                 // 清理消息
                 $("div.td-inputbox").empty()
             } else {
@@ -2356,6 +2358,10 @@ $(document).ready(function () {
 
     });
 
+    // $( ".td-chatLog[wintype='chatLog']" ).scroll(function() {
+    //     console.log("scroll !!!")
+    //   });
+
 
     $(document).on('keypress', function (event) {
         // console.log("keypress",event.which )
@@ -2469,10 +2475,10 @@ $(document).ready(function () {
         }
 
         // esc按下
-        if(event.which == 27){
+        if (event.which == 27) {
             // console.log('esc pressed')
             // 图片确认界面
-            if( !$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible') ){
+            if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
                 $('#debug-img-cancel').click()
             }
 
