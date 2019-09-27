@@ -2358,9 +2358,24 @@ $(document).ready(function () {
 
     });
 
-    // $( ".td-chatLog[wintype='chatLog']" ).scroll(function() {
-    //     console.log("scroll !!!")
-    //   });
+    // 右侧对话框, 滑条有变化
+    $(".td-chatLog[wintype='chatLog']").scroll(function () {
+        console.log("scroll !!!")
+
+        let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+
+        // 在dialog能看见的情况(不是在extension)
+        if ($(dialogSelector).is(":visible")){
+
+            // 滑条没有在最后, 添加一键回到最后
+            if(Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) >= 64) {
+
+            }else{ // 滑条在最后, 去掉一键滚动
+
+            }
+        }
+        
+    });
 
 
     $(document).on('keypress', function (event) {
