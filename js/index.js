@@ -677,8 +677,8 @@ $(document).ready(function () {
                 // 附加到右边
                 if ($(dialogSelector + " div.td-bubble").length == 0) {
                     // 窗口已被清空, 直接附加
-                    Obj.forEach((value, index) => {
-                        $(dialogSelector).append(bubble.createBubble(value))
+                    Obj.reverse().forEach((value, index) => {
+                        $(dialogSelector).prepend(bubble.createBubble(value))
                     })
 
                     // 滑动到最下面
