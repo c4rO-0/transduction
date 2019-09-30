@@ -2367,8 +2367,8 @@ $(document).ready(function () {
 
     });
 
-    // 阻拦全部链接点击
-    $(document).on('click', 'img[download]', function (event) {
+    // 下载
+    $(document).on('click', '[download]', function (event) {
         console.log('download : ', this)
         core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
 
