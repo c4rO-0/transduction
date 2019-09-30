@@ -95,8 +95,10 @@ $(document).ready(function () {
     let debug_image_str = "#debug-image"
     let debug_send_str = "#debug-send"
     let debug_latex_str = "#debug-latex2png"
+    let debug_spotify_str = "#debug-spotify"
     let debug_goBackChat_str = "#debug-goBackChat"
     let classTactive = 'theme-transduction-active-tran'
+    
 
 
     /**----------------------
@@ -677,8 +679,8 @@ $(document).ready(function () {
                 // 附加到右边
                 if ($(dialogSelector + " div.td-bubble").length == 0) {
                     // 窗口已被清空, 直接附加
-                    Obj.forEach((value, index) => {
-                        $(dialogSelector).append(bubble.createBubble(value))
+                    Obj.reverse().forEach((value, index) => {
+                        $(dialogSelector).prepend(bubble.createBubble(value))
                     })
 
                     // 滑动到最下面
@@ -2158,6 +2160,16 @@ $(document).ready(function () {
         loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
     })
 
+    $(debug_spotify_str).on('click', (e) => {
+        $('.td-toolbox > img').removeClass('theme-transduction-active')
+        $(e.target).addClass('theme-transduction-active')
+
+        let extensionName = "spotify"
+        $("#td-right div.td-chatLog[winType='chatLog']").hide()
+        $("#td-right div.td-chatLog[winType='extension']").show()
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://open.spotify.com/browse/featured", '')
+    })
+
     // 隐藏extension
     $(debug_goBackChat_str).on('click', () => {
         $('.td-toolbox > img').removeClass('theme-transduction-active')
@@ -2355,8 +2367,8 @@ $(document).ready(function () {
 
     });
 
-    // 阻拦全部链接点击
-    $(document).on('click', 'img[download]', function (event) {
+    // 下载
+    $(document).on('click', '[download]', function (event) {
         console.log('download : ', this)
         core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
 
