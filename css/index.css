@@ -161,6 +161,21 @@ webview {
 .td-chatLog {
     flex: 1;
     overflow: auto;
+    position: relative;
+}
+
+#debug-history {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 42px;
+    height: 42px;
+    transform: translateX(-50%);
+    transition: transform 0.25s ease-out;
+}
+
+#debug-history.hide {
+    transform: translate(-50%, -42px);
 }
 
 .td-bubble {

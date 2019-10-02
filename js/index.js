@@ -611,14 +611,15 @@ $(document).ready(function () {
 
         $('.td-chatLog[wintype="chatLog"]').empty()
         $('.td-chatLog[wintype="chatLog"]').append('\
-                         <div class="td-default">\
-                             <p>\
-                                 问题反馈，请联系c4r。\
-                             </p>\
-                             <p>\
-                                 bug report, please contact c4r.\
-                             </p>\
-                         </div>')
+                        <img id="debug-history" class="hide" src="../res/pic/history.png">\
+                        <div class="td-default">\
+                            <p>\
+                                问题反馈，请联系c4r。\
+                            </p>\
+                            <p>\
+                                bug report, please contact c4r.\
+                            </p>\
+                        </div>')
     }
 
     //------------------------
