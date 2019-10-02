@@ -75,6 +75,7 @@ $(document).ready(function () {
     const { nativeImage, dialog, shell } = require('electron').remote
     const Store = require('electron-store');
     const store = new Store();
+    const request = require('request')
 
     console.log(process.versions.electron)
 
@@ -94,8 +95,10 @@ $(document).ready(function () {
     let debug_image_str = "#debug-image"
     let debug_send_str = "#debug-send"
     let debug_latex_str = "#debug-latex2png"
+    let debug_spotify_str = "#debug-spotify"
     let debug_goBackChat_str = "#debug-goBackChat"
     let classTactive = 'theme-transduction-active-tran'
+    
 
 
     /**----------------------
@@ -646,6 +649,7 @@ $(document).ready(function () {
             console.log("debug : ", "Convo from ", webTag)
             console.log(Obj)
 
+
             if (key == 'Dialog') {
                 // 收到某个用户聊天记录
                 console.log("debug : ", "==========Dialog============")
@@ -676,8 +680,8 @@ $(document).ready(function () {
                 // 附加到右边
                 if ($(dialogSelector + " div.td-bubble").length == 0) {
                     // 窗口已被清空, 直接附加
-                    Obj.forEach((value, index) => {
-                        $(dialogSelector).append(bubble.createBubble(value))
+                    Obj.reverse().forEach((value, index) => {
+                        $(dialogSelector).prepend(bubble.createBubble(value))
                     })
 
                     // 滑动到最下面
@@ -688,6 +692,7 @@ $(document).ready(function () {
                         Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) < 64) {
                         atBottom = true
                         console.log("要滚动啊.......")
+
                     } else {
                         console.log("滑条 : ", $(dialogSelector).scrollTop(), $(dialogSelector)[0].clientHeight, $(dialogSelector)[0].scrollHeight)
                         console.log("不滚动啊.......")
@@ -695,7 +700,7 @@ $(document).ready(function () {
 
                     // 首先检查有没有msgID变更
                     Obj.forEach((value, index) => {
-                        if (value.oldMsgID != undefined) {
+                        if (value.oldMsgID != undefined && $(dialogSelector + " [msgID='" + value['oldMsgID'] + "']").length > 0) {
                             $(dialogSelector + " [msgID='" + value['oldMsgID'] + "']").attr('msgID', value.msgID)
                         }
                     })
@@ -714,63 +719,66 @@ $(document).ready(function () {
 
                     Obj.forEach((value, index) => {
 
+                        if (value.oldMsgID != undefined && $(dialogSelector + " [msgID='" + value['msgID'] + "']").length == 0) {
+                            // 可能后台传上来一个oldMsgIDv不存在的消息
+                        }else{
 
-                        let timeObj = undefined
+                            let timeObj = undefined
 
-                        if (typeof (value["time"]) === 'number') {
-                            timeObj = new Date(value["time"])
-                        } else if (typeof (value["time"]) == "string") {
-                            timeObj = new Date(value["time"])
-                        } else if (typeof (value["time"]) == "object") {
-                            timeObj = value["time"]
-                        } else {
-                            timeObj = new Date()
-                        }
-
-                        let timeWaitInsert = timeObj.getTime()
-                        // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
-
-                        // 在index对应的bubble之前插入
-                        let currentInsertIndex = 0
-                        for (let indexOfExistBubble = 0;
-                            indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
-                            if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
-                                currentInsertIndex = -(indexOfExistBubble + 1)
-                            }
-                            if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
-                                // console.log("later : ", indexOfExistBubble, arrayExistBubble[indexOfExistBubble].msgTime)
-                                currentInsertIndex = indexOfExistBubble
-                            }
-                        }
-
-                        // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
-
-                        if (currentInsertIndex >= 0) {
-                            if (currentInsertIndex == arrayExistBubble.length - 1
-                                && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
-
-                                $(dialogSelector).append(bubble.createBubble(value))
-
-                                arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                            if (typeof (value["time"]) === 'number') {
+                                timeObj = new Date(value["time"])
+                            } else if (typeof (value["time"]) == "string") {
+                                timeObj = new Date(value["time"])
+                            } else if (typeof (value["time"]) == "object") {
+                                timeObj = value["time"]
                             } else {
-                                $(bubble.createBubble(value))
-                                    .insertBefore(
-                                        dialogSelector
-                                        + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
-                                    )
-
-                                arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                                timeObj = new Date()
                             }
-
-                        } else {
-                            // 重复的ID, 替换成新的
-                            $(dialogSelector
-                                + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
-                                .replaceWith(bubble.createBubble(value)
-                                )
-                            // arrayExistBubble[-currentInsertIndex - 1].msgTime
+    
+                            let timeWaitInsert = timeObj.getTime()
+                            // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
+    
+                            // 在index对应的bubble之前插入
+                            let currentInsertIndex = 0
+                            for (let indexOfExistBubble = 0;
+                                indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
+                                if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
+                                    currentInsertIndex = -(indexOfExistBubble + 1)
+                                }
+                                if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
+                                    // console.log("later : ", indexOfExistBubble, arrayExistBubble[indexOfExistBubble].msgTime)
+                                    currentInsertIndex = indexOfExistBubble
+                                }
+                            }
+    
+                            // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
+    
+                            if (currentInsertIndex >= 0) {
+                                if (currentInsertIndex == arrayExistBubble.length - 1
+                                    && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
+    
+                                    $(dialogSelector).append(bubble.createBubble(value))
+    
+                                    arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                                } else {
+                                    $(bubble.createBubble(value))
+                                        .insertBefore(
+                                            dialogSelector
+                                            + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
+                                        )
+    
+                                    arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                                }
+    
+                            } else {
+                                // 重复的ID, 替换成新的
+                                $(dialogSelector
+                                    + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
+                                    .replaceWith(bubble.createBubble(value)
+                                    )
+                                // arrayExistBubble[-currentInsertIndex - 1].msgTime
+                            }
                         }
-
 
                     })
                     // 
@@ -780,8 +788,9 @@ $(document).ready(function () {
 
                 // 判断用户当前所在位置, 如果用户在阅读之前的bubble就不应该滚动滑条
                 if (atBottom) {
-                    // 滑动到最下面
+
                     $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+
 
                     // fixme : -----------------------
                     // 目前程序已经去除对webview focus, 理论上来说不需要blur
@@ -789,11 +798,18 @@ $(document).ready(function () {
                     $(webTag2Selector(webTag)).blur()
                     //--------------------------------
 
+                    $(dialogSelector + " div.td-bubble").each((index, element) => {
+                        if($(element).find('.td-chatImg').length >0){
+                            ($(element).find('.td-chatImg > img').get(0)).onload = function(){
+                                $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                            }
+                        }
+                    })
                 } else {
 
+                    // 该处不需要blur, 因为不滚动, 要保持未读消息数
                     console.log("dialog updated. new bubble(s) not display...")
                 }
-
 
 
 
@@ -837,17 +853,17 @@ $(document).ready(function () {
 
                     }
 
-                    // 刷新dialog
-                    core.HostSendToWeb(
-                        webTag2Selector(webTag),
-                        { "queryDialog": { "userID": Convo.userID } }
-                    ).then((res) => {
-                        console.log("queryDialog : webReply : ", res)
+                    // // 刷新dialog
+                    // core.HostSendToWeb(
+                    //     webTag2Selector(webTag),
+                    //     { "queryDialog": { "userID": Convo.userID } }
+                    // ).then((res) => {
+                    //     console.log("queryDialog : webReply : ", res)
 
-                    }).catch((error) => {
-                        throw error
+                    // }).catch((error) => {
+                    //     throw error
 
-                    })
+                    // })
 
 
 
@@ -1137,9 +1153,9 @@ $(document).ready(function () {
                 } else if ((pathR.length > 9 && pathR.substring(0, 8) == 'https://') || (pathR.length > 8 && pathR.substring(0, 7) == 'http://')) {
                     arrayItem.push(new Promise(
                         (resolve, reject) => {
-                            var request = require('request').defaults({ encoding: null });
+                            var valRequest = request.defaults({ encoding: null });
 
-                            request.get(pathR, function (error, response, body) {
+                            valRequest.get(pathR, function (error, response, body) {
                                 if (!error && response.statusCode == 200) {
                                     let strRequest = new Buffer(body).toString('base64')
                                     let urldata = "data:" + response.headers["content-type"] + ";base64," + strRequest;
@@ -1417,10 +1433,11 @@ $(document).ready(function () {
                         // console.log("debug : path : ", item.path, "-----------------------------------")
                         fileList[item.fileID] = item
 
-                        
-                        $("#td-right > div.td-dropFile > img:nth-child(1)").addClass("td-none")
-                        $('#td-right > div.td-dropFile > img:nth-child(2)').attr('src', item.path)
-                        $('#td-right > div.td-dropFile > img:nth-child(2)').attr('data-file-ID', item.fileID)
+
+                        $("div.td-dropFile > img").addClass("td-none")
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('src', item.path)
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
+                        $('div.td-dropFile > div').removeClass('td-none')
                         $('.td-dropFile').removeClass('hide')
 
                         // sendInput("<img data-file-ID='"
@@ -1439,6 +1456,8 @@ $(document).ready(function () {
                         // } else {
                         //     reject("error : itemToHTML : pasteHtmlAtCaret")
                         // }
+
+                        resolve("")
                     }).catch((err) => {
                         console.log("error : itemToHTML : localSave ")
                         console.log(err)
@@ -1813,12 +1832,13 @@ $(document).ready(function () {
             let arraySend = undefined
             if (fromHtml == undefined) {
                 arraySend = getInput('div.td-inputbox')
+
+                // 清理消息
+                $("div.td-inputbox").empty()
             } else {
                 arraySend = getInputFromHtml(fromHtml)
             }
 
-            // 清理消息
-            $("div.td-inputbox").empty()
             // console.log('-----send-----')
             if (arraySend.length > 0) {
 
@@ -1827,15 +1847,15 @@ $(document).ready(function () {
                 core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
 
                     // 索取新的dialog
-                    core.HostSendToWeb(
-                        webTag2Selector(webTag),
-                        { "queryDialog": { "userID": userID } }
-                    ).then((res) => {
-                        console.log("queryDialog : webReply : ", res)
+                    // core.HostSendToWeb(
+                    //     webTag2Selector(webTag),
+                    //     { "queryDialog": { "userID": userID } }
+                    // ).then((res) => {
+                    //     console.log("queryDialog : webReply : ", res)
 
-                    }).catch((error) => {
-                        throw error
-                    })
+                    // }).catch((error) => {
+                    //     throw error
+                    // })
 
                     //删除File list
                     // arraySend.forEach((value, index) => {
@@ -2073,8 +2093,11 @@ $(document).ready(function () {
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
-
+                $(".td-inputbox").focus()
+                setEndOfContenteditable($(".td-inputbox").get(0))
             }).catch((error) => {
+                $(".td-inputbox").focus()
+                setEndOfContenteditable($(".td-inputbox").get(0))
                 throw error
             })
 
@@ -2136,6 +2159,16 @@ $(document).ready(function () {
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
         $("#td-right div.td-chatLog[winType='extension']").show()
         loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
+    })
+
+    $(debug_spotify_str).on('click', (e) => {
+        $('.td-toolbox > img').removeClass('theme-transduction-active')
+        $(e.target).addClass('theme-transduction-active')
+
+        let extensionName = "spotify"
+        $("#td-right div.td-chatLog[winType='chatLog']").hide()
+        $("#td-right div.td-chatLog[winType='extension']").show()
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://open.spotify.com/browse/featured", '')
     })
 
     // 隐藏extension
@@ -2218,6 +2251,29 @@ $(document).ready(function () {
         sendInput()
     })
 
+    // 发送图片
+    $('#debug-img-send').on('click', function () {
+        // console.log("send clicked------>")
+
+
+        sendInput($('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
+
+        $("div.td-dropFile > img").removeClass("td-none")
+        $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
+        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
+        $('div.td-dropFile > div').addClass('td-none')
+        $('.td-dropFile').addClass('hide')
+
+    })
+
+    //取消发送图片
+    $('#debug-img-cancel').on('click', function () {
+        $("div.td-dropFile > img").removeClass("td-none")
+        $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
+        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
+        $('div.td-dropFile > div').addClass('td-none')
+        $('.td-dropFile').addClass('hide')
+    })
 
     // ===查询后台登录情况===
     $("#td-request-status").on("click", () => {
@@ -2312,8 +2368,8 @@ $(document).ready(function () {
 
     });
 
-    // 阻拦全部链接点击
-    $(document).on('click', 'img[download]', function (event) {
+    // 下载
+    $(document).on('click', '[download]', function (event) {
         console.log('download : ', this)
         core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
 
@@ -2327,6 +2383,25 @@ $(document).ready(function () {
             $(webview).get(0).reload()
         }
 
+    });
+
+    // 右侧对话框, 滑条有变化
+    $(".td-chatLog[wintype='chatLog']").scroll(function () {
+        console.log("scroll !!!")
+
+        let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+
+        // 在dialog能看见的情况(不是在extension)
+        if ($(dialogSelector).is(":visible")){
+
+            // 滑条没有在最后, 添加一键回到最后
+            if(Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) >= 64) {
+
+            }else{ // 滑条在最后, 去掉一键滚动
+
+            }
+        }
+        
     });
 
 
@@ -2437,6 +2512,16 @@ $(document).ready(function () {
                         }
                     }
                 }
+            }
+
+        }
+
+        // esc按下
+        if (event.which == 27) {
+            // console.log('esc pressed')
+            // 图片确认界面
+            if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
+                $('#debug-img-cancel').click()
             }
 
         }
