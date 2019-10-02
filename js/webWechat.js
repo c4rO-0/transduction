@@ -29,6 +29,9 @@ window.onload = function () {
     // const request = require('request')
     // const setimmediate = require('setimmediate')
 
+    // 禁止弹出提醒
+    delete window.Notification
+
 
     let wechatMSGType = {
         MSGTYPE_TEXT: 1,
@@ -548,11 +551,13 @@ window.onload = function () {
 
                                 MSG["userID"] = ID;
                                 MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
-                                core.WebToHost({ "Dialog": [MSG] }).then((res) => {
-                                    console.log(res)
-                                }).catch((error) => {
-                                    throw error
-                                });
+                                if(MSG["oldMsgID"] != '{{message.MsgId}}'){
+                                    core.WebToHost({ "Dialog": [MSG] }).then((res) => {
+                                        console.log(res)
+                                    }).catch((error) => {
+                                        throw error
+                                    });
+                                }
                             }
 
                         }

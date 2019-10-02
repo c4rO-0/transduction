@@ -1808,6 +1808,9 @@ $(document).ready(function () {
                         "userAgent : " + strUserAgent,
                     "extraHeaders": "User-Agent:" + strUserAgent + "\n"
                 })
+
+            // 静音
+            $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
         }
     }
 
@@ -1992,6 +1995,10 @@ $(document).ready(function () {
             $(webTagSelector + '>div.modal-dialog').addClass('modal-xl')
             $(webTagSelector).modal('show')
         }
+
+        // 打开webview app, 取消静音
+        // 在哪重新静音????
+        $(webTag2Selector(webTag)).setAudioMuted(false)
 
 
     })
