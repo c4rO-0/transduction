@@ -868,9 +868,26 @@ $(document).ready(function () {
 
                 }
 
-
+                // 前台闪烁图标
                 if (!Convo.muted) {
-                    core.sendToMain({ 'flash': '' })
+                    core.sendToMain({ 'flash': Convo.nickName +':'+ Convo.message })
+                }
+
+                // 弹出notification
+                if(!Convo.muted && Convo.action != 'r' 
+                && Convo.message != undefined && Convo.message != ''
+                && (Convo.counter > 0 
+                    || !(document.hasFocus())) ){
+                                        
+                    let convoNotification = new Notification('Tr| '+webTag, {
+                        body: Convo.nickName +':'+ Convo.message
+                      })
+                      
+                      convoNotification.onclick = () => {
+                          // 弹出transduction, 并点击对应convo
+                          window.focus()
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                      }
                 }
 
                 if (Convo.action === 'a') {
@@ -1998,7 +2015,7 @@ $(document).ready(function () {
 
         // 打开webview app, 取消静音
         // 在哪重新静音????
-        $(webTag2Selector(webTag)).setAudioMuted(false)
+        $(webTag2Selector(webTag)).get(0).setAudioMuted(false)
 
 
     })
