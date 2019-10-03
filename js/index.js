@@ -876,11 +876,10 @@ $(document).ready(function () {
                 // 弹出notification
                 if(!Convo.muted && Convo.action != 'r' 
                 && Convo.message != undefined && Convo.message != ''
-                && (Convo.counter > 0 
-                    || !(document.hasFocus())) ){
+                && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused()) ){
                                         
                     let convoNotification = new Notification('Tr| '+webTag, {
-                        body: Convo.nickName +':'+ Convo.message
+                        body: Convo.nickName +'|'+ Convo.message
                       })
                       
                       convoNotification.onclick = () => {
