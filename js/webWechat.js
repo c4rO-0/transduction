@@ -207,9 +207,9 @@ window.onload = function () {
             //     }
             // }
             if (status == 'sending' || status == 'failed') {
-                if (MSG["MMThumbSrc"]) { 
-                        content = MSG["MMThumbSrc"]
-                }else{
+                if (MSG["MMThumbSrc"]) {
+                    content = MSG["MMThumbSrc"]
+                } else {
                     content = ''
                 }
             } else {
@@ -341,99 +341,101 @@ window.onload = function () {
 
 
         // console.log("convo exist : ", $("div[ng-click][data-username='" + userID + "']").length, $("div[data-username='" + userID + "']"))
-        if ($("div[ng-click][data-username='" + userID + "']").length == 0) {
-            // 元素被删除了
-            return {
-                "userID": userID,
-                "time": time.getTime(),
-                "message": "",
-                "nickName": nickName,
-                "avatar": avatar,
-                "counter": 0,
-                "action": "r",
-                "muted": true,
-                "index": 0
-            }
-        } else {
-            let counter = 0
-            let muted = false
-            // 简单粗暴, 默认为add
-            // 微信初始会弹出最近联系人, 需要滤掉该部分convo, 将action设为c
-            // action为c: 使得没有消息的联系人不会在transduction上创建
-            // 特殊 : filehelper以及被置顶的联系人依然会被添加
-            let action = 'a'
-            if ($(obj).find("div.ext p.attr.ng-scope[ng-if='chatContact.isMuted()']").length > 0) {
-                // 被静音了
-                console.log("is muted")
-                muted = true
-                if ($(obj).find("div.info p.msg span.ng-binding.ng-scope").length > 0) {
-                    // 多条未读
-                    console.log("multi-MSGs")
-                    let str_counter = $(obj).find("div.info p.msg span.ng-binding.ng-scope").text()
-                    str_counter = str_counter.substr(1, str_counter.length - 3)
-                    counter = parseInt(str_counter)
-                } else {
-                    console.log("single-MSG")
-                    if (content == '') {
-                        // 初始化
-                        console.log("initial muted group")
-                        counter = 0
-                        if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
-                            action = 'a'
-                        } else {
-                            action = 'c'
-                        }
-
-
-                    } else {
-                        console.log("unread 1 : ", $(obj).find('div.avatar i.web_wechat_reddot').length)
-                        if ($(obj).find('div.avatar i.web_wechat_reddot').length > 0) {
-                            // 一条未读
-                            counter = 1
-                        } else {
-                            counter = 0
-                        }
-
-                    }
-
-                }
+        // if ( $("div[ng-click][data-username='" + userID + "']").length == 0  ) {
+        //     // 元素被删除了
+        //     return {
+        //         "userID": userID,
+        //         "time": time.getTime(),
+        //         "message": "",
+        //         "nickName": nickName,
+        //         "avatar": avatar,
+        //         "counter": 0,
+        //         "action": "r",
+        //         "muted": true,
+        //         "index": 0
+        //     }
+        // } else {
+        let counter = 0
+        let muted = false
+        // 简单粗暴, 默认为add
+        // 微信初始会弹出最近联系人, 需要滤掉该部分convo, 将action设为c
+        // action为c: 使得没有消息的联系人不会在transduction上创建
+        // 特殊 : filehelper以及被置顶的联系人依然会被添加
+        let action = 'a'
+        if ($(obj).find("div.ext p.attr.ng-scope[ng-if='chatContact.isMuted()']").length > 0) {
+            // 被静音了
+            console.log("is muted")
+            muted = true
+            if ($(obj).find("div.info p.msg span.ng-binding.ng-scope").length > 0) {
+                // 多条未读
+                console.log("multi-MSGs")
+                let str_counter = $(obj).find("div.info p.msg span.ng-binding.ng-scope").text()
+                str_counter = str_counter.substr(1, str_counter.length - 3)
+                counter = parseInt(str_counter)
             } else {
-                // 正常
-                if ($(obj).find("div.avatar i.web_wechat_reddot_middle").length > 0) {
-                    counter = $(obj).find("div.avatar i.web_wechat_reddot_middle").text()
-                } else {
-                    counter = 0
-                }
+                console.log("single-MSG")
                 if (content == '') {
                     // 初始化
+                    console.log("initial muted group")
                     counter = 0
                     if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
                         action = 'a'
                     } else {
                         action = 'c'
                     }
+
+
+                } else {
+                    console.log("unread 1 : ", $(obj).find('div.avatar i.web_wechat_reddot').length)
+                    if ($(obj).find('div.avatar i.web_wechat_reddot').length > 0) {
+                        // 一条未读
+                        counter = 1
+                    } else {
+                        counter = 0
+                    }
+
                 }
 
             }
-
-            let index = $(".chat_item.slide-left.ng-scope").index(obj)
-
-            // icon web_wechat_reddot ng-scope 一个小点
-
-            return {
-                "userID": userID,
-                "time": time.getTime(),
-                "message": content,
-                "nickName": nickName,
-                "avatar": avatar,
-                "counter": counter,
-                "action": action,
-                "muted": muted,
-                "index": index
+        } else {
+            // 正常
+            if ($(obj).find("div.avatar i.web_wechat_reddot_middle").length > 0) {
+                counter = $(obj).find("div.avatar i.web_wechat_reddot_middle").text()
+            } else {
+                counter = 0
             }
+            if (content == '') {
+                // 初始化
+                counter = 0
+                if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
+                    action = 'a'
+                } else {
+                    action = 'c'
+                }
+            }
+
         }
 
+        let index = $(".chat_item.slide-left.ng-scope").index(obj)
+
+        // icon web_wechat_reddot ng-scope 一个小点
+
+        return {
+            "userID": userID,
+            "time": time.getTime(),
+            "message": content,
+            "nickName": nickName,
+            "avatar": avatar,
+            "counter": counter,
+            "action": action,
+            "muted": muted,
+            "index": index
+        }
+        // }
+
     }
+
+    
 
     function grepAndSendRight(MSGID = undefined) {
         if ($('div.chat_item.slide-left.active').length > 0) {
@@ -526,8 +528,8 @@ window.onload = function () {
 
             if ($(mutation.target).is('div.ng-scope')) {
                 mutation.addedNodes.forEach((node, index) => {
-                    if ($(node).is(' div.ng-scope') 
-                    && ($('div[ng-repeat="message in chatContent"]').length < 2 || $('div[ng-repeat="message in chatContent"]').index(node) >= 1) ) {
+                    if ($(node).is(' div.ng-scope')
+                        && ($('div[ng-repeat="message in chatContent"]').length < 2 || $('div[ng-repeat="message in chatContent"]').index(node) >= 1)) {
                         console.log($('div[ng-repeat="message in chatContent"]').length, $('div[ng-repeat="message in chatContent"]').index(node))
                         addedNewBubble = addedNewBubble || true
                     }
@@ -551,7 +553,7 @@ window.onload = function () {
 
                                 MSG["userID"] = ID;
                                 MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
-                                if(MSG["oldMsgID"] != '{{message.MsgId}}'){
+                                if (MSG["oldMsgID"] != '{{message.MsgId}}') {
                                     core.WebToHost({ "Dialog": [MSG] }).then((res) => {
                                         console.log(res)
                                     }).catch((error) => {
@@ -787,7 +789,7 @@ window.onload = function () {
 
                     $("div.ng-scope div [data-username='" + ID + "']").click();
 
-                    
+
 
                     obsRight.disconnect()
                     obsRight.observe($("div[mm-repeat='message in chatContent']")[0], {
