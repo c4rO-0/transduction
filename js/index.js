@@ -98,7 +98,7 @@ $(document).ready(function () {
     let debug_spotify_str = "#debug-spotify"
     let debug_goBackChat_str = "#debug-goBackChat"
     let classTactive = 'theme-transduction-active-tran'
-    
+
 
 
     /**----------------------
@@ -720,7 +720,7 @@ $(document).ready(function () {
 
                         if (value.oldMsgID != undefined && $(dialogSelector + " [msgID='" + value['msgID'] + "']").length == 0) {
                             // 可能后台传上来一个oldMsgIDv不存在的消息
-                        }else{
+                        } else {
 
                             let timeObj = undefined
 
@@ -733,10 +733,10 @@ $(document).ready(function () {
                             } else {
                                 timeObj = new Date()
                             }
-    
+
                             let timeWaitInsert = timeObj.getTime()
                             // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
-    
+
                             // 在index对应的bubble之前插入
                             let currentInsertIndex = 0
                             for (let indexOfExistBubble = 0;
@@ -749,15 +749,15 @@ $(document).ready(function () {
                                     currentInsertIndex = indexOfExistBubble
                                 }
                             }
-    
+
                             // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
-    
+
                             if (currentInsertIndex >= 0) {
                                 if (currentInsertIndex == arrayExistBubble.length - 1
                                     && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
-    
+
                                     $(dialogSelector).append(bubble.createBubble(value))
-    
+
                                     arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                                 } else {
                                     $(bubble.createBubble(value))
@@ -765,10 +765,10 @@ $(document).ready(function () {
                                             dialogSelector
                                             + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
                                         )
-    
+
                                     arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                                 }
-    
+
                             } else {
                                 // 重复的ID, 替换成新的
                                 $(dialogSelector
@@ -798,8 +798,8 @@ $(document).ready(function () {
                     //--------------------------------
 
                     $(dialogSelector + " div.td-bubble").each((index, element) => {
-                        if($(element).find('.td-chatImg').length >0){
-                            ($(element).find('.td-chatImg > img').get(0)).onload = function(){
+                        if ($(element).find('.td-chatImg').length > 0) {
+                            ($(element).find('.td-chatImg > img').get(0)).onload = function () {
                                 $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
                             }
                         }
@@ -869,24 +869,32 @@ $(document).ready(function () {
                 }
 
                 // 前台闪烁图标
-                if (!Convo.muted) {
-                    core.sendToMain({ 'flash': Convo.nickName +':'+ Convo.message })
+                if (!Convo.muted && Convo.action != 'r'
+                    && Convo.message != undefined && Convo.message != ''
+                    && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused())) {
+                    core.sendToMain({ 'flash': Convo.nickName + ':' + Convo.message })
                 }
 
                 // 弹出notification
-                if(!Convo.muted && Convo.action != 'r' 
-                && Convo.message != undefined && Convo.message != ''
-                && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused()) ){
-                                        
-                    let convoNotification = new Notification('Tr| '+webTag, {
-                        body: Convo.nickName +'|'+ Convo.message
-                      })
-                      
-                      convoNotification.onclick = () => {
-                          // 弹出transduction, 并点击对应convo
-                          window.focus()
+                if (!Convo.muted && Convo.action != 'r'
+                    && Convo.message != undefined && Convo.message != ''
+                    && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused())) {
+                    // if (true) { // debug
+
+                    let convoNotification = new Notification('Tr| ' + webTag, {
+                        body: Convo.nickName + '|' + Convo.message,
+                        silent: true
+                    })
+
+                    // 因为系统原因, Notification silent在ubuntu失效, 所以需要统一播放声音
+                    const noise = new Audio('../res/mp3/to-the-point.mp3')
+                    noise.play()
+
+                    convoNotification.onclick = () => {
+                        // 弹出transduction, 并点击对应convo
+                        window.focus()
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
-                      }
+                    }
                 }
 
                 if (Convo.action === 'a') {
@@ -2414,16 +2422,16 @@ $(document).ready(function () {
         let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
 
         // 在dialog能看见的情况(不是在extension)
-        if ($(dialogSelector).is(":visible")){
+        if ($(dialogSelector).is(":visible")) {
 
             // 滑条没有在最后, 添加一键回到最后
-            if(Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) >= 64) {
+            if (Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) >= 64) {
 
-            }else{ // 滑条在最后, 去掉一键滚动
+            } else { // 滑条在最后, 去掉一键滚动
 
             }
         }
-        
+
     });
 
 

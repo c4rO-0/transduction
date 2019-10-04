@@ -40,7 +40,7 @@ function createWindow() {
     let tdSettings = store.get('tdSettings')
     // console.log('tdSettings : ', tdSettings)
 
-    if(tdSettings == undefined || !tdSettings.swTray){
+    if (tdSettings == undefined || !tdSettings.swTray) {
       isQuitting = true
     }
 
@@ -127,7 +127,7 @@ function createWindow() {
 
   // console.log(contextMenu)
   tray.setToolTip('transduction')
-  
+
   tray.on('click', () => {
     win.isVisible() ? win.hide() : win.show()
   })
