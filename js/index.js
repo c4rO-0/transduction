@@ -912,6 +912,12 @@ $(document).ready(function () {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
                             .addClass('theme-transduction-active')
                     }
+
+                    // webTag
+                    let webTagSelector = '#modal-' + webTag
+                    if($(webTagSelector).hasClass('show')){
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                    }
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
                     ChangeConvoHtml(webTag, Convo)
