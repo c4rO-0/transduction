@@ -378,7 +378,8 @@ window.onload = function () {
                     // 初始化
                     console.log("initial muted group")
                     counter = 0
-                    if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
+                    if ($('#J_NavChatScrollBody').attr("data-username") == "" 
+                    && (  userID == "filehelper" || $(obj).hasClass("top") )) {
                         action = 'a'
                     } else {
                         action = 'c'
@@ -407,7 +408,8 @@ window.onload = function () {
             if (content == '') {
                 // 初始化
                 counter = 0
-                if (userID == "filehelper" || $(obj).hasClass("top") || $(obj).hasClass("active")) {
+                if ($('#J_NavChatScrollBody').attr("data-username") == "" 
+                && (  userID == "filehelper" || $(obj).hasClass("top") )) {
                     action = 'a'
                 } else {
                     action = 'c'
@@ -628,8 +630,15 @@ window.onload = function () {
 
             if (record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username') {
                 // 点击新的用户
-                arrayObjUser.push(
-                    $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']"))
+                // arrayObjUser.push(
+                //     $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']"))
+                let convoClicked = grepNewMSG($(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']"))
+                convoClicked.action = 'a'
+                core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                    console.log(res)
+                }).catch((error) => {
+                    throw error
+                });
             }
 
         })

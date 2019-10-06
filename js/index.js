@@ -917,6 +917,7 @@ $(document).ready(function () {
                     let webTagSelector = '#modal-' + webTag
                     if($(webTagSelector).hasClass('show')){
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                        
                     }
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
