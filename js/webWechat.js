@@ -30,7 +30,13 @@ window.onload = function () {
     // const setimmediate = require('setimmediate')
 
     // 禁止弹出提醒
-    delete window.Notification
+    // delete window.Notification
+
+    var Notification = function (title, ops) {
+        // title is the title of the notifations, ops is the config object
+        console.log("Notification : ", title, ops)
+    };
+    window.Notification = Notification;
 
 
     let wechatMSGType = {
@@ -378,8 +384,8 @@ window.onload = function () {
                     // 初始化
                     console.log("initial muted group")
                     counter = 0
-                    if ($('#J_NavChatScrollBody').attr("data-username") == "" 
-                    && (  userID == "filehelper" || $(obj).hasClass("top") )) {
+                    if ($('#J_NavChatScrollBody').attr("data-username") == ""
+                        && (userID == "filehelper" || $(obj).hasClass("top"))) {
                         action = 'a'
                     } else {
                         action = 'c'
@@ -408,8 +414,8 @@ window.onload = function () {
             if (content == '') {
                 // 初始化
                 counter = 0
-                if ($('#J_NavChatScrollBody').attr("data-username") == "" 
-                && (  userID == "filehelper" || $(obj).hasClass("top") )) {
+                if ($('#J_NavChatScrollBody').attr("data-username") == ""
+                    && (userID == "filehelper" || $(obj).hasClass("top"))) {
                     action = 'a'
                 } else {
                     action = 'c'
@@ -437,7 +443,7 @@ window.onload = function () {
 
     }
 
-    
+
 
     function grepAndSendRight(MSGID = undefined) {
         if ($('div.chat_item.slide-left.active').length > 0) {
