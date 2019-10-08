@@ -29,6 +29,9 @@ window.onload = function () {
     // const request = require('request')
     // const setimmediate = require('setimmediate')
 
+    // 禁止弹出提醒
+    delete window.Notification
+
 
     let wechatMSGType = {
         MSGTYPE_TEXT: 1,
@@ -523,8 +526,9 @@ window.onload = function () {
 
             if ($(mutation.target).is('div.ng-scope')) {
                 mutation.addedNodes.forEach((node, index) => {
-                    if ($(node).is(' div.ng-scope')) {
-                        // console.log($(node))
+                    if ($(node).is(' div.ng-scope') 
+                    && ($('div[ng-repeat="message in chatContent"]').length < 2 || $('div[ng-repeat="message in chatContent"]').index(node) >= 1) ) {
+                        console.log($('div[ng-repeat="message in chatContent"]').length, $('div[ng-repeat="message in chatContent"]').index(node))
                         addedNewBubble = addedNewBubble || true
                     }
                 })
@@ -547,11 +551,13 @@ window.onload = function () {
 
                                 MSG["userID"] = ID;
                                 MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
-                                core.WebToHost({ "Dialog": [MSG] }).then((res) => {
-                                    console.log(res)
-                                }).catch((error) => {
-                                    throw error
-                                });
+                                if(MSG["oldMsgID"] != '{{message.MsgId}}'){
+                                    core.WebToHost({ "Dialog": [MSG] }).then((res) => {
+                                        console.log(res)
+                                    }).catch((error) => {
+                                        throw error
+                                    });
+                                }
                             }
 
                         }
@@ -562,6 +568,7 @@ window.onload = function () {
         })
 
         if (addedNewBubble) {
+            console.log(mutationList)
             grepAndSendRight()
         }
 
