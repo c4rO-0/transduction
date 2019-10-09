@@ -394,6 +394,31 @@ window.onload = function () {
 
     }
 
+    function findConvo(userID){
+
+        // 判断是否在_chatContent, 不在说明一定找不到
+        if(_chatContent[userID] != undefined){
+
+            let convoObj = $(".chat_item.slide-left.ng-scope[data-username='" + usrID + "']")
+
+            if($(convoObj).length > 0 ){
+                // 右侧找到convo
+                return convoObj
+            }else{
+                let topObj = $('#J_NavChatScrollBody > div[mm-repeat] > div.top-placeholder')
+                let bottomObj=$('#J_NavChatScrollBody > div[mm-repeat] > div.bottom-placeholder')
+                if($(topObj).length > 0 && $(bottomObj).length >0 
+                && ($(topObj).height()!=0 || $(bottomObj).height()!=0) ){
+                    // 说明存在滑条
+                    
+                }
+
+            }
+        }else{
+            return undefined
+        }
+    }
+
     // 
     /**
      * 通过左侧边栏读取消息
