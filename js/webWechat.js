@@ -38,6 +38,9 @@ window.onload = function () {
     };
     window.Notification = Notification;
 
+    addXMLRequestCallback(processXHR);
+
+
 
     let wechatMSGType = {
         MSGTYPE_TEXT: 1,
@@ -60,6 +63,85 @@ window.onload = function () {
     }
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
+    function addXMLRequestCallback(callback) {
+        var oldSend, i;
+        if (XMLHttpRequest.callbacks) {
+            // we've already overridden send() so just add the callback
+            XMLHttpRequest.callbacks.push(callback);
+        } else {
+            // create a callback queue
+            XMLHttpRequest.callbacks = [callback];
+            // store the native send()
+            oldSend = XMLHttpRequest.prototype.send;
+            // override the native send()
+            XMLHttpRequest.prototype.send = function () {
+                // process the callback queue
+                // the xhr instance is passed into each callback but seems pretty useless
+                // you can't tell what its destination is or call abort() without an error
+                // so only really good for logging that a request has happened
+                // I could be wrong, I hope so...
+                // EDIT: I suppose you could override the onreadystatechange handler though
+                for (i = 0; i < XMLHttpRequest.callbacks.length; i++) {
+                    XMLHttpRequest.callbacks[i](this);
+                }
+                // call the native send()
+                oldSend.apply(this, arguments);
+            }
+        }
+    }
+
+
+   function processXHR(xhr) {
+
+        console.log("=====XMLRequest======")
+        console.dir(xhr); 
+        xhr.addEventListener("load", function () { 
+        // xhr.onreadystatechange = function () { if (xhr.readyState == 4 && xhr.status == 200) { 
+            
+            
+            // =======start here
+            let response = JSON.parse(xhr.responseText)
+
+            // o 右侧来新消息
+            // console.log(response, response.AddMsgList != undefined , response.AddMsgList.length)
+            if(response.AddMsgList != undefined && response.AddMsgList.length > 0){
+                response.AddMsgList.forEach( (element, index) =>{
+
+                    // 目前猜测StatusNotifyCode为0是来新消息 (需要测试验证)
+                    // console.log(element)
+                    if(element.StatusNotifyCode == 0){
+                        let convoClicked = grepNewMSG($(".chat_item.slide-left.ng-scope[data-username='" + element.ToUserName + "']"))
+                        core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                            console.log(res)
+                        }).catch((error) => {
+                            throw error
+                        });
+                    }
+
+                } )
+                // console.log("new xrh--->")
+                // console.log(response.AddMsgList)
+
+            }
+
+            if(response.ChatSet != undefined &&  response.ContactList != undefined && response.ContactList.length > 0){
+                // setTimeout(() => {
+                    console.log("ContactList====")
+                    response.ContactList.forEach( (element, index) => {
+                        console.log(element)
+                        let convoClicked = grepNewMSG($(".chat_item.slide-left.ng-scope[data-username='" + element.UserName + "']"))
+                        core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                            console.log(res)
+                        }).catch((error) => {
+                            throw error
+                        });
+                    })
+                
+                // }, 1000);
+            }
+
+        })
+    }
 
     /**
      * 根据微信储存的变量_chatcontent读取消息
@@ -591,12 +673,12 @@ window.onload = function () {
         let arrayObjUser = new Array();
         let arrayContent = new Array();
         records.map(function (record) {
-            console.log("debug : ===========chat slide============")
-            console.log("debug : ", "obs type : ", record.type)
-            console.log("debug : ", "obs target : ")
-            console.log($(record.target))
-            console.log("debug : ", "remove : ", $(record.removedNodes).length)
-            console.log($(record.removedNodes))
+            // console.log("debug : ===========chat slide============")
+            // console.log("debug : ", "obs type : ", record.type)
+            // console.log("debug : ", "obs target : ")
+            // console.log($(record.target))
+            // console.log("debug : ", "remove : ", $(record.removedNodes).length)
+            // console.log($(record.removedNodes))
 
 
             let obj = $(record.target).closest(".chat_item.slide-left.ng-scope")
@@ -649,25 +731,25 @@ window.onload = function () {
 
         })
 
-        console.log("debug : ", "------array:user-----")
-        console.log(arrayObjUser)
+        // console.log("debug : ", "------array:user-----")
+        // console.log(arrayObjUser)
 
-        // console.log("debug : ", "------array:MSG-----")
-        arrayObjUser.forEach((currentValue, index) => {
-            // console.log("debug : ", index)
-            arrayContent.push(grepNewMSG(currentValue))
-        })
+        // // console.log("debug : ", "------array:MSG-----")
+        // arrayObjUser.forEach((currentValue, index) => {
+        //     // console.log("debug : ", index)
+        //     arrayContent.push(grepNewMSG(currentValue))
+        // })
 
-        // console.log("debug : ", "------array:MSG-----")
-        // console.log(arrayContent)
-        arrayContent.forEach((currentValue, index) => {
-            // 向index发出新消息提醒
-            core.WebToHost({ "Convo-new": currentValue }).then((res) => {
-                console.log(res)
-            }).catch((error) => {
-                throw error
-            });
-        })
+        // // console.log("debug : ", "------array:MSG-----")
+        // // console.log(arrayContent)
+        // arrayContent.forEach((currentValue, index) => {
+        //     // 向index发出新消息提醒
+        //     core.WebToHost({ "Convo-new": currentValue }).then((res) => {
+        //         console.log(res)
+        //     }).catch((error) => {
+        //         throw error
+        //     });
+        // })
 
     };
 
@@ -691,6 +773,9 @@ window.onload = function () {
     }
 
     $(document).ready(function () {
+
+
+        
 
         let obsHead = new MutationObserver(callbackHead);
 
@@ -719,6 +804,8 @@ window.onload = function () {
                         attributes: true, attributeOldValue: true
                     });
                     observer.disconnect()
+
+                    // addXMLRequestCallback(processXHR);
                 }
             }
             let obsLogin = new MutationObserver(callbackobsLogin);
@@ -755,6 +842,8 @@ window.onload = function () {
             // // console.log(scriptSrc)
             // let posskey =  scriptSrc.indexOf('skey')
             // skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
+
+            // addXMLRequestCallback(processXHR);
 
         }
 
