@@ -150,13 +150,24 @@ window.onload = function () {
 
                 if(response.LocalID != undefined && response.MsgID != undefined){
                     // 发送消息
+                    // console.log("xhr : 发送消息")
+                    Object.keys(_chatContent).forEach( usrID =>{
+                        // console.log("debug : usrID : ", usrID)
+                        if(_chatContent[usrID].length > 0 ){
+                            (_chatContent[usrID]).forEach(msg =>{
+                                if(msg.MsgId == response.MsgID){
+                                    let convoClicked = grepNewMSG($(".chat_item.slide-left.ng-scope[data-username='" + usrID + "']"))
+                                    core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                                        console.log(res)
+                                    }).catch((error) => {
+                                        // throw error
+                                    });
+                                }
+                            })
+                        }
 
-                    let convoClicked = grepNewMSG($(".chat_item.slide-left.ng-scope[data-username='" + $('#J_NavChatScrollBody').attr("data-username") + "']"))
-                    core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-                        console.log(res)
-                    }).catch((error) => {
-                        throw error
                     });
+                    
                 }
 
             } catch (error) {
