@@ -82,11 +82,11 @@ window.onload = function () {
     // 禁止弹出提醒
     // delete window.Notification
 
-    var Notification = function (title, ops) {
-        // title is the title of the notifations, ops is the config object
-        console.log("Notification : ", title, ops)
-    };
-    window.Notification = Notification;
+    // var Notification = function (title, ops) {
+    //     // title is the title of the notifations, ops is the config object
+    //     console.log("Notification : ", title, ops)
+    // };
+    // window.Notification = Notification;
 
     addXMLRequestCallback(processXHR);
 
