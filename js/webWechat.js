@@ -14,6 +14,56 @@ Object.defineProperty(navigator, 'languages', {
 // *********************************************
 
 
+let initialContactList = undefined
+
+function addXMLRequestCallback(callback) {
+    var oldSend, i;
+    if (XMLHttpRequest.callbacks) {
+        // we've already overridden send() so just add the callback
+        XMLHttpRequest.callbacks.push(callback);
+    } else {
+        // create a callback queue
+        XMLHttpRequest.callbacks = [callback];
+        // store the native send()
+        oldSend = XMLHttpRequest.prototype.send;
+        // override the native send()
+        XMLHttpRequest.prototype.send = function () {
+            // process the callback queue
+            // the xhr instance is passed into each callback but seems pretty useless
+            // you can't tell what its destination is or call abort() without an error
+            // so only really good for logging that a request has happened
+            // I could be wrong, I hope so...
+            // EDIT: I suppose you could override the onreadystatechange handler though
+            for (i = 0; i < XMLHttpRequest.callbacks.length; i++) {
+                XMLHttpRequest.callbacks[i](this);
+            }
+            // call the native send()
+            oldSend.apply(this, arguments);
+        }
+    }
+}
+
+addXMLRequestCallback(function (xhr) {
+    xhr.addEventListener("load", function () {
+
+        try {
+            let response = JSON.parse(xhr.responseText)
+            // console.log("=====XMLRequest======")
+            // console.dir(xhr); 
+            // console.log("initial xhr")
+            if (response.ChatSet != undefined && response.ContactList != undefined && response.ContactList.length > 0) {
+
+                initialContactList = response.ContactList
+                console.log("initial initialContactList : ", initialContactList)
+            }
+        } catch (error) {
+
+        }
+
+    })
+});
+
+
 window.onload = function () {
 
     const core = require("../js/core.js")
@@ -63,83 +113,44 @@ window.onload = function () {
     }
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
-    function addXMLRequestCallback(callback) {
-        var oldSend, i;
-        if (XMLHttpRequest.callbacks) {
-            // we've already overridden send() so just add the callback
-            XMLHttpRequest.callbacks.push(callback);
-        } else {
-            // create a callback queue
-            XMLHttpRequest.callbacks = [callback];
-            // store the native send()
-            oldSend = XMLHttpRequest.prototype.send;
-            // override the native send()
-            XMLHttpRequest.prototype.send = function () {
-                // process the callback queue
-                // the xhr instance is passed into each callback but seems pretty useless
-                // you can't tell what its destination is or call abort() without an error
-                // so only really good for logging that a request has happened
-                // I could be wrong, I hope so...
-                // EDIT: I suppose you could override the onreadystatechange handler though
-                for (i = 0; i < XMLHttpRequest.callbacks.length; i++) {
-                    XMLHttpRequest.callbacks[i](this);
-                }
-                // call the native send()
-                oldSend.apply(this, arguments);
-            }
-        }
-    }
+
+    function processXHR(xhr) {
+
+        // console.log("=====XMLRequest======")
+        // console.dir(xhr);
+        xhr.addEventListener("load", function () {
+            // xhr.onreadystatechange = function () { if (xhr.readyState == 4 && xhr.status == 200) { 
 
 
-   function processXHR(xhr) {
-
-        console.log("=====XMLRequest======")
-        console.dir(xhr); 
-        xhr.addEventListener("load", function () { 
-        // xhr.onreadystatechange = function () { if (xhr.readyState == 4 && xhr.status == 200) { 
-            
-            
             // =======start here
-            let response = JSON.parse(xhr.responseText)
+            try {
+                let response = JSON.parse(xhr.responseText)
 
-            // o 右侧来新消息
-            // console.log(response, response.AddMsgList != undefined , response.AddMsgList.length)
-            if(response.AddMsgList != undefined && response.AddMsgList.length > 0){
-                response.AddMsgList.forEach( (element, index) =>{
+                // o 右侧来新消息
+                // console.log(response, response.AddMsgList != undefined , response.AddMsgList.length)
+                if (response.AddMsgList != undefined && response.AddMsgList.length > 0) {
+                    response.AddMsgList.forEach((element, index) => {
 
-                    // 目前猜测StatusNotifyCode为0是来新消息 (需要测试验证)
-                    // console.log(element)
-                    if(element.StatusNotifyCode == 0){
-                        let convoClicked = grepNewMSG($(".chat_item.slide-left.ng-scope[data-username='" + element.ToUserName + "']"))
-                        core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-                            console.log(res)
-                        }).catch((error) => {
-                            throw error
-                        });
-                    }
+                        // 目前猜测StatusNotifyCode为0是来新消息 (需要测试验证)
+                        // console.log(element)
+                        if (element.StatusNotifyCode == 0) {
+                            let convoClicked = grepNewMSG($(".chat_item.slide-left.ng-scope[data-username='" + element.ToUserName + "']"))
+                            core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                                console.log(res)
+                            }).catch((error) => {
+                                throw error
+                            });
+                        }
 
-                } )
-                // console.log("new xrh--->")
-                // console.log(response.AddMsgList)
-
-            }
-
-            if(response.ChatSet != undefined &&  response.ContactList != undefined && response.ContactList.length > 0){
-                // setTimeout(() => {
-                    console.log("ContactList====")
-                    response.ContactList.forEach( (element, index) => {
-                        console.log(element)
-                        let convoClicked = grepNewMSG($(".chat_item.slide-left.ng-scope[data-username='" + element.UserName + "']"))
-                        core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-                            console.log(res)
-                        }).catch((error) => {
-                            throw error
-                        });
                     })
-                
-                // }, 1000);
-            }
+                    // console.log("new xrh--->")
+                    // console.log(response.AddMsgList)
 
+                }
+
+            } catch (error) {
+
+            }
         })
     }
 
@@ -670,6 +681,23 @@ window.onload = function () {
     // 消息发生变更
     var callbackChat = function (records) {
         console.log("debug : ===========chat changed============")
+
+        if (initialContactList != undefined) {
+            initialContactList.forEach((element, index) => {
+
+                let convoObj = $(".chat_item.slide-left.ng-scope[data-username='" + element.UserName + "']")
+                if ($(convoObj).length > 0) {
+                    let convoClicked = grepNewMSG(convoObj)
+                    core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                        console.log(res)
+                    }).catch((error) => {
+                        throw error
+                    });
+                }
+            })
+            initialContactList = undefined
+        }
+
         let arrayObjUser = new Array();
         let arrayContent = new Array();
         records.map(function (record) {
@@ -775,7 +803,7 @@ window.onload = function () {
     $(document).ready(function () {
 
 
-        
+
 
         let obsHead = new MutationObserver(callbackHead);
 
@@ -806,6 +834,7 @@ window.onload = function () {
                     observer.disconnect()
 
                     // addXMLRequestCallback(processXHR);
+
                 }
             }
             let obsLogin = new MutationObserver(callbackobsLogin);
