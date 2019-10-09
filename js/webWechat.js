@@ -410,7 +410,7 @@ window.onload = function () {
                 if($(topObj).length > 0 && $(bottomObj).length >0 
                 && ($(topObj).height()!=0 || $(bottomObj).height()!=0) ){
                     // 说明存在滑条
-                    
+
                 }
 
             }
@@ -967,7 +967,7 @@ window.onload = function () {
 
                     if ($("div.ng-scope div [data-username='" + ID + "']").length == 0) reject("user not existed")
 
-                    $("div.ng-scope div [data-username='" + ID + "']").click();
+                    $("div.ng-scope div div[data-username='" + ID + "']").click();
 
 
 
