@@ -13,6 +13,8 @@ Object.defineProperty(navigator, 'languages', {
 })
 // *********************************************
 
+let initialContactList = undefined
+let isXRHinDocumentReady = false
 
 function addXMLRequestCallback(callback) {
     var oldSend, i;
@@ -41,40 +43,32 @@ function addXMLRequestCallback(callback) {
     }
 }
 
-// addXMLRequestCallback(function (xhr) {
-//     xhr.addEventListener("load", function () {
+addXMLRequestCallback(function (xhr) {
+    if (!isXRHinDocumentReady) {
+        xhr.addEventListener("load", function () {
 
-//         try {
-//             let response = JSON.parse(xhr.responseText)
-//             // console.log("=====XMLRequest======")
-//             // console.dir(xhr); 
-//             // console.log("initial xhr")
-//             if (response.ContactList != undefined && response.ContactList.length > 0) {
+            try {
+                let response = JSON.parse(xhr.responseText)
+                // console.log("=====XMLRequest======")
+                // console.dir(xhr); 
+                // console.log("initial xhr")
+                if (response.ContactList != undefined && response.ContactList.length > 0) {
 
-//                 console.log("initial initialContactList : ", response.ContactList)
-//                 setTimeout(() => {
+                    if (initialContactList == undefined) {
+                        initialContactList = response.ContactList
+                    } else {
+                        initialContactList = initialContactList.concat(response.ContactList)
+                    }
+                    console.log("initial initialContactList before ready : ", initialContactList)
+                }
+            } catch (error) {
 
-//                     response.ContactList.forEach((element, index) => {
+            }
 
-//                         let convoObj = findConvo(element.UserName)
-//                         if (convoObj != undefined) {
-//                             let convoClicked = grepNewMSG(convoObj)
-//                             core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-//                                 console.log(res)
-//                             }).catch((error) => {
-//                                 throw error
-//                             });
-//                         }
+        })
+    }
 
-//                     })
-//                 }, 200);
-//             }
-//         } catch (error) {
-
-//         }
-
-//     })
-// });
+});
 
 
 window.onload = function () {
@@ -83,7 +77,10 @@ window.onload = function () {
     const watchJS = require("../toolkit/watch-1.4.2.js")
     // const http = require('http')
     const fs = require('fs')
+
     const { net } = require('electron').remote
+    const session = require('electron').remote.session;
+
 
     let logStatus = { "status": "offline" }
     let skey = ''
@@ -131,6 +128,29 @@ window.onload = function () {
 
         // console.log("=====XMLRequest======")
         // console.dir(xhr);
+        if (!isXRHinDocumentReady && (initialContactList != undefined)) {
+
+            // console.log("change isXRHinDocumentReady", initialContactList)
+            isXRHinDocumentReady = true
+            setTimeout(() => {
+
+                initialContactList.forEach((element, index) => {
+
+                    let convoObj = findConvo(element.UserName)
+                    if (convoObj != undefined) {
+                        let convoClicked = grepNewMSG(convoObj)
+                        core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                            console.log(res)
+                        }).catch((error) => {
+                            throw error
+                        });
+                    }
+
+                })
+            }, 200);
+
+        }
+
         xhr.addEventListener("load", function () {
             // xhr.onreadystatechange = function () { if (xhr.readyState == 4 && xhr.status == 200) { 
 
@@ -198,15 +218,15 @@ window.onload = function () {
                 if (response.ContactList != undefined && response.ContactList.length > 0) {
 
                     console.log("initial initialContactList : ", response.ContactList)
-                    let convoObj = findConvo('filehelper')
-                    if (convoObj != undefined) {
-                        let convoClicked = grepNewMSG(convoObj)
-                        core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-                            console.log(res)
-                        }).catch((error) => {
-                            throw error
-                        });
-                    }
+                    // let convoObj = findConvo('filehelper')
+                    // if (convoObj != undefined) {
+                    //     let convoClicked = grepNewMSG(convoObj)
+                    //     core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                    //         console.log(res)
+                    //     }).catch((error) => {
+                    //         throw error
+                    //     });
+                    // }
 
                     setTimeout(() => {
 
@@ -926,7 +946,6 @@ window.onload = function () {
 
 
 
-
         let obsHead = new MutationObserver(callbackHead);
 
         // 观察到微信登录或者注销登录页面会刷新
@@ -935,6 +954,31 @@ window.onload = function () {
             logStatus.status = "offline"
             core.WebToHost({ "logStatus": logStatus })
             core.WebToHost({ "show": {} })
+
+
+            // session.defaultSession.cookies.get({ url: window.location.href }, (err, cookies) => {
+            //     console.log("cookies : ", cookies)
+            //     let expire = undefined
+            //     let frequency = undefined
+            //     cookies.forEach((cookie) => {
+            //         if (cookie.name == 'webwx_auth_ticket') {
+            //             expire = cookie.expirationDate
+            //         }
+            //         if (cookie.name == 'login_frequency') {
+            //             frequency = parseInt(cookie.value)
+            //         }
+            //     })
+            //     if (expire != undefined
+            //         && frequency != undefined && (isNaN(frequency) || frequency < 2)) {
+            //         console.log("frequency is ", frequency)
+            //         session.defaultSession.cookies.set({
+            //             url: window.location.href,
+            //             name: 'login_frequency',
+            //             value: "2"
+            //         })
+            //         location.reload()
+            //     }
+            // })
 
             let callbackobsLogin = function (mutationList, observer) {
                 // console.log("log status changed : ", $("div.login").is(':visible'))
@@ -1049,7 +1093,7 @@ window.onload = function () {
                     // 下面开始模拟点击
                     let ID = arg.userID
 
-                    let convoScope = angular.element( document.getElementById("J_NavChatScrollBody")).scope()
+                    let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
                     convoScope.itemClick(ID)
 
 
