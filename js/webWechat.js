@@ -1049,11 +1049,8 @@ window.onload = function () {
                     // 下面开始模拟点击
                     let ID = arg.userID
 
-                    let convoObj = findConvo(ID)
-                    if (convoObj == undefined) reject("user not existed")
-
-                    $(convoObj).click();
-
+                    let convoScope = angular.element( document.getElementById("J_NavChatScrollBody")).scope()
+                    convoScope.itemClick(ID)
 
 
                     obsRight.disconnect()
