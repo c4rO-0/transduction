@@ -762,7 +762,7 @@ window.onload = function () {
         //         "index": 0
         //     }
         // } else {
-        let counter = Math.max(obj.NoticeCount,obj.unreadCount)
+        let counter = obj.NoticeCount
 
 
 
