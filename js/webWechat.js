@@ -173,8 +173,14 @@ window.onload = function () {
                         if (element.StatusNotifyCode == 0) {
                             console.log("xhr : new ")
                             let fromUserName = element.FromUserName
-                            if (element.ToUserName == 'filehelper') {
-                                fromUserName = 'filehelper'
+
+                            let usernameStr = $('div.header .avatar img.img').attr('mm-src')
+
+                            let posUsername = usernameStr.indexOf('username')
+                            let meinUsername = usernameStr.slice(posUsername + 'username='.length, usernameStr.indexOf('&', posUsername))
+
+                            if(fromUserName == meinUsername){
+                                fromUserName = element.ToUserName
                             }
 
                             if (_chatContent[fromUserName] != undefined) {
