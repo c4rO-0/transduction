@@ -1735,7 +1735,7 @@ $(document).ready(function () {
         // console.log("---attachInputFile----")
         try {
             if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.1");
+                wc.debugger.attach("1.2");
             }
         } catch (err) {
             console.error("Debugger attach failed : ", err);
@@ -1795,7 +1795,7 @@ $(document).ready(function () {
         console.log("---attachInputFile----")
         try {
             if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.1");
+                wc.debugger.attach("1.2");
             }
         } catch (err) {
             console.error("Debugger attach failed : ", err);
@@ -1827,6 +1827,27 @@ $(document).ready(function () {
     }
 
 
+    function webviewNotification(webSelector,enable){
+
+    
+        let wc = $(webSelector).get(0).getWebContents();
+
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.2");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+
+        if(enable){
+            return wc.debugger
+            .sendCommand("Page.enable");
+        }else{
+            return wc.debugger
+            .sendCommand("Page.disable");
+        }
+    }
 
 
     function loadWebview(webTag, url, strUserAgent) {
@@ -1842,6 +1863,9 @@ $(document).ready(function () {
 
             // 静音
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
+
+            // 去掉notification
+            webviewNotification(webTag2Selector(webTag))
         }
     }
 

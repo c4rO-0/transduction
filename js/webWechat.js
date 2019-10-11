@@ -96,7 +96,6 @@ window.onload = function () {
     //     // title is the title of the notifations, ops is the config object
     //     console.log("Notification : ", title, ops)
     // };
-    // window.Notification = Notification;
 
     addXMLRequestCallback(processXHR);
 
