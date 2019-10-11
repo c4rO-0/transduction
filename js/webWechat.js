@@ -136,16 +136,20 @@ window.onload = function () {
 
                 initialContactList.forEach((element, index) => {
 
-                    let convoObj = findConvo(element.UserName)
-                    if (convoObj != undefined) {
-                        let convoClicked = grepNewMSG(convoObj)
-                        core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-                            console.log(res)
-                        }).catch((error) => {
-                            throw error
-                        });
-                    }
+                    if (_chatContent[element.UserName] != undefined) {
+                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                        convoScope.chatList.forEach((chat, convoIndex) => {
+                            if (chat.UserName == element.UserName) {
+                                let convo = grepConvoInChatList(chat)
+                                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                    console.log(res)
+                                }).catch((error) => {
+                                    throw error
+                                });
+                            }
 
+                        })
+                    }
                 })
             }, 200);
 
@@ -172,14 +176,20 @@ window.onload = function () {
                             if (element.ToUserName == 'filehelper') {
                                 fromUserName = 'filehelper'
                             }
-                            let convoObj = findConvo(fromUserName)
-                            if (convoObj != undefined) {
-                                let convoClicked = grepNewMSG(convoObj)
-                                core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-                                    console.log(res)
-                                }).catch((error) => {
-                                    throw error
-                                });
+
+                            if (_chatContent[fromUserName] != undefined) {
+                                let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                                convoScope.chatList.forEach((chat, convoIndex) => {
+                                    if (chat.UserName == fromUserName) {
+                                        let convo = grepConvoInChatList(chat)
+                                        core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                            console.log(res)
+                                        }).catch((error) => {
+                                            throw error
+                                        });
+                                    }
+
+                                })
                             }
 
                         }
@@ -198,15 +208,24 @@ window.onload = function () {
                         if (_chatContent[usrID].length > 0) {
                             (_chatContent[usrID]).forEach(msg => {
                                 if (msg.MsgId == response.MsgID) {
-                                    let convoObj = findConvo(usrID)
-                                    if (convoObj != undefined) {
-                                        let convoClicked = grepNewMSG(convoObj)
-                                        core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-                                            console.log(res)
-                                        }).catch((error) => {
-                                            // throw error
-                                        });
-                                    }
+
+                                    let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                                    convoScope.chatList.forEach((chat, convoIndex) => {
+
+                                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                                        convoScope.chatList.forEach((chat, convoIndex) => {
+                                            if (chat.UserName == usrID) {
+                                                let convo = grepConvoInChatList(chat)
+                                                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                                    console.log(res)
+                                                }).catch((error) => {
+                                                    throw error
+                                                });
+                                            }
+
+                                        })
+
+                                    })
 
                                 }
                             })
@@ -232,14 +251,19 @@ window.onload = function () {
 
                         response.ContactList.forEach((element, index) => {
 
-                            let convoObj = findConvo(element.UserName)
-                            if (convoObj != undefined) {
-                                let convoClicked = grepNewMSG(convoObj)
-                                core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-                                    console.log(res)
-                                }).catch((error) => {
-                                    throw error
-                                });
+                            if (_chatContent[element.UserName] != undefined) {
+                                let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                                convoScope.chatList.forEach((chat, convoIndex) => {
+                                    if (chat.UserName == element.UserName) {
+                                        let convo = grepConvoInChatList(chat)
+                                        core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                            console.log(res)
+                                        }).catch((error) => {
+                                            throw error
+                                        });
+                                    }
+
+                                })
                             }
 
                         })
@@ -665,6 +689,124 @@ window.onload = function () {
 
     }
 
+    function grepConvoInChatList(obj) {
+
+
+        // 筛选消息内容
+        let contentObj = obj.MMDigest
+        // console.log(contentObj)
+        if (contentObj == '') {
+            content = ''
+        } else {
+            content = ""
+            $('<p class="msg ng-scope" ng-if="chatContact.MMDigest">' + contentObj + "</p>").contents().toArray().forEach((c, i) => {
+                // 将内容进行切割, 判断是否为img
+
+                // console.log(c, $(c).prop('nodeName'))
+                let nodeName = $(c).prop('nodeName')
+                if (nodeName == "IMG") {
+                    // 对左侧栏筛选字符表情
+                    if ($(c).hasClass("qqemoji")) {
+                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        let strEmoji = $(c).attr("text")
+                        console.log(strEmoji, strEmoji.substr(0, strEmoji.length - 4))
+                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
+                        content = content + strEmoji
+                    } else if ($(c).hasClass("emoji")) {
+                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        content = content + "[emoji]"
+                    } else {
+                        content = content + "[image]"
+                    }
+                }
+
+                // 链接文字
+                content = content + $(c).text()
+
+
+            })
+
+        }
+
+        let nickName = obj.NickName == '' ? obj.NickName : obj.NickName
+        let userID = obj.UserName
+
+
+        let time = new Date() // Now
+        let chatObj = _chatContent[userID]
+        if (chatObj.length > 0) { // last MSG
+            time = new Date((chatObj[chatObj.length - 1])["MMDisplayTime"] * 1000)
+        }
+
+        let host =
+            window.location.href.lastIndexOf('/') == window.location.href.length - 1 ?
+                window.location.href.substring(0, window.location.href.lastIndexOf('/')) :
+                window.location.href
+
+
+        let avatar = host + obj.HeadImgUrl
+
+
+        // console.log("convo exist : ", $("div[ng-click][data-username='" + userID + "']").length, $("div[data-username='" + userID + "']"))
+        // if ( $("div[ng-click][data-username='" + userID + "']").length == 0  ) {
+        //     // 元素被删除了
+        //     return {
+        //         "userID": userID,
+        //         "time": time.getTime(),
+        //         "message": "",
+        //         "nickName": nickName,
+        //         "avatar": avatar,
+        //         "counter": 0,
+        //         "action": "r",
+        //         "muted": true,
+        //         "index": 0
+        //     }
+        // } else {
+        let counter = Math.max(obj.NoticeCount,obj.unreadCount)
+
+
+
+        let muted = false
+        if (obj.isMuted()) {
+            // 被静音了
+            muted = true
+        } else {
+
+        }
+
+
+        // 简单粗暴, 默认为add
+        // 微信初始会弹出最近联系人, 需要滤掉该部分convo, 将action设为c
+        // action为c: 使得没有消息的联系人不会在transduction上创建
+        // 特殊 : filehelper以及被置顶的联系人依然会被添加
+        let action = 'a'
+        if (content == '') {
+            if ($('#J_NavChatScrollBody').attr("data-username") == ""
+                && (userID == "filehelper" || obj.isTop() > 0)) {
+                action = 'a'
+            } else {
+                action = 'c'
+            }
+        }
+
+        // icon web_wechat_reddot ng-scope 一个小点
+
+        return {
+            "userID": userID,
+            "time": time.getTime(),
+            "message": content,
+            "nickName": nickName,
+            "avatar": avatar,
+            "counter": counter,
+            "action": action,
+            "muted": muted,
+            "index": obj._index
+        }
+        // }
+
+
+    }
+
 
 
     function grepAndSendRight(MSGID = undefined) {
@@ -865,16 +1007,24 @@ window.onload = function () {
             if ($(record.removedNodes).length != 0) {
                 $(record.removedNodes).toArray().forEach((currentValue, index) => {
                     $(currentValue).children(".chat_item.slide-left.ng-scope").toArray().forEach((obj, idx) => {
-                        let existed = false
-                        arrayObjUser.forEach((objIn) => {
 
-                            if (!existed && $(objIn).is(obj)) {
-                                existed = true
+                        let convoDel = grepNewMSG(obj)
+                        // 判断是否被删除了
+                        let existInChatList = false
+                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                        convoScope.chatList.forEach((chat, convoIndex) => {
+                            if (chat.UserName == convoDel.userID) {
+                                existInChatList = true
                             }
 
                         })
-                        if (!existed) {
-                            arrayObjUser.push(obj)
+                        if(!existInChatList){
+                            convoDel.action = 'r'
+                            core.WebToHost({ "Convo-new": convoDel }).then((res) => {
+                                console.log(res)
+                            }).catch((error) => {
+                                throw error
+                            });
                         }
                     })
                 })
@@ -884,7 +1034,7 @@ window.onload = function () {
                 // 点击新的用户
                 // arrayObjUser.push(
                 //     $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']"))
-                let convoObj = findConvo($("#J_NavChatScrollBody").attr('data-username'))
+                let convoObj = $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']")
                 if (convoObj != undefined) {
                     let convoClicked = grepNewMSG(convoObj)
                     convoClicked.action = 'a'
@@ -1115,11 +1265,34 @@ window.onload = function () {
                 } else if (key == 'sendDialog') {
                     console.log("--------sendDialog---")
                     // 检查
-                    if (!$("div.chat_item[data-username='" + arg[0] + "']").hasClass("active")) {
 
-                        reject("user not active")
-                        return
+                    if($("div.chat_item[data-username='" + arg[0] + "']").length > 0){
+                        if (!$("div.chat_item[data-username='" + arg[0] + "']").hasClass("active")) {
+
+                            reject("user not active")
+                            return
+                        }
+                    }else{
+                        let existInChatList = false
+                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                        convoScope.chatList.forEach((chat, convoIndex) => {
+                            if (chat.UserName == arg[0]) {
+                                existInChatList = true
+                                if(chat._notActive == undefined || chat._notActive){
+                                    reject("user not active")
+                                    return
+                                }
+                            }
+    
+                        })
+                        if(!existInChatList){
+                            reject("user not active")
+                            return
+                        }
                     }
+
+
+
 
 
                     function send(arrayValue, index = 0) {
