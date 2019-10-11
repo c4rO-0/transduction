@@ -728,7 +728,7 @@ window.onload = function () {
 
         }
 
-        let nickName = obj.NickName == '' ? obj.NickName : obj.NickName
+        let nickName = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
         let userID = obj.UserName
 
 
