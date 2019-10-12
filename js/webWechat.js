@@ -1250,7 +1250,9 @@ window.onload = function () {
                         $("div.chat_item[data-username='" + ID + "']").click()
                     } else {
                         let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                        
                         convoScope.itemClick(ID)
+                        convoScope.$apply();
                     }
 
                     obsRight.disconnect()
