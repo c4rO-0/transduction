@@ -1033,7 +1033,7 @@ window.onload = function () {
                 })
             }
 
-            if (record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username') {
+            if (document.hasFocus() &&  record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username') {
                 // 点击新的用户
                 // arrayObjUser.push(
                 //     $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']"))
@@ -1246,12 +1246,30 @@ window.onload = function () {
                     // 下面开始模拟点击
                     let ID = arg.userID
 
-                    if ($("div.chat_item[data-username='" + ID + "']").length > 0) {
-                        $("div.chat_item[data-username='" + ID + "']").click()
-                    } else {
+                    // if ($("div.chat_item[data-username='" + ID + "']").length > 0) {
+                    //     $("div.chat_item[data-username='" + ID + "']").click()
+                    // } else {
                         let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                        
                         convoScope.itemClick(ID)
-                    }
+                        convoScope.$apply();
+
+                        setTimeout(() => {
+                            convoScope.chatList.forEach((chat, convoIndex) => {
+                                if (chat.UserName == ID) {
+                                    let convo = grepConvoInChatList(chat)
+                                    core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                        console.log(res)
+                                    }).catch((error) => {
+                                        throw error
+                                    });
+                                }
+    
+                            })
+                        }, 200);                        
+                    // }
+
+
 
                     obsRight.disconnect()
                     obsRight.observe($("div[mm-repeat='message in chatContent']")[0], {
