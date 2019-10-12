@@ -96,7 +96,6 @@ window.onload = function () {
     //     // title is the title of the notifations, ops is the config object
     //     console.log("Notification : ", title, ops)
     // };
-    // window.Notification = Notification;
 
     addXMLRequestCallback(processXHR);
 
@@ -173,8 +172,14 @@ window.onload = function () {
                         if (element.StatusNotifyCode == 0) {
                             console.log("xhr : new ")
                             let fromUserName = element.FromUserName
-                            if (element.ToUserName == 'filehelper') {
-                                fromUserName = 'filehelper'
+
+                            let usernameStr = $('div.header .avatar img.img').attr('mm-src')
+
+                            let posUsername = usernameStr.indexOf('username')
+                            let meinUsername = usernameStr.slice(posUsername + 'username='.length, usernameStr.indexOf('&', posUsername))
+
+                            if (fromUserName == meinUsername) {
+                                fromUserName = element.ToUserName
                             }
 
                             if (_chatContent[fromUserName] != undefined) {
@@ -212,18 +217,14 @@ window.onload = function () {
                                     let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
                                     convoScope.chatList.forEach((chat, convoIndex) => {
 
-                                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
-                                        convoScope.chatList.forEach((chat, convoIndex) => {
-                                            if (chat.UserName == usrID) {
-                                                let convo = grepConvoInChatList(chat)
-                                                core.WebToHost({ "Convo-new": convo }).then((res) => {
-                                                    console.log(res)
-                                                }).catch((error) => {
-                                                    throw error
-                                                });
-                                            }
-
-                                        })
+                                        if (chat.UserName == usrID) {
+                                            let convo = grepConvoInChatList(chat)
+                                            core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                                console.log(res)
+                                            }).catch((error) => {
+                                                throw error
+                                            });
+                                        }
 
                                     })
 
@@ -810,8 +811,10 @@ window.onload = function () {
 
 
     function grepAndSendRight(MSGID = undefined) {
-        if ($('div.chat_item.slide-left.active').length > 0) {
-            let ID = $('div.chat_item.slide-left.active').attr('data-username')
+
+
+        if ($('div.title_wrap a[data-username]').length > 0) {
+            let ID = $('div.title_wrap a[data-username]').attr('data-username')
 
             let objSlide = _chatContent[ID]
             // console.log("objSlide : id : ", ID ,objSlide)
@@ -852,8 +855,8 @@ window.onload = function () {
                     throw error
                 });
             }
-        }
 
+        }
     }
 
     // 联系人发生变更
@@ -912,8 +915,8 @@ window.onload = function () {
                 mutation.oldValue.includes('msgId')
                 && getMSGIDFromString($(mutation.target).attr('data-cm')) != "{{message.MsgId}}") {
 
-                if ($('div.chat_item.slide-left.active').length > 0) {
-                    let ID = $('div.chat_item.slide-left.active').attr('data-username')
+                if ($('div.title_wrap a[data-username]').length > 0) {
+                    let ID = $('div.title_wrap a[data-username]').attr('data-username')
 
                     let objSlide = _chatContent[ID]
                     for (let indexMSG in objSlide) {
@@ -1018,7 +1021,7 @@ window.onload = function () {
                             }
 
                         })
-                        if(!existInChatList){
+                        if (!existInChatList) {
                             convoDel.action = 'r'
                             core.WebToHost({ "Convo-new": convoDel }).then((res) => {
                                 console.log(res)
@@ -1106,29 +1109,29 @@ window.onload = function () {
             core.WebToHost({ "show": {} })
 
 
-            // session.defaultSession.cookies.get({ url: window.location.href }, (err, cookies) => {
-            //     console.log("cookies : ", cookies)
-            //     let expire = undefined
-            //     let frequency = undefined
-            //     cookies.forEach((cookie) => {
-            //         if (cookie.name == 'webwx_auth_ticket') {
-            //             expire = cookie.expirationDate
-            //         }
-            //         if (cookie.name == 'login_frequency') {
-            //             frequency = parseInt(cookie.value)
-            //         }
-            //     })
-            //     if (expire != undefined
-            //         && frequency != undefined && (isNaN(frequency) || frequency < 2)) {
-            //         console.log("frequency is ", frequency)
-            //         session.defaultSession.cookies.set({
-            //             url: window.location.href,
-            //             name: 'login_frequency',
-            //             value: "2"
-            //         })
-            //         location.reload()
-            //     }
-            // })
+            session.defaultSession.cookies.get({ url: window.location.href }, (err, cookies) => {
+                // console.log("cookies : ", cookies)
+                let expire = undefined
+                let frequency = undefined
+                cookies.forEach((cookie) => {
+                    if (cookie.name == 'webwx_auth_ticket') {
+                        expire = cookie.expirationDate
+                    }
+                    if (cookie.name == 'login_frequency') {
+                        frequency = parseInt(cookie.value)
+                    }
+                })
+                if (expire != undefined
+                    && frequency != undefined && (isNaN(frequency) || frequency < 2)) {
+                    console.log("frequency is ", frequency)
+                    session.defaultSession.cookies.set({
+                        url: window.location.href,
+                        name: 'login_frequency',
+                        value: "2"
+                    })
+                    location.reload()
+                }
+            })
 
             let callbackobsLogin = function (mutationList, observer) {
                 // console.log("log status changed : ", $("div.login").is(':visible'))
@@ -1243,9 +1246,12 @@ window.onload = function () {
                     // 下面开始模拟点击
                     let ID = arg.userID
 
-                    let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
-                    convoScope.itemClick(ID)
-
+                    if ($("div.chat_item[data-username='" + ID + "']").length > 0) {
+                        $("div.chat_item[data-username='" + ID + "']").click()
+                    } else {
+                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                        convoScope.itemClick(ID)
+                    }
 
                     obsRight.disconnect()
                     obsRight.observe($("div[mm-repeat='message in chatContent']")[0], {
@@ -1266,33 +1272,10 @@ window.onload = function () {
                     console.log("--------sendDialog---")
                     // 检查
 
-                    if($("div.chat_item[data-username='" + arg[0] + "']").length > 0){
-                        if (!$("div.chat_item[data-username='" + arg[0] + "']").hasClass("active")) {
-
-                            reject("user not active")
-                            return
-                        }
-                    }else{
-                        let existInChatList = false
-                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
-                        convoScope.chatList.forEach((chat, convoIndex) => {
-                            if (chat.UserName == arg[0]) {
-                                existInChatList = true
-                                if(chat._notActive == undefined || chat._notActive){
-                                    reject("user not active")
-                                    return
-                                }
-                            }
-    
-                        })
-                        if(!existInChatList){
-                            reject("user not active")
-                            return
-                        }
+                    if ($("div.title_wrap a[data-username='" + arg[0] + "']").length == 0) {
+                        reject("user not active")
+                        return
                     }
-
-
-
 
 
                     function send(arrayValue, index = 0) {
