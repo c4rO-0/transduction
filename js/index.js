@@ -1865,7 +1865,7 @@ $(document).ready(function () {
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
             // 去掉notification
-            webviewNotification(webTag2Selector(webTag))
+            webviewNotification(webTag2Selector(webTag), false)
         }
     }
 
