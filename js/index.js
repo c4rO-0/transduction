@@ -1865,7 +1865,7 @@ $(document).ready(function () {
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
             // 去掉notification
-            webviewNotification(webTag2Selector(webTag))
+            webviewNotification(webTag2Selector(webTag), false)
         }
     }
 
@@ -2024,6 +2024,8 @@ $(document).ready(function () {
     $('.modal').on('hidden.bs.modal', function (e) {
         if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
             $('>div.modal-dialog', this).removeClass('modal-xl')
+            // 关闭webview app重新静音
+            $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
         }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(this).css('left', '100000px')
@@ -2052,7 +2054,6 @@ $(document).ready(function () {
         }
 
         // 打开webview app, 取消静音
-        // 在哪重新静音????
         $(webTag2Selector(webTag)).get(0).setAudioMuted(false)
 
 
