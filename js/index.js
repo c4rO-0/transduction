@@ -2025,7 +2025,7 @@ $(document).ready(function () {
         if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
             $('>div.modal-dialog', this).removeClass('modal-xl')
             // 关闭webview app重新静音
-            $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
+            $(webTag2Selector(this.id.substring(6))).get(0).setAudioMuted(true)
         }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(this).css('left', '100000px')
