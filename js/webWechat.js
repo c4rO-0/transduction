@@ -388,7 +388,8 @@ window.onload = function () {
             type = 'text'
             // 判断是否为组群消息
             if (MSG["FromUserName"].substr(0, 2) == "@@") {
-                content = content.substr(content.indexOf(":") + 1)
+                // content <= MMActualContent 不需要去掉发件人
+                // content = content.substr(content.indexOf(":") + 1)
             }
             // 判断是否为url
             if ($(MSGObj).find("div.plain pre a").length > 0 && $(MSGObj).find("div.plain pre").contents().toArray().length == 1) {
