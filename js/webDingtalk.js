@@ -9,7 +9,7 @@ window.onload = function () {
     let logStatus = { "status": "offline" }
 
     // 禁止弹出提醒
-    delete window.Notification
+    // delete window.Notification
 
     /**
       * 通过左侧边栏读取消息

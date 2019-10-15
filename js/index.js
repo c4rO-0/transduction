@@ -913,6 +913,13 @@ $(document).ready(function () {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
                             .addClass('theme-transduction-active')
                     }
+
+                    // webTag
+                    let webTagSelector = '#modal-' + webTag
+                    if($(webTagSelector).hasClass('show') && Convo.counter == 0){
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                        $(webTagSelector).modal('hide')
+                    }
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
                     ChangeConvoHtml(webTag, Convo)
@@ -1729,7 +1736,7 @@ $(document).ready(function () {
         // console.log("---attachInputFile----")
         try {
             if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.1");
+                wc.debugger.attach("1.2");
             }
         } catch (err) {
             console.error("Debugger attach failed : ", err);
@@ -1789,7 +1796,7 @@ $(document).ready(function () {
         console.log("---attachInputFile----")
         try {
             if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.1");
+                wc.debugger.attach("1.2");
             }
         } catch (err) {
             console.error("Debugger attach failed : ", err);
@@ -1821,6 +1828,27 @@ $(document).ready(function () {
     }
 
 
+    function webviewNotification(webSelector,enable){
+
+    
+        let wc = $(webSelector).get(0).getWebContents();
+
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.2");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+
+        if(enable){
+            return wc.debugger
+            .sendCommand("Page.enable");
+        }else{
+            return wc.debugger
+            .sendCommand("Page.disable");
+        }
+    }
 
 
     function loadWebview(webTag, url, strUserAgent) {
@@ -1836,6 +1864,9 @@ $(document).ready(function () {
 
             // 静音
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
+
+            // 去掉notification
+            webviewNotification(webTag2Selector(webTag), false)
         }
     }
 
@@ -1909,7 +1940,7 @@ $(document).ready(function () {
 
 
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
-    loadWebview("wechat", "https://web.wechat.com/", core.strUserAgentWin)
+    loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
     // openDevtool("skype")
@@ -1994,6 +2025,8 @@ $(document).ready(function () {
     $('.modal').on('hidden.bs.modal', function (e) {
         if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
             $('>div.modal-dialog', this).removeClass('modal-xl')
+            // 关闭webview app重新静音
+            $(webTag2Selector(this.id.substring(6))).get(0).setAudioMuted(true)
         }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(this).css('left', '100000px')
@@ -2022,7 +2055,6 @@ $(document).ready(function () {
         }
 
         // 打开webview app, 取消静音
-        // 在哪重新静音????
         $(webTag2Selector(webTag)).get(0).setAudioMuted(false)
 
 
