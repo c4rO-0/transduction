@@ -314,7 +314,7 @@ $(document).ready(function () {
                 } else {
                     bubble = $(this.bUnknownR).clone()
                 }
-                $(bubble).find('div.td-chatText').text(dialog['message'])
+                $(bubble).find('div.td-chatText > p').text(dialog['message'])
 
             } else {
                 if (dialog["from"]) {
@@ -322,7 +322,7 @@ $(document).ready(function () {
                 } else {
                     bubble = $(this.bUnknownR).clone()
                 }
-                $(bubble).find('div.td-chatText').text(dialog['message'])
+                $(bubble).find('div.td-chatText > p').text(dialog['message'])
             }
 
             if (dialog["from"]) {
