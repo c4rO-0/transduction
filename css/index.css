@@ -255,6 +255,7 @@ webview {
 
 .td-chatImg {
     max-width: 45vw;
+    max-height: 85vh;
     padding-top: 5px;
     padding-bottom: 5px;
     /* max-height: 80%; */
