@@ -169,7 +169,7 @@ window.onload = function () {
 
                         // 目前猜测StatusNotifyCode为0是来新消息 (需要测试验证)
                         // console.log(element)
-                        if (element.StatusNotifyCode == 0) {
+                        if (element.StatusNotifyCode == 0 || element.StatusNotifyCode == 2) {
                             console.log("xhr : new ")
                             let fromUserName = element.FromUserName
 
