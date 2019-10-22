@@ -19,6 +19,11 @@ let isQuitting = false
 
 function createWindow() {
 
+  //让windows能弹notification
+  app.setAppUserModelId("com.aaronlenoir.gnucash-reporter"); // set appId from package.json
+  // autoUpdater.checkForUpdatesAndNotify();
+
+
   let opts = {
     icon: path.join(__dirname, '/res/pic/ico.png'), webPreferences: {
       nodeIntegration: true, webviewTag: true
