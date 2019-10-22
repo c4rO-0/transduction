@@ -730,7 +730,36 @@ window.onload = function () {
 
         }
 
-        let nickName = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
+        let nickNameHtml = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
+        let nickName = ''
+        if(nickNameHtml && nickNameHtml != ''){
+            $('<p>'+nickNameHtml+'</p>').contents().toArray().forEach((c, i) => {
+                // 将内容进行切割, 判断是否为img
+
+                let nodeName = $(c).prop('nodeName')
+                if (nodeName == "IMG") {
+                    // 对左侧栏筛选字符表情
+                    if ($(c).hasClass("qqemoji")) {
+                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        let strEmoji = $(c).attr("text")
+                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
+                        nickName = nickName + strEmoji
+                    } else if ($(c).hasClass("emoji")) {
+                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        nickName = nickName + "[emoji]"
+                    } else {
+                        nickName = nickName + "[image]"
+                    }
+                }
+
+                // 链接文字
+                nickName = nickName + $(c).text()
+
+            })
+        }else{
+            nickName = undefined
+        }
+
         let userID = obj.UserName
 
 
