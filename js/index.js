@@ -1154,13 +1154,15 @@ $(document).ready(function () {
 
             let arrayString = new Array()
 
+            console.log("filterDataTransfer : data : ", data)
+
             let objHTML = data.getData('text/html') // 拖拽的是一个含有链接的东西, html, 在线img, 文件
             let strURL = data.getData('URL')
             console.log('--------objHTML-----------')
             console.log(objHTML)
             console.log('--------strURL-----------')
             console.log(strURL)
-            if (objHTML && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
+            if (objHTML && $(objHTML).get(0) && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
                 console.log("发现图片")
                 let pathR = $(objHTML).attr('src')
                 let pathFile = undefined
