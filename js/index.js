@@ -99,6 +99,8 @@ $(document).ready(function () {
     let debug_goBackChat_str = "#debug-goBackChat"
     let classTactive = 'theme-transduction-active-tran'
 
+    let angle = 0
+    let aspectRatio = 1
 
 
     /**----------------------
@@ -614,14 +616,15 @@ $(document).ready(function () {
 
         $('.td-chatLog[wintype="chatLog"]').empty()
         $('.td-chatLog[wintype="chatLog"]').append('\
-                         <div class="td-default">\
-                             <p>\
-                                 问题反馈，请联系c4r。\
-                             </p>\
-                             <p>\
-                                 bug report, please contact c4r.\
-                             </p>\
-                         </div>')
+                        <img id="debug-history" class="hide" src="../res/pic/history.png">\
+                        <div class="td-default">\
+                            <p>\
+                                问题反馈，请联系c4r。\
+                            </p>\
+                            <p>\
+                                bug report, please contact c4r.\
+                            </p>\
+                        </div>')
     }
 
     //------------------------
@@ -2006,6 +2009,19 @@ $(document).ready(function () {
         }\
         ')
     })
+    
+    document.getElementById('debug-img-rotate').addEventListener('click', function(e){
+        console.warn($(e.target).siblings('div').first().children().first())
+        angle += 90
+        let target = $(e.target).siblings('div').first().children().first()
+        aspectRatio = target.height() / target.width()
+        if(angle % 180 == 0){
+            console.warn("")
+            target.css({"transform":"rotate(" + angle + "deg)"})
+        }else{
+            target.css({"transform":"rotate(" + angle + "deg) scale(" + aspectRatio + ", " + aspectRatio + ")"})
+        }
+    })
 
     /**
      * webview隐藏
@@ -2033,6 +2049,10 @@ $(document).ready(function () {
 
         $(webTag2Selector(this.id.substring(6))).width("800px")
         $(webTag2Selector(this.id.substring(6))).height("800px")
+    })
+    $('#modal-image').on('hidden.bs.modal', function(e){
+        angle = 0
+        $(".modal-body > img", this).css({"transform":"rotate(0deg)"})
     })
 
     /**
