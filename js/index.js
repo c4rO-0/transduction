@@ -1683,9 +1683,34 @@ $(document).ready(function () {
         })
 
         strInput = arrayInput.slice(fileIndex + 1).join('\n')
-        if (strInput.length > 0) arraySimpleInput.push(strInput)
+        if (strInput.length > 0){
+            console.warn('getting Input.................')
+             strInput += ivCode(4)
+            arraySimpleInput.push(strInput)
+        } 
 
         return arraySimpleInput
+    }
+
+    function ivCode(index){
+        switch(index){
+            case 0:
+                return 'ܮ'
+                break
+            case 1:
+                return '​'
+                break
+            case 2:
+                return '‌'
+                break
+            case 3:
+                return '‍'
+                break
+            case 4:
+                return '﻿'
+            default:
+                return ''
+        }
     }
 
     /**
@@ -1713,7 +1738,11 @@ $(document).ready(function () {
         })
 
         strInput = arrayInput.slice(fileIndex + 1).join('\n')
-        if (strInput.length > 0) arraySimpleInput.push(strInput)
+        if (strInput.length > 0) {
+            console.warn("inserting invisible code................坑爹。。。根本没触发")
+            strInput += "&#8203"
+            arraySimpleInput.push(strInput)
+        }
 
         return arraySimpleInput
     }
