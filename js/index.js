@@ -69,6 +69,8 @@ function modalImage(event) {
 
 
 
+
+
 $(document).ready(function () {
 
     const core = require("../js/core.js")
@@ -76,8 +78,15 @@ $(document).ready(function () {
     const Store = require('electron-store');
     const store = new Store();
     const request = require('request')
+    const got = require('got')
+    const fs = require('fs')
+
 
     console.log(process.versions.electron)
+
+    // downloadUrl('https://sindresorhus.com', './download/testDownload.html', (progress) => {
+    //     console.log('download : ', progress)
+    // })
 
     /** 储存要发送的file object
      *  为了能够保证文件能够顺利的发送, fileList不会清除
@@ -918,7 +927,7 @@ $(document).ready(function () {
 
                     // webTag
                     let webTagSelector = '#modal-' + webTag
-                    if($(webTagSelector).hasClass('show') && Convo.counter == 0){
+                    if ($(webTagSelector).hasClass('show') && Convo.counter == 0) {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
                         $(webTagSelector).modal('hide')
                     }
@@ -1832,9 +1841,9 @@ $(document).ready(function () {
     }
 
 
-    function webviewNotification(webSelector,enable){
+    function webviewNotification(webSelector, enable) {
 
-    
+
         let wc = $(webSelector).get(0).getWebContents();
 
         try {
@@ -1845,12 +1854,12 @@ $(document).ready(function () {
             console.error("Debugger attach failed : ", err);
         };
 
-        if(enable){
+        if (enable) {
             return wc.debugger
-            .sendCommand("Page.enable");
-        }else{
+                .sendCommand("Page.enable");
+        } else {
             return wc.debugger
-            .sendCommand("Page.disable");
+                .sendCommand("Page.disable");
         }
     }
 
@@ -1937,8 +1946,60 @@ $(document).ready(function () {
             }
         }
 
-
     }
+
+    /**
+     * 
+     * @param {string} url 要保存的网址
+     * @param {string} savePath 要保存的路径
+     * @param {function pCallback(progress, options=null) { }}  pCallback progress更新的callback
+     * @param {object} pOptions pCallback的参数(可选)
+     * @returns {Promise} 
+     */
+    function downloadUrl(url, savePath, pCallback, pOptions = null) {
+        return new Promise((resolve, reject) => {
+            got(url)
+                .on('downloadProgress', progress => {
+                    // Report download progress
+                    pCallback(progress, pOptions)
+                })
+                // .on('uploadProgress', progress => {
+                //     // Report upload progress
+                //     console.log('downloadUrl : uploadProgress : ', progress)
+                // })
+                .then(response => {
+                    // console.log("download response : ", response)
+                    // console.log('downloadUrl : download done!')
+                    // console.log('downloadUrl : write to ', savePath)
+                    fs.writeFile(savePath, response.body, function (err) {
+
+                        if (err) {
+                            console.log('downloadUrl : write error : ', err)
+                            reject({
+                                "url": url,
+                                'savePath': savePath,
+                                "error": err
+                            })
+                        }
+
+                        console.log('downloadUrl : write done');
+
+                        resolve({
+                            "url": url,
+                            'savePath': savePath
+                        })
+                    });
+                }).catch((error) => {
+                    reject({
+                        "url": url,
+                        'savePath': savePath,
+                        "error": error
+                    })
+                })
+        })
+    }
+
+
 
     // =============================程序主体=============================
 
@@ -2011,17 +2072,17 @@ $(document).ready(function () {
         }\
         ')
     })
-    
-    document.getElementById('debug-img-rotate').addEventListener('click', function(e){
+
+    document.getElementById('debug-img-rotate').addEventListener('click', function (e) {
         console.warn($(e.target).siblings('div').first().children().first())
         angle += 90
         let target = $(e.target).siblings('div').first().children().first()
         aspectRatio = target.height() / target.width()
-        if(angle % 180 == 0){
+        if (angle % 180 == 0) {
             console.warn("")
-            target.css({"transform":"rotate(" + angle + "deg)"})
-        }else{
-            target.css({"transform":"rotate(" + angle + "deg) scale(" + aspectRatio + ", " + aspectRatio + ")"})
+            target.css({ "transform": "rotate(" + angle + "deg)" })
+        } else {
+            target.css({ "transform": "rotate(" + angle + "deg) scale(" + aspectRatio + ", " + aspectRatio + ")" })
         }
     })
 
@@ -2052,9 +2113,9 @@ $(document).ready(function () {
         $(webTag2Selector(this.id.substring(6))).width("800px")
         $(webTag2Selector(this.id.substring(6))).height("800px")
     })
-    $('#modal-image').on('hidden.bs.modal', function(e){
+    $('#modal-image').on('hidden.bs.modal', function (e) {
         angle = 0
-        $(".modal-body > img", this).css({"transform":"rotate(0deg)"})
+        $(".modal-body > img", this).css({ "transform": "rotate(0deg)" })
     })
 
     /**
