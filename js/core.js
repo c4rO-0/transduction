@@ -816,6 +816,7 @@ document.body.appendChild(el);}")
         return ((index % length) + length) % length
     },
     /**
+     * 尽量用downloadUrlStream函数, 该函数目前还有问题
      * 下载并保存文件
      * @param {string} url 要保存的网址
      * @param {string} savePath 要保存的路径
@@ -841,7 +842,7 @@ document.body.appendChild(el);}")
                 //     console.log('downloadUrl : uploadProgress : ', progress)
                 // })
                 .then(response => {
-                    console.log("download response : ", response)
+                    // console.log("download response : ", response)
                     // console.log('downloadUrl : download done!')
                     // console.log('downloadUrl : write to ', savePath)
                     fs.writeFile(savePath, response.body, function (err) {
@@ -859,7 +860,8 @@ document.body.appendChild(el);}")
 
                         resolve({
                             "url": url,
-                            'savePath': savePath
+                            'savePath': savePath,
+                            'response' : response
                         })
                     });
                 })
@@ -889,7 +891,7 @@ document.body.appendChild(el);}")
      downloadUrlStream: function(url, savePath, pCallback, pOptions = null) {
         return new Promise((resolve, reject) => {
             pipeline(
-                got.stream(url)
+                got.stream(url,{useElectronNet:true})
                     .on('downloadProgress', progress => {
                         // Report download progress
                         pCallback(progress, pOptions)

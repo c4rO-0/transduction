@@ -141,7 +141,7 @@ function createWindow() {
     tray.setImage(path.join(__dirname, '/res/pic/ico.png'))
   })
 
-  
+
   win.webContents.session.on('will-download', (event, item, webContents) => {
 
     item.on('updated', (event, state) => {
@@ -163,7 +163,7 @@ function createWindow() {
         console.log(`Download failed: ${state}`)
       }
     })
-    
+
   })
 
 }
@@ -182,8 +182,21 @@ function respFuncMainReply(key, Obj) {
   return Promise.race([new Promise((resolve, reject) => {
     if (key == 'download') {
       console.log("download : ", Obj)
-      let strDownload = Obj["url"]
-      win.webContents.downloadURL(Obj["url"]);
+      // let strDownload = Obj["url"]
+      // win.webContents.downloadURL(Obj["url"]);
+      // win.webContents.downloadURL(Obj["url"]);
+
+      // setTimeout(() => {
+        core.downloadUrlStream(Obj["url"], Obj["path"], (progress) => {
+          console.log("download update : ", progress)
+        }).then((reObj)=>{
+          resolve(reObj)
+        }).catch((errorDownload) =>{
+          console.log("download error ")
+        });
+        
+      // }, 10000);
+      
     } else if (key == 'flash') {
       if (!win.isFocused()) {
         // win.showInactive();

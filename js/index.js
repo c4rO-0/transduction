@@ -2544,9 +2544,12 @@ $(document).ready(function () {
         }).then(saveDir =>{
             if(saveDir){
                 console.log("save url : ", $(this).attr("href"))
-                core.downloadUrl($(this).attr("href"), saveDir,(progress)=>{
-                    console.log("download update : ",progress)
+
+                core.sendToMain({'download':{'url':$(this).attr("href"),'path':saveDir}})
+                .then((reDownload)=>{
+                    console.log(reDownload)
                 })
+
 
             }
         })
