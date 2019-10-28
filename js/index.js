@@ -78,13 +78,10 @@ $(document).ready(function () {
     const Store = require('electron-store');
     const store = new Store();
     const request = require('request')
-    const got = require('got')
-    const fs = require('fs')
 
 
     console.log(process.versions.electron)
-
-    // downloadUrl('https://sindresorhus.com', './download/testDownload.html', (progress) => {
+    // core.downloadUrlStream('https://sindresorhus.com', './download/testDownload.html', (progress) => {
     //     console.log('download : ', progress)
     // })
 
@@ -1947,58 +1944,6 @@ $(document).ready(function () {
         }
 
     }
-
-    /**
-     * 
-     * @param {string} url 要保存的网址
-     * @param {string} savePath 要保存的路径
-     * @param {function pCallback(progress, options=null) { }}  pCallback progress更新的callback
-     * @param {object} pOptions pCallback的参数(可选)
-     * @returns {Promise} 
-     */
-    function downloadUrl(url, savePath, pCallback, pOptions = null) {
-        return new Promise((resolve, reject) => {
-            got(url)
-                .on('downloadProgress', progress => {
-                    // Report download progress
-                    pCallback(progress, pOptions)
-                })
-                // .on('uploadProgress', progress => {
-                //     // Report upload progress
-                //     console.log('downloadUrl : uploadProgress : ', progress)
-                // })
-                .then(response => {
-                    // console.log("download response : ", response)
-                    // console.log('downloadUrl : download done!')
-                    // console.log('downloadUrl : write to ', savePath)
-                    fs.writeFile(savePath, response.body, function (err) {
-
-                        if (err) {
-                            console.log('downloadUrl : write error : ', err)
-                            reject({
-                                "url": url,
-                                'savePath': savePath,
-                                "error": err
-                            })
-                        }
-
-                        console.log('downloadUrl : write done');
-
-                        resolve({
-                            "url": url,
-                            'savePath': savePath
-                        })
-                    });
-                }).catch((error) => {
-                    reject({
-                        "url": url,
-                        'savePath': savePath,
-                        "error": error
-                    })
-                })
-        })
-    }
-
 
 
     // =============================程序主体=============================

@@ -20,7 +20,9 @@
     "electron-store": "^2.0.0",
     "got": "^9.6.0",
     "mkdirp": "^0.5.1",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "stream": "0.0.2",
+    "util": "^0.12.1"
   },
   "build": {
     "appId": "com.aaronlenoir.gnucash-reporter",

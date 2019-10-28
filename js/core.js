@@ -21,6 +21,11 @@ const path = require('path');
 
 const mkdirp = require('mkdirp');
 
+const got = require('got')
+const stream = require('stream');
+const { promisify } = require('util');
+const pipeline = promisify(stream.pipeline);
+
 
 // =============================
 // local Function
@@ -808,5 +813,99 @@ document.body.appendChild(el);}")
     periodicPos: function (index, length) {
         // console.log("periodicPos : ", index, length, index%length, (index%length) + length, ((index%length) + length)%length)
         return ((index % length) + length) % length
+    },
+    /**
+     * 下载并保存文件
+     * @param {string} url 要保存的网址
+     * @param {string} savePath 要保存的路径
+     * @param {function pCallback(progress, options=null) { }}  pCallback progress更新的callback
+     * progress -> { percent: 0.1,
+                    transferred: 1024,
+                    total: 10240 }
+        If it's not possible to retrieve the body size (can happen when streaming), total will be null
+     * @param {object} pOptions pCallback的参数(可选)
+     * @returns {Promise:Object} {"url": url,
+                                'savePath': savePath,
+                                "error": err} 
+     */
+    downloadUrl: function (url, savePath, pCallback, pOptions = null) {
+        return new Promise((resolve, reject) => {
+            got(url)
+                .on('downloadProgress', progress => {
+                    // Report download progress
+                    pCallback(progress, pOptions)
+                })
+                // .on('uploadProgress', progress => {
+                //     // Report upload progress
+                //     console.log('downloadUrl : uploadProgress : ', progress)
+                // })
+                .then(response => {
+                    // console.log("download response : ", response)
+                    // console.log('downloadUrl : download done!')
+                    // console.log('downloadUrl : write to ', savePath)
+                    fs.writeFile(savePath, response.body, function (err) {
+
+                        if (err) {
+                            // console.log('downloadUrl : write error : ', err)
+                            reject({
+                                "url": url,
+                                'savePath': savePath,
+                                "error": err
+                            })
+                        }
+
+                        // console.log('downloadUrl : write done');
+
+                        resolve({
+                            "url": url,
+                            'savePath': savePath
+                        })
+                    });
+                })
+                .catch((error) => {
+                    reject({
+                        "url": url,
+                        'savePath': savePath,
+                        "error": error
+                    })
+                })
+        })
+    },
+    /**
+     * 串流下载并保存文件
+     * @param {string} url 要保存的网址
+     * @param {string} savePath 要保存的路径
+     * @param {function pCallback(progress, options=null) { }}  pCallback progress更新的callback
+     * progress -> { percent: 0.1,
+                    transferred: 1024,
+                    total: 10240 }
+        If it's not possible to retrieve the body size (can happen when streaming), total will be null
+     * @param {object} pOptions pCallback的参数(可选)
+     * @returns {Promise:Object} {"url": url,
+                                'savePath': savePath,
+                                "error": err} 
+     */
+     downloadUrlStream: function(url, savePath, pCallback, pOptions = null) {
+        return new Promise((resolve, reject) => {
+            pipeline(
+                got.stream(url)
+                    .on('downloadProgress', progress => {
+                        // Report download progress
+                        pCallback(progress, pOptions)
+                    }),
+                fs.createWriteStream(savePath))
+                .then((resPip) => {
+                    resolve({
+                        "url": url,
+                        'savePath': savePath
+                    })
+                }).catch(errorPip =>{
+                    reject({
+                        "url": url,
+                        'savePath': savePath,
+                        "error": errorPip
+                    })
+                })
+        })
     }
 }
