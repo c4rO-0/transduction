@@ -2455,7 +2455,12 @@ $(document).ready(function () {
     // 下载
     $(document).on('click', '[download]', function (event) {
         console.log('download : ', this)
-        core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
+        core.sendToMain({ 'download': { 
+            'url': $(this).attr('href'), 
+            'unicode':core.UniqueStr() } })
+            .then((saveInfo)=>{
+                console.log(saveInfo)
+            })
 
     });
 

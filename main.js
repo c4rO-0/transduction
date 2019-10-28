@@ -182,8 +182,11 @@ function respFuncMainReply(key, Obj) {
   return Promise.race([new Promise((resolve, reject) => {
     if (key == 'download') {
       console.log("download : ", Obj)
-      let strDownload = Obj["url"]
-      win.webContents.downloadURL(Obj["url"]);
+      
+      // win.webContents.downloadURL(Obj["url"]);
+      download(BrowserWindow.getFocusedWindow(), info.url, info.properties)
+            .then(dl => window.webContents.send("download complete", dl.getSavePath()));
+            
     } else if (key == 'flash') {
       if (!win.isFocused()) {
         // win.showInactive();
