@@ -78,6 +78,7 @@ $(document).ready(function () {
     const Store = require('electron-store');
     const store = new Store();
     const request = require('request')
+    const path = require('path');
 
 
     console.log(process.versions.electron)
@@ -107,6 +108,8 @@ $(document).ready(function () {
 
     let angle = 0
     let aspectRatio = 1
+
+    let downloadDir = '.'
 
 
     /**----------------------
@@ -2460,8 +2463,94 @@ $(document).ready(function () {
 
     // 下载
     $(document).on('click', '[download]', function (event) {
-        console.log('download : ', this)
-        core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
+        // console.log('download : ', this)
+
+        let webTag = $("div.td-chat-title").attr("data-app-name")
+
+
+        let getFileName = new Promise((resolve, reject) => {
+
+            let fileName = undefined
+            if (this.nodeName == 'IMG') {
+                // console.log("download img : ", $(this).attr("href"))
+                var xhr = new XMLHttpRequest();
+                xhr.open("HEAD", $(this).attr("href"), true);
+                xhr.onreadystatechange = function () {
+                    // console.log(xhr.readyState, xhr.status)
+                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                        // console.log(xhr.getResponseHeader('Content-Disposition'))
+                        // console.log(xhr.getResponseHeader("Content-Type"));   // type
+                        // console.log(xhr.getResponseHeader("Content-Length")); // size
+                        var disposition = xhr.getResponseHeader('Content-Disposition');
+                        var type = xhr.getResponseHeader("Content-Type")
+
+                        if (disposition && disposition.indexOf('attachment') !== -1) {
+                            var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                            var matches = filenameRegex.exec(disposition);
+                            if (matches != null && matches[1]) {
+                                fileName = matches[1].replace(/['"]/g, '');
+                                resolve(fileName)
+                            }
+                        }
+                        if (fileName === undefined && type) {
+                            switch (type) {
+                                case 'image/bmp':
+                                    fileName = webTag + '-' + core.UniqueStr() + '.bmp'
+                                    break;
+                                case 'image/gif':
+                                    fileName = webTag + '-' + core.UniqueStr() + '.gif'
+                                    break;
+                                case 'image/vnd.microsoft.icon':
+                                    fileName = webTag + '-' + core.UniqueStr() + '.ico'
+                                    break;
+                                case 'image/jpeg':
+                                    fileName = webTag + '-' + core.UniqueStr() + '.jpg'
+                                    break;
+                                case 'image/png':
+                                    fileName = webTag + '-' + core.UniqueStr() + '.png'
+                                    break;
+                                case 'image/svg+xml':
+                                    fileName = webTag + '-' + core.UniqueStr() + '.svg'
+                                    break;
+                                case 'image/tiff':
+                                    fileName = webTag + '-' + core.UniqueStr() + '.tiff'
+                                case 'image/webp':
+                                    fileName = webTag + '-' + core.UniqueStr() + '.webp'
+                                    break;
+                                default:
+                                    break;
+                            }
+                            resolve(fileName)
+                        }
+                        if (fileName === undefined){
+                            resolve(webTag + '-' + core.UniqueStr())
+                        }
+
+                    }
+                };
+                xhr.send();
+            } else {
+                fileName = $(this).closest("div.td-chatText").find("> div > div > p").text()
+                fileName = jQuery.trim(fileName.slice(fileName.indexOf(":") + 1))
+                resolve(fileName)
+            }
+        }).then(fileName => {
+            return dialog.showSaveDialog(
+                {
+                    title: webTag,
+                    defaultPath: fileName == undefined ? undefined : path.join(downloadDir, fileName)
+                }
+            )
+        }).then(saveDir =>{
+            if(saveDir){
+                console.log("save url : ", $(this).attr("href"))
+                core.downloadUrl($(this).attr("href"), saveDir,(progress)=>{
+                    console.log("download update : ",progress)
+                })
+
+            }
+        })
+
 
     });
 

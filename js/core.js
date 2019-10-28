@@ -21,6 +21,7 @@ const path = require('path');
 
 const mkdirp = require('mkdirp');
 
+const request = require('request')
 const got = require('got')
 const stream = require('stream');
 const { promisify } = require('util');
@@ -824,13 +825,13 @@ document.body.appendChild(el);}")
                     total: 10240 }
         If it's not possible to retrieve the body size (can happen when streaming), total will be null
      * @param {object} pOptions pCallback的参数(可选)
-     * @returns {Promise:Object} {"url": url,
+     * @returns {Promise<Object>} {"url": url,
                                 'savePath': savePath,
                                 "error": err} 
      */
     downloadUrl: function (url, savePath, pCallback, pOptions = null) {
         return new Promise((resolve, reject) => {
-            got(url)
+            got(url,{useElectronNet:true})
                 .on('downloadProgress', progress => {
                     // Report download progress
                     pCallback(progress, pOptions)
@@ -840,7 +841,7 @@ document.body.appendChild(el);}")
                 //     console.log('downloadUrl : uploadProgress : ', progress)
                 // })
                 .then(response => {
-                    // console.log("download response : ", response)
+                    console.log("download response : ", response)
                     // console.log('downloadUrl : download done!')
                     // console.log('downloadUrl : write to ', savePath)
                     fs.writeFile(savePath, response.body, function (err) {
@@ -881,7 +882,7 @@ document.body.appendChild(el);}")
                     total: 10240 }
         If it's not possible to retrieve the body size (can happen when streaming), total will be null
      * @param {object} pOptions pCallback的参数(可选)
-     * @returns {Promise:Object} {"url": url,
+     * @returns {Promise<Object>} {"url": url,
                                 'savePath': savePath,
                                 "error": err} 
      */
