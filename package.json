@@ -17,6 +17,7 @@
     "electron-builder": "^20.43.0"
   },
   "dependencies": {
+    "electron-dl": "^1.14.0",
     "electron-store": "^2.0.0",
     "mkdirp": "^0.5.1",
     "request": "^2.88.0"
