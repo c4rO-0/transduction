@@ -167,13 +167,13 @@ function respFuncMainReply(key, Obj) {
             // console.log("progress :", pg)
             core.mainSendToWin(win, {
               'downloadUpdated':
-              { 
+              {
                 ...Obj,
                 "progress": pg
               }
             }).then(reply => {
               // console.log('downloadUpdated reply : ', reply)
-            }).catch(er =>{
+            }).catch(er => {
               console.log('downloadUpdated reply error : ', er)
             })
           }),
@@ -184,12 +184,12 @@ function respFuncMainReply(key, Obj) {
           resolve(
             {
               ...Obj,
-              'savePath':dl.getSavePath()
+              'savePath': dl.getSavePath()
             })
         }).catch(er => {
           reject({
             ...Obj,
-            'error':er
+            'error': er
           })
         })
 
@@ -208,6 +208,8 @@ function respFuncMainReply(key, Obj) {
       }
     } else if (key == 'focus') {
       win.focus()
+    } else if (key == 'show') {
+      win.show()
     }
   })])
 }

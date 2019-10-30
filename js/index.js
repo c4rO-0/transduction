@@ -896,7 +896,8 @@ $(document).ready(function () {
 
                     convoNotification.onclick = () => {
                         // 弹出transduction, 并点击对应convo
-                        window.focus()
+                        core.sendToMain({'show':''})
+                        core.sendToMain({'focus':''})
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
                     }
                 }
