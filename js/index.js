@@ -73,12 +73,16 @@ function modalImage(event) {
 $(document).ready(function () {
 
     const core = require("../js/core.js")
-    const { nativeImage, dialog, shell } = require('electron').remote
+    const { remote } = require('electron')
+    const { nativeImage, dialog, shell, Menu, MenuItem } = remote
+    const menu = new Menu()
     const Store = require('electron-store');
     const store = new Store();
     const request = require('request')
 
     console.log(process.versions.electron)
+
+
 
     /** 储存要发送的file object
      *  为了能够保证文件能够顺利的发送, fileList不会清除
@@ -109,6 +113,19 @@ $(document).ready(function () {
      */
     let tdPinCoord = undefined
     let tdSettings = undefined
+
+
+    menu.append(new MenuItem({ label: 'MenuItem1', click() { console.log('item 1 clicked') } }))
+    menu.append(new MenuItem({ type: 'separator' }))
+    menu.append(new MenuItem({ label: 'MenuItem2', type: 'checkbox', checked: true }))
+    menu.append(new MenuItem({ role: 'copy'}))
+    menu.append(new MenuItem({ role: 'paste'}))
+    menu.append(new MenuItem({ label: 'undo', role: 'undo'}))
+
+    window.addEventListener('contextmenu', (e) => {
+        e.preventDefault()
+        menu.popup({ window: remote.getCurrentWindow() })
+      }, false)
 
     tdPinCoord = store.get('tdPinCoord')
     if (tdPinCoord === undefined) {
@@ -406,6 +423,7 @@ $(document).ready(function () {
 
 
     // ============================function===================
+
     /**
      * 
      * @param {String} webTag slype, wechat...
