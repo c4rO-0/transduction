@@ -188,7 +188,8 @@ function respFuncMainReply(key, Obj) {
               {
                 ...Obj,
                 "progress": pg,
-                "totalBytes": size,
+                "totalBytes": totalBytes,
+                'receivedBytes':receivedBytes,
                 "startTime":startTime,
                 "speed": speed,
                 "leftTime":leftTime
