@@ -849,56 +849,49 @@ $(document).ready(function () {
                             // 取消新消息未读, 和声音提示
                             Convo.counter = 0
                         }
-                        // setTimeout(() => {
-                        // console.info("focusssssss")
-                        // $(webTag2Selector(webTag)).focus()
-                        // }, 10000);
 
                     }
 
-                    // // 刷新dialog
-                    // core.HostSendToWeb(
-                    //     webTag2Selector(webTag),
-                    //     { "queryDialog": { "userID": Convo.userID } }
-                    // ).then((res) => {
-                    //     console.log("queryDialog : webReply : ", res)
-
-                    // }).catch((error) => {
-                    //     throw error
-
-                    // })
-
-
-
                 }
 
-                // 前台闪烁图标
-                if (!Convo.muted && Convo.action != 'r'
-                    && Convo.message != undefined && Convo.message != ''
-                    && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused())) {
+                
+                // 前台闪烁图标, 发送notification, 并响铃
+                function notifyLocal() {
                     core.sendToMain({ 'flash': Convo.nickName + ':' + Convo.message })
-                }
-
-                // 弹出notification
-                if (!Convo.muted && Convo.action != 'r'
-                    && Convo.message != undefined && Convo.message != ''
-                    && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused())) {
-                    // if (true) { // debug
-
                     let convoNotification = new Notification('Tr| ' + webTag, {
                         body: Convo.nickName + '|' + Convo.message,
                         silent: true
                     })
-
                     // 因为系统原因, Notification silent在ubuntu失效, 所以需要统一播放声音
                     const noise = new Audio('../res/mp3/to-the-point.mp3')
                     noise.play()
 
                     convoNotification.onclick = () => {
                         // 弹出transduction, 并点击对应convo
-                        core.sendToMain({'show':''})
-                        core.sendToMain({'focus':''})
+                        core.sendToMain({ 'show': '' })
+                        core.sendToMain({ 'focus': '' })
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                    }
+                }
+
+                if (!Convo.muted // 非静音
+                    && Convo.action != 'r' // 类型是a或者c
+                    && Convo.message != undefined && Convo.message != ''
+                    && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused())
+                ) {
+                    if (Convo.counter > 0) { //未读消息 >0
+                        notifyLocal()
+                    }else{
+                        // 如果是选中的convo, 那么可能存在对方发消息, counter(未读消息) == 0, 
+                        // 但实际并没有读取.
+                        // 检查右侧如果不是自己发的, 就要弹提醒
+                        if($('div.td-chat-title[data-user-i-d="'+Convo.userID+'"]').length > 0){
+                            setTimeout(() => {
+                                if($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child').hasClass('td-them')){
+                                    notifyLocal()
+                                }
+                            }, 300);
+                        }
                     }
                 }
 
@@ -2492,14 +2485,14 @@ $(document).ready(function () {
         // console.log('download : ', this)
         let type = undefined
         let msgID = undefined
-        if(event.target.nodeName=='IMG'){
+        if (event.target.nodeName == 'IMG') {
             type = 'img'
             msgID = event.target.msgId
-        }else{
-            type='file'
+        } else {
+            type = 'file'
             msgID = $(this).closest('div.td-bubble').attr('msgid')
         }
-        
+
         core.sendToMain({
             'download': {
                 'url': $(this).attr('href'),
@@ -2512,13 +2505,13 @@ $(document).ready(function () {
         })
             .then((saveInfo) => {
                 console.log("download complete , path : ", saveInfo)
-                if(type == 'img'){
+                if (type == 'img') {
 
-                }else{
+                } else {
                     $(this).text("重新下载")
                 }
-                
-                
+
+
             })
 
     });
