@@ -12,6 +12,8 @@ const URL = require('url').URL
 
 const core = require("./js/core.js")
 
+const { download } = require('electron-dl');
+
 
 let win = undefined
 let tray = null
@@ -87,34 +89,6 @@ function createWindow() {
 
   })
 
-
-
-  win.webContents.session.on('will-download', (event, item, webContents) => {
-    // Set the save path, making Electron not to prompt a save dialog.
-    // item.setSavePath('/tmp/save.pdf')
-
-    item.on('updated', (event, state) => {
-      if (state === 'interrupted') {
-        console.log('Download is interrupted but can be resumed')
-      } else if (state === 'progressing') {
-        if (item.isPaused()) {
-          console.log('Download is paused')
-        } else {
-          console.log(`Received bytes: ${item.getReceivedBytes()}`)
-        }
-      }
-    })
-    item.once('done', (event, state) => {
-      if (state === 'completed') {
-        console.log('Download successfully')
-      } else {
-        console.log(`Download failed: ${state}`)
-      }
-    })
-  })
-  //   win.webContents.downloadURL('https://trello-attachments.s3.amazonaws.com/5a4a24ad70082d09dedb3653/5cb2e3b37bd6da33a7570e19/bed48319600bb7979717b7e86c8b09d2/7RQwoJ8z83Zi65NDMvmHKVU0WxBJIrh9szeW_v63iawFYoRE7Ay499ylT0cvNrQJXKaYMxiB2PyOZKnR82h0yxAghk5JFmQ0uefdqFruKB4BMoMKE-JdDvD5FYDX6Y73GSz40nCj%3Ds0.png');      
-
-
   tray = new Tray(path.join(__dirname, '/res/pic/ico.png'))
 
 
@@ -141,30 +115,30 @@ function createWindow() {
     tray.setImage(path.join(__dirname, '/res/pic/ico.png'))
   })
 
-  
-  win.webContents.session.on('will-download', (event, item, webContents) => {
 
-    item.on('updated', (event, state) => {
-      if (state === 'interrupted') {
-        console.log('Download is interrupted but can be resumed')
-      } else if (state === 'progressing') {
-        if (item.isPaused()) {
-          console.log('Download is paused')
-        } else {
-          console.log(`Received bytes: ${item.getReceivedBytes()}`)
-        }
-      }
-    })
-    item.once('done', (event, state) => {
-      if (state === 'completed') {
-        console.log('Download successfully')
-        console.log("save path : ", item.getSavePath())
-      } else {
-        console.log(`Download failed: ${state}`)
-      }
-    })
-    
-  })
+  // win.webContents.session.on('will-download', (event, item, webContents) => {
+
+  //   item.on('updated', (event, state) => {
+  //     if (state === 'interrupted') {
+  //       console.log('Download is interrupted but can be resumed')
+  //     } else if (state === 'progressing') {
+  //       if (item.isPaused()) {
+  //         console.log('Download is paused')
+  //       } else {
+  //         console.log(`Received bytes: ${item.getReceivedBytes()}`)
+  //       }
+  //     }
+  //   })
+  //   item.once('done', (event, state) => {
+  //     if (state === 'completed') {
+  //       console.log('Download successfully')
+  //       console.log("save path : ", item.getSavePath())
+  //     } else {
+  //       console.log(`Download failed: ${state}`)
+  //     }
+  //   })
+
+  // })
 
 }
 
@@ -181,9 +155,44 @@ app.on('ready', createWindow)
 function respFuncMainReply(key, Obj) {
   return Promise.race([new Promise((resolve, reject) => {
     if (key == 'download') {
-      console.log("download : ", Obj)
-      let strDownload = Obj["url"]
-      win.webContents.downloadURL(Obj["url"]);
+      /*
+      * obj -> url
+      */
+      // console.log("download : ", Obj)
+
+      download(win, Obj.url,
+        {
+          saveAs: true,
+          onProgress: (pg => {
+            // console.log("progress :", pg)
+            core.mainSendToWin(win, {
+              'downloadUpdated':
+              {
+                ...Obj,
+                "progress": pg
+              }
+            }).then(reply => {
+              // console.log('downloadUpdated reply : ', reply)
+            }).catch(er => {
+              console.log('downloadUpdated reply error : ', er)
+            })
+          }),
+          showBadge: true,
+          openFolderWhenDone: false
+        })
+        .then(dl => {
+          resolve(
+            {
+              ...Obj,
+              'savePath': dl.getSavePath()
+            })
+        }).catch(er => {
+          reject({
+            ...Obj,
+            'error': er
+          })
+        })
+
     } else if (key == 'flash') {
       if (!win.isFocused()) {
         // win.showInactive();
@@ -199,6 +208,8 @@ function respFuncMainReply(key, Obj) {
       }
     } else if (key == 'focus') {
       win.focus()
+    } else if (key == 'show') {
+      win.show()
     }
   })])
 }

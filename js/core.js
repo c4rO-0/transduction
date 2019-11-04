@@ -468,7 +468,7 @@ document.body.appendChild(el);}")
     },
     /**
      * 向某个窗口发送消息
-     * @param {String} winID 
+     * @param {Int} winID 
      * 要发送的窗口ID
      * @param {Object} msg 
      * 要发送的信息, object.length必须为1
@@ -538,6 +538,8 @@ document.body.appendChild(el);}")
      * return Promise
      */
     WinReply: function (fcnResponse) {
+
+        // win to win
         ipcRender.on('msg-ipc-asy-to-win', function (event, uStr, arg) {
 
             console.log("========================")
@@ -568,6 +570,93 @@ document.body.appendChild(el);}")
 
 
         })
+
+        // main to win
+        ipcRender.on('msg-ipc-asy-main-to-win', function (event, uStr, arg) {
+
+            console.log("========================")
+            console.log("msg is : ", arg)
+
+            let returnValue = new Object;
+            if (Object.keys(arg).length == 0) {
+                returnValue[":"] = "error : WinReply no opertion input"
+                event.sender.send('msg-ipc-asy-win-reply-main-' + uStr, returnValue)
+            } else if (Object.keys(arg).length == 1) {
+                let key = (Object.keys(arg))[0];
+                // console.log(key)
+                fcnResponse(key, arg[key]).then((re) => {
+                    console.log("then : ", re)
+                    returnValue[key + ":" + arg[key]] = re
+                    event.sender.send('msg-ipc-asy-win-reply-main-' + uStr, returnValue)
+                }).catch((error) => {
+                    console.log("then : ", error)
+                    returnValue[key + ":" + arg[key]] = 'error : ' + error
+                    event.sender.send('msg-ipc-asy-win-reply-main-' + uStr, returnValue)
+                })
+            } else {
+                for (key in arg) {
+                    returnValue[key + ":" + arg[key]] = "error : WinReply two many input"
+                }
+                event.sender.send('msg-ipc-asy-win-reply-main-' + uStr, returnValue)
+            }
+
+        })
+    },
+    /**
+    * 向某个窗口发送消息
+    * @param {} win
+    * 要发送的窗口ID
+    * @param {Object} msg 
+    * 要发送的信息, object.length必须为1
+    * @returns {Promise} 
+    * 对方通过调用WinReply返回回来的消息.
+    */
+    mainSendToWin: function (win, msg) {
+
+        return Promise.race([new Promise((resolve, reject) => {
+            if (Object.keys(msg).length == 0) {
+                reject("sendToWin : no msg")
+            } else if (Object.keys(msg).length == 1) {
+
+                // 为了removeListener需要单独封装
+                function handleMsg(event, arg) {
+                    // console.log("win asy reply : ", arg)
+                    if (Object.keys(arg).length == 0) {
+                        reject("sendToWin : receive nothing")
+                    } else if (Object.keys(arg).length == 1) {
+                        let key = (Object.keys(arg))[0]
+                        if (typeof (arg[key]) == "string" && arg[key].indexOf("error :") == 0) {
+                            reject("sendToWin" + arg[key].substr(7))
+                        } else {
+                            resolve(arg)
+                        }
+                    } else {
+                        reject("sendToWin : receive two many")
+                    }
+
+                }
+
+                let uStr = UniqueStr()
+                win.webContents.send('msg-ipc-asy-main-to-win', uStr, msg);
+                // 等待回复
+                let listenerRe = ipcMain.once('msg-ipc-asy-win-reply-main-' + uStr, handleMsg)
+                setTimeout(() => {
+
+                    ipcMain.removeListener('msg-ipc-asy-win-reply-main-' + uStr, handleMsg)
+                    reject("mainSendToWin : time out")
+
+                }, 5000000);
+            } else {
+                reject("mainSendToWin : two many msg")
+            }
+
+        })]) //,
+        // new Promise((resolve, reject) => {
+        //     let erTime = setTimeout(() => {
+        //         clearTimeout(erTime)
+        //         reject("HostSendToWeb : time out")
+        //     }, 5000);
+        // })])
     },
     /**
      * 窗口向该窗口下某个webview发送消息
