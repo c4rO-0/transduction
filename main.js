@@ -159,17 +159,39 @@ function respFuncMainReply(key, Obj) {
       * obj -> url
       */
       // console.log("download : ", Obj)
-
+      let item = undefined
       download(win, Obj.url,
         {
           saveAs: true,
+          onStarted:(it =>{
+            item = it
+          }),
           onProgress: (pg => {
             // console.log("progress :", pg)
+            let size = 0, receivedBytes = 0,
+            startTime = 0, leftTime = -1
+            speed = 0,
+            duration = 0
+
+
+            if(item !== undefined){
+              startTime = item.getStartTime() 
+              duration = new Date().getTime()/1000. - startTime
+              totalBytes =  item.getTotalBytes()
+              receivedBytes = item.getReceivedBytes()
+              speed = duration > 0 ? receivedBytes/duration : 0 
+              leftTime = speed == 0 ? -1 : (totalBytes - receivedBytes) / speed
+            }
+
             core.mainSendToWin(win, {
               'downloadUpdated':
               {
                 ...Obj,
-                "progress": pg
+                "progress": pg,
+                "totalBytes": size,
+                "startTime":startTime,
+                "speed": speed,
+                "leftTime":leftTime
               }
             }).then(reply => {
               // console.log('downloadUpdated reply : ', reply)
