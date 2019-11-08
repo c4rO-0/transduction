@@ -1860,41 +1860,7 @@ $(document).ready(function () {
         if ($(webTag2Selector(webTag)).length > 0) {
             console.log("load")
 
-            $(webTag2Selector(webTag)).attr('partition','persist:'+webTag)
-
-            session.fromPartition('persist:'+webTag).setPermissionRequestHandler((webContents, permission, callback) => {
-
-                let isAllowed = true
-
-                console.log("PermissionRequest ")
-                console.log('from : ', webContents.getURL() )
-                console.log('permission : ', permission )
-                
-
-                if (permission === 'notifications') {
-                    isAllowed = false
-                }
-
-                
-                console.log('allowed : ', isAllowed )
-                callback(isAllowed)
-              })
-              session.fromPartition('persist:'+webTag).setPermissionCheckHandler((webContents, permission, callback) => {
-
-                let isAllowed = true
-
-                console.log("PermissionCheck ")
-                console.log('from : ', webContents.getURL() )
-                console.log('permission : ', permission )
-                
-
-                if (permission === 'notifications') {
-                    isAllowed = false
-                }
-
-                console.log('allowed : ', isAllowed )
-                callback(isAllowed)
-              })
+            // $(webTag2Selector(webTag)).attr('partition',webTag)
 
 
             $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
@@ -1983,6 +1949,7 @@ $(document).ready(function () {
     loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
+    
     // openDevtool("skype")
     // openDevtool("wechat")
     // openDevtool("dingtalk")

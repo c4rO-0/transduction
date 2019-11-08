@@ -43,28 +43,46 @@ function createWindow() {
     win.setMenu(null)
   }
 
+
   win.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
-    
+
     let isAllowed = true
-
-    console.log("PermissionRequest ")
-    console.log('from : ', webContents.getURL() )
-    console.log('permission : ', permission )
-
-    console.log('allowed : ', isAllowed )
-    callback(isAllowed)
-  })
-
-  win.webContents.session.setPermissionCheckHandler((webContents, permission, callback) => {
     
+    console.log("PermissionRequest ")
+    console.log('from : ', webContents.getURL())
+    console.log('permission : ', permission)
+
+    if(webContents.getURL().startsWith("file:///")){
+
+    }else{
+      if (permission === 'notifications') {
+        isAllowed = false
+      }
+    }
+
+    console.log('allowed : ', isAllowed)
+    callback(isAllowed)
+    console.log("-----------------------")
+  })
+  win.webContents.session.setPermissionCheckHandler((webContents, permission, callback) => {
+
     let isAllowed = true
 
     console.log("PermissionCheck ")
-    console.log('from : ', webContents.getURL() )
-    console.log('permission : ', permission )
+    console.log('from : ', webContents.getURL())
+    console.log('permission : ', permission)
 
-    console.log('allowed : ', isAllowed )
+    if(webContents.getURL().startsWith("file:///")){
+
+    }else{
+      if (permission === 'notifications') {
+        isAllowed = false
+      }
+    }
+
+    console.log('allowed : ', isAllowed)
     callback(isAllowed)
+    console.log("-----------------------")
   })
 
   win.on('close', (event) => {
@@ -187,23 +205,23 @@ function respFuncMainReply(key, Obj) {
       download(win, Obj.url,
         {
           saveAs: true,
-          onStarted:(it =>{
+          onStarted: (it => {
             item = it
           }),
           onProgress: (pg => {
             // console.log("progress :", pg)
             let size = 0, receivedBytes = 0,
-            startTime = 0, leftTime = -1
+              startTime = 0, leftTime = -1
             speed = 0,
-            duration = 0
+              duration = 0
 
 
-            if(item !== undefined){
-              startTime = item.getStartTime() 
-              duration = new Date().getTime()/1000. - startTime
-              totalBytes =  item.getTotalBytes()
+            if (item !== undefined) {
+              startTime = item.getStartTime()
+              duration = new Date().getTime() / 1000. - startTime
+              totalBytes = item.getTotalBytes()
               receivedBytes = item.getReceivedBytes()
-              speed = duration > 0 ? receivedBytes/duration : 0 
+              speed = duration > 0 ? receivedBytes / duration : 0
               leftTime = speed == 0 ? -1 : (totalBytes - receivedBytes) / speed
             }
 
@@ -213,10 +231,10 @@ function respFuncMainReply(key, Obj) {
                 ...Obj,
                 "progress": pg,
                 "totalBytes": totalBytes,
-                'receivedBytes':receivedBytes,
-                "startTime":startTime,
+                'receivedBytes': receivedBytes,
+                "startTime": startTime,
                 "speed": speed,
-                "leftTime":leftTime
+                "leftTime": leftTime
               }
             }).then(reply => {
               // console.log('downloadUpdated reply : ', reply)
