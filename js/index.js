@@ -12,6 +12,15 @@ Object.defineProperty(navigator, 'languages', {
     configurable: false,
     writable: false,
 })
+
+/**
+ * 加密本
+ */
+let encryptBook = {}
+/**
+ * 解密本
+ */
+let decryptBook = {}
 // *********************************************
 
 // /**
@@ -261,6 +270,10 @@ $(document).ready(function () {
 
             let bubble
             if (dialog['type'] == 'text') {
+
+                if(dialog['message'].includes(encryptBook.trFlag)){
+                    console.warn('we got a transduction user!')
+                }
 
                 if (dialog["from"]) {
                     bubble = $(this.bTextL).clone()
@@ -1685,33 +1698,45 @@ $(document).ready(function () {
         strInput = arrayInput.slice(fileIndex + 1).join('\n')
         if (strInput.length > 0){
             console.warn('getting Input.................')
-             strInput += ivCode(4)
+            strInput += encryptBook.trFlag
             arraySimpleInput.push(strInput)
         } 
 
         return arraySimpleInput
     }
 
-    function ivCode(index){
-        switch(index){
-            case 0:
-                return 'ܮ'
-                break
-            case 1:
-                return '​'
-                break
-            case 2:
-                return '‌'
-                break
-            case 3:
-                return '‍'
-                break
-            case 4:
-                return '﻿'
-            default:
-                return ''
+    /**
+     * 输入任意个，3以内自然数，例如0,1,0,1,0,1,0,1,0,1
+     * 如果输入的数超过3，按3算
+     * @param  {...any} index 
+     * @returns {String} 以字符串形式返回转化后得到的神隐代码
+     */
+    function spiritedAway(...index){
+        let codeBook = [0x200b, 0x200c, 0x200d, 0xfeff]
+        for(let i = 0; i < index.length; i++){
+            index[i] = index[i] > 3 ? codeBook[3] : codeBook[index[i]]
         }
+        return String.fromCodePoint(...index)
     }
+    /**生成加密本
+     * @param {object} book 加密本，本本，原地修改
+     */
+    function createEncryptBook(book){
+        book['separator'] = spiritedAway(3)
+        book['trFlag'] = spiritedAway(0, 1, 2)
+    }
+
+    createEncryptBook(encryptBook)
+
+    /**生成解密本
+     * @param {object} enBook 已生成的加密本
+     * @param {object} deBook 将要转换得到的解密本
+     */
+    function createDecryptBook(enBook, deBook){
+        Object.keys(enBook).forEach(key => {deBook[enBook[key]] = key})
+    }
+
+    createDecryptBook(encryptBook, decryptBook)
 
     /**
      * 从给定的html中直接拿到sending
