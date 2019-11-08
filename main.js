@@ -43,6 +43,30 @@ function createWindow() {
     win.setMenu(null)
   }
 
+  win.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+    
+    let isAllowed = true
+
+    console.log("PermissionRequest ")
+    console.log('from : ', webContents.getURL() )
+    console.log('permission : ', permission )
+
+    console.log('allowed : ', isAllowed )
+    callback(isAllowed)
+  })
+
+  win.webContents.session.setPermissionCheckHandler((webContents, permission, callback) => {
+    
+    let isAllowed = true
+
+    console.log("PermissionCheck ")
+    console.log('from : ', webContents.getURL() )
+    console.log('permission : ', permission )
+
+    console.log('allowed : ', isAllowed )
+    callback(isAllowed)
+  })
+
   win.on('close', (event) => {
     let tdSettings = store.get('tdSettings')
     // console.log('tdSettings : ', tdSettings)

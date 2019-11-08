@@ -73,7 +73,7 @@ function modalImage(event) {
 $(document).ready(function () {
 
     const core = require("../js/core.js")
-    const { nativeImage, dialog, shell } = require('electron').remote
+    const { nativeImage, dialog, shell, session } = require('electron').remote
     const Store = require('electron-store');
     const store = new Store();
     const request = require('request')
@@ -1855,34 +1855,48 @@ $(document).ready(function () {
 
     }
 
-
-    function webviewNotification(webSelector, enable) {
-
-
-        let wc = $(webSelector).get(0).getWebContents();
-
-        try {
-            if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.2");
-            }
-        } catch (err) {
-            console.error("Debugger attach failed : ", err);
-        };
-
-        if (enable) {
-            return wc.debugger
-                .sendCommand("Page.enable");
-        } else {
-            return wc.debugger
-                .sendCommand("Page.disable");
-        }
-    }
-
-
     function loadWebview(webTag, url, strUserAgent) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
             console.log("load")
+
+            $(webTag2Selector(webTag)).attr('partition','persist:'+webTag)
+
+            session.fromPartition('persist:'+webTag).setPermissionRequestHandler((webContents, permission, callback) => {
+
+                let isAllowed = true
+
+                console.log("PermissionRequest ")
+                console.log('from : ', webContents.getURL() )
+                console.log('permission : ', permission )
+                
+
+                if (permission === 'notifications') {
+                    isAllowed = false
+                }
+
+                
+                console.log('allowed : ', isAllowed )
+                callback(isAllowed)
+              })
+              session.fromPartition('persist:'+webTag).setPermissionCheckHandler((webContents, permission, callback) => {
+
+                let isAllowed = true
+
+                console.log("PermissionCheck ")
+                console.log('from : ', webContents.getURL() )
+                console.log('permission : ', permission )
+                
+
+                if (permission === 'notifications') {
+                    isAllowed = false
+                }
+
+                console.log('allowed : ', isAllowed )
+                callback(isAllowed)
+              })
+
+
             $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
                 {
                     "userAgent":
@@ -1893,8 +1907,7 @@ $(document).ready(function () {
             // 静音
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
-            // 去掉notification
-            webviewNotification(webTag2Selector(webTag), false)
+
         }
     }
 
@@ -1965,8 +1978,7 @@ $(document).ready(function () {
     }
 
     // =============================程序主体=============================
-
-
+    
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
