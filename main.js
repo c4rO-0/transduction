@@ -210,7 +210,7 @@ function respFuncMainReply(key, Obj) {
           }),
           onProgress: (pg => {
             // console.log("progress :", pg)
-            let size = 0, receivedBytes = 0,
+            let totalBytes = 0, receivedBytes = 0,
               startTime = 0, leftTime = -1
             speed = 0,
               duration = 0
