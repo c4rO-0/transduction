@@ -887,7 +887,7 @@ $(document).ready(function () {
                         // 检查右侧如果不是自己发的, 就要弹提醒
                         if($('div.td-chat-title[data-user-i-d="'+Convo.userID+'"]').length > 0){
                             setTimeout(() => {
-                                if($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child').hasClass('td-them')){
+                                if($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child > div').hasClass('td-them')){
                                     notifyLocal()
                                 }
                             }, 300);
