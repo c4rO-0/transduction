@@ -31,7 +31,26 @@ window.onload = function () {
             avatar = avatarStyle.slice(("background-image: url(\"").length, -3)
         }
 
-        let message = $(obj).find('.latest-msg-info span[ng-bind-html="convItem.conv.lastMessageContent|emoj"]').text()
+        let messageObj = $(obj).find('.latest-msg-info span[ng-bind-html="convItem.conv.lastMessageContent|emoj"]')
+        let message =''
+        $(messageObj).contents().toArray().forEach((c, i) => {
+            // 将内容进行切割, 判断是否为img
+
+            // console.log(c, $(c).prop('nodeName'))
+            let nodeName = $(c).prop('nodeName')
+            if (nodeName == "IMG") {
+                // 筛选字符表情
+                if($(c).attr('title')){
+                    message = message + $(c).attr('title')
+                }else if($(c).attr('alt')){
+                    message = message + $(c).attr('alt')
+                }
+                
+            }
+            // 链接文字
+            message = message + $(c).text()
+
+        })
 
         let muted = false
 
@@ -113,10 +132,10 @@ window.onload = function () {
         if ($(objBubble).find('> div.me').length > 0) {
             fromUserName = undefined
         } else if ($(objBubble).find('user-ding-title-list').length > 0) {
-            fromUserName = $('div.conv-title div.title').text()
+            fromUserName = $('div.conv-title div.title').text().trim()
 
         } else if ($(objBubble).find('user-name').length > 0) {
-            fromUserName = $(objBubble).find('user-name span').attr('title')
+            fromUserName = $(objBubble).find('user-name span').attr('title').trim()
         }
 
         let timeStr = $(objBubble).find('span.chat-time').text()
@@ -190,7 +209,14 @@ window.onload = function () {
                     let nodeName = $(c).prop('nodeName')
                     if (nodeName == "IMG") {
                         // 筛选字符表情
-                        content = content + $(c).attr('title')
+                        if($(c).attr('title')){
+                            content = content + $(c).attr('title')
+                        }else if($(c).attr('alt')){
+                            content = content + $(c).attr('alt')
+                        }else{
+                            type = 'undefined'
+                        }
+                        
                     }
                     // 链接文字
                     content = content + $(c).text()
@@ -205,6 +231,9 @@ window.onload = function () {
                     content = content + $(element).text() + '\n\r'
                 })
 
+            }else{
+                type = 'unknown'
+                content = $(objContent).find('div.msg-bubble').text()
             }
 
         } else if (typeStr == 'msg-img') {
@@ -250,12 +279,15 @@ window.onload = function () {
 
         } else if (typeStr == 'ding-text') {
             // ding文字   
+            content = $(objContent).find('div.msg-bubble').text()
         } else if (typeStr == 'msg-encrypt-img') {
             // 加密文件
+            content = $(objContent).find('div.msg-bubble').text()
         } else if (type == 'msg-encrypt-img') {
             // 加密图片
+            content = $(objContent).find('div.msg-bubble').text()
         } else {
-
+            content = $(objContent).find('div.msg-bubble').text()
         }
 
         // 获取状态
@@ -279,7 +311,7 @@ window.onload = function () {
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
-            "message": content,
+            "message": content.trim(),
             "avatar": avatar,
             "fileName": fileName,
             "fileSize": fileSize,

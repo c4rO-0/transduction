@@ -64,6 +64,7 @@ function listWebview() {
 function modalImage(event) {
     document.getElementById('modal-image').querySelector('img').src = event.target.src
     $('#modal-image img[download]').attr('href', event.target.src)
+    $('#modal-image img[download]').attr('msgid', $(event.target).closest('div.td-bubble').attr("msgid"))
     $("#modal-image").modal()
 }
 
@@ -316,7 +317,7 @@ $(document).ready(function () {
                 } else {
                     bubble = $(this.bUnknownR).clone()
                 }
-                $(bubble).find('div.td-chatText').text(dialog['message'])
+                $(bubble).find('div.td-chatText > p').text(dialog['message'])
 
             } else {
                 if (dialog["from"]) {
@@ -324,7 +325,7 @@ $(document).ready(function () {
                 } else {
                     bubble = $(this.bUnknownR).clone()
                 }
-                $(bubble).find('div.td-chatText').text(dialog['message'])
+                $(bubble).find('div.td-chatText > p').text(dialog['message'])
             }
 
             if (dialog["from"]) {
@@ -895,7 +896,8 @@ $(document).ready(function () {
 
                     convoNotification.onclick = () => {
                         // 弹出transduction, 并点击对应convo
-                        window.focus()
+                        core.sendToMain({'show':''})
+                        core.sendToMain({'focus':''})
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
                     }
                 }
@@ -918,7 +920,7 @@ $(document).ready(function () {
 
                     // webTag
                     let webTagSelector = '#modal-' + webTag
-                    if($(webTagSelector).hasClass('show') && Convo.counter == 0){
+                    if ($(webTagSelector).hasClass('show') && Convo.counter == 0) {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
                         $(webTagSelector).modal('hide')
                     }
@@ -1044,6 +1046,35 @@ $(document).ready(function () {
 
     }
 
+    // 处理消息
+    /**
+     * core.WinReply 处理消息的函数
+     * @param {String} key MSG的类别 : 
+     * MSG-Log : 收到右侧窗口聊天记录
+     * MSG-new : 左侧提示有新消息
+     * @param {Object} Obj 收到的具体消息
+     */
+    function respFuncWinReply(key, Obj) {
+        return Promise.race([new Promise((resolve, reject) => {
+            console.log("debug : ", "----------------------")
+            console.log("debug : ", "MSG from Win")
+            console.log(Obj)
+
+            if (key == 'downloadUpdated') {
+                console.log("progress update : ", Obj)
+
+                resolve("got the progress")
+            }
+
+        }),
+        new Promise((resolve, reject) => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
+                reject("respFuncWinReply : " + key + " time out")
+            }, 5000);
+        })])
+    }
+
     /**
      * 
      * @param {String} sectionSelector 要插入的webview 的父节点
@@ -1157,13 +1188,15 @@ $(document).ready(function () {
 
             let arrayString = new Array()
 
+            console.log("filterDataTransfer : data : ", data)
+
             let objHTML = data.getData('text/html') // 拖拽的是一个含有链接的东西, html, 在线img, 文件
             let strURL = data.getData('URL')
             console.log('--------objHTML-----------')
             console.log(objHTML)
             console.log('--------strURL-----------')
             console.log(strURL)
-            if (objHTML && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
+            if (objHTML && $(objHTML).get(0) && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
                 console.log("发现图片")
                 let pathR = $(objHTML).attr('src')
                 let pathFile = undefined
@@ -1830,9 +1863,9 @@ $(document).ready(function () {
     }
 
 
-    function webviewNotification(webSelector,enable){
+    function webviewNotification(webSelector, enable) {
 
-    
+
         let wc = $(webSelector).get(0).getWebContents();
 
         try {
@@ -1843,12 +1876,12 @@ $(document).ready(function () {
             console.error("Debugger attach failed : ", err);
         };
 
-        if(enable){
+        if (enable) {
             return wc.debugger
-            .sendCommand("Page.enable");
-        }else{
+                .sendCommand("Page.enable");
+        } else {
             return wc.debugger
-            .sendCommand("Page.disable");
+                .sendCommand("Page.disable");
         }
     }
 
@@ -2009,17 +2042,17 @@ $(document).ready(function () {
         }\
         ')
     })
-    
-    document.getElementById('debug-img-rotate').addEventListener('click', function(e){
+
+    document.getElementById('debug-img-rotate').addEventListener('click', function (e) {
         console.warn($(e.target).siblings('div').first().children().first())
         angle += 90
         let target = $(e.target).siblings('div').first().children().first()
         aspectRatio = target.height() / target.width()
-        if(angle % 180 == 0){
+        if (angle % 180 == 0) {
             console.warn("")
-            target.css({"transform":"rotate(" + angle + "deg)"})
-        }else{
-            target.css({"transform":"rotate(" + angle + "deg) scale(" + aspectRatio + ", " + aspectRatio + ")"})
+            target.css({ "transform": "rotate(" + angle + "deg)" })
+        } else {
+            target.css({ "transform": "rotate(" + angle + "deg) scale(" + aspectRatio + ", " + aspectRatio + ")" })
         }
     })
 
@@ -2050,9 +2083,9 @@ $(document).ready(function () {
         $(webTag2Selector(this.id.substring(6))).width("800px")
         $(webTag2Selector(this.id.substring(6))).height("800px")
     })
-    $('#modal-image').on('hidden.bs.modal', function(e){
+    $('#modal-image').on('hidden.bs.modal', function (e) {
         angle = 0
-        $(".modal-body > img", this).css({"transform":"rotate(0deg)"})
+        $(".modal-body > img", this).css({ "transform": "rotate(0deg)" })
     })
 
     /**
@@ -2118,6 +2151,10 @@ $(document).ready(function () {
     // dingtalk
     core.WinReplyWeb(webTag2Selector("dingtalk"), (key, arg) => {
         return respFuncWinReplyWeb("dingtalk", key, arg)
+    })
+
+    core.WinReply((key, arg) => {
+        return respFuncWinReply(key, arg)
     })
 
 
@@ -2452,8 +2489,37 @@ $(document).ready(function () {
 
     // 下载
     $(document).on('click', '[download]', function (event) {
-        console.log('download : ', this)
-        core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
+        // console.log('download : ', this)
+        let type = undefined
+        let msgID = undefined
+        if(event.target.nodeName=='IMG'){
+            type = 'img'
+            msgID = event.target.msgId
+        }else{
+            type='file'
+            msgID = $(this).closest('div.td-bubble').attr('msgid')
+        }
+        
+        core.sendToMain({
+            'download': {
+                'url': $(this).attr('href'),
+                'unicode': core.UniqueStr(),
+                'webTag': $("div.td-chat-title").attr('data-app-name'),
+                'userID': $("div.td-chat-title").attr('data-user-i-d'),
+                'msgID': msgID,
+                'type': type
+            }
+        })
+            .then((saveInfo) => {
+                console.log("download complete , path : ", saveInfo)
+                if(type == 'img'){
+
+                }else{
+                    $(this).text("重新下载")
+                }
+                
+                
+            })
 
     });
 
