@@ -96,7 +96,7 @@ $(document).ready(function () {
     let debug_image_str = "#debug-image"
     let debug_send_str = "#debug-send"
     let debug_latex_str = "#debug-latex2png"
-    let debug_spotify_str = "#debug-spotify"
+    let debug_languagetool_str = "#debug-languagetool"
     let debug_goBackChat_str = "#debug-goBackChat"
     let classTactive = 'theme-transduction-active-tran'
 
@@ -2252,14 +2252,14 @@ $(document).ready(function () {
         loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
     })
 
-    $(debug_spotify_str).on('click', (e) => {
+    $(debug_languagetool_str).on('click', (e) => {
         $('.td-toolbox > img').removeClass('theme-transduction-active')
         $(e.target).addClass('theme-transduction-active')
 
-        let extensionName = "spotify"
+        let extensionName = "languagetool"
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
         $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://open.spotify.com/browse/featured", '')
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://languagetool.org/", '')
     })
 
     // 隐藏extension
