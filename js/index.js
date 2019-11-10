@@ -990,7 +990,7 @@ $(document).ready(function () {
                         // 右侧恢复到开始状态
                         if ($('.app-online').length == 0) {
                             // 空白页
-                            rightBackToDefault()
+                            // rightBackToDefault()
                         }
 
 
