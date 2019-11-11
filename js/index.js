@@ -2532,14 +2532,15 @@ $(document).ready(function () {
             }
         })
             .then((saveInfo) => {
-                console.log("download complete , info : ", saveInfo)
+                console.log("download complete , info : ", saveInfo.download)
                 if (type == 'img') {
 
                 } else {
                     $(this).closest('div.td-bubble').removeClass('td-downloading')
 
                     $(this).closest('div.td-bubble').addClass('td-downloaded')
-                    $(this).closest('div.td-bubble button.td-downloaded').attr('href', saveInfo.savePath)
+
+                    $(this).closest('div.td-bubble').find('button[open]').attr('path', saveInfo.download.savePath)
 
                 }
             })
@@ -2555,6 +2556,11 @@ $(document).ready(function () {
         }
 
     });
+
+    $(document).on('click', '[open]', function (event) {
+        console.log("show item : ", $(this).closest('div.td-bubble button[open]').attr('path'),
+            shell.showItemInFolder($(this).closest('div.td-bubble button[open]').attr('path')))
+    })
 
     // 右侧对话框, 滑条有变化
     $(".td-chatLog[wintype='chatLog']").scroll(function () {
