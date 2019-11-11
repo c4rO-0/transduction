@@ -12,6 +12,8 @@ const URL = require('url').URL
 
 const core = require("./js/core.js")
 
+const { download } = require('electron-dl');
+
 
 let win = undefined
 let tray = null
@@ -40,6 +42,48 @@ function createWindow() {
   if (process.platform == "win32") {
     win.setMenu(null)
   }
+
+
+  win.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+
+    let isAllowed = true
+    
+    console.log("PermissionRequest ")
+    console.log('from : ', webContents.getURL())
+    console.log('permission : ', permission)
+
+    if(webContents.getURL().startsWith("file:///")){
+
+    }else{
+      if (permission === 'notifications') {
+        isAllowed = false
+      }
+    }
+
+    console.log('allowed : ', isAllowed)
+    callback(isAllowed)
+    console.log("-----------------------")
+  })
+  win.webContents.session.setPermissionCheckHandler((webContents, permission, callback) => {
+
+    let isAllowed = true
+
+    console.log("PermissionCheck ")
+    console.log('from : ', webContents.getURL())
+    console.log('permission : ', permission)
+
+    if(webContents.getURL().startsWith("file:///")){
+
+    }else{
+      if (permission === 'notifications') {
+        isAllowed = false
+      }
+    }
+
+    console.log('allowed : ', isAllowed)
+    callback(isAllowed)
+    console.log("-----------------------")
+  })
 
   win.on('close', (event) => {
     let tdSettings = store.get('tdSettings')
@@ -87,34 +131,6 @@ function createWindow() {
 
   })
 
-
-
-  win.webContents.session.on('will-download', (event, item, webContents) => {
-    // Set the save path, making Electron not to prompt a save dialog.
-    // item.setSavePath('/tmp/save.pdf')
-
-    item.on('updated', (event, state) => {
-      if (state === 'interrupted') {
-        console.log('Download is interrupted but can be resumed')
-      } else if (state === 'progressing') {
-        if (item.isPaused()) {
-          console.log('Download is paused')
-        } else {
-          console.log(`Received bytes: ${item.getReceivedBytes()}`)
-        }
-      }
-    })
-    item.once('done', (event, state) => {
-      if (state === 'completed') {
-        console.log('Download successfully')
-      } else {
-        console.log(`Download failed: ${state}`)
-      }
-    })
-  })
-  //   win.webContents.downloadURL('https://trello-attachments.s3.amazonaws.com/5a4a24ad70082d09dedb3653/5cb2e3b37bd6da33a7570e19/bed48319600bb7979717b7e86c8b09d2/7RQwoJ8z83Zi65NDMvmHKVU0WxBJIrh9szeW_v63iawFYoRE7Ay499ylT0cvNrQJXKaYMxiB2PyOZKnR82h0yxAghk5JFmQ0uefdqFruKB4BMoMKE-JdDvD5FYDX6Y73GSz40nCj%3Ds0.png');      
-
-
   tray = new Tray(path.join(__dirname, '/res/pic/ico.png'))
 
 
@@ -141,9 +157,29 @@ function createWindow() {
     tray.setImage(path.join(__dirname, '/res/pic/ico.png'))
   })
 
-  // win.on('blur', ()=>{
-  //   console.log('blur')
-  //   tray.setImage(path.join(__dirname, '/res/pic/ico_count.png'))
+
+  // win.webContents.session.on('will-download', (event, item, webContents) => {
+
+  //   item.on('updated', (event, state) => {
+  //     if (state === 'interrupted') {
+  //       console.log('Download is interrupted but can be resumed')
+  //     } else if (state === 'progressing') {
+  //       if (item.isPaused()) {
+  //         console.log('Download is paused')
+  //       } else {
+  //         console.log(`Received bytes: ${item.getReceivedBytes()}`)
+  //       }
+  //     }
+  //   })
+  //   item.once('done', (event, state) => {
+  //     if (state === 'completed') {
+  //       console.log('Download successfully')
+  //       console.log("save path : ", item.getSavePath())
+  //     } else {
+  //       console.log(`Download failed: ${state}`)
+  //     }
+  //   })
+
   // })
 
 }
@@ -161,9 +197,67 @@ app.on('ready', createWindow)
 function respFuncMainReply(key, Obj) {
   return Promise.race([new Promise((resolve, reject) => {
     if (key == 'download') {
-      console.log("download : ", Obj)
-      let strDownload = Obj["url"]
-      win.webContents.downloadURL(Obj["url"]);
+      /*
+      * obj -> url
+      */
+      // console.log("download : ", Obj)
+      let item = undefined
+      download(win, Obj.url,
+        {
+          saveAs: true,
+          onStarted: (it => {
+            item = it
+          }),
+          onProgress: (pg => {
+            // console.log("progress :", pg)
+            let totalBytes = 0, receivedBytes = 0,
+              startTime = 0, leftTime = -1
+            speed = 0,
+              duration = 0
+
+
+            if (item !== undefined) {
+              startTime = item.getStartTime()
+              duration = new Date().getTime() / 1000. - startTime
+              totalBytes = item.getTotalBytes()
+              receivedBytes = item.getReceivedBytes()
+              speed = duration > 0 ? receivedBytes / duration : 0
+              leftTime = speed == 0 ? -1 : (totalBytes - receivedBytes) / speed
+            }
+
+            core.mainSendToWin(win, {
+              'downloadUpdated':
+              {
+                ...Obj,
+                "progress": pg,
+                "totalBytes": totalBytes,
+                'receivedBytes': receivedBytes,
+                "startTime": startTime,
+                "speed": speed,
+                "leftTime": leftTime
+              }
+            }).then(reply => {
+              // console.log('downloadUpdated reply : ', reply)
+            }).catch(er => {
+              console.log('downloadUpdated reply error : ', er)
+            })
+          }),
+          showBadge: true,
+          openFolderWhenDone: false
+        })
+        .then(dl => {
+          resolve(
+            {
+              ...Obj,
+              'savePath': dl.getSavePath()
+            })
+        }).catch(er => {
+          reject({
+            ...Obj,
+            'error': er
+          })
+        })
+
     } else if (key == 'flash') {
       if (!win.isFocused()) {
         // win.showInactive();
@@ -179,6 +273,8 @@ function respFuncMainReply(key, Obj) {
       }
     } else if (key == 'focus') {
       win.focus()
+    } else if (key == 'show') {
+      win.show()
     }
   })])
 }

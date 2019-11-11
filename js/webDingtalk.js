@@ -31,7 +31,26 @@ window.onload = function () {
             avatar = avatarStyle.slice(("background-image: url(\"").length, -3)
         }
 
-        let message = $(obj).find('.latest-msg-info span[ng-bind-html="convItem.conv.lastMessageContent|emoj"]').text()
+        let messageObj = $(obj).find('.latest-msg-info span[ng-bind-html="convItem.conv.lastMessageContent|emoj"]')
+        let message =''
+        $(messageObj).contents().toArray().forEach((c, i) => {
+            // 将内容进行切割, 判断是否为img
+
+            // console.log(c, $(c).prop('nodeName'))
+            let nodeName = $(c).prop('nodeName')
+            if (nodeName == "IMG") {
+                // 筛选字符表情
+                if($(c).attr('title')){
+                    message = message + $(c).attr('title')
+                }else if($(c).attr('alt')){
+                    message = message + $(c).attr('alt')
+                }
+                
+            }
+            // 链接文字
+            message = message + $(c).text()
+
+        })
 
         let muted = false
 
@@ -190,7 +209,14 @@ window.onload = function () {
                     let nodeName = $(c).prop('nodeName')
                     if (nodeName == "IMG") {
                         // 筛选字符表情
-                        content = content + $(c).attr('title')
+                        if($(c).attr('title')){
+                            content = content + $(c).attr('title')
+                        }else if($(c).attr('alt')){
+                            content = content + $(c).attr('alt')
+                        }else{
+                            type = 'undefined'
+                        }
+                        
                     }
                     // 链接文字
                     content = content + $(c).text()

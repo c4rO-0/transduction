@@ -186,6 +186,18 @@ webview {
     flex-direction: column;
 }
 
+.td-bubble .td-downloading, .td-bubble .td-downloaded {
+    display: none;
+}
+
+.td-bubble.td-downloading .td-downloading {
+    display: flex;
+}
+
+.td-bubble.td-downloaded .td-downloaded {
+    display: flex;
+}
+
 .td-chatAvatar {
     /* background-size: cover;
     background-position: center; */

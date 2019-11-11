@@ -73,6 +73,7 @@ function listWebview() {
 function modalImage(event) {
     document.getElementById('modal-image').querySelector('img').src = event.target.src
     $('#modal-image img[download]').attr('href', event.target.src)
+    $('#modal-image img[download]').attr('msgid', $(event.target).closest('div.td-bubble').attr("msgid"))
     $("#modal-image").modal()
 }
 
@@ -81,7 +82,7 @@ function modalImage(event) {
 $(document).ready(function () {
 
     const core = require("../js/core.js")
-    const { nativeImage, dialog, shell } = require('electron').remote
+    const { nativeImage, dialog, shell, session } = require('electron').remote
     const Store = require('electron-store');
     const store = new Store();
     const request = require('request')
@@ -528,7 +529,12 @@ $(document).ready(function () {
                             <div style="display: flex; flex-direction:row; justify-content: space-around;">\
                                 <p style="margin:0;">' + dialog['fileSize'] / 1000. + ' KB' + '</p>\
                                 <button href="' + dialog['message'] + '" class="btn p-0 btn-link" download>下载</button>\
+                                <button class="btn p-0 btn-link td-downloaded" href="">打开</button>\
                             </div>\
+                            <div class="progress td-downloading" style="height: 5px;">\
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>\
+                            </div>\
+                            <div class="td-downloading" style="text-align: center; font-size: 0.7rem;">剩余时间：12:34</div>\
                         </div>\
                     </div>\
                     <p style="margin:0;"></p>\
@@ -861,55 +867,49 @@ $(document).ready(function () {
                             // 取消新消息未读, 和声音提示
                             Convo.counter = 0
                         }
-                        // setTimeout(() => {
-                        // console.info("focusssssss")
-                        // $(webTag2Selector(webTag)).focus()
-                        // }, 10000);
 
                     }
 
-                    // // 刷新dialog
-                    // core.HostSendToWeb(
-                    //     webTag2Selector(webTag),
-                    //     { "queryDialog": { "userID": Convo.userID } }
-                    // ).then((res) => {
-                    //     console.log("queryDialog : webReply : ", res)
-
-                    // }).catch((error) => {
-                    //     throw error
-
-                    // })
-
-
-
                 }
 
-                // 前台闪烁图标
-                if (!Convo.muted && Convo.action != 'r'
-                    && Convo.message != undefined && Convo.message != ''
-                    && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused())) {
+                
+                // 前台闪烁图标, 发送notification, 并响铃
+                function notifyLocal() {
                     core.sendToMain({ 'flash': Convo.nickName + ':' + Convo.message })
-                }
-
-                // 弹出notification
-                if (!Convo.muted && Convo.action != 'r'
-                    && Convo.message != undefined && Convo.message != ''
-                    && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused())) {
-                    // if (true) { // debug
-
                     let convoNotification = new Notification('Tr| ' + webTag, {
                         body: Convo.nickName + '|' + Convo.message,
                         silent: true
                     })
-
                     // 因为系统原因, Notification silent在ubuntu失效, 所以需要统一播放声音
                     const noise = new Audio('../res/mp3/to-the-point.mp3')
                     noise.play()
 
                     convoNotification.onclick = () => {
                         // 弹出transduction, 并点击对应convo
-                        window.focus()
+                        core.sendToMain({ 'show': '' })
+                        core.sendToMain({ 'focus': '' })
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                    }
+                }
+
+                if (!Convo.muted // 非静音
+                    && Convo.action != 'r' // 类型是a或者c
+                    && Convo.message != undefined && Convo.message != ''
+                    && !(document.hasFocus() || $(webTag2Selector(webTag)).get(0).getWebContents().isFocused())
+                ) {
+                    if (Convo.counter > 0) { //未读消息 >0
+                        notifyLocal()
+                    }else{
+                        // 如果是选中的convo, 那么可能存在对方发消息, counter(未读消息) == 0, 
+                        // 但实际并没有读取.
+                        // 检查右侧如果不是自己发的, 就要弹提醒
+                        if($('div.td-chat-title[data-user-i-d="'+Convo.userID+'"]').length > 0){
+                            setTimeout(() => {
+                                if($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child > div').hasClass('td-them')){
+                                    notifyLocal()
+                                }
+                            }, 300);
+                        }
                     }
                 }
 
@@ -931,7 +931,7 @@ $(document).ready(function () {
 
                     // webTag
                     let webTagSelector = '#modal-' + webTag
-                    if($(webTagSelector).hasClass('show') && Convo.counter == 0){
+                    if ($(webTagSelector).hasClass('show') && Convo.counter == 0) {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
                         $(webTagSelector).modal('hide')
                     }
@@ -1057,6 +1057,35 @@ $(document).ready(function () {
 
     }
 
+    // 处理消息
+    /**
+     * core.WinReply 处理消息的函数
+     * @param {String} key MSG的类别 : 
+     * MSG-Log : 收到右侧窗口聊天记录
+     * MSG-new : 左侧提示有新消息
+     * @param {Object} Obj 收到的具体消息
+     */
+    function respFuncWinReply(key, Obj) {
+        return Promise.race([new Promise((resolve, reject) => {
+            console.log("debug : ", "----------------------")
+            console.log("debug : ", "MSG from Win")
+            console.log(Obj)
+
+            if (key == 'downloadUpdated') {
+                console.log("progress update : ", Obj)
+
+                resolve("got the progress")
+            }
+
+        }),
+        new Promise((resolve, reject) => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
+                reject("respFuncWinReply : " + key + " time out")
+            }, 5000);
+        })])
+    }
+
     /**
      * 
      * @param {String} sectionSelector 要插入的webview 的父节点
@@ -1170,13 +1199,15 @@ $(document).ready(function () {
 
             let arrayString = new Array()
 
+            console.log("filterDataTransfer : data : ", data)
+
             let objHTML = data.getData('text/html') // 拖拽的是一个含有链接的东西, html, 在线img, 文件
             let strURL = data.getData('URL')
             console.log('--------objHTML-----------')
             console.log(objHTML)
             console.log('--------strURL-----------')
             console.log(strURL)
-            if (objHTML && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
+            if (objHTML && $(objHTML).get(0) && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
                 console.log("发现图片")
                 let pathR = $(objHTML).attr('src')
                 let pathFile = undefined
@@ -1883,34 +1914,14 @@ $(document).ready(function () {
 
     }
 
-
-    function webviewNotification(webSelector,enable){
-
-    
-        let wc = $(webSelector).get(0).getWebContents();
-
-        try {
-            if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.2");
-            }
-        } catch (err) {
-            console.error("Debugger attach failed : ", err);
-        };
-
-        if(enable){
-            return wc.debugger
-            .sendCommand("Page.enable");
-        }else{
-            return wc.debugger
-            .sendCommand("Page.disable");
-        }
-    }
-
-
     function loadWebview(webTag, url, strUserAgent) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
             console.log("load")
+
+            // $(webTag2Selector(webTag)).attr('partition',webTag)
+
+
             $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
                 {
                     "userAgent":
@@ -1921,8 +1932,7 @@ $(document).ready(function () {
             // 静音
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
-            // 去掉notification
-            webviewNotification(webTag2Selector(webTag), false)
+
         }
     }
 
@@ -1993,12 +2003,12 @@ $(document).ready(function () {
     }
 
     // =============================程序主体=============================
-
-
+    
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
+    
     // openDevtool("skype")
     // openDevtool("wechat")
     // openDevtool("dingtalk")
@@ -2063,17 +2073,17 @@ $(document).ready(function () {
         }\
         ')
     })
-    
-    document.getElementById('debug-img-rotate').addEventListener('click', function(e){
+
+    document.getElementById('debug-img-rotate').addEventListener('click', function (e) {
         console.warn($(e.target).siblings('div').first().children().first())
         angle += 90
         let target = $(e.target).siblings('div').first().children().first()
         aspectRatio = target.height() / target.width()
-        if(angle % 180 == 0){
+        if (angle % 180 == 0) {
             console.warn("")
-            target.css({"transform":"rotate(" + angle + "deg)"})
-        }else{
-            target.css({"transform":"rotate(" + angle + "deg) scale(" + aspectRatio + ", " + aspectRatio + ")"})
+            target.css({ "transform": "rotate(" + angle + "deg)" })
+        } else {
+            target.css({ "transform": "rotate(" + angle + "deg) scale(" + aspectRatio + ", " + aspectRatio + ")" })
         }
     })
 
@@ -2104,9 +2114,9 @@ $(document).ready(function () {
         $(webTag2Selector(this.id.substring(6))).width("800px")
         $(webTag2Selector(this.id.substring(6))).height("800px")
     })
-    $('#modal-image').on('hidden.bs.modal', function(e){
+    $('#modal-image').on('hidden.bs.modal', function (e) {
         angle = 0
-        $(".modal-body > img", this).css({"transform":"rotate(0deg)"})
+        $(".modal-body > img", this).css({ "transform": "rotate(0deg)" })
     })
 
     /**
@@ -2172,6 +2182,10 @@ $(document).ready(function () {
     // dingtalk
     core.WinReplyWeb(webTag2Selector("dingtalk"), (key, arg) => {
         return respFuncWinReplyWeb("dingtalk", key, arg)
+    })
+
+    core.WinReply((key, arg) => {
+        return respFuncWinReply(key, arg)
     })
 
 
@@ -2506,8 +2520,37 @@ $(document).ready(function () {
 
     // 下载
     $(document).on('click', '[download]', function (event) {
-        console.log('download : ', this)
-        core.sendToMain({ 'download': { 'url': $(this).attr('href'), 'path': '/temp/' } })
+        // console.log('download : ', this)
+        let type = undefined
+        let msgID = undefined
+        if (event.target.nodeName == 'IMG') {
+            type = 'img'
+            msgID = event.target.msgId
+        } else {
+            type = 'file'
+            msgID = $(this).closest('div.td-bubble').attr('msgid')
+        }
+
+        core.sendToMain({
+            'download': {
+                'url': $(this).attr('href'),
+                'unicode': core.UniqueStr(),
+                'webTag': $("div.td-chat-title").attr('data-app-name'),
+                'userID': $("div.td-chat-title").attr('data-user-i-d'),
+                'msgID': msgID,
+                'type': type
+            }
+        })
+            .then((saveInfo) => {
+                console.log("download complete , path : ", saveInfo)
+                if (type == 'img') {
+
+                } else {
+                    $(this).text("重新下载")
+                }
+
+
+            })
 
     });
 
