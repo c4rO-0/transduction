@@ -516,7 +516,12 @@ $(document).ready(function () {
                             <div style="display: flex; flex-direction:row; justify-content: space-around;">\
                                 <p style="margin:0;">' + dialog['fileSize'] / 1000. + ' KB' + '</p>\
                                 <button href="' + dialog['message'] + '" class="btn p-0 btn-link" download>下载</button>\
+                                <button class="btn p-0 btn-link td-downloaded" href="">打开</button>\
                             </div>\
+                            <div class="progress td-downloading" style="height: 5px;">\
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>\
+                            </div>\
+                            <div class="td-downloading" style="text-align: center; font-size: 0.7rem;">剩余时间：12:34</div>\
                         </div>\
                     </div>\
                     <p style="margin:0;"></p>\
