@@ -308,7 +308,20 @@ $(document).ready(function () {
                     bubble = $(this.bFileR).clone()
                 }
                 $(bubble).find('div.td-chatText > div > div > p').text("File Name: " + dialog['fileName'])
-                $(bubble).find('div.td-chatText > div > div > div > p').text("Size: " + dialog['fileSize'] / 1000. + ' KB')
+                let sizeStr
+                if(dialog['fileSize'] < 1024.){
+                    sizeStr = dialog['fileSize'].toFixed().toString() + ' B'
+                }else if(dialog['fileSize'] < 1024.**2){
+                    sizeStr = (dialog['fileSize']/ 1024.).toFixed(1).toString() + ' KB'
+                }else if(dialog['fileSize'] < 1024.**3){
+                    sizeStr = (dialog['fileSize']/ 1024.**2).toFixed(1).toString() + ' MB'
+                }else if(dialog['fileSize'] < 1024.**4){
+                    sizeStr = (dialog['fileSize']/ 1024.**3).toFixed(1).toString() + ' GB'
+                }else{
+                    sizeStr = (dialog['fileSize']/ 1024.**4).toFixed(1).toString() + ' TB'
+                }
+
+                $(bubble).find('div.td-chatText > div > div > div > p').text("Size: " + sizeStr)
                 $(bubble).find('div.td-chatText button[download]').attr('href', dialog['message'])
 
 
