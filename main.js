@@ -246,16 +246,15 @@ function respFuncMainReply(key, Obj) {
           openFolderWhenDone: false
         })
         .then(dl => {
-          resolve(
-            {
+          resolve({
               ...Obj,
               'savePath': dl.getSavePath()
             })
         }).catch(er => {
-          reject({
+          reject({"download":{
             ...Obj,
             'error': er
-          })
+          }})
         })
 
     } else if (key == 'flash') {
