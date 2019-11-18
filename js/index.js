@@ -79,6 +79,7 @@ function modalImage(event) {
 
 
 
+
 $(document).ready(function () {
 
     const core = require("../js/core.js")
@@ -94,6 +95,10 @@ $(document).ready(function () {
      */
     let fileList = {};
 
+    /**
+     * 下载列表
+     */
+    let donwloadList = updateDonwloadList()
 
     let inputImgHeightLimit = 100
     let inputImgWeightLimit = 600
@@ -105,7 +110,7 @@ $(document).ready(function () {
     let debug_image_str = "#debug-image"
     let debug_send_str = "#debug-send"
     let debug_latex_str = "#debug-latex2png"
-    let debug_spotify_str = "#debug-spotify"
+    let debug_languagetool_str = "#debug-languagetool"
     let debug_goBackChat_str = "#debug-goBackChat"
     let classTactive = 'theme-transduction-active-tran'
 
@@ -256,6 +261,9 @@ $(document).ready(function () {
 
         createBubble(dialog) {
 
+            let cUser = $('div.td-chat-title').attr('data-user-i-d')
+            let cwebTag = $('div.td-chat-title').attr('data-app-name')
+
             let timeObj = undefined
 
             if (typeof (dialog["time"]) === 'number') {
@@ -321,8 +329,39 @@ $(document).ready(function () {
                     bubble = $(this.bFileR).clone()
                 }
                 $(bubble).find('div.td-chatText > div > div > p').text("File Name: " + dialog['fileName'])
-                $(bubble).find('div.td-chatText > div > div > div > p').text("Size: " + dialog['fileSize'] / 1000. + ' KB')
-                $(bubble).find('div.td-chatText button').attr('href', dialog['message'])
+                let sizeStr
+                if (dialog['fileSize'] < 1024.) {
+                    sizeStr = dialog['fileSize'].toFixed().toString() + ' B'
+                } else if (dialog['fileSize'] < 1024. ** 2) {
+                    sizeStr = (dialog['fileSize'] / 1024.).toFixed(1).toString() + ' KB'
+                } else if (dialog['fileSize'] < 1024. ** 3) {
+                    sizeStr = (dialog['fileSize'] / 1024. ** 2).toFixed(1).toString() + ' MB'
+                } else if (dialog['fileSize'] < 1024. ** 4) {
+                    sizeStr = (dialog['fileSize'] / 1024. ** 3).toFixed(1).toString() + ' GB'
+                } else {
+                    sizeStr = (dialog['fileSize'] / 1024. ** 4).toFixed(1).toString() + ' TB'
+                }
+
+                $(bubble).find('div.td-chatText > div > div > div > p').text("Size: " + sizeStr)
+                $(bubble).find('div.td-chatText button[download]').attr('href', dialog['message'])
+
+                // 查看 是否已经下载
+                // console.log('cwebTag:',cwebTag, 'cUser:',cUser)
+                for (let index = 0; index < donwloadList.length; index++) {
+                    // console.log('index:',donwloadList[index])
+                    if (donwloadList[index].webTag == cwebTag
+                        && donwloadList[index].userID == cUser
+                        && donwloadList[index].msgID == dialog.msgID) {           
+
+                        $(bubble).addClass('td-downloaded')
+    
+                        $(bubble).find('button[open]').attr('path', donwloadList[index].savePath)
+
+                        break
+                    }
+                }
+
+
 
             } else if (dialog['type'] == 'unknown') {
                 if (dialog["from"]) {
@@ -872,7 +911,7 @@ $(document).ready(function () {
 
                 }
 
-                
+
                 // 前台闪烁图标, 发送notification, 并响铃
                 function notifyLocal() {
                     core.sendToMain({ 'flash': Convo.nickName + ':' + Convo.message })
@@ -899,13 +938,13 @@ $(document).ready(function () {
                 ) {
                     if (Convo.counter > 0) { //未读消息 >0
                         notifyLocal()
-                    }else{
+                    } else {
                         // 如果是选中的convo, 那么可能存在对方发消息, counter(未读消息) == 0, 
                         // 但实际并没有读取.
                         // 检查右侧如果不是自己发的, 就要弹提醒
-                        if($('div.td-chat-title[data-user-i-d="'+Convo.userID+'"]').length > 0){
+                        if ($('div.td-chat-title[data-user-i-d="' + Convo.userID + '"]').length > 0) {
                             setTimeout(() => {
-                                if($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child > div').hasClass('td-them')){
+                                if ($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child > div').hasClass('td-them')) {
                                     notifyLocal()
                                 }
                             }, 300);
@@ -1072,7 +1111,35 @@ $(document).ready(function () {
             console.log(Obj)
 
             if (key == 'downloadUpdated') {
-                console.log("progress update : ", Obj)
+                // console.log("progress update : ", Obj)
+
+                $('div.td-bubble[msgid="' + Obj.msgID + '"] div.progress-bar').css('width', (Obj.progress * 100.).toString() + '%')
+
+                let timeStr = 'time left: '
+                if (Obj.leftTime < 0) {
+                    timeStr += '--'
+                } else if (Obj.leftTime < 60) {
+                    timeStr += Obj.leftTime.toFixed().toString() + 's'
+                } else if (Obj.leftTime < 3600) {
+                    let min = Math.floor(Obj.leftTime / 60.)
+                    timeStr += min.toString() + 'm'
+                        + (Obj.leftTime - min * 60.).toFixed().toString() + 's'
+                } else if (Obj.leftTime < 3600 * 24) {
+                    let hour = Math.floor(Obj.leftTime / 3600.)
+                    let min = Math.floor((Obj.leftTime - hour * 3600) / 60.)
+                    timeStr += hour.toString() + 'h'
+                        + min.toString() + 'm'
+                } else {
+                    let day = Math.floor(Obj.leftTime / (3600. * 24.))
+                    if (day < 10) {
+                        let hour = Math.floor((Obj.leftTime - day * 3600. * 24) / 3600.)
+                        timeStr += day.toString() + 'd'
+                            + hour.toString() + 'h'
+                    } else {
+                        timeStr += day.toString() + 'd'
+                    }
+                }
+                $('div.td-bubble[msgid="' + Obj.msgID + '"] div[time-left]').text(timeStr)
 
                 resolve("got the progress")
             }
@@ -2002,13 +2069,45 @@ $(document).ready(function () {
 
     }
 
+    function resetDownloadList() {
+        dlList = []
+
+        store.set('donwloadList', dlList)
+
+        return dlList
+    }
+
+
+    function updateDonwloadList(...dlItems) {
+
+        dlList = store.get('donwloadList')
+
+        console.log("===download list dlitemse====")
+        console.log(dlItems)
+
+        if (dlList) {
+            dlList.unshift(...dlItems)
+        } else {
+            dlList = []
+        }
+
+
+        store.set('donwloadList', dlList)
+
+        console.log("===download list update====")
+        console.log(dlList)
+
+        return dlList
+
+    }
+
     // =============================程序主体=============================
-    
+
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
-    
+
     // openDevtool("skype")
     // openDevtool("wechat")
     // openDevtool("dingtalk")
@@ -2311,14 +2410,14 @@ $(document).ready(function () {
         loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
     })
 
-    $(debug_spotify_str).on('click', (e) => {
+    $(debug_languagetool_str).on('click', (e) => {
         $('.td-toolbox > img').removeClass('theme-transduction-active')
         $(e.target).addClass('theme-transduction-active')
 
-        let extensionName = "spotify"
+        let extensionName = "languagetool"
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
         $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://open.spotify.com/browse/featured", '')
+        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://languagetool.org/", '')
     })
 
     // 隐藏extension
@@ -2529,6 +2628,8 @@ $(document).ready(function () {
         } else {
             type = 'file'
             msgID = $(this).closest('div.td-bubble').attr('msgid')
+
+            $(this).closest('div.td-bubble').addClass('td-downloading')
         }
 
         core.sendToMain({
@@ -2542,13 +2643,19 @@ $(document).ready(function () {
             }
         })
             .then((saveInfo) => {
-                console.log("download complete , path : ", saveInfo)
+                console.log("download complete , info : ", saveInfo.download)
                 if (type == 'img') {
 
                 } else {
-                    $(this).text("重新下载")
-                }
+                    $(this).closest('div.td-bubble').removeClass('td-downloading')
 
+                    $(this).closest('div.td-bubble').addClass('td-downloaded')
+
+                    $(this).closest('div.td-bubble').find('button[open]').attr('path', saveInfo.download.savePath)
+
+                }
+                // 储存 donloadList
+                donwloadList = updateDonwloadList(saveInfo.download)
 
             })
 
@@ -2563,6 +2670,11 @@ $(document).ready(function () {
         }
 
     });
+
+    $(document).on('click', '[open]', function (event) {
+        console.log("show item : ", $(this).closest('div.td-bubble button[open]').attr('path'),
+            shell.showItemInFolder($(this).closest('div.td-bubble button[open]').attr('path')))
+    })
 
     // 右侧对话框, 滑条有变化
     $(".td-chatLog[wintype='chatLog']").scroll(function () {
