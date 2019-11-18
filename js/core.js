@@ -451,16 +451,16 @@ document.body.appendChild(el);}")
                 // console.log(key)
                 fcnResponse(key, arg[key]).then((re) => {
                     console.log("then : ", re)
-                    returnValue[key + ":" + arg[key]] = re
+                    returnValue[key] = re
                     event.sender.send('msg-ipc-asy-main-reply-' + uStr, returnValue)
                 }).catch((error) => {
                     console.log("then : ", error)
-                    returnValue[key + ":" + arg[key]] = 'error : ' + error
+                    returnValue[key] = 'error : ' + error
                     event.sender.send('msg-ipc-asy-main-reply-' + uStr, returnValue)
                 })
             } else {
                 for (key in arg) {
-                    returnValue[key + ":" + arg[key]] = "error : MainReply two many input"
+                    returnValue[key] = "error : MainReply two many input"
                 }
                 event.sender.send('msg-ipc-asy-main-reply-' + uStr, returnValue)
             }
@@ -554,16 +554,16 @@ document.body.appendChild(el);}")
                 // console.log(key)
                 fcnResponse(key, arg[key]).then((re) => {
                     console.log("then : ", re)
-                    returnValue[key + ":" + arg[key]] = re
+                    returnValue[key] = re
                     event.sender.send('msg-ipc-asy-win-reply-' + uStr, returnValue)
                 }).catch((error) => {
                     console.log("then : ", error)
-                    returnValue[key + ":" + arg[key]] = 'error : ' + error
+                    returnValue[key] = 'error : ' + error
                     event.sender.send('msg-ipc-asy-win-reply-' + uStr, returnValue)
                 })
             } else {
                 for (key in arg) {
-                    returnValue[key + ":" + arg[key]] = "error : WinReply two many input"
+                    returnValue[key] = "error : WinReply two many input"
                 }
                 event.sender.send('msg-ipc-asy-win-reply-' + uStr, returnValue)
             }
@@ -590,12 +590,12 @@ document.body.appendChild(el);}")
                     event.sender.send('msg-ipc-asy-win-reply-main-' + uStr, returnValue)
                 }).catch((error) => {
                     console.log("then : ", error)
-                    returnValue[key + ":" + arg[key]] = 'error : ' + error
+                    returnValue[key] = 'error : ' + error
                     event.sender.send('msg-ipc-asy-win-reply-main-' + uStr, returnValue)
                 })
             } else {
                 for (key in arg) {
-                    returnValue[key + ":" + arg[key]] = "error : WinReply two many input"
+                    returnValue[key] = "error : WinReply two many input"
                 }
                 event.sender.send('msg-ipc-asy-win-reply-main-' + uStr, returnValue)
             }
@@ -862,16 +862,16 @@ document.body.appendChild(el);}")
                     // console.log(key)
                     fcnResponse(key, arg[key]).then((re) => {
                         console.log("then : ", re)
-                        returnValue[key + ":" + arg[key]] = re
+                        returnValue[key] = re
                         web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
                     }).catch((error) => {
                         console.log("then : ", error)
-                        returnValue[key + ":" + arg[key]] = 'error : ' + error
+                        returnValue[key] = 'error : ' + error
                         web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
                     })
                 } else {
                     for (key in arg) {
-                        returnValue[key + ":" + arg[key]] = "error : WinReplyWeb two many input"
+                        returnValue[key] = "error : WinReplyWeb two many input"
                     }
                     web.send("msg-ipc-asy-win-reply-web-" + uStr, returnValue)
                 }
