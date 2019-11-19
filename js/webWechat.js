@@ -169,7 +169,7 @@ window.onload = function () {
 
                         // 目前猜测StatusNotifyCode为0是来新消息 (需要测试验证)
                         // console.log(element)
-                        if (element.StatusNotifyCode == 0) {
+                        if (element.StatusNotifyCode == 0 || element.StatusNotifyCode == 2) {
                             console.log("xhr : new ")
                             let fromUserName = element.FromUserName
 
@@ -344,7 +344,7 @@ window.onload = function () {
                         content = content + strEmoji
                     } else if ($(c).hasClass("emoji")) {
                         // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                        content = content + "[emoji]"
+                        content = content + emojiClasstoStr(c.classList[1])
                     } else {
                         content = content + "[image]"
                     }
@@ -495,6 +495,56 @@ window.onload = function () {
 
     }
 
+    /**
+     * 将QQ的emoji class转换为emoji字符
+     * 例如 : emoji1f1e81f1f3 -> 🇨🇳 
+     * @param {String} strClass 
+     * @returns {String}
+     */
+    function emojiClasstoStr(strClass){
+        
+        let emojiRStr = strClass.slice(5)
+        let emojiArray = []
+        let emoji
+        if(emojiRStr.length == 4){
+            //只有一个unicode
+            emojiArray.push('0x'+emojiRStr)
+        }else if(emojiRStr.length == 5 && emojiRStr.slice(0,2) == '1f' ){
+            // 以1f开头有5位
+            emojiArray.push('0x'+emojiRStr)
+        }else{
+            // 估计是合成emoji, 进行拆分
+            // qq的表情都是两个unicode合成的, 没有大于两个的
+            if(emojiRStr.length == 6 ){
+                emojiArray.push('0x'+emojiRStr.slice(0,2))
+                emojiArray.push('0x'+emojiRStr.slice(2))
+            }else if(emojiRStr.length == 8 ){
+                emojiArray.push('0x'+emojiRStr.slice(0,4))
+                emojiArray.push('0x'+emojiRStr.slice(4))
+            }else if(emojiRStr.length == 9){
+                if(emojiRStr.slice(0,2) == '1f'){
+                    emojiArray.push('0x'+emojiRStr.slice(0,5))
+                    emojiArray.push('0x'+emojiRStr.slice(5))
+                }else{
+                    emojiArray.push('0x'+emojiRStr.slice(0,4))
+                    emojiArray.push('0x'+emojiRStr.slice(4))
+                }
+            }else if(emojiRStr.length == 10){
+                emojiArray.push('0x'+emojiRStr.slice(0,5))
+                emojiArray.push('0x'+emojiRStr.slice(5))
+            }
+        }
+
+        try {
+            emoji = String.fromCodePoint(...(emojiArray)) // ... 是js的扩展算符, 把array变成用","分割的多个变量
+        } catch (error) {
+            // 找不到emoji
+            emoji = '[emoji]'
+        }
+
+        return emoji
+    
+    }
 
     function findConvo(usrID) {
         console.log("findConvo : ", usrID)
@@ -561,7 +611,7 @@ window.onload = function () {
                         content = content + strEmoji
                     } else if ($(c).hasClass("emoji")) {
                         // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                        content = content + "[emoji]"
+                        content = content + emojiClasstoStr(c.classList[1])
                     } else {
                         content = content + "[image]"
                     }
@@ -716,7 +766,7 @@ window.onload = function () {
                         content = content + strEmoji
                     } else if ($(c).hasClass("emoji")) {
                         // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                        content = content + "[emoji]"
+                        content = content + emojiClasstoStr(c.classList[1])
                     } else {
                         content = content + "[image]"
                     }
@@ -730,7 +780,36 @@ window.onload = function () {
 
         }
 
-        let nickName = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
+        let nickNameHtml = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
+        let nickName = ''
+        if(nickNameHtml && nickNameHtml != ''){
+            $('<p>'+nickNameHtml+'</p>').contents().toArray().forEach((c, i) => {
+                // 将内容进行切割, 判断是否为img
+
+                let nodeName = $(c).prop('nodeName')
+                if (nodeName == "IMG") {
+                    // 对左侧栏筛选字符表情
+                    if ($(c).hasClass("qqemoji")) {
+                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        let strEmoji = $(c).attr("text")
+                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
+                        nickName = nickName + strEmoji
+                    } else if ($(c).hasClass("emoji")) {
+                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        nickName = nickName + emojiClasstoStr(c.classList[1])
+                    } else {
+                        nickName = nickName + "[image]"
+                    }
+                }
+
+                // 链接文字
+                nickName = nickName + $(c).text()
+
+            })
+        }else{
+            nickName = undefined
+        }
+
         let userID = obj.UserName
 
 
