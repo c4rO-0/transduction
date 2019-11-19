@@ -158,7 +158,7 @@ module.exports = {
 
     strUserAgentWin: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
     AppleWebKit/537.36 (KHTML, like Gecko) \
-    WhatsApp/0.3.1475 Chrome/66.0.3359.181 Electron/3.0.0 Safari/537.36",
+    Chrome/66.0.3359.181 Safari/537.36",
     fileSend: class {
         constructor(name, path, webkitRelativePath, fileID = '', dataUrl = undefined) {
             this.name = name

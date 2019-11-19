@@ -78,8 +78,8 @@ $(document).ready(function () {
     const Store = require('electron-store');
     const store = new Store();
     const request = require('request')
-
-    console.log(process.versions.electron)
+    console.log("====versions====")
+    console.log(process.versions)
 
     /** 储存要发送的file object
      *  为了能够保证文件能够顺利的发送, fileList不会清除
@@ -1927,20 +1927,24 @@ $(document).ready(function () {
 
     }
 
-    function loadWebview(webTag, url, strUserAgent) {
+    function loadWebview(webTag, url, strUserAgent = undefined) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
             console.log("load")
 
             // $(webTag2Selector(webTag)).attr('partition',webTag)
 
+            if(strUserAgent){
+                $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
+                    {
+                        "userAgent":
+                            "userAgent : " + strUserAgent,
+                        "extraHeaders": "User-Agent:" + strUserAgent + "\n"
+                    })
+            }else{
+                $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
+            }
 
-            $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
-                {
-                    "userAgent":
-                        "userAgent : " + strUserAgent,
-                    "extraHeaders": "User-Agent:" + strUserAgent + "\n"
-                })
 
             // 静音
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
