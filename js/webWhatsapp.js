@@ -9,13 +9,25 @@ window.onload = function () {
 
     let logStatus = { "status": "offline" }
 
+
+
     $(document).ready(function () {
+
+        const titleEl = document.querySelector('.window-title');
+        if (titleEl && titleEl.innerHTML.includes('Google Chrome')) {
+            window.navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (let registration of registrations) {
+                    registration.unregister(); //Unregisters all the service workers
+                }
+            });
+            window.location.reload(); //Reloads the page if the page shows the error
+        }else{
 
 
         // 观察左侧消息变动
         // let obsChatLeft = new MutationObserver(callbackChatLeft);
 
-        if ($('#app').length == 0) {
+        if ($('#pane-side').length == 0) {
             console.log("********************offline***************************************")
             logStatus.status = "offline"
             core.WebToHost({ "logStatus": logStatus })
@@ -23,7 +35,7 @@ window.onload = function () {
 
             let callbackobsLogin = function (mutationList, observer) {
                 // console.log("log status changed : ", mutationList)
-                if ($('#app').length > 0) {
+                if ($('#pane-side').length > 0) {
                     logStatus.status = "online"
                     console.log("=======================online=====================================")
                     // console.log($("div.login"))
@@ -36,7 +48,7 @@ window.onload = function () {
             let obsLogin = new MutationObserver(callbackobsLogin);
             obsLogin.observe($('body')[0], {
                 childList: true,
-                subtree: false,
+                subtree: true,
                 characterData: false,
                 // attributeFilter: ["style"],
                 attributes: false, attributeOldValue: false
@@ -50,6 +62,12 @@ window.onload = function () {
 
 
         }
+
+
+
+
+        }
+
     })
 
 }

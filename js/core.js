@@ -157,8 +157,11 @@ module.exports = {
 
 
     strUserAgentWin: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-    AppleWebKit/537.36 (KHTML, like Gecko) \
-    Chrome/66.0.3359.181 Safari/537.36",
+AppleWebKit/537.36 (KHTML, like Gecko) \
+Chrome/73.0.3683.121 Safari/537.36", 
+    strUserAgentLinux: "Mozilla/5.0 (X11; Linux x86_64) \
+AppleWebKit/537.36 (KHTML, like Gecko) \
+Chrome/73.0.3683.121 Safari/537.36", 
     fileSend: class {
         constructor(name, path, webkitRelativePath, fileID = '', dataUrl = undefined) {
             this.name = name
@@ -777,7 +780,7 @@ document.body.appendChild(el);}")
      * 对方通过调用WinReplyWeb返回回来的消息
      */
     WebToHost: function (msg) {
-
+        
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
                 reject("WebToHost : no msg")
@@ -843,9 +846,11 @@ document.body.appendChild(el);}")
         // let web = document.getElementById(webviewID);
 
         if ($(webSelector).length == 0) {
+            console.log(webSelector, ' not exist')
             return
         }
         let web = $(webSelector).get(0);
+
         web.addEventListener('ipc-message', (event) => {
             console.log("webview-message-listen")
             // console.log(event)

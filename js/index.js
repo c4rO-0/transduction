@@ -2056,13 +2056,40 @@ $(document).ready(function () {
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
-    loadWebview("whatsapp", "https://web.whatsapp.com/", "Mozilla/5.0 (Windows NT 10.0; WOW64) \
-    AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36")
+    // loadWebview("whatsapp", "https://web.whatsapp.com/", "Mozilla/5.0 (Windows NT 10.0; WOW64) \
+    // AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36")
+    loadWebview("whatsapp", "https://web.whatsapp.com/", core.strUserAgentLinux)  
+    
 
     // openDevtool("skype")
     // openDevtool("wechat")
     // openDevtool("dingtalk")
+    openDevtool("whatsapp")
 
+    // ===========================接收消息===========================
+
+    // wechat
+    core.WinReplyWeb(webTag2Selector("wechat"), (key, arg) => {
+        return respFuncWinReplyWeb("wechat", key, arg)
+    })
+
+    // skype
+    core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
+        return respFuncWinReplyWeb("skype", key, arg)
+    })
+    // dingtalk
+    core.WinReplyWeb(webTag2Selector("dingtalk"), (key, arg) => {
+        return respFuncWinReplyWeb("dingtalk", key, arg)
+    })
+
+    // whatsapp
+    core.WinReplyWeb(webTag2Selector("whatsapp"), (key, arg) => {
+        return respFuncWinReplyWeb("whatsapp", key, arg)
+    })
+
+    core.WinReply((key, arg) => {
+        return respFuncWinReply(key, arg)
+    })
 
     //==============================UI==============================
     /**
@@ -2218,25 +2245,7 @@ $(document).ready(function () {
         applySettings()
     })
 
-    // ===========================接收消息===========================
 
-    // wechat
-    core.WinReplyWeb(webTag2Selector("wechat"), (key, arg) => {
-        return respFuncWinReplyWeb("wechat", key, arg)
-    })
-
-    // skype
-    core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
-        return respFuncWinReplyWeb("skype", key, arg)
-    })
-    // dingtalk
-    core.WinReplyWeb(webTag2Selector("dingtalk"), (key, arg) => {
-        return respFuncWinReplyWeb("dingtalk", key, arg)
-    })
-
-    core.WinReply((key, arg) => {
-        return respFuncWinReply(key, arg)
-    })
 
 
     // 点击convo
