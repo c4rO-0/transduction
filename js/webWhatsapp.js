@@ -11,6 +11,13 @@ window.onload = function () {
 
     let logStatus = { "status": "offline" }
 
+    function getIndex(obj){
+        var matrix = $(obj).css('transform').replace(/[^0-9\-.,]/g, '').split(',');
+        var x = matrix[12] || matrix[4];
+        var y = matrix[13] || matrix[5];
+        
+        return parseInt(y)/72
+      };
 
     $(document).ready(function () {
 
@@ -44,7 +51,11 @@ window.onload = function () {
                         core.WebToHost({ "hide": {} })
                         observer.disconnect()
 
-                        wapi.init()
+                        setTimeout(() => {
+                            console.log("initialize WAPI")
+                            wapi.init()   
+                        }, 10);
+                        
 
                     }
                 }
@@ -62,15 +73,23 @@ window.onload = function () {
                 // console.log($("div.login"))
                 core.WebToHost({ "logStatus": logStatus })
                 core.WebToHost({ "hide": {} })
-
-                wapi.init()
+                setTimeout(() => {
+                    console.log("initialize WAPI")
+                    wapi.init()   
+                }, 10);
 
             }
 
-
-
-
         }
+
+
+        $(document).on('click', 'div.X7YrQ', (event)=>{
+            let ObjUsr = $(event.target).closest('div.X7YrQ')
+            if(ObjUsr){
+                console.log('click ', $(ObjUsr), getIndex(ObjUsr))
+                console.log((WAPI.getAllChats())[getIndex(ObjUsr)])
+            }
+        })
 
     })
 

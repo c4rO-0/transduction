@@ -1,7 +1,7 @@
 
 module.exports = {
     init: function () {
-
+        console.log('load Store...', window.Store)
         /**
          * This script contains WAPI functions that need to be run in the context of the webpage
          */
@@ -10,9 +10,11 @@ module.exports = {
          * Auto discovery the webpack object references of instances that contains all functions used by the WAPI
          * functions and creates the Store object.
          */
+
         if (!window.Store) {
             (function () {
                 function getStore(modules) {
+                    console.log('getStore...')
                     let foundCount = 0;
                     let neededObjects = [
                         { id: "Store", conditions: (module) => (module.Chat && module.Msg) ? module : null },
@@ -54,6 +56,7 @@ module.exports = {
                                         break;
                                     }
                                 }
+                                console.log('found modules : ', foundCount)
 
                                 let neededStore = neededObjects.find((needObj) => needObj.id === "Store");
                                 window.Store = neededStore.foundedModule ? neededStore.foundedModule : {};
@@ -63,19 +66,24 @@ module.exports = {
                                         window.Store[needObj.id] = needObj.foundedModule;
                                     }
                                 });
-                                window.Store.ChatClass.default.prototype.sendMessage = function (e) {
-                                    return window.Store.SendTextMsgToChat(this, ...arguments);
-                                }
+                                // console.log('re-map sendMessage')
+                                // window.Store.ChatClass.default.prototype.sendMessage = function (e) {
+                                //     return window.Store.SendTextMsgToChat(this, ...arguments);
+                                // }
+                                console.log('getStore end')
                                 return window.Store;
                             }
                         }
                     }
                 }
 
+                console.log('request parasite...')
                 webpackJsonp([], { 'parasite': (x, y, z) => getStore(z) }, ['parasite']);
+                console.log('end Store...')
             })();
         }
-
+        console.log('start WAPI construct...')
+        
         window.WAPI = {
             lastRead: {}
         };
@@ -1364,5 +1372,7 @@ module.exports = {
             })
         }
 
+        console.log('end WAPI construct...')
+        console.log('you can use WAPI now')
     }
 }
