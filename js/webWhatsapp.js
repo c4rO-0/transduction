@@ -117,6 +117,12 @@ window.onload = function () {
         }
     }
 
+    function loadFunAfterWAPI(){
+
+        WAPI.waitNewMessages(rmCallbackAfterUse = false, done = (queuedMessages)=>{
+            console.log("new messages coming : ", queuedMessages)
+        })
+    }
 
     $(document).ready(function () {
 
@@ -153,6 +159,8 @@ window.onload = function () {
                         setTimeout(() => {
                             console.log("initialize WAPI")
                             wapi.init()   
+
+                            loadFunAfterWAPI()
                         }, 10);
                         
 
@@ -175,6 +183,8 @@ window.onload = function () {
                 setTimeout(() => {
                     console.log("initialize WAPI")
                     wapi.init()   
+
+                    loadFunAfterWAPI()
                 }, 10);
 
             }

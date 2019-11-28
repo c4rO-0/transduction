@@ -1098,7 +1098,9 @@ module.exports = {
         sessionStorage.removeItem('saved_msgs');
 
         window.WAPI._newMessagesListener = window.Store.Msg.on('add', (newMessage) => {
-            if (newMessage && newMessage.isNewMsg && !newMessage.isSentByMe) {
+            // if (newMessage && newMessage.isNewMsg && !newMessage.isSentByMe) {
+            if (true){ // BS : we need all new messages
+                console.log("new messages added")
                 let message = window.WAPI.processMessageObj(newMessage, false, false);
                 if (message) {
                     window.WAPI._newMessagesQueue.push(message);
