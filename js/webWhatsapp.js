@@ -121,6 +121,27 @@ window.onload = function () {
 
         WAPI.waitNewMessages(rmCallbackAfterUse = false, done = (queuedMessages)=>{
             console.log("new messages coming : ", queuedMessages)
+
+            let newChatList = []
+            queuedMessages.forEach((msg, index)=>{
+                if(msg.chat 
+                    && msg.chatId._serialized 
+                    && (!newChatList.includes(msg.chatId._serialized) )){
+                        newChatList.push(msg.chatId._serialized)
+                }
+            })
+
+            console.log(newChatList.length,  " chats have new MSGs")
+
+            newChatList.forEach((userID)=>{
+                let convo = grepConvo(userID)
+                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                    console.log(res)
+                }).catch((error) => {
+                    throw error
+                });
+            })
+
         })
     }
 

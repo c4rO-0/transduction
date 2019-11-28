@@ -1100,7 +1100,7 @@ module.exports = {
         window.WAPI._newMessagesListener = window.Store.Msg.on('add', (newMessage) => {
             // if (newMessage && newMessage.isNewMsg && !newMessage.isSentByMe) {
             if (true){ // BS : we need all new messages
-                console.log("new messages added")
+                // console.log("new messages added")
                 let message = window.WAPI.processMessageObj(newMessage, false, false);
                 if (message) {
                     window.WAPI._newMessagesQueue.push(message);
@@ -1132,7 +1132,7 @@ module.exports = {
                             let callbackIndex = window.WAPI._newMessagesCallbacks.indexOf(rmCallbackObj);
                             window.WAPI._newMessagesCallbacks.splice(callbackIndex, 1);
                         });
-                    }, 1000);
+                    }, 300);
                 }
             }
         });
