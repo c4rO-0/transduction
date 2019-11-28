@@ -75,16 +75,28 @@ window.onload = function () {
             muted = chat.muteExpiration*1000 < (new Date()).getTime() ? false : true
             counter = chat.unreadCount
 
+            
             if(chat.isGroup){
                 let lastSender = WAPI.getContact(lastMSG.author._serialized)
                 let lastSenderName = lastSender.name === undefined ? (
                     lastSender.pushname === undefined ? lastSender.formattedName : lastSender.pushname
                 ): lastSender.name
 
-                message = lastSenderName + ":" + lastMSG.body
+                messageBody = lastSenderName + ":"
             }else{
-                message = lastMSG.body
+                messageBody = "" 
             }
+
+            if(lastMSG.type == 'chat'){
+                messageBody = messageBody + lastMSG.body
+            }else if(lastMSG.type == 'img'){
+                messageBody = messageBody + '[img]'
+            }else if(lastMSG.type == 'video'){
+                messageBody = messageBody + '[video]'
+            }else{
+                messageBody = messageBody + '[unknown]'
+            }
+            
 
         }
         let action = "a"
@@ -184,6 +196,7 @@ window.onload = function () {
                 });
             }
         })
+
 
     })
 
