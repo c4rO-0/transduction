@@ -11,13 +11,100 @@ window.onload = function () {
 
     let logStatus = { "status": "offline" }
 
-    function getIndex(obj){
-        var matrix = $(obj).css('transform').replace(/[^0-9\-.,]/g, '').split(',');
+    /**
+     * 获取convo在页面的实际排序
+     * @param {object} convoObj  ! convo
+     * @returns {int} index start from 0
+     */
+    function getIndex(convoObj){
+        var matrix = $(convoObj).css('transform').replace(/[^0-9\-.,]/g, '').split(',');
         var x = matrix[12] || matrix[4];
         var y = matrix[13] || matrix[5];
         
         return parseInt(y)/72
       };
+
+    /**
+     * 获取convo的信息
+     * @param {*} userID  
+     */
+    function grepConvo(userID) {
+        
+        // check user
+        let contact = WAPI.getContact(userID)
+        // console.log('contact : ', contact)
+        if(contact === undefined){
+            console.log("user ", userID, " not exist")
+            return undefined
+        }
+        // contact.name > contact.pushname > contact.formattedName
+        let nickName = contact.name === undefined ? (
+            contact.pushname === undefined ? contact.formattedName : contact.pushname
+        ): contact.name
+        // console.log('nickName : ', nickName)
+
+        let avatar = contact.profilePicThumbObj.img
+        // console.log('avatar : ', avatar)
+        
+        let time
+        let allMSG = WAPI.getAllMessagesInChat(userID, true, true)
+        let lastMSG
+        if( allMSG === undefined || allMSG.length == 0){
+            console.log("warning : no chat log found in user ", userID)
+        }else{
+            lastMSG = allMSG[allMSG.length -1]
+            time = lastMSG.t*1000
+        }
+        // console.log('lastMSG : ', lastMSG)
+
+        // let chat = WAPI.getChatById(userID)
+        let chat
+        let index = 0
+        WAPI.getAllChats().forEach((val,indx)=>{
+            if(val.id._serialized == userID){
+                index = indx
+                chat = val
+            }
+        })
+        // console.log('chat : ', chat)
+
+        let muted 
+        let counter = 0
+        let message =''
+        if(chat){
+            muted = chat.muteExpiration*1000 < (new Date()).getTime() ? false : true
+            counter = chat.unreadCount
+
+            if(chat.isGroup){
+                let lastSender = WAPI.getContact(lastMSG.author._serialized)
+                let lastSenderName = lastSender.name === undefined ? (
+                    lastSender.pushname === undefined ? lastSender.formattedName : lastSender.pushname
+                ): lastSender.name
+
+                message = lastSenderName + ":" + lastMSG.body
+            }else{
+                message = lastMSG.body
+            }
+
+        }
+        let action = "a"
+
+
+        // -------
+
+        return {
+            "userID": userID,
+            "time": time,
+            "message": message,
+            "nickName": nickName,
+            "avatar": avatar,
+            "counter": counter,
+            "action": action,
+            "muted": muted,
+            "index": index
+        }
+    }
+
 
     $(document).ready(function () {
 
@@ -86,8 +173,15 @@ window.onload = function () {
         $(document).on('click', 'div.X7YrQ', (event)=>{
             let ObjUsr = $(event.target).closest('div.X7YrQ')
             if(ObjUsr){
-                console.log('click ', $(ObjUsr), getIndex(ObjUsr))
-                console.log((WAPI.getAllChats())[getIndex(ObjUsr)])
+                
+                let userID = ((WAPI.getAllChats())[getIndex(ObjUsr)]).contact.id._serialized
+                console.log('click ', $(ObjUsr), getIndex(ObjUsr), userID)
+                let convo = grepConvo(userID)
+                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                    console.log(res)
+                }).catch((error) => {
+                    throw error
+                });
             }
         })
 
