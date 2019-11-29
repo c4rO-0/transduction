@@ -1101,7 +1101,7 @@ module.exports = {
             // if (newMessage && newMessage.isNewMsg && !newMessage.isSentByMe) {
             if (true){ // BS : we need all new messages
                 // console.log("new messages added")
-                let message = window.WAPI.processMessageObj(newMessage, false, false);
+                let message = window.WAPI.processMessageObj(newMessage, true, true);
                 if (message) {
                     window.WAPI._newMessagesQueue.push(message);
                     window.WAPI._newMessagesBuffer.push(message);

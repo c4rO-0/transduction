@@ -11,6 +11,59 @@ window.onload = function () {
 
     let logStatus = { "status": "offline" }
 
+    function simulatedClick(target, options = {}) {
+        if (target.ownerDocument === undefined) return;
+    
+        const event = target.ownerDocument.createEvent('MouseEvents');
+        const opts = { // These are the default values, set up for un-modified left clicks
+            type: 'click',
+            canBubble: false, // switch off to avoid closing for compose popup
+            cancelable: true,
+            view: target.ownerDocument.defaultView,
+            detail: 1,
+            screenX: 0, // The coordinates within the entire page
+            screenY: 0,
+            clientX: 0, // The coordinates within the viewport
+            clientY: 0,
+            ctrlKey: false,
+            altKey: false,
+            shiftKey: false,
+            metaKey: false, // I *think* 'meta' is 'Cmd/Apple' on Mac, and 'Windows key' on Win. Not sure, though!
+            button: 0, // 0 = left, 1 = middle, 2 = right
+            relatedTarget: null,
+        };
+    
+        // Merge the options with the defaults
+        for (let key in options) {
+            if (options.hasOwnProperty(key)) {
+                opts[key] = options[key];
+            }
+        }
+    
+        // Pass in the options
+        event.initMouseEvent(
+            opts.type,
+            opts.canBubble,
+            opts.cancelable,
+            opts.view,
+            opts.detail,
+            opts.screenX,
+            opts.screenY,
+            opts.clientX,
+            opts.clientY,
+            opts.ctrlKey,
+            opts.altKey,
+            opts.shiftKey,
+            opts.metaKey,
+            opts.button,
+            opts.relatedTarget
+        );
+    
+        // Fire the event
+        target.dispatchEvent(event);
+    }
+
+
     /**
      * 获取convo在页面的实际排序
      * @param {object} convoObj  ! convo
@@ -46,6 +99,7 @@ window.onload = function () {
         let avatar = contact.profilePicThumbObj.img
         // console.log('avatar : ', avatar)
         
+        let hasNewMSG = false
         let time
         let allMSG = WAPI.getAllMessagesInChat(userID, true, true)
         let lastMSG
@@ -54,6 +108,12 @@ window.onload = function () {
         }else{
             lastMSG = allMSG[allMSG.length -1]
             time = lastMSG.t*1000
+
+            allMSG.forEach(msg =>{
+                if(msg.isNewMsg){
+                    hasNewMSG = true
+                }
+            })
         }
         // console.log('lastMSG : ', lastMSG)
 
@@ -66,6 +126,9 @@ window.onload = function () {
                 chat = val
             }
         })
+        // if(chat === undefined){
+        //     chat = WAPI.getChatById(userID)
+        // }
         // console.log('chat : ', chat)
 
         let muted 
@@ -88,18 +151,19 @@ window.onload = function () {
             }
 
             if(lastMSG.type == 'chat'){
-                messageBody = messageBody + lastMSG.body
-            }else if(lastMSG.type == 'img'){
-                messageBody = messageBody + '[img]'
+                message = messageBody + lastMSG.body
+            }else if(lastMSG.type == "image"){
+                message = messageBody + '[image]'
             }else if(lastMSG.type == 'video'){
-                messageBody = messageBody + '[video]'
+                message = messageBody + '[video]'
             }else{
-                messageBody = messageBody + '[unknown]'
+                message = messageBody + '[unknown]'
             }
             
 
         }
-        let action = "a"
+
+        let action = hasNewMSG ? "a" : "c"
 
 
         // -------
@@ -118,6 +182,27 @@ window.onload = function () {
     }
 
     function loadFunAfterWAPI(){
+
+        // at start we load initial convo
+        setTimeout(() => {
+            console.log('initialize convo...')
+            WAPI.getAllChats().forEach((chat)=>{
+                let convo = grepConvo(chat.contact.id._serialized) 
+                // only need 'c'
+                // 'a' will be processed in `waitNewMessages`
+                if(convo.action == 'c'){
+                    if(chat.pin !== undefined && chat.pin >0){
+                        convo.action = 'a'
+                        core.WebToHost({ "Convo-new": convo }).then((res) => {
+                            console.log(res)
+                        }).catch((error) => {
+                            throw error
+                        });
+                    }
+                }
+            })
+        }, 1000);
+
 
         WAPI.waitNewMessages(rmCallbackAfterUse = false, done = (queuedMessages)=>{
             console.log("new messages coming : ", queuedMessages)
@@ -143,6 +228,51 @@ window.onload = function () {
             })
 
         })
+
+
+        core.WebReply((key, arg) => {
+            return new Promise((resolve, reject) => {
+                if (key == 'queryDialog') {
+                    // 索取右侧
+                    console.log("debug : ", "---获取用户聊天记录----")
+                    // 下面开始模拟点击
+                    let userID = arg.userID
+
+                    let indexChat = (WAPI.getAllChatIds()).indexOf(userID)
+                    if ( indexChat == -1 ) reject("user not existed")
+
+                    console.log('indexChat : ', indexChat)
+                    $("div.X7YrQ").each( (indexInHTML, element) =>{
+
+                        console.log('getIndex : ', getIndex(element))
+                        if(indexChat == getIndex(element)){
+                            console.log("click")
+                            simulatedClick(element, {type: 'mousedown'});
+                            simulatedClick(element, {type: 'mouseup'});
+                        }
+
+                    })
+
+                    resolve("request received. MSG will send.") 
+                    
+                } else if (key == 'sendDialog') {
+                    // 键入消息
+                    console.log("--------sendDialog---")
+                    // 检查
+
+                } else if (key == 'queryLogStatus') {
+                    console.log("resolve back")
+                    resolve(logStatus)
+                } else if (key == 'logoff') {
+                    // 登出
+                } else {
+                    reject('unknown key')
+                }
+
+            })
+
+        })
+    
     }
 
     $(document).ready(function () {
@@ -213,21 +343,20 @@ window.onload = function () {
         }
 
 
-        $(document).on('click', 'div.X7YrQ', (event)=>{
-            let ObjUsr = $(event.target).closest('div.X7YrQ')
-            if(ObjUsr){
+        // $(document).on('click', 'div.X7YrQ', (event)=>{
+        //     let ObjUsr = $(event.target).closest('div.X7YrQ')
+        //     if(ObjUsr){
                 
-                let userID = ((WAPI.getAllChats())[getIndex(ObjUsr)]).contact.id._serialized
-                console.log('click ', $(ObjUsr), getIndex(ObjUsr), userID)
-                let convo = grepConvo(userID)
-                core.WebToHost({ "Convo-new": convo }).then((res) => {
-                    console.log(res)
-                }).catch((error) => {
-                    throw error
-                });
-            }
-        })
-
+        //         let userID = ((WAPI.getAllChats())[getIndex(ObjUsr)]).contact.id._serialized
+        //         console.log('click ', $(ObjUsr), getIndex(ObjUsr), userID)
+        //         let convo = grepConvo(userID)
+        //         core.WebToHost({ "Convo-new": convo }).then((res) => {
+        //             console.log(res)
+        //         }).catch((error) => {
+        //             throw error
+        //         });
+        //     }
+        // })
 
     })
 
