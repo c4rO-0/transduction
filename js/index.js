@@ -338,10 +338,10 @@ $(document).ready(function () {
                     // console.log('index:',donwloadList[index])
                     if (donwloadList[index].webTag == cwebTag
                         && donwloadList[index].userID == cUser
-                        && donwloadList[index].msgID == dialog.msgID) {           
+                        && donwloadList[index].msgID == dialog.msgID) {
 
                         $(bubble).addClass('td-downloaded')
-    
+
                         $(bubble).find('button[open]').attr('path', donwloadList[index].savePath)
 
                         break
@@ -1005,6 +1005,12 @@ $(document).ready(function () {
                 // 按键模拟
 
                 keypressSimulator(webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
+
+                resolve("simulated")
+            } else if (key == 'simulateMouse') {
+                // 按键模拟
+                console.log("simulateMouse", Obj)
+                mouseSimulator(webTag2Selector(webTag), Obj.type, Obj.x, Obj.y)
 
                 resolve("simulated")
             } else if (key == 'logStatus') {
@@ -1883,6 +1889,58 @@ $(document).ready(function () {
 
     }
 
+
+    /**
+ * chrome debugger for mouse : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
+ * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
+ * @param {string} webSelector 'webview[data-app-name="skype"]'
+ * @param {string} type nousedown, mouseup, click
+ */
+    function mouseSimulator(webSelector, type, x, y) {
+
+
+        let wc = $(webSelector).get(0).getWebContents();
+
+        // console.log("---attachInputFile----")
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.2");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+
+        switch (type) {
+            case 'click':
+
+                wc.debugger
+                    .sendCommand("Input.dispatchMouseEvent", {
+                        type: 'mousePressed',
+                        x: x,
+                        y: y,
+                        button: "left",
+                        clickCount: 1
+                    })
+
+                wc.debugger
+                    .sendCommand("Input.dispatchMouseEvent", {
+                        type: 'mouseReleased',
+                        x: x,
+                        y: y,
+                        button: "left",
+                        clickCount: 1
+                    })
+                
+
+                break;
+            default:
+                throw new Error("Unknown type of event.");
+                break;
+        }
+
+
+    }
+
     function attachInputFile(webSelector, inputSelector, filePath) {
 
 
@@ -1934,14 +1992,14 @@ $(document).ready(function () {
 
             // $(webTag2Selector(webTag)).attr('partition',webTag)
 
-            if(strUserAgent){
+            if (strUserAgent) {
                 $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
                     {
                         "userAgent":
                             "userAgent : " + strUserAgent,
                         "extraHeaders": "User-Agent:" + strUserAgent + "\n"
                     })
-            }else{
+            } else {
                 $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
             }
 
@@ -2058,8 +2116,8 @@ $(document).ready(function () {
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
     // loadWebview("whatsapp", "https://web.whatsapp.com/", "Mozilla/5.0 (Windows NT 10.0; WOW64) \
     // AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36")
-    loadWebview("whatsapp", "https://web.whatsapp.com/", core.strUserAgentLinux)  
-    
+    loadWebview("whatsapp", "https://web.whatsapp.com/", core.strUserAgentLinux)
+
 
     // openDevtool("skype")
     // openDevtool("wechat")

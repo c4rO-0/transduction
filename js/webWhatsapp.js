@@ -11,58 +11,6 @@ window.onload = function () {
 
     let logStatus = { "status": "offline" }
 
-    function simulatedClick(target, options = {}) {
-        if (target.ownerDocument === undefined) return;
-    
-        const event = target.ownerDocument.createEvent('MouseEvents');
-        const opts = { // These are the default values, set up for un-modified left clicks
-            type: 'click',
-            canBubble: false, // switch off to avoid closing for compose popup
-            cancelable: true,
-            view: target.ownerDocument.defaultView,
-            detail: 1,
-            screenX: 0, // The coordinates within the entire page
-            screenY: 0,
-            clientX: 0, // The coordinates within the viewport
-            clientY: 0,
-            ctrlKey: false,
-            altKey: false,
-            shiftKey: false,
-            metaKey: false, // I *think* 'meta' is 'Cmd/Apple' on Mac, and 'Windows key' on Win. Not sure, though!
-            button: 0, // 0 = left, 1 = middle, 2 = right
-            relatedTarget: null,
-        };
-    
-        // Merge the options with the defaults
-        for (let key in options) {
-            if (options.hasOwnProperty(key)) {
-                opts[key] = options[key];
-            }
-        }
-    
-        // Pass in the options
-        event.initMouseEvent(
-            opts.type,
-            opts.canBubble,
-            opts.cancelable,
-            opts.view,
-            opts.detail,
-            opts.screenX,
-            opts.screenY,
-            opts.clientX,
-            opts.clientY,
-            opts.ctrlKey,
-            opts.altKey,
-            opts.shiftKey,
-            opts.metaKey,
-            opts.button,
-            opts.relatedTarget
-        );
-    
-        // Fire the event
-        target.dispatchEvent(event);
-    }
-
 
     /**
      * 获取convo在页面的实际排序
@@ -247,8 +195,16 @@ window.onload = function () {
                         console.log('getIndex : ', getIndex(element))
                         if(indexChat == getIndex(element)){
                             console.log("click")
-                            simulatedClick(element, {type: 'mousedown'});
-                            simulatedClick(element, {type: 'mouseup'});
+                            rect = $(element).find("span[title][dir]").get(0).getBoundingClientRect()
+                            core.WebToHost({ "simulateMouse": {
+                                type :"click",
+                                x : rect.x,
+                                y : rect.y
+                            } }).then((res) => {
+                                console.log(res)
+                            }).catch((error) => {
+                                throw error
+                            });
                         }
 
                     })
