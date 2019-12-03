@@ -307,8 +307,9 @@ window.onload = function () {
                 let convo = grepConvo(chat.contact.id._serialized)
                 // only need 'c'
                 // 'a' will be processed in `waitNewMessages`
-                if (convo.action == 'c') {
-                    if (chat.pin !== undefined && chat.pin > 0) {
+                // if (convo.action == 'c') {
+                    if ( (chat.pin !== undefined && chat.pin > 0 )
+                        || convo.counter > 0) {
                         convo.action = 'a'
                         core.WebToHost({ "Convo-new": convo }).then((res) => {
                             console.log(res)
@@ -316,7 +317,7 @@ window.onload = function () {
                             throw error
                         });
                     }
-                }
+                // }
             })
         }, 1000);
 
