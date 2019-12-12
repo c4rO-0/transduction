@@ -153,147 +153,45 @@ window.onload = function () {
         let fileName = undefined
         let fileSize = undefined
         let type = 'unknown'
+        let url = undefined
         if(wbubble.type == 'chat'){
             type = 'text'
             content = wbubble.body
         }else if(wbubble.type == "image"){
             type = 'img'
+            content = wbubble.caption === undefined ? "" : wbubble.caption
+            // url = 
 
         }else if(wbubble.type == "document"){
             type = 'file'
+            // content = wbubble.caption === undefined ? "" : wbubble.caption
         }else if(wbubble.type == "video"){
             type = 'unknown'
+            // content = wbubble.caption === undefined ? "" : wbubble.caption
         }else{
-
+            content = wbubble.caption === undefined ? wbubble.body : wbubble.caption
         }
 
+        let status = undefined
+        if(wbubble.isForwarded === undefined){ // <---待定
+            status = 'sending'
+        }else{
+            status = 'done'
+        }
         // ================
 
-
-
-        // if (typeStr == 'msg-text') {
-        //     // 文字内容
-        //     type = 'text'
-        //     if ($(objContent).find('div.msg-bubble > pre').length > 0) {
-
-        //         contentObj = $(objContent).find('div.msg-bubble > pre')
-
-        //         content = ""
-        //         $(contentObj).contents().toArray().forEach((c, i) => {
-        //             // 将内容进行切割, 判断是否为img
-
-        //             // console.log(c, $(c).prop('nodeName'))
-        //             let nodeName = $(c).prop('nodeName')
-        //             if (nodeName == "IMG") {
-        //                 // 筛选字符表情
-        //                 if($(c).attr('title')){
-        //                     content = content + $(c).attr('title')
-        //                 }else if($(c).attr('alt')){
-        //                     content = content + $(c).attr('alt')
-        //                 }else{
-        //                     type = 'undefined'
-        //                 }
-                        
-        //             }
-        //             // 链接文字
-        //             content = content + $(c).text()
-
-        //         })
-
-        //     } else if ($(objContent).find('div.msg-bubble > code-snippet-container').length > 0) {
-        //         // console.log("found code -----")
-        //         // console.log($(objContent).html())
-        //         content = ''
-        //         $(objContent).find('span[role="presentation"]').each((index, element) => {
-        //             content = content + $(element).text() + '\n\r'
-        //         })
-
-        //     }else{
-        //         type = 'unknown'
-        //         content = $(objContent).find('div.msg-bubble').text()
-        //     }
-
-        // } else if (typeStr == 'msg-img') {
-        //     // 图片内容
-        //     type = 'img'
-        //     let fullImgUrl = $(objContent).find('img.chat-img').attr('src')
-        //     if(fullImgUrl == undefined ){
-        //         content = ''
-        //     }else{
-        //         if(fullImgUrl.includes('img/filelogo/pic.p') || fullImgUrl.indexOf('?') <0 || fullImgUrl.lastIndexOf('_') < 0 ){
-        //             content = fullImgUrl
-        //         }else{
-        //             content = fullImgUrl.slice(0, fullImgUrl.indexOf('?'))
-        //             content = content.slice(0, content.lastIndexOf('_'))
-        //         }
-
-        //     }
-
-        // } else if (typeStr == 'msg-img-text') {
-        //     // 图文内容
-        // } else if (typeStr == 'msg-file') {
-        //     // 普通文件内容(旧数据)
-        // } else if (typeStr == 'msg-space-file') {
-        //     //  云盘内容
-
-        //     type = 'file'
-        //     content = $(objContent).find('a.download-file-btn:not(ng-hide)').attr('href')
-
-        //     fileName = $(objContent).find('p.file-name').text()
-        //     fileSizeStr = $(objContent).find('p.file-size').text()
-        //     if (fileSizeStr.includes(' B')) {
-        //         fileSize = parseFloat(fileSizeStr.slice(0, -2))
-        //     } else if (fileSizeStr.includes(' KB')) {
-        //         fileSize = parseFloat(fileSizeStr.slice(0, -3)) * 1000.
-        //     } else if (fileSizeStr.includes(' MB')) {
-        //         fileSize = parseFloat(fileSizeStr.slice(0, -3)) * 1000. * 1000.
-        //     } else if (fileSizeStr.includes(' GB')) {
-        //         fileSize = parseFloat(fileSizeStr.slice(0, -3)) * 1000. * 1000. * 1000.
-        //     } else {
-
-        //     }
-
-
-        // } else if (typeStr == 'ding-text') {
-        //     // ding文字   
-        //     content = $(objContent).find('div.msg-bubble').text()
-        // } else if (typeStr == 'msg-encrypt-img') {
-        //     // 加密文件
-        //     content = $(objContent).find('div.msg-bubble').text()
-        // } else if (type == 'msg-encrypt-img') {
-        //     // 加密图片
-        //     content = $(objContent).find('div.msg-bubble').text()
-        // } else {
-        //     content = $(objContent).find('div.msg-bubble').text()
-        // }
-
-        // // 获取状态
-        // let status = undefined
-
-        // if ($(objBubble).length > 0) {
-        //     let objSending = $(objBubble).find('div[progress-bar]')
-        //     let objFailed = $(objBubble).find('.icon-resend')
-
-        //     if ($(objSending).length > 0 && $(objSending).is(':visible')) {
-        //         status = 'sending'
-        //     } else if ( $(objFailed).length > 0 && $(objFailed).is(':visible') ) {
-        //         status = 'failed'
-        //     } else {
-        //         status = 'done'
-        //     }
-        // }
-
-        // return {
-        //     "from": fromUserName,
-        //     "msgID": MSGID,
-        //     "time": time.getTime(),
-        //     "type": type,
-        //     "message": content.trim(),
-        //     "avatar": avatar,
-        //     "fileName": fileName,
-        //     "fileSize": fileSize,
-        //     "status" : status
-        // }
+        return {
+            "from": fromUserName,
+            "msgID": MSGID,
+            "time": time.getTime(),
+            "type": type,
+            "message": content.trim(),
+            "url":url,
+            "avatar": avatar,
+            "fileName": fileName,
+            "fileSize": fileSize,
+            "status" : status
+        }
 
 
     }
@@ -362,17 +260,17 @@ window.onload = function () {
                     console.log('indexChat : ', indexChat)
                     $("div.X7YrQ").each((indexInHTML, element) => {
 
-                        console.log('getIndex : ', getIndex(element))
+                        // console.log('getIndex : ', getIndex(element))
                         if (indexChat == getIndex(element)) {
                             console.log("click")
                             rect = $(element).find("span[title][dir]").get(0).getBoundingClientRect()
-                            // core.WebToHost({
-                            //     "simulateMouse": {
-                            //         type: "click",
-                            //         x: rect.x,
-                            //         y: rect.y
-                            //     }
-                            // }).then((res) => {
+                            core.WebToHost({
+                                "simulateMouse": {
+                                    type: "click",
+                                    x: rect.x,
+                                    y: rect.y
+                                }
+                            }).then((res) => {
                                 // =========未完 : 右侧============
                                 setTimeout(() => {
                                     // 获取内容
@@ -380,15 +278,22 @@ window.onload = function () {
 
                                     console.log(WAPI.getChatById(userID))
 
+                                    // 加载convo
+                                    let convo = grepConvo(userID)
+                                    core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                        console.log(res)
+                                    }).catch((error) => {
+                                        throw error
+                                    });
+
                                     setTimeout(() => {
                                         document.activeElement.blur()
                                         resolve("request received. MSG will send.")
                                     }, 30);
-
                                 }, 30);
-                            // }).catch((error) => {
-                            //     throw error
-                            // });
+                            }).catch((error) => {
+                                throw error
+                            });
                         }
 
                     })
@@ -483,20 +388,21 @@ window.onload = function () {
         }
 
 
-        // $(document).on('click', 'div.X7YrQ', (event)=>{
-        //     let ObjUsr = $(event.target).closest('div.X7YrQ')
-        //     if(ObjUsr){
+        $(document).on('click', 'div.X7YrQ', (event)=>{
+            let ObjUsr = $(event.target).closest('div.X7YrQ')
+            if(ObjUsr){
 
-        //         let userID = ((WAPI.getAllChats())[getIndex(ObjUsr)]).contact.id._serialized
-        //         console.log('click ', $(ObjUsr), getIndex(ObjUsr), userID)
-        //         let convo = grepConvo(userID)
-        //         core.WebToHost({ "Convo-new": convo }).then((res) => {
-        //             console.log(res)
-        //         }).catch((error) => {
-        //             throw error
-        //         });
-        //     }
-        // })
+                let userID = ((WAPI.getAllChats())[getIndex(ObjUsr)]).contact.id._serialized
+                // console.log('click ', $(ObjUsr), getIndex(ObjUsr), userID)
+                let convo = grepConvo(userID)
+                convo.action = 'a'
+                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                    console.log(res)
+                }).catch((error) => {
+                    throw error
+                });
+            }
+        })
 
     })
 
