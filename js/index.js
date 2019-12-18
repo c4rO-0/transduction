@@ -2787,6 +2787,8 @@ $(document).ready(function () {
 
     })
 
-
+    $(document).on('contextmenu', (evt)=>{
+        console.warn(evt.target)
+    })
 
 })

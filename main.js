@@ -13,6 +13,7 @@ const URL = require('url').URL
 const core = require("./js/core.js")
 
 const { download } = require('electron-dl');
+require('electron-reload')(__dirname)
 
 
 let win = undefined
