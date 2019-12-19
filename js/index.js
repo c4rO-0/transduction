@@ -2050,7 +2050,7 @@ $(document).ready(function () {
     // =============================程序主体=============================
 
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
-    loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
+    
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
 
@@ -2088,17 +2088,13 @@ $(document).ready(function () {
         },
     })
     followPin()
+
+    // ==== waiting to move ext
     $('.modal').on('show.bs.modal', function (e) {
         document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
-        document.getElementById('modal-wechat').querySelector('webview').insertCSS('.login.ng-scope{min-width: unset;}')
         $(this).css('left', '')
     })
 
-    document.getElementById('modal-wechat').querySelector('webview').addEventListener('load-commit', function () {
-        this.insertCSS('.login.ng-scope{min-width: unset;}')
-    })
-    document.getElementById('modal-wechat').querySelector('webview').addEventListener('dom-ready', function () {
-        this.insertCSS('.login.ng-scope{min-width: unset;}')
     })
     document.getElementById('modal-dingtalk').querySelector('webview').addEventListener('dom-ready', function () {
         this.insertCSS('\
@@ -2118,6 +2114,8 @@ $(document).ready(function () {
         }\
         ')
     })
+
+    // ==============
 
     document.getElementById('debug-img-rotate').addEventListener('click', function (e) {
         console.warn($(e.target).siblings('div').first().children().first())
@@ -2214,11 +2212,6 @@ $(document).ready(function () {
     })
 
     // ===========================接收消息===========================
-
-    // wechat
-    core.WinReplyWeb(webTag2Selector("wechat"), (key, arg) => {
-        return respFuncWinReplyWeb("wechat", key, arg)
-    })
 
     // skype
     core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
