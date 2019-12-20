@@ -2049,6 +2049,8 @@ $(document).ready(function () {
 
     // =============================程序主体=============================
 
+    loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
+
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
     
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
@@ -2058,6 +2060,8 @@ $(document).ready(function () {
     // openDevtool("wechat")
     // openDevtool("dingtalk")
 
+    console.log("load action...")
+    const wechat =  require("../ext/wechat/src/action.js")
 
     //==============================UI==============================
     /**
@@ -2095,7 +2099,6 @@ $(document).ready(function () {
         $(this).css('left', '')
     })
 
-    })
     document.getElementById('modal-dingtalk').querySelector('webview').addEventListener('dom-ready', function () {
         this.insertCSS('\
         #layout-main {\
@@ -2212,7 +2215,11 @@ $(document).ready(function () {
     })
 
     // ===========================接收消息===========================
-
+    // wechat
+    core.WinReplyWeb(webTag2Selector("wechat"), (key, arg) => {
+        return respFuncWinReplyWeb("wechat", key, arg)
+    })
+    
     // skype
     core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
         return respFuncWinReplyWeb("skype", key, arg)

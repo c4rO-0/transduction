@@ -1,11 +1,12 @@
-(function () {
+// function start() {
     // for index.js
 
-    loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
+    console.log("start action js ...")
 
+    
 
-
-    $('.modal').on('show.bs.modal', function (e) {
+    $('#modal-wechat').on('show.bs.modal', function (e) {
+        console.log("show modal")
         document.getElementById('modal-wechat').querySelector('webview').insertCSS('.login.ng-scope{min-width: unset;}')
         $(this).css('left', '')
     })
@@ -18,8 +19,5 @@
     })
 
 
-    // wechat
-    core.WinReplyWeb(webTag2Selector("wechat"), (key, arg) => {
-        return respFuncWinReplyWeb("wechat", key, arg)
-    })
-})
+
+// }
