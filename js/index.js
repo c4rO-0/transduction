@@ -2,6 +2,10 @@
 // *********************************************
 // navigator setting
 // ---------------------------------------------
+const events = require('events');
+
+var eventEmitter = new events.EventEmitter();
+
 Object.defineProperty(navigator, 'language', {
     value: 'en',
     configurable: false,
@@ -68,7 +72,9 @@ function modalImage(event) {
     $("#modal-image").modal()
 }
 
-
+function installExt(pathConfig){
+    eventEmitter.emit('install-ext', pathConfig); 
+}
 
 
 $(document).ready(function () {
@@ -78,6 +84,8 @@ $(document).ready(function () {
     const Store = require('electron-store');
     const store = new Store();
     const request = require('request')
+    const fs = require('fs')
+    const path = require('path')
 
     console.log(process.versions.electron)
 
@@ -338,10 +346,10 @@ $(document).ready(function () {
                     // console.log('index:',donwloadList[index])
                     if (donwloadList[index].webTag == cwebTag
                         && donwloadList[index].userID == cUser
-                        && donwloadList[index].msgID == dialog.msgID) {           
+                        && donwloadList[index].msgID == dialog.msgID) {
 
                         $(bubble).addClass('td-downloaded')
-    
+
                         $(bubble).find('button[open]').attr('path', donwloadList[index].savePath)
 
                         break
@@ -1927,6 +1935,8 @@ $(document).ready(function () {
 
     }
 
+
+    
     function loadWebview(webTag, url, strUserAgent) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
@@ -1945,12 +1955,63 @@ $(document).ready(function () {
             // 静音
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
-
         }
     }
 
+    /**
+     * path of configure.json
+     * @param {String} pathConfig 
+     */
+    function loadExtConfigure(pathConfig) {
 
+        return new Promise((resolve, reject) => {
 
+            fs.readFile(pathConfig, (err, rawConfig) => {
+
+                if (err) {
+                    // 文件不存在, 或者 
+                    if (err.code === 'ENOENT') {
+                        console.error('no configure found in ', pathConfig)
+                    } else if (err.code === 'EISDIR') {
+                        console.error('configure path \' ', pathConfig, '\' is a directory')
+                    } else {
+                        console.error('configure read failed', pathConfig)
+                    }
+
+                    reject(err)
+                } else {
+                    let config = JSON.parse(rawConfig)
+                    config.dir = path.dirname(pathConfig)
+                    if(actExtConfigure(config) === 'acted'){
+                        resolve()
+                    }
+                }
+
+            });
+
+        })
+
+    }
+
+    function actExtConfigure(config){
+        
+        console.log("load action...")
+
+        // insert webview
+        $("div.td-app-status").append('\
+<img id="app-'+ config.name + '" class="app-offline" src="'+ path.join(config.dir, config.icon.any) +'">')
+        
+
+        loadWebview(config.name, config.webview.url, core.strUserAgentWin)
+
+        require(path.join(config.dir, config.action_script))
+
+        core.WinReplyWeb(webTag2Selector(config.name), (key, arg) => {
+            return respFuncWinReplyWeb(config.name, key, arg)
+        })
+
+        return "acted"
+    }
 
     /**
      * 获取发送内容, 并发送
@@ -2049,19 +2110,16 @@ $(document).ready(function () {
 
     // =============================程序主体=============================
 
-    loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
+    eventEmitter.on('install-ext', (pathConfig) =>{
+
+        console.log("install ", pathConfig)
+        loadExtConfigure(pathConfig)
+    })
 
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
-    
+
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
-
-    // openDevtool("skype")
-    // openDevtool("wechat")
-    // openDevtool("dingtalk")
-
-    console.log("load action...")
-    const wechat =  require("../ext/wechat/src/action.js")
 
     //==============================UI==============================
     /**
@@ -2168,7 +2226,7 @@ $(document).ready(function () {
     /**
      * webview出现
      */
-    $('.td-app-status img[class]').on('click', function () {
+    $(document).on('click','.td-app-status img[class]', function () {
         let webTag = this.id.substring(4)
 
         let webTagSelector = '#modal-' + webTag
@@ -2215,11 +2273,8 @@ $(document).ready(function () {
     })
 
     // ===========================接收消息===========================
-    // wechat
-    core.WinReplyWeb(webTag2Selector("wechat"), (key, arg) => {
-        return respFuncWinReplyWeb("wechat", key, arg)
-    })
-    
+
+
     // skype
     core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
         return respFuncWinReplyWeb("skype", key, arg)
