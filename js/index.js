@@ -72,10 +72,13 @@ function modalImage(event) {
     $("#modal-image").modal()
 }
 
-function installExt(pathConfig){
-    eventEmitter.emit('install-ext', pathConfig); 
+function installExt(pathConfig) {
+    eventEmitter.emit('install-ext', pathConfig);
 }
 
+function uninstallExt(pathConfig) {
+    eventEmitter.emit('uninstall-ext', pathConfig);
+}
 
 $(document).ready(function () {
 
@@ -1936,7 +1939,7 @@ $(document).ready(function () {
     }
 
 
-    
+
     function loadWebview(webTag, url, strUserAgent) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
@@ -1964,6 +1967,8 @@ $(document).ready(function () {
      */
     function loadExtConfigure(pathConfig) {
 
+        console.log("load extension config ...")
+
         return new Promise((resolve, reject) => {
 
             fs.readFile(pathConfig, (err, rawConfig) => {
@@ -1982,9 +1987,8 @@ $(document).ready(function () {
                 } else {
                     let config = JSON.parse(rawConfig)
                     config.dir = path.dirname(pathConfig)
-                    if(actExtConfigure(config) === 'acted'){
-                        resolve()
-                    }
+
+                    resolve(config)
                 }
 
             });
@@ -1993,24 +1997,53 @@ $(document).ready(function () {
 
     }
 
-    function actExtConfigure(config){
-        
-        console.log("load action...")
+    function enableExtConfigure(config) {
 
-        // insert webview
-        $("div.td-app-status").append('\
-<img id="app-'+ config.name + '" class="app-offline" src="'+ path.join(config.dir, config.icon.any) +'">')
-        
+        console.log("act extension config ...")
 
-        loadWebview(config.name, config.webview.url, core.strUserAgentWin)
+        return new Promise((resolve, reject) => {
 
-        require(path.join(config.dir, config.action_script))
+            // insert webview
+            $("div.td-app-status").append('\
+<img id="app-'+ config.name + '" class="app-offline" src="' + path.join(config.dir, config.icon.any) + '">')
 
-        core.WinReplyWeb(webTag2Selector(config.name), (key, arg) => {
-            return respFuncWinReplyWeb(config.name, key, arg)
+            $(".td-stealth").append('\
+<div id="modal-'+ config.name + '" class="modal fade" tabindex="-1" role="dialog">\
+<div class="modal-dialog modal-dialog-centered" role="document">\
+    <div class="modal-content">\
+        <div class="modal-body">\
+            <webview data-app-name="'+ config.name + '" preload="' + config.webview.script + '" style="width:800px; height:800px">\
+            </webview>\
+        </div>\
+        <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">\
+        <!-- <button reload>reload</button> -->\
+    </div>\
+</div>\
+</div>')
+
+
+            loadWebview(config.name, config.webview.url, core.strUserAgentWin)
+
+            require(path.join(config.dir, config.action_script))
+
+            core.WinReplyWeb(webTag2Selector(config.name), (key, arg) => {
+                return respFuncWinReplyWeb(config.name, key, arg)
+            })
+
+            resolve("done")
+        })
+    }
+
+    function disableExtConfigure(config) {
+
+        return new Promise((resolve, reject) => {
+
+            $('#app-' + config.name).remove()
+
+            $('#modal-' + config.name).remove()
+
         })
 
-        return "acted"
     }
 
     /**
@@ -2110,10 +2143,30 @@ $(document).ready(function () {
 
     // =============================程序主体=============================
 
-    eventEmitter.on('install-ext', (pathConfig) =>{
+    eventEmitter.on('install-ext', (pathConfig) => {
 
         console.log("install ", pathConfig)
-        loadExtConfigure(pathConfig)
+        loadExtConfigure(pathConfig).then((config) => {
+            enableExtConfigure(config).then((resAble) => {
+
+            }).catch((errAble) => {
+
+            })
+        })
+
+    })
+
+    eventEmitter.on('uninstall-ext', (pathConfig) => {
+
+        console.log("uninstall ", pathConfig)
+        loadExtConfigure(pathConfig).then((config) => {
+            disableExtConfigure(config).then((resAble) => {
+
+            }).catch((errAble) => {
+
+            })
+        })
+
     })
 
     loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
@@ -2226,7 +2279,7 @@ $(document).ready(function () {
     /**
      * webview出现
      */
-    $(document).on('click','.td-app-status img[class]', function () {
+    $(document).on('click', '.td-app-status img[class]', function () {
         let webTag = this.id.substring(4)
 
         let webTagSelector = '#modal-' + webTag
