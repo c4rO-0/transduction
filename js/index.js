@@ -2038,7 +2038,17 @@ $(document).ready(function () {
 
         return new Promise((resolve, reject) => {
 
+            $('#app-' + config.name).off('click')
+
             $('#app-' + config.name).remove()
+
+            // $('#modal-' + config.name + ' webview').off('load-commit')
+
+            // $('#modal-' + config.name + ' webview').off('dom-ready')
+
+            $('#modal-' + config.name).off('show.bs.modal')
+
+            // $('#modal-' + config.name).unbind()
 
             $('#modal-' + config.name).remove()
 
