@@ -128,7 +128,7 @@ $(document).ready(function () {
      * 加载settings
      */
 
-    eventEmitter.on('edit-store',()=>{
+    eventEmitter.on('edit-store', () => {
         store.openInEditor()
     });
 
@@ -139,25 +139,60 @@ $(document).ready(function () {
 
         console.log(tdSettings)
 
-        if(! store.has('tdSettings.swTray')){
+        if (!store.has('tdSettings.swTray')) {
             store.set('tdSettings.swTray', true)
         }
 
-        if(! store.has('tdSettings.pinCoord')){
+        if (!store.has('tdSettings.pinCoord')) {
             store.set('tdSettings.pinCoord', [0, 0])
-        }        
+        }
 
     }
     initializeSettings()
 
     function loadSettings() {
+
+        // -o check swTray : Close to status bar
         let swTray = store.get('tdSettings.swTray')
         document.getElementById('swTray').checked = swTray == undefined ? false : swTray
 
-        let pinCoord = store.get('tdSettings.pinCoord', [0,0])
+        // -o set pin position
+        let pinCoord = store.get('tdSettings.pinCoord', [0, 0])
         console.log("pinCoord")
         document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
         document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
+
+        // -o load extList : app/extension
+        /**
+         *  extList:{
+         *   webTag:{ 
+         *      status, configPath}
+         *  }
+         */
+        if(store.has('tdSettings.extList')){
+            let extList = store.get('tdSettings.extList')
+            console.log('loading extList', extList)
+            $.each(extList, (webTag, details) =>{
+                // console.log('load ', webTag)
+                if(details.status === true){
+                    loadExtConfigure(details.configPath).then((config) =>{
+    
+                        // -o check unicode is same with store
+                        if(webTag !== config.webTag){
+                            console.error(config.name, ' unicode check failed')
+                        }else{
+                            // -o load
+                            enableExtConfigure(config)
+                        }
+        
+                    }).catch( (loadError)=>{
+                        console.error(loadError)
+                    })
+                }
+            })
+        }
+
+
     }
 
     loadSettings()
@@ -1984,6 +2019,7 @@ $(document).ready(function () {
     /**
      * path of configure.json
      * @param {String} pathConfig 
+     * @returns {Promise} config 
      */
     function loadExtConfigure(pathConfig) {
 
@@ -2007,26 +2043,43 @@ $(document).ready(function () {
                     return
                 } else {
                     let config = JSON.parse(rawConfig)
+                    config.dir = path.dirname(pathConfig)
+                    config.path = pathConfig
+                    config.webTag = config.name + "-" + config.unicode
 
+                    // 必须含有name
                     if (config.name === undefined
                         || config.name === "") {
                         reject("load extension error , no name found in ", pathConfig)
-                    } else {
+                        return
+                    }
 
-                        try {
-                            if (!fs.existsSync(path.join(config.dir, config.icon.any))) {
-                                reject("load extension error , no logo found in ", config.icon.any)
-                                return
-                            }
-                        } catch (err) {
-                            console.error(err)
+                    // 必须含有type
+                    if (config.type !== 'app' && config.type !== 'extension') {
+                        reject("load extension error , unknown type in ", pathConfig)
+                        return
+                    }
+
+                    // 必须含有unicode
+                    if (config.unicode === undefined && config.unicode === "") {
+                        reject("load extension error , no unicode in ", pathConfig)
+                        return
+                    }
+
+                    try {
+                        // icon是必需的
+                        if (!fs.existsSync(path.join(config.dir, config.icon.any))) {
                             reject("load extension error , no logo found in ", config.icon.any)
                             return
                         }
-
-                        config.dir = path.dirname(pathConfig)
-                        resolve(config)
+                    } catch (err) {
+                        console.error(err)
+                        reject("load extension error , no logo found in ", config.icon.any)
+                        return
                     }
+
+                    resolve(config)
+
 
                 }
 
@@ -2042,16 +2095,20 @@ $(document).ready(function () {
 
         return new Promise((resolve, reject) => {
 
-            // insert webview
-            $("div.td-app-status").append('\
-<img id="app-'+ config.name + '" class="app-offline" src="' + path.join(config.dir, config.icon.any) + '">')
+            if (config.type === 'app') {
 
-            $(".td-stealth").append('\
-<div id="modal-'+ config.name + '" class="modal fade" tabindex="-1" role="dialog">\
+                // -o insert logo
+                $("div.td-app-status").append('\
+<img id="app-'+ config.webTag + '" class="app-offline" src="' + path.join(config.dir, config.icon.any) + '">')
+
+                // -o insert webview
+                
+                $(".td-stealth").append('\
+<div id="modal-'+ config.webTag + '" class="modal fade" tabindex="-1" role="dialog">\
 <div class="modal-dialog modal-dialog-centered" role="document">\
     <div class="modal-content">\
         <div class="modal-body">\
-            <webview data-app-name="'+ config.name + '" preload="' + path.join(config.dir, config.webview.script) + '" style="width:800px; height:800px">\
+            <webview data-app-name="'+ config.webTag + '" preload="' + path.join(config.dir, config.webview.script) + '" style="width:800px; height:800px">\
             </webview>\
         </div>\
         <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">\
@@ -2060,33 +2117,49 @@ $(document).ready(function () {
 </div>\
 </div>')
 
-            let strUserAgent = core.strUserAgentWin
-            if (config.webview.useragent == 'windows'
-                || config.webview.useragent == ''
-                || config.webview.useragent == undefined) {
+                // -o load webview url
+                let strUserAgent = core.strUserAgentWin
+                if (config.webview.useragent == 'windows'
+                    || config.webview.useragent == ''
+                    || config.webview.useragent == undefined) {
 
-            } else if (config.webview.useragent == 'linux') {
-                // strUserAgent = core.strUserAgentLinux
-            }
-
-            loadWebview(config.name, config.webview.url, strUserAgent)
-
-            try {
-                if (fs.existsSync(path.join(config.dir, config.action_script))) {
-                    console.log(config.name, " warning : no action file")
-                } else {
-
-                    require(path.join(config.dir, config.action_script)).action()
-
+                } else if (config.webview.useragent == 'linux') {
+                    // strUserAgent = core.strUserAgentLinux
                 }
 
-            } catch (err) {
-                console.log(config.name, " action error : ", err)
+                loadWebview(config.webTag, config.webview.url, strUserAgent)
+
+                // -o run action
+                try {
+                    if (!fs.existsSync(path.join(config.dir, config.action_script))) {
+                        console.log(config.name, " warning : no action file", config)
+                    } else {
+
+                        require(path.join(config.dir, config.action_script)).action()
+
+                    }
+
+                } catch (err) {
+                    console.log(config.name, " action error : ", err)
+                }
+
+                // -o add message listener
+                console.log("add listener")
+
+                core.WinReplyWeb(webTag2Selector(config.webTag), (key, arg) => {
+                    return respFuncWinReplyWeb(config.webTag, key, arg)
+                })
+            } else if (config.type === 'extension') {
+
+            } else {
+                reject("unknown type")
+                return
             }
 
-            core.WinReplyWeb(webTag2Selector(config.name), (key, arg) => {
-                return respFuncWinReplyWeb(config.name, key, arg)
-            })
+            // -o store config 
+            store.set("tdSettings.extList."+config.webTag, 
+            {'status':true,
+            'configPath':config.path})
 
             resolve("done")
         })
@@ -2096,18 +2169,32 @@ $(document).ready(function () {
 
         return new Promise((resolve, reject) => {
 
-            $('#app-' + config.name).off('click')
+            // check modal is on
 
-            $('#app-' + config.name).remove()
 
-            $('#modal-' + config.name + ' webview').off('load-commit')
+            // remove logo
+            $('#app-' + config.webTag).off('click')
 
-            $('#modal-' + config.name + ' webview').off('dom-ready')
+            $('#app-' + config.webTag).remove()
 
-            $('#modal-' + config.name).off('show.bs.modal')
+            // remove webview
+            $('#modal-' + config.webTag + ' webview').off('load-commit')
 
-            $('#modal-' + config.name).remove()
+            $('#modal-' + config.webTag + ' webview').off('dom-ready')
 
+            $('#modal-' + config.webTag).off('show.bs.modal')
+
+            $('#modal-' + config.webTag).remove()
+
+            // flag turn off
+            store.set("tdSettings.extList."+config.webTag, 
+            {'status':false,
+            'configPath':config.path})
+
+
+            // remove convo
+
+            
         })
 
     }

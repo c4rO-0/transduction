@@ -3,6 +3,7 @@
     "version": "1.0",
     "tr_version": "1.0.0",
     "type": "app",
+    "unicode":"01T7UUBCR2",
     "webview": {
         "url": "https://wx2.qq.com",
         "useragent": "windows",
