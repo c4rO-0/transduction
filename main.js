@@ -86,10 +86,8 @@ function createWindow() {
   })
 
   win.on('close', (event) => {
-    let tdSettings = store.get('tdSettings')
-    // console.log('tdSettings : ', tdSettings)
 
-    if (tdSettings == undefined || !tdSettings.swTray) {
+    if (!store.has('tdSettings.swTray') || !store.get('tdSettings.swTray')) {
       isQuitting = true
     }
 

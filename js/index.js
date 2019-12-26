@@ -80,6 +80,10 @@ function uninstallExt(pathConfig) {
     eventEmitter.emit('uninstall-ext', pathConfig);
 }
 
+function editStore() {
+    eventEmitter.emit('edit-store');
+}
+
 $(document).ready(function () {
 
     const core = require("../js/core.js")
@@ -120,30 +124,46 @@ $(document).ready(function () {
     let aspectRatio = 1
 
 
-    /**----------------------
-     * 储存图钉位置
+    /**===============
+     * 加载settings
      */
-    let tdPinCoord = undefined
-    let tdSettings = undefined
 
-    tdPinCoord = store.get('tdPinCoord')
-    if (tdPinCoord === undefined) {
-        tdPinCoord = [0, 0]
-    }
+    eventEmitter.on('edit-store',()=>{
+        store.openInEditor()
+    });
 
-    tdSettings = store.get('tdSettings')
-    if (tdSettings === undefined) {
-        tdSettings = {
-            swTray: true
+    function initializeSettings() {
+
+        console.log("debug : tdSettings--------")
+        let tdSettings = store.get('tdSettings')
+
+        console.log(tdSettings)
+
+        if(! store.has('tdSettings.swTray')){
+            store.set('tdSettings.swTray', true)
         }
+
+        if(! store.has('tdSettings.pinCoord')){
+            store.set('tdSettings.pinCoord', [0, 0])
+        }        
+
     }
-    //console.log('load tdPinCoord : ', tdPinCoord)
-    document.getElementById('td-pin').style.left = tdPinCoord[0] + 'px'
-    document.getElementById('td-pin').style.bottom = tdPinCoord[1] + 'px'
+    initializeSettings()
+
+    function loadSettings() {
+        let swTray = store.get('tdSettings.swTray')
+        document.getElementById('swTray').checked = swTray == undefined ? false : swTray
+
+        let pinCoord = store.get('tdSettings.pinCoord', [0,0])
+        console.log("pinCoord")
+        document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
+        document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
+    }
+
+    loadSettings()
+
+
     //-------------------------------
-
-
-
 
     // =========================class===========================
     class conversation {
@@ -2219,7 +2239,6 @@ $(document).ready(function () {
 
     loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
-
     //==============================UI==============================
     /**
      * 注释.....图钉跟随?
@@ -2228,12 +2247,12 @@ $(document).ready(function () {
         let target = document.getElementById('td-pin')
         let x = target.getBoundingClientRect().x
         let y = target.getBoundingClientRect().bottom
-        tdPinCoord = [x, window.innerHeight - y]
+        let pinCoord = [x, window.innerHeight - y]
         window.scrollTo(0, 0)
         document.getElementById('td-left').style.width = x + 'px'
         document.getElementById('td-input').style.height = window.innerHeight - y + 'px'
-        store.set('tdPinCoord', tdPinCoord)
-        // console.log('tdPinCoord changed to: ', tdPinCoord)
+        store.set('tdSettings.pinCoord', pinCoord)
+        // console.log('tdSettings.pinCoord changed to: ', pinCoord)
     }
 
     $('#td-pin').draggable({
@@ -2249,6 +2268,12 @@ $(document).ready(function () {
         },
     })
     followPin()
+
+    document.getElementById('swTray').addEventListener('click', function () {
+
+        store.set('tdSettings.swTray', this.checked)
+
+    })
 
     // ==== waiting to move ext
     $('.modal').on('show.bs.modal', function (e) {
@@ -2346,33 +2371,9 @@ $(document).ready(function () {
 
     })
 
-    //==========================UI_settingsPage=====================
-    function loadSettings() {
-        let tdSettings = store.get('tdSettings')
-        document.getElementById('swTray').checked = tdSettings == undefined ? false : tdSettings.swTray
-    }
-    loadSettings()
 
-    function applySettings() {
-        let tdSettings = store.get('tdSettings')
-        if (tdSettings.swTray) {
-
-        }
-    }
-
-    document.getElementById('swTray').addEventListener('click', function () {
-        // console.warn('UIsettings:', this.checked)
-        let tdSettings = store.get('tdSettings')
-        if (tdSettings == undefined) {
-            tdSettings = new Object()
-        }
-        tdSettings.swTray = this.checked
-        store.set('tdSettings', tdSettings)
-        applySettings()
-    })
 
     // ===========================接收消息===========================
-
 
     // skype
     core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
