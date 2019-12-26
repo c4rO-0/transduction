@@ -1984,11 +1984,30 @@ $(document).ready(function () {
                     }
 
                     reject(err)
+                    return
                 } else {
                     let config = JSON.parse(rawConfig)
-                    config.dir = path.dirname(pathConfig)
 
-                    resolve(config)
+                    if (config.name === undefined
+                        || config.name === "") {
+                        reject("load extension error , no name found in ", pathConfig)
+                    } else {
+
+                        try {
+                            if (!fs.existsSync(path.join(config.dir, config.icon.any))) {
+                                reject("load extension error , no logo found in ", config.icon.any)
+                                return
+                            }
+                        } catch (err) {
+                            console.error(err)
+                            reject("load extension error , no logo found in ", config.icon.any)
+                            return
+                        }
+
+                        config.dir = path.dirname(pathConfig)
+                        resolve(config)
+                    }
+
                 }
 
             });
@@ -1999,7 +2018,7 @@ $(document).ready(function () {
 
     function enableExtConfigure(config) {
 
-        console.log("act extension config ...")
+        console.log("act ", config.name, " config ...")
 
         return new Promise((resolve, reject) => {
 
@@ -2021,11 +2040,29 @@ $(document).ready(function () {
 </div>\
 </div>')
 
+            let strUserAgent = core.strUserAgentWin
+            if (config.webview.useragent == 'windows'
+                || config.webview.useragent == ''
+                || config.webview.useragent == undefined) {
 
-            loadWebview(config.name, config.webview.url, core.strUserAgentWin)
+            } else if (config.webview.useragent == 'linux') {
+                // strUserAgent = core.strUserAgentLinux
+            }
 
-            require(path.join(config.dir, config.action_script)).action()
+            loadWebview(config.name, config.webview.url, strUserAgent)
 
+            try {
+                if (fs.existsSync(path.join(config.dir, config.action_script))) {
+                    console.log(config.name, " warning : no action file")
+                } else {
+
+                    require(path.join(config.dir, config.action_script)).action()
+
+                }
+
+            } catch (err) {
+                console.log(config.name, " action error : ", err)
+            }
 
             core.WinReplyWeb(webTag2Selector(config.name), (key, arg) => {
                 return respFuncWinReplyWeb(config.name, key, arg)
