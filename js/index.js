@@ -2787,8 +2787,45 @@ $(document).ready(function () {
 
     })
 
-    $(document).on('contextmenu', (evt)=>{
-        console.warn(evt.target)
+    $(document).on('contextmenu', (evt) => {
+        let target = $(evt.target).closest('div.td-convo')
+        let yOffset = 0
+        if (target.length) {
+            /**
+             * 画线，删线
+             */
+            if (target.hasClass('selected')) {
+                target.toggleClass('selected')
+                target.data('line').remove()
+            } else {
+                $('#td-mix').css('opacity', '1')
+                target.toggleClass('selected')
+                target.data('line', new LeaderLine(target[0], document.getElementById('td-mix'), { dropShadow: true, startPlug: 'disc', endPlug: 'disc', path: 'fluid' }))
+            }
+            /**
+             * 算convo高度的平均值，作为按钮的位置
+             */
+            $('div.td-convo.selected').each(function (index, element) {
+                yOffset -= yOffset / (index + 1)
+                yOffset += $(element).position().top / (index + 1)
+            })
+            /**
+             * 如果没有选中，按钮消失
+             */
+            $('#td-mix').css('transform', 'translateY(' + yOffset + 'px)')
+            if($('div.td-convo.selected').length === 0){
+                $('#td-mix').css('opacity', '0')
+            }
+        }
+    })
+
+    /**
+     * 更新线位置
+     */
+    $('#td-mix').on('transitionend', ()=>{
+        $('div.td-convo.selected').each(function(){
+            $(this).data('line').position()
+        })
     })
 
 })

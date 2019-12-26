@@ -170,6 +170,16 @@ webview {
     z-index: 1;
 }
 
+#td-mix {
+    transition: all 0.15s ease;
+    opacity: 0;
+    height: 40px;
+    position: relative;
+    left: 50px;
+    top: 8px;
+    z-index: 1;
+}
+
 .td-chatLog {
     flex: 1;
     overflow: auto;
@@ -489,6 +499,10 @@ webview {
 .theme-transduction-active-tran {
     background-color: #5b6ca7;
     /* background-color: #ffdeca; */
+}
+
+.td-convo.selected {
+    background-color: #AA3FE8;
 }
 
 .theme-skype {

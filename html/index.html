@@ -9,6 +9,7 @@
     <link href=" ../toolkit/bootstrap-4.3.1-dist/css/bootstrap.css" rel="stylesheet" type="text/css">
     <script src="../toolkit/jquery-ui-1.12.1/jquery-ui.min.js"></script>
     <link href="../toolkit/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet" type="text/css">
+    <script src="../toolkit/leader-line.min.js"></script>
     <script src="../js/index.js"></script>
     <link href="../css/index.css" rel="stylesheet" type="text/css">
 </head>
@@ -30,8 +31,8 @@
                     <img id="td-request-status" src="../res/pic/refreshing.png">
                 </div>
             </div>
-            <div id="td-convo-container" style="overflow: auto;">
-                <div class="td-convo theme-transduction td-font" style="display: none">
+            <div id="td-convo-container" style="overflow-y: auto; position: relative;">
+                <div class="td-convo theme-transduction td-font" style="display: nonee">
                     <div class="col-appLogo">
                         <img src="../res/pic/skype.png">
                     </div>
@@ -63,7 +64,7 @@
                     </div>
                 </div>
 
-                <div class="td-convo theme-transduction td-font" style="display: none">
+                <div class="td-convo theme-transduction td-font" style="display: nonee">
                     <div class="col-appLogo">
                         <img src="../res/pic/wechat.png">
                     </div>
@@ -90,7 +91,7 @@
                     </div>
                 </div>
 
-                <div class="td-convo theme-transduction td-font" style="display: none">
+                <div class="td-convo theme-transduction td-font" style="display: nonee">
                     <div class="col-trLogo">
                         <img src="../res/pic/trBackground.png">
                     </div>
@@ -131,6 +132,7 @@
             </div>
             <div class="td-chat" winType="td-chat">
                 <img id="td-pin" src="../res/pic/pin.png">
+                <img id="td-mix" src="../res/pic/mix.png">
                 <div class="td-chatLog" winType="chatLog" ondragstart="return false">
                     <img id="debug-history" class="hide" src="../res/pic/history.png">
                     <div class="td-none">
