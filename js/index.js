@@ -2024,7 +2024,8 @@ $(document).ready(function () {
 
             loadWebview(config.name, config.webview.url, core.strUserAgentWin)
 
-            require(path.join(config.dir, config.action_script))
+            require(path.join(config.dir, config.action_script)).action()
+
 
             core.WinReplyWeb(webTag2Selector(config.name), (key, arg) => {
                 return respFuncWinReplyWeb(config.name, key, arg)
@@ -2042,13 +2043,11 @@ $(document).ready(function () {
 
             $('#app-' + config.name).remove()
 
-            // $('#modal-' + config.name + ' webview').off('load-commit')
+            $('#modal-' + config.name + ' webview').off('load-commit')
 
-            // $('#modal-' + config.name + ' webview').off('dom-ready')
+            $('#modal-' + config.name + ' webview').off('dom-ready')
 
             $('#modal-' + config.name).off('show.bs.modal')
-
-            // $('#modal-' + config.name).unbind()
 
             $('#modal-' + config.name).remove()
 
