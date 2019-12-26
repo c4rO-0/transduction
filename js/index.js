@@ -2012,7 +2012,7 @@ $(document).ready(function () {
 <div class="modal-dialog modal-dialog-centered" role="document">\
     <div class="modal-content">\
         <div class="modal-body">\
-            <webview data-app-name="'+ config.name + '" preload="' + config.webview.script + '" style="width:800px; height:800px">\
+            <webview data-app-name="'+ config.name + '" preload="' + path.join(config.dir, config.webview.script) + '" style="width:800px; height:800px">\
             </webview>\
         </div>\
         <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">\
@@ -2157,7 +2157,7 @@ $(document).ready(function () {
         console.log("install ", pathConfig)
         loadExtConfigure(pathConfig).then((config) => {
             enableExtConfigure(config).then((resAble) => {
-
+                openDevtool(config.name)
             }).catch((errAble) => {
 
             })
