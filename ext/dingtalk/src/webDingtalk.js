@@ -1,7 +1,14 @@
 window.onload = function () {
 
-    const core = require("../js/core.js")
-    const watchJS = require("../toolkit/watch-1.4.2.js")
+    // ==============================
+    // setup transduction environment
+    const { app } = require('electron').remote
+    let rootDir = app.getAppPath()
+    console.log("transduction root directory : ", rootDir )
+    const path = require('path')
+    const core = require(path.join(rootDir, 'js/core.js'))
+    // -----------------------
+
     // const http = require('http')
     const fs = require('fs')
     const { net } = require('electron').remote

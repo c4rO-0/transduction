@@ -1,0 +1,19 @@
+{
+    "name": "dingtalk", 
+    "version": "1.0",
+    "tr_version": "1.0.0",
+    "type": "app",
+    "unicode":"NPUS8Z8RS3",
+    "webview": {
+        "url": "https://im.dingtalk.com/",
+        "useragent": "windows",
+        "script": "src/webDingtalk.js"
+    },
+    "icon": {
+        "48":"",
+        "128":"",
+        "any":"src/dingtalk.png",
+        "color":"#008cee"
+    },
+    "action_script": "src/action.js"
+}

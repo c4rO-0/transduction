@@ -1,0 +1,19 @@
+{
+    "name": "wechat", 
+    "version": "1.0",
+    "tr_version": "1.0.0",
+    "type": "app",
+    "unicode":"01T7UUBCR2",
+    "webview": {
+        "url": "https://wx2.qq.com",
+        "useragent": "windows",
+        "script": "src/webWechat.js"
+    },
+    "icon": {
+        "48":"",
+        "128":"",
+        "any":"src/wechat.png",
+        "color":"#1aad19"
+    },
+    "action_script": "src/action.js"
+}

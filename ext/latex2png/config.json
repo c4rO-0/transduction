@@ -1,0 +1,19 @@
+{
+    "name": "latex2png", 
+    "version": "1.0",
+    "tr_version": "1.0.0",
+    "type": "tool",
+    "unicode":"HR2WEPRJP8",
+    "webview": {
+        "url": "https://latex2png.com/",
+        "useragent": "windows",
+        "script": ""
+    },
+    "icon": {
+        "48":"",
+        "128":"",
+        "any":"src/latex.png",
+        "color":"rgb(4, 4, 4)"
+    },
+    "action_script": ""
+}
