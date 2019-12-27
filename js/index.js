@@ -107,7 +107,7 @@ $(document).ready(function () {
     let donwloadList = updateDonwloadList()
 
     // 插件列表
-    let extList = {}; 
+    let extList = {};
 
     let inputImgHeightLimit = 100
     let inputImgWeightLimit = 600
@@ -165,6 +165,27 @@ $(document).ready(function () {
         document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
         document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
 
+
+
+        // -o install default extensions : firefox-send
+        console.log('install...')
+        let defaultExtPathArray =
+            [
+                path.resolve('ext/firefoxsend/config.json')
+            ]
+        defaultExtPathArray.forEach(pathConfig => {
+            console.log(pathConfig)
+            loadExtConfigure(pathConfig).then((config) => {
+                enableExtConfigure(config).then((resAble) => {
+
+                }).catch((errAble) => {
+
+                })
+            })
+        })
+
+        installExt('../ext/firefoxsend/config.json')
+
         // -o load extList : app/tool
         /**
          *  extList:{
@@ -177,7 +198,7 @@ $(document).ready(function () {
             console.log('loading extList', extListStore)
             $.each(extListStore, (webTag, details) => {
                 // console.log('load ', webTag)
-                if (details.status === true) {
+                if (details.status === true && extList[webTag] === undefined) {
                     loadExtConfigure(details.configPath).then((config) => {
 
                         // -o check unicode is same with store
@@ -194,7 +215,6 @@ $(document).ready(function () {
                 }
             })
         }
-
 
     }
 
@@ -545,10 +565,10 @@ $(document).ready(function () {
         return '\
         <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + ' muted=' + convo.muted + '>\
             <div class="col-appLogo">\
-                <img src="'+ path.join(config.dir, config.icon.any) +'">\
+                <img src="'+ path.join(config.dir, config.icon.any) + '">\
             </div>\
             <div class="col-hint">\
-                <div class="row-hint" style="background-color:'+config.icon.color+';"></div>\
+                <div class="row-hint" style="background-color:'+ config.icon.color + ';"></div>\
             </div>\
             <div class="col-avatar d-flex justify-content-center">\
                 <div class="td-avatar align-self-center" style="background-image: url('+ avatar + ')"></div>\
@@ -1253,7 +1273,7 @@ $(document).ready(function () {
 
 
         // 已经加载过webview
-        if($(webSelector).length > 0 && $(webSelector).css("display") == "none"){
+        if ($(webSelector).length > 0 && $(webSelector).css("display") == "none") {
             console.log("loadTool : display tool")
 
             // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
@@ -1262,7 +1282,7 @@ $(document).ready(function () {
             }
 
             $(webSelector).show()
-        }else{
+        } else {
 
             if ($(webSelector).length == 0) {
                 $(sectionSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + toolName + "' src='' style='display:none;'></webview>")
@@ -1272,10 +1292,10 @@ $(document).ready(function () {
 
             $(webSelector).attr('src', strUrl)
 
-            if(strPathJS){
+            if (strPathJS) {
                 $(webSelector).attr('preload', strPathJS)
             }
-        
+
             $(webSelector).show()
 
         }
@@ -2003,7 +2023,7 @@ $(document).ready(function () {
 
     /**
      * path of configure.json
-     * @param {String} pathConfig 
+     * @param {String} pathConfig  绝对路径
      * @returns {Promise} config 
      */
     function loadExtConfigure(pathConfig) {
@@ -2080,7 +2100,15 @@ $(document).ready(function () {
 
         return new Promise((resolve, reject) => {
 
+            // -o 判断extension是否已安装
+            if($('[id*="'+ config.webTag +'"]').length > 0){
+                console.log(config.name, " already enabled")
+                resolve('done')
+                return
+            }
+
             if (config.type === 'app') {
+
 
                 // -o insert logo
                 $("div.td-app-status").append('\
@@ -2138,8 +2166,8 @@ $(document).ready(function () {
                 // -o insert logo
                 $('div.td-chat div.td-toolbox').append(
                     '<img id="tool-'
-                    + config.webTag +'" class="theme-transduction" src="'
-                    +path.join(config.dir, config.icon.any)+'">')
+                    + config.webTag + '" class="theme-transduction" src="'
+                    + path.join(config.dir, config.icon.any) + '">')
 
             } else {
                 reject("unknown type")
@@ -2201,24 +2229,27 @@ $(document).ready(function () {
                     rightBackToDefault()
 
                     // remove from extList
-                    delete extList[config.webTag]; 
+                    delete extList[config.webTag];
+
+                    resolve()
                 }, 1000);
 
 
-            }else if(config.type == 'tool'){
+            } else if (config.type == 'tool') {
                 // -o is shown
-                if( $('#td-right div.td-chatLog[winType="tool"] webview[data-tool-name="'+ config.webTag +'"]').is(":visible") ){
+                if ($('#td-right div.td-chatLog[winType="tool"] webview[data-tool-name="' + config.webTag + '"]').is(":visible")) {
                     $('tool-goBackChat').click()
                 }
 
                 // -o delete icon
-                $('#tool-'+ config.webTag).remove()
+                $('#tool-' + config.webTag).remove()
 
                 // -o delete webview
-                $('webview[data-tool-name="'+ config.webTag +'"]').remove()
+                $('webview[data-tool-name="' + config.webTag + '"]').remove()
 
                 // remove from extList
-                delete extList[config.webTag]; 
+                delete extList[config.webTag];
+                resolve()
             }
 
         })
@@ -2537,7 +2568,7 @@ $(document).ready(function () {
             $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
             $("#td-right div.td-chat-title").attr("data-app-name", webTag)
             $("#td-right div.td-chat-title h2").text(nickName)
-            $("#td-right div.td-chat-title img").attr('src', path.join(extList[webTag].dir,extList[webTag].icon.any))
+            $("#td-right div.td-chat-title img").attr('src', path.join(extList[webTag].dir, extList[webTag].icon.any))
             $("#td-right div.td-chatLog[wintype='chatLog']").empty()
 
             core.HostSendToWeb(
@@ -2575,7 +2606,7 @@ $(document).ready(function () {
     // tool click
     $('div.td-toolbox').on('click', '.theme-transduction', (e) => {
 
-        if(e.target.id === 'tool-goBackChat'){
+        if (e.target.id === 'tool-goBackChat') {
             // 返回聊天窗口
             $('.td-toolbox > img').removeClass('theme-transduction-active')
 
@@ -2585,15 +2616,14 @@ $(document).ready(function () {
                 $(this).hide();
             });
             $("#td-right div.td-chatLog[winType='tool']").hide()
-        }else{
+        } else {
             $('.td-toolbox > img').removeClass('theme-transduction-active')
             $(e.target).addClass('theme-transduction-active')
             let toolTagName = e.target.id.substring(5)
             $("#td-right div.td-chatLog[winType='chatLog']").hide()
             $("#td-right div.td-chatLog[winType='tool']").show()
 
-
-            loadTool("#td-right div.td-chatLog[winType='tool']", toolTagName, "https://send.firefox.com/", '')
+            loadTool("#td-right div.td-chatLog[winType='tool']", toolTagName, extList[toolTagName].webview.url, extList[toolTagName].webview.script)
         }
     })
 

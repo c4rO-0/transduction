@@ -1,5 +1,5 @@
-# dingtalk
+# firefoxsend
 
 ---
 
-该插件用来支持dingtalk
+该插件用来支持firefoxsend
