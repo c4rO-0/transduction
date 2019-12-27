@@ -113,13 +113,9 @@ $(document).ready(function () {
     let inputImgWeightLimit = 600
 
 
-    let status = "webviewSkype"
-    let debug_app_link_str = "#debug-app-link"
-    let debug_firefox_send_str = "#debug-firefox-send"
+    let debug_firefox_send_str = "#tool-firefox-send-KTA0YJF8GR"
     let debug_image_str = "#debug-image"
     let debug_send_str = "#debug-send"
-    let debug_latex_str = "#debug-latex2png"
-    let debug_languagetool_str = "#debug-languagetool"
     let debug_goBackChat_str = "#debug-goBackChat"
     let classTactive = 'theme-transduction-active-tran'
 
@@ -153,6 +149,33 @@ $(document).ready(function () {
     }
     initializeSettings()
 
+
+    eventEmitter.on('install-ext', (pathConfig) => {
+
+        console.log("install ", pathConfig)
+        loadExtConfigure(pathConfig).then((config) => {
+            enableExtConfigure(config).then((resAble) => {
+                // openDevtool(config.name)
+            }).catch((errAble) => {
+
+            })
+        })
+
+    })
+
+    eventEmitter.on('uninstall-ext', (pathConfig) => {
+
+        console.log("uninstall ", pathConfig)
+        loadExtConfigure(pathConfig).then((config) => {
+            disableExtConfigure(config).then((resAble) => {
+
+            }).catch((errAble) => {
+
+            })
+        })
+
+    })
+
     function loadSettings() {
 
         // -o check swTray : Close to status bar
@@ -169,22 +192,27 @@ $(document).ready(function () {
 
         // -o install default extensions : firefox-send
         console.log('install...')
-        let defaultExtPathArray =
+        if (!store.has('tdSettings.extList')) {
+            let defaultOffExtPathArray =
+                [
+                    path.resolve('ext/wechat/config.json'),
+                    path.resolve('ext/skype/config.json'),
+                    path.resolve('ext/dingtalk/config.json'),
+                    path.resolve('ext/latex2png/config.json'),
+                    path.resolve('ext/languagetool/config.json'),
+                ]
+            defaultOffExtPathArray.forEach(pathConfig => {
+                uninstallExt(pathConfig)
+            })
+        }
+
+        let defaultOnExtPathArray =
             [
                 path.resolve('ext/firefoxsend/config.json')
             ]
-        defaultExtPathArray.forEach(pathConfig => {
-            console.log(pathConfig)
-            loadExtConfigure(pathConfig).then((config) => {
-                enableExtConfigure(config).then((resAble) => {
-
-                }).catch((errAble) => {
-
-                })
-            })
-        })
-
-        installExt('../ext/firefoxsend/config.json')
+        defaultOnExtPathArray.forEach(pathConfig => {
+            installExt(pathConfig)
+    })
 
         // -o load extList : app/tool
         /**
@@ -2101,7 +2129,7 @@ $(document).ready(function () {
         return new Promise((resolve, reject) => {
 
             // -o 判断extension是否已安装
-            if($('[id*="'+ config.webTag +'"]').length > 0){
+            if ($('[id*="' + config.webTag + '"]').length > 0) {
                 console.log(config.name, " already enabled")
                 resolve('done')
                 return
@@ -2177,6 +2205,7 @@ $(document).ready(function () {
             // -o store config 
             store.set("tdSettings.extList." + config.webTag,
                 {
+                    'name': config.name,
                     'status': true,
                     'configPath': config.path
                 })
@@ -2218,6 +2247,7 @@ $(document).ready(function () {
                     // flag turn off
                     store.set("tdSettings.extList." + config.webTag,
                         {
+                            'name': config.name,
                             'status': false,
                             'configPath': config.path
                         })
@@ -2246,6 +2276,14 @@ $(document).ready(function () {
 
                 // -o delete webview
                 $('webview[data-tool-name="' + config.webTag + '"]').remove()
+
+                // flag turn off
+                store.set("tdSettings.extList." + config.webTag,
+                    {
+                        'name': config.name,
+                        'status': false,
+                        'configPath': config.path
+                    })
 
                 // remove from extList
                 delete extList[config.webTag];
@@ -2353,31 +2391,6 @@ $(document).ready(function () {
 
     // =============================程序主体=============================
 
-    eventEmitter.on('install-ext', (pathConfig) => {
-
-        console.log("install ", pathConfig)
-        loadExtConfigure(pathConfig).then((config) => {
-            enableExtConfigure(config).then((resAble) => {
-                openDevtool(config.name)
-            }).catch((errAble) => {
-
-            })
-        })
-
-    })
-
-    eventEmitter.on('uninstall-ext', (pathConfig) => {
-
-        console.log("uninstall ", pathConfig)
-        loadExtConfigure(pathConfig).then((config) => {
-            disableExtConfigure(config).then((resAble) => {
-
-            }).catch((errAble) => {
-
-            })
-        })
-
-    })
 
 
     //==============================UI==============================
@@ -2466,6 +2479,37 @@ $(document).ready(function () {
     $('#modal-image').on('hidden.bs.modal', function (e) {
         angle = 0
         $(".modal-body > img", this).css({ "transform": "rotate(0deg)" })
+    })
+
+    $('#modal-settings').on('show.bs.modal', function (e) {
+
+        $('div[extTag]').remove()
+        // load extList
+        if (store.has('tdSettings.extList')) {
+            let extListStore = store.get('tdSettings.extList')
+            $.each(extListStore, (webTag, details) => {
+
+                // console.log(' ', webTag,' | ', details.status ? "on":"off", " | ", details.configPath)
+                $("#modal-settings .modal-body").append(
+                    '<div extTag="' + webTag + '">\
+<input type="checkbox" ' + (details.status ? 'checked="checked"' : '') + '>\
+<label >'+ details.name + '</label>\
+</div>')
+
+            })
+        }
+    })
+
+    // ext被点击
+    $('#modal-settings').on('click', 'div[extTag] input', function (e) {
+
+        let webTag = $(e.target).parent('div[extTag]').attr('extTag')
+        let configPath = store.get("tdSettings.extList." + webTag).configPath
+        if (e.target.checked) {
+            installExt(configPath)
+        } else {
+            uninstallExt(configPath)
+        }
     })
 
     /**
