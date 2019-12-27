@@ -47,15 +47,15 @@ function toggleWebview(webTag) {
 
 /**
  * 打开webview Devtool
- * @param {string} appName
+ * @param {string} appTag
  */
-function openDevtool(appName) {
-    let web = $("webview[data-app-name='" + appName + "']")[0];
+function openDevtool(appTag) {
+    let web = $("webview[data-app-name='" + appTag + "']")[0];
     web.openDevTools();
 }
 
-function openExtensionDevtool(appName) {
-    let web = $("webview[data-extension-name='" + appName + "']")[0];
+function openToolDevtool(toolTag) {
+    let web = $("webview[data-tool-name='" + toolTag + "']")[0];
     web.openDevTools();
 }
 
@@ -165,7 +165,7 @@ $(document).ready(function () {
         document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
         document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
 
-        // -o load extList : app/extension
+        // -o load extList : app/tool
         /**
          *  extList:{
          *   webTag:{ 
@@ -955,7 +955,7 @@ $(document).ready(function () {
                 if (DialogUserID && DialogWebTag
                     && DialogUserID == Convo.userID
                     && DialogWebTag == webTag) {
-                    // 判断窗口是否显示状态(可能打开的是extension), 并且滑条在最下面
+                    // 判断窗口是否显示状态(tool), 并且滑条在最下面
                     let strDialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
                     if ($(strDialogSelector).is(":visible") &&
                         $(strDialogSelector).scrollTop() + $(strDialogSelector)[0].clientHeight == $(strDialogSelector)[0].scrollHeight) {
@@ -1214,19 +1214,19 @@ $(document).ready(function () {
     /**
      * 
      * @param {String} sectionSelector 要插入的webview 的父节点
-     * @param {String} extensionName 插件名称
+     * @param {String} toolName 插件名称
      * @param {String} strUrl 插件地址
      * @param {String} strPathJS JS地址
      * @returns {Boolean} 加载成功或失败
      */
-    function loadExtension(sectionSelector, extensionName, strUrl, strPathJS) {
+    function loadTool(sectionSelector, toolName, strUrl, strPathJS) {
 
         // 检测selector
         if ($(sectionSelector).length == 0) {
-            console.log("loadExtension : cannot find section by " + sectionSelector)
+            console.log("loadTool : cannot find section by " + sectionSelector)
             return false
         } else if ($(sectionSelector).length > 1) {
-            console.log("loadExtension : multiple sections found by " + sectionSelector)
+            console.log("loadTool : multiple sections found by " + sectionSelector)
             return false
         }
 
@@ -1239,7 +1239,7 @@ $(document).ready(function () {
                 }
             });
             if (!JSexist) {
-                console.log("loadExtension : cannot find JS file")
+                console.log("loadTool : cannot find JS file")
                 return false
             }
 
@@ -1248,16 +1248,16 @@ $(document).ready(function () {
 
 
 
-        let webSelector = sectionSelector + " webview[data-extension-name='" + extensionName + "']"
+        let webSelector = sectionSelector + " webview[data-tool-name='" + toolName + "']"
         if ($(webSelector).length == 0) {
-            console.log("loadExtension : create extension")
+            console.log("loadTool : create tool")
             // 隐藏所有webview
             $(sectionSelector + " webview").each(function (index) {
                 $(this).hide();
             });
-            $(sectionSelector).append("<webview style='width:100%; height:100%' data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
+            $(sectionSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + toolName + "' src='' preload='' style='display:none;'></webview>")
 
-            $(webSelector).attr("data-extension-name", extensionName)
+            $(webSelector).attr("data-tool-name", toolName)
 
             $(webSelector).attr('src', strUrl)
 
@@ -1267,12 +1267,12 @@ $(document).ready(function () {
 
         } else {
             if ($(webSelector).css("display") == "none") {
-                console.log("loadExtension : display extension")
+                console.log("loadTool : display tool")
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
                 });
 
-                // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
+                // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
                 if ($(webSelector).attr('src') != strUrl) {
                     $(webSelector).attr('src', strUrl)
                 }
@@ -1286,13 +1286,13 @@ $(document).ready(function () {
                 $(sectionSelector + " webview").each(function (index) {
                     $(this).hide();
                 });
-                console.log("loadExtension : reload extension")
+                console.log("loadTool : reload tool")
 
-                $(webSelector).attr("data-extension-name", extensionName)
+                $(webSelector).attr("data-tool-name", toolName)
 
 
                 $(webSelector).attr('src', strUrl)
-                // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
+                // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
 
                 $(webSelector).attr('preload', strPathJS)
 
@@ -2060,7 +2060,7 @@ $(document).ready(function () {
                     }
 
                     // 必须含有type
-                    if (config.type !== 'app' && config.type !== 'extension') {
+                    if (config.type !== 'app' && config.type !== 'tool') {
                         reject("load extension error , unknown type in ", pathConfig)
                         return
                     }
@@ -2154,7 +2154,7 @@ $(document).ready(function () {
                 core.WinReplyWeb(webTag2Selector(config.webTag), (key, arg) => {
                     return respFuncWinReplyWeb(config.webTag, key, arg)
                 })
-            } else if (config.type === 'extension') {
+            } else if (config.type === 'tool') {
 
             } else {
                 reject("unknown type")
@@ -2508,7 +2508,7 @@ $(document).ready(function () {
         $(".td-inputbox").append(inputHtml)
 
 
-        // 加载dialog(当前可能显示的是extension)
+        // 加载dialog(当前可能显示的是tool)
         $(debug_goBackChat_str).click()
         // 滑动条拖到最后
         let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
@@ -2572,53 +2572,53 @@ $(document).ready(function () {
 
 
 
-    // =================extension click==================
-    // extension click
+    // =================tool click==================
+    // tool click
     $(debug_firefox_send_str).on('click', (e) => {
         $('.td-toolbox > img').removeClass('theme-transduction-active')
         $(e.target).addClass('theme-transduction-active')
-        let extensionName = "firefox-send"
+        let toolName = "firefox-send"
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
+        $("#td-right div.td-chatLog[winType='tool']").show()
+        loadTool("#td-right div.td-chatLog[winType='tool']", toolName, "https://send.firefox.com/", '')
     })
 
     $(debug_latex_str).on('click', (e) => {
         $('.td-toolbox > img').removeClass('theme-transduction-active')
         $(e.target).addClass('theme-transduction-active')
 
-        let extensionName = "latex2png"
+        let toolName = "latex2png"
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
+        $("#td-right div.td-chatLog[winType='tool']").show()
+        loadTool("#td-right div.td-chatLog[winType='tool']", toolName, "http://latex2png.com/", '')
     })
 
     $(debug_languagetool_str).on('click', (e) => {
         $('.td-toolbox > img').removeClass('theme-transduction-active')
         $(e.target).addClass('theme-transduction-active')
 
-        let extensionName = "languagetool"
+        let toolName = "languagetool"
         $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://languagetool.org/", '')
+        $("#td-right div.td-chatLog[winType='tool']").show()
+        loadTool("#td-right div.td-chatLog[winType='tool']", toolName, "https://languagetool.org/", '')
     })
 
-    // 隐藏extension
+    // 隐藏tool
     $(debug_goBackChat_str).on('click', () => {
         $('.td-toolbox > img').removeClass('theme-transduction-active')
 
         $("#td-right div.td-chatLog[winType='chatLog']").show()
         // webview隐藏, 防止再次点击刷新页面
-        $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
+        $("#td-right div.td-chatLog[winType='tool'] webview").each(function (index) {
             $(this).hide();
         });
-        $("#td-right div.td-chatLog[winType='extension']").hide()
+        $("#td-right div.td-chatLog[winType='tool']").hide()
 
     })
 
     // ======================拖入东西==========================
     // 检测到拖入到东西
-    // 当extension打开的时候, 只接受输入框位置拖入
+    // 当tool打开的时候, 只接受输入框位置拖入
     $('#td-right').on('dragenter', (event) => {
         // $('.td-dropFile').show()
         $('.td-dropFile').removeClass('hide')
@@ -2757,12 +2757,12 @@ $(document).ready(function () {
         if (this.href.substring(0, 4) == 'http') {
 
             if (this.href.search('https://send.firefox.com/download') !== -1) {
-                // 在extension打开
+                // 在tool打开
                 // console.log("click : ", this.href)
 
                 $(debug_firefox_send_str).click()
 
-                loadExtension("#td-right div.td-chatLog[winType='extension']", "firefox-send", this.href, '')
+                loadTool("#td-right div.td-chatLog[winType='tool']", "firefox-send", this.href, '')
             } else {
                 shell.openExternal(this.href);
                 // let options = {
@@ -2865,7 +2865,7 @@ $(document).ready(function () {
 
         let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
 
-        // 在dialog能看见的情况(不是在extension)
+        // 在dialog能看见的情况(不是在tool)
         if ($(dialogSelector).is(":visible")) {
 
             // 滑条没有在最后, 添加一键回到最后
