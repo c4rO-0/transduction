@@ -1219,7 +1219,7 @@ $(document).ready(function () {
      * @param {String} strPathJS JS地址
      * @returns {Boolean} 加载成功或失败
      */
-    function loadTool(sectionSelector, toolName, strUrl, strPathJS) {
+    function loadTool(sectionSelector, toolName, strUrl, strPathJS = undefined) {
 
         // 检测selector
         if ($(sectionSelector).length == 0) {
@@ -1231,7 +1231,7 @@ $(document).ready(function () {
         }
 
         // 检查文件路径
-        if (strPathJS.length > 0) {
+        if (strPathJS) {
             let JSexist = false
             fs.stat(strPathJS, function (err, stat) {
                 if (stat && stat.isFile()) {
@@ -1242,62 +1242,42 @@ $(document).ready(function () {
                 console.log("loadTool : cannot find JS file")
                 return false
             }
-
-
         }
 
-
+        // 隐藏其他webview
+        $(sectionSelector + " webview").each(function (index) {
+            $(this).hide();
+        });
 
         let webSelector = sectionSelector + " webview[data-tool-name='" + toolName + "']"
-        if ($(webSelector).length == 0) {
-            console.log("loadTool : create tool")
-            // 隐藏所有webview
-            $(sectionSelector + " webview").each(function (index) {
-                $(this).hide();
-            });
-            $(sectionSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + toolName + "' src='' preload='' style='display:none;'></webview>")
+
+
+        // 已经加载过webview
+        if($(webSelector).length > 0 && $(webSelector).css("display") == "none"){
+            console.log("loadTool : display tool")
+
+            // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
+            if ($(webSelector).attr('src') != strUrl) {
+                $(webSelector).attr('src', strUrl)
+            }
+
+            $(webSelector).show()
+        }else{
+
+            if ($(webSelector).length == 0) {
+                $(sectionSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + toolName + "' src='' style='display:none;'></webview>")
+            }
 
             $(webSelector).attr("data-tool-name", toolName)
 
             $(webSelector).attr('src', strUrl)
 
-            $(webSelector).attr('preload', strPathJS)
-
+            if(strPathJS){
+                $(webSelector).attr('preload', strPathJS)
+            }
+        
             $(webSelector).show()
 
-        } else {
-            if ($(webSelector).css("display") == "none") {
-                console.log("loadTool : display tool")
-                $(sectionSelector + " webview").each(function (index) {
-                    $(this).hide();
-                });
-
-                // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
-                if ($(webSelector).attr('src') != strUrl) {
-                    $(webSelector).attr('src', strUrl)
-                }
-
-                $(webSelector).show()
-
-
-
-            } else {
-                // 隐藏所有webview
-                $(sectionSelector + " webview").each(function (index) {
-                    $(this).hide();
-                });
-                console.log("loadTool : reload tool")
-
-                $(webSelector).attr("data-tool-name", toolName)
-
-
-                $(webSelector).attr('src', strUrl)
-                // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
-
-                $(webSelector).attr('preload', strPathJS)
-
-                $(webSelector).show()
-            }
         }
 
         return true
@@ -2155,6 +2135,11 @@ $(document).ready(function () {
                     return respFuncWinReplyWeb(config.webTag, key, arg)
                 })
             } else if (config.type === 'tool') {
+                // -o insert logo
+                $('div.td-chat div.td-toolbox').append(
+                    '<img id="tool-'
+                    + config.webTag +'" class="theme-transduction" src="'
+                    +path.join(config.dir, config.icon.any)+'">')
 
             } else {
                 reject("unknown type")
@@ -2220,6 +2205,20 @@ $(document).ready(function () {
                 }, 1000);
 
 
+            }else if(config.type == 'tool'){
+                // -o is shown
+                if( $('#td-right div.td-chatLog[winType="tool"] webview[data-tool-name="'+ config.webTag +'"]').is(":visible") ){
+                    $('tool-goBackChat').click()
+                }
+
+                // -o delete icon
+                $('#tool-'+ config.webTag).remove()
+
+                // -o delete webview
+                $('webview[data-tool-name="'+ config.webTag +'"]').remove()
+
+                // remove from extList
+                delete extList[config.webTag]; 
             }
 
         })
@@ -2574,46 +2573,28 @@ $(document).ready(function () {
 
     // =================tool click==================
     // tool click
-    $(debug_firefox_send_str).on('click', (e) => {
-        $('.td-toolbox > img').removeClass('theme-transduction-active')
-        $(e.target).addClass('theme-transduction-active')
-        let toolName = "firefox-send"
-        $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='tool']").show()
-        loadTool("#td-right div.td-chatLog[winType='tool']", toolName, "https://send.firefox.com/", '')
-    })
+    $('div.td-toolbox').on('click', '.theme-transduction', (e) => {
 
-    $(debug_latex_str).on('click', (e) => {
-        $('.td-toolbox > img').removeClass('theme-transduction-active')
-        $(e.target).addClass('theme-transduction-active')
+        if(e.target.id === 'tool-goBackChat'){
+            // 返回聊天窗口
+            $('.td-toolbox > img').removeClass('theme-transduction-active')
 
-        let toolName = "latex2png"
-        $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='tool']").show()
-        loadTool("#td-right div.td-chatLog[winType='tool']", toolName, "http://latex2png.com/", '')
-    })
+            $("#td-right div.td-chatLog[winType='chatLog']").show()
+            // webview隐藏, 防止再次点击刷新页面
+            $("#td-right div.td-chatLog[winType='tool'] webview").each(function (index) {
+                $(this).hide();
+            });
+            $("#td-right div.td-chatLog[winType='tool']").hide()
+        }else{
+            $('.td-toolbox > img').removeClass('theme-transduction-active')
+            $(e.target).addClass('theme-transduction-active')
+            let toolTagName = e.target.id.substring(5)
+            $("#td-right div.td-chatLog[winType='chatLog']").hide()
+            $("#td-right div.td-chatLog[winType='tool']").show()
 
-    $(debug_languagetool_str).on('click', (e) => {
-        $('.td-toolbox > img').removeClass('theme-transduction-active')
-        $(e.target).addClass('theme-transduction-active')
 
-        let toolName = "languagetool"
-        $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='tool']").show()
-        loadTool("#td-right div.td-chatLog[winType='tool']", toolName, "https://languagetool.org/", '')
-    })
-
-    // 隐藏tool
-    $(debug_goBackChat_str).on('click', () => {
-        $('.td-toolbox > img').removeClass('theme-transduction-active')
-
-        $("#td-right div.td-chatLog[winType='chatLog']").show()
-        // webview隐藏, 防止再次点击刷新页面
-        $("#td-right div.td-chatLog[winType='tool'] webview").each(function (index) {
-            $(this).hide();
-        });
-        $("#td-right div.td-chatLog[winType='tool']").hide()
-
+            loadTool("#td-right div.td-chatLog[winType='tool']", toolTagName, "https://send.firefox.com/", '')
+        }
     })
 
     // ======================拖入东西==========================

@@ -1,0 +1,19 @@
+{
+    "name": "firefox-send", 
+    "version": "1.0",
+    "tr_version": "1.0.0",
+    "type": "tool",
+    "unicode":"KTA0YJF8GR",
+    "webview": {
+        "url": "https://send.firefox.com/",
+        "useragent": "windows",
+        "script": ""
+    },
+    "icon": {
+        "48":"",
+        "128":"",
+        "any":"src/ffsend.png",
+        "color":"rgb(250, 67, 88)"
+    },
+    "action_script": ""
+}
