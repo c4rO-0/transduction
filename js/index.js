@@ -2349,9 +2349,6 @@ $(document).ready(function () {
 
     })
 
-    loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
-
-    loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
 
     //==============================UI==============================
     /**
@@ -2391,27 +2388,7 @@ $(document).ready(function () {
 
     // ==== waiting to move ext
     $('.modal').on('show.bs.modal', function (e) {
-        document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
         $(this).css('left', '')
-    })
-
-    document.getElementById('modal-dingtalk').querySelector('webview').addEventListener('dom-ready', function () {
-        this.insertCSS('\
-        #layout-main {\
-            width:-webkit-fill-available !important;\
-            min-width:490px;\
-            max-width:1000px;\
-        }\
-        #content-pannel {\
-            flex:1 !important;\
-        }\
-        #menu-pannel {\
-            width:50px !important;\
-        }\
-        #chat-box > div > div {\
-            min-width: 320px;\
-        }\
-        ')
     })
 
     // ==============
@@ -2488,15 +2465,6 @@ $(document).ready(function () {
 
 
     // ===========================接收消息===========================
-
-    // skype
-    core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
-        return respFuncWinReplyWeb("skype", key, arg)
-    })
-    // dingtalk
-    core.WinReplyWeb(webTag2Selector("dingtalk"), (key, arg) => {
-        return respFuncWinReplyWeb("dingtalk", key, arg)
-    })
 
     core.WinReply((key, arg) => {
         return respFuncWinReply(key, arg)
