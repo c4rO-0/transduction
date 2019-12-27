@@ -12,7 +12,8 @@
     "icon": {
         "48":"",
         "128":"",
-        "any":"src/wechat.png"
+        "any":"src/wechat.png",
+        "color":"#1aad19"
     },
     "action_script": "src/action.js"
 }

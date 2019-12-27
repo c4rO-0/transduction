@@ -548,7 +548,7 @@ $(document).ready(function () {
                 <img src="'+ path.join(config.dir, config.icon.any) +'">\
             </div>\
             <div class="col-hint">\
-                <div class="row-hint theme-'+ appName + '"></div>\
+                <div class="row-hint" style="background-color:'+config.icon.color+';"></div>\
             </div>\
             <div class="col-avatar d-flex justify-content-center">\
                 <div class="td-avatar align-self-center" style="background-image: url('+ avatar + ')"></div>\
@@ -2208,7 +2208,6 @@ $(document).ready(function () {
                             'status': false,
                             'configPath': config.path
                         })
-
 
                     // remove convo
                     $('div.td-convo[data-app-name="' + config.webTag + '"]').remove()
