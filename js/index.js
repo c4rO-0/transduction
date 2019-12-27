@@ -106,6 +106,9 @@ $(document).ready(function () {
      */
     let donwloadList = updateDonwloadList()
 
+    // 插件列表
+    let extList = {}; 
+
     let inputImgHeightLimit = 100
     let inputImgWeightLimit = 600
 
@@ -169,23 +172,23 @@ $(document).ready(function () {
          *      status, configPath}
          *  }
          */
-        if(store.has('tdSettings.extList')){
-            let extList = store.get('tdSettings.extList')
-            console.log('loading extList', extList)
-            $.each(extList, (webTag, details) =>{
+        if (store.has('tdSettings.extList')) {
+            let extListStore = store.get('tdSettings.extList')
+            console.log('loading extList', extListStore)
+            $.each(extListStore, (webTag, details) => {
                 // console.log('load ', webTag)
-                if(details.status === true){
-                    loadExtConfigure(details.configPath).then((config) =>{
-    
+                if (details.status === true) {
+                    loadExtConfigure(details.configPath).then((config) => {
+
                         // -o check unicode is same with store
-                        if(webTag !== config.webTag){
+                        if (webTag !== config.webTag) {
                             console.error(config.name, ' unicode check failed')
-                        }else{
+                        } else {
                             // -o load
                             enableExtConfigure(config)
                         }
-        
-                    }).catch( (loadError)=>{
+
+                    }).catch((loadError) => {
                         console.error(loadError)
                     })
                 }
@@ -536,11 +539,13 @@ $(document).ready(function () {
         }
 
         let avatar = convo.avatar == undefined ? '../res/pic/weird.png' : convo.avatar
+        // console.log(appName , extList )
+        let config = extList[appName]
 
         return '\
         <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + ' muted=' + convo.muted + '>\
             <div class="col-appLogo">\
-                <img src="../res/pic/'+ appName + '.png">\
+                <img src="'+ path.join(config.dir, config.icon.any) +'">\
             </div>\
             <div class="col-hint">\
                 <div class="row-hint theme-'+ appName + '"></div>\
@@ -2102,7 +2107,7 @@ $(document).ready(function () {
 <img id="app-'+ config.webTag + '" class="app-offline" src="' + path.join(config.dir, config.icon.any) + '">')
 
                 // -o insert webview
-                
+
                 $(".td-stealth").append('\
 <div id="modal-'+ config.webTag + '" class="modal fade" tabindex="-1" role="dialog">\
 <div class="modal-dialog modal-dialog-centered" role="document">\
@@ -2157,9 +2162,14 @@ $(document).ready(function () {
             }
 
             // -o store config 
-            store.set("tdSettings.extList."+config.webTag, 
-            {'status':true,
-            'configPath':config.path})
+            store.set("tdSettings.extList." + config.webTag,
+                {
+                    'status': true,
+                    'configPath': config.path
+                })
+
+            // -o update global extList
+            extList[config.webTag] = config
 
             resolve("done")
         })
@@ -2169,32 +2179,50 @@ $(document).ready(function () {
 
         return new Promise((resolve, reject) => {
 
-            // check modal is on
+
+            if (config.type == 'app') {
+                // check modal is on
+                if ($('#modal-' + config.webTag).hasClass('show')) {
+                    $('#modal-' + config.webTag).modal('hide')
+                }
+
+                // waiting modal is hiden
+                setTimeout(() => {
+                    // remove logo
+                    $('#app-' + config.webTag).off('click')
+
+                    $('#app-' + config.webTag).remove()
+
+                    // remove webview
+                    $('#modal-' + config.webTag + ' webview').off('load-commit')
+
+                    $('#modal-' + config.webTag + ' webview').off('dom-ready')
+
+                    $('#modal-' + config.webTag).off('show.bs.modal')
+
+                    $('#modal-' + config.webTag).remove()
+
+                    // flag turn off
+                    store.set("tdSettings.extList." + config.webTag,
+                        {
+                            'status': false,
+                            'configPath': config.path
+                        })
 
 
-            // remove logo
-            $('#app-' + config.webTag).off('click')
+                    // remove convo
+                    $('div.td-convo[data-app-name="' + config.webTag + '"]').remove()
 
-            $('#app-' + config.webTag).remove()
+                    // empty right
+                    rightBackToDefault()
 
-            // remove webview
-            $('#modal-' + config.webTag + ' webview').off('load-commit')
-
-            $('#modal-' + config.webTag + ' webview').off('dom-ready')
-
-            $('#modal-' + config.webTag).off('show.bs.modal')
-
-            $('#modal-' + config.webTag).remove()
-
-            // flag turn off
-            store.set("tdSettings.extList."+config.webTag, 
-            {'status':false,
-            'configPath':config.path})
+                    // remove from extList
+                    delete extList[config.webTag]; 
+                }, 1000);
 
 
-            // remove convo
+            }
 
-            
         })
 
     }
@@ -2543,7 +2571,7 @@ $(document).ready(function () {
             $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
             $("#td-right div.td-chat-title").attr("data-app-name", webTag)
             $("#td-right div.td-chat-title h2").text(nickName)
-            $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
+            $("#td-right div.td-chat-title img").attr('src', path.join(extList[webTag].dir,extList[webTag].icon.any))
             $("#td-right div.td-chatLog[wintype='chatLog']").empty()
 
             core.HostSendToWeb(
