@@ -1,0 +1,19 @@
+{
+    "name": "skype", 
+    "version": "1.0",
+    "tr_version": "1.0.0",
+    "type": "app",
+    "unicode":"5X0FME1YRT",
+    "webview": {
+        "url": "https://web.skype.com/",
+        "useragent": "windows",
+        "script": "src/skypePreloadv2.js"
+    },
+    "icon": {
+        "48":"",
+        "128":"",
+        "any":"src/skype.png",
+        "color":"#00aff0"
+    },
+    "action_script": "src/action.js"
+}

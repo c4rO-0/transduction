@@ -2,6 +2,10 @@
 // *********************************************
 // navigator setting
 // ---------------------------------------------
+const events = require('events');
+
+var eventEmitter = new events.EventEmitter();
+
 Object.defineProperty(navigator, 'language', {
     value: 'en',
     configurable: false,
@@ -52,15 +56,15 @@ function toggleWebview(webTag) {
 
 /**
  * 打开webview Devtool
- * @param {string} appName
+ * @param {string} appTag
  */
-function openDevtool(appName) {
-    let web = $("webview[data-app-name='" + appName + "']")[0];
+function openDevtool(appTag) {
+    let web = $("webview[data-app-name='" + appTag + "']")[0];
     web.openDevTools();
 }
 
-function openExtensionDevtool(appName) {
-    let web = $("webview[data-extension-name='" + appName + "']")[0];
+function openToolDevtool(toolTag) {
+    let web = $("webview[data-tool-name='" + toolTag + "']")[0];
     web.openDevTools();
 }
 
@@ -77,8 +81,17 @@ function modalImage(event) {
     $("#modal-image").modal()
 }
 
+function installExt(pathConfig) {
+    eventEmitter.emit('install-ext', pathConfig);
+}
 
+function uninstallExt(pathConfig) {
+    eventEmitter.emit('uninstall-ext', pathConfig);
+}
 
+function editStore() {
+    eventEmitter.emit('edit-store');
+}
 
 $(document).ready(function () {
 
@@ -87,6 +100,8 @@ $(document).ready(function () {
     const Store = require('electron-store');
     const store = new Store();
     const request = require('request')
+    const fs = require('fs')
+    const path = require('path')
 
     console.log(process.versions.electron)
 
@@ -100,17 +115,16 @@ $(document).ready(function () {
      */
     let donwloadList = updateDonwloadList()
 
+    // 插件列表
+    let extList = {};
+
     let inputImgHeightLimit = 100
     let inputImgWeightLimit = 600
 
 
-    let status = "webviewSkype"
-    let debug_app_link_str = "#debug-app-link"
-    let debug_firefox_send_str = "#debug-firefox-send"
+    let debug_firefox_send_str = "#tool-firefox-send-KTA0YJF8GR"
     let debug_image_str = "#debug-image"
     let debug_send_str = "#debug-send"
-    let debug_latex_str = "#debug-latex2png"
-    let debug_languagetool_str = "#debug-languagetool"
     let debug_goBackChat_str = "#debug-goBackChat"
     let classTactive = 'theme-transduction-active-tran'
 
@@ -118,30 +132,133 @@ $(document).ready(function () {
     let aspectRatio = 1
 
 
-    /**----------------------
-     * 储存图钉位置
+    /**===============
+     * 加载settings
      */
-    let tdPinCoord = undefined
-    let tdSettings = undefined
 
-    tdPinCoord = store.get('tdPinCoord')
-    if (tdPinCoord === undefined) {
-        tdPinCoord = [0, 0]
-    }
+    eventEmitter.on('edit-store', () => {
+        store.openInEditor()
+    });
 
-    tdSettings = store.get('tdSettings')
-    if (tdSettings === undefined) {
-        tdSettings = {
-            swTray: true
+    function initializeSettings() {
+
+        console.log("debug : tdSettings--------")
+        let tdSettings = store.get('tdSettings')
+
+        console.log(tdSettings)
+
+        if (!store.has('tdSettings.swTray')) {
+            store.set('tdSettings.swTray', true)
         }
+
+        if (!store.has('tdSettings.pinCoord')) {
+            store.set('tdSettings.pinCoord', [0, 0])
+        }
+
     }
-    //console.log('load tdPinCoord : ', tdPinCoord)
-    document.getElementById('td-pin').style.left = tdPinCoord[0] + 'px'
-    document.getElementById('td-pin').style.bottom = tdPinCoord[1] + 'px'
+    initializeSettings()
+
+
+    eventEmitter.on('install-ext', (pathConfig) => {
+
+        console.log("install ", pathConfig)
+        loadExtConfigure(pathConfig).then((config) => {
+            enableExtConfigure(config).then((resAble) => {
+                // openDevtool(config.name)
+            }).catch((errAble) => {
+
+            })
+        })
+
+    })
+
+    eventEmitter.on('uninstall-ext', (pathConfig) => {
+
+        console.log("uninstall ", pathConfig)
+        loadExtConfigure(pathConfig).then((config) => {
+            disableExtConfigure(config).then((resAble) => {
+
+            }).catch((errAble) => {
+
+            })
+        })
+
+    })
+
+    function loadSettings() {
+
+        // -o check swTray : Close to status bar
+        let swTray = store.get('tdSettings.swTray')
+        document.getElementById('swTray').checked = swTray == undefined ? false : swTray
+
+        // -o set pin position
+        let pinCoord = store.get('tdSettings.pinCoord', [0, 0])
+        console.log("pinCoord")
+        document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
+        document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
+
+
+
+        // -o install default extensions : firefox-send
+        console.log('install...')
+        if (!store.has('tdSettings.extList')) {
+            let defaultOffExtPathArray =
+                [
+                    path.resolve('ext/wechat/config.json'),
+                    path.resolve('ext/skype/config.json'),
+                    path.resolve('ext/dingtalk/config.json'),
+                    path.resolve('ext/latex2png/config.json'),
+                    path.resolve('ext/languagetool/config.json'),
+                ]
+            defaultOffExtPathArray.forEach(pathConfig => {
+                uninstallExt(pathConfig)
+            })
+        }
+
+        let defaultOnExtPathArray =
+            [
+                path.resolve('ext/firefoxsend/config.json')
+            ]
+        defaultOnExtPathArray.forEach(pathConfig => {
+            installExt(pathConfig)
+    })
+
+        // -o load extList : app/tool
+        /**
+         *  extList:{
+         *   webTag:{ 
+         *      status, configPath}
+         *  }
+         */
+        if (store.has('tdSettings.extList')) {
+            let extListStore = store.get('tdSettings.extList')
+            console.log('loading extList', extListStore)
+            $.each(extListStore, (webTag, details) => {
+                // console.log('load ', webTag)
+                if (details.status === true && extList[webTag] === undefined) {
+                    loadExtConfigure(details.configPath).then((config) => {
+
+                        // -o check unicode is same with store
+                        if (webTag !== config.webTag) {
+                            console.error(config.name, ' unicode check failed')
+                        } else {
+                            // -o load
+                            enableExtConfigure(config)
+                        }
+
+                    }).catch((loadError) => {
+                        console.error(loadError)
+                    })
+                }
+            })
+        }
+
+    }
+
+    loadSettings()
+
+
     //-------------------------------
-
-
-
 
     // =========================class===========================
     class conversation {
@@ -351,10 +468,10 @@ $(document).ready(function () {
                     // console.log('index:',donwloadList[index])
                     if (donwloadList[index].webTag == cwebTag
                         && donwloadList[index].userID == cUser
-                        && donwloadList[index].msgID == dialog.msgID) {           
+                        && donwloadList[index].msgID == dialog.msgID) {
 
                         $(bubble).addClass('td-downloaded')
-    
+
                         $(bubble).find('button[open]').attr('path', donwloadList[index].savePath)
 
                         break
@@ -483,14 +600,16 @@ $(document).ready(function () {
         }
 
         let avatar = convo.avatar == undefined ? '../res/pic/weird.png' : convo.avatar
+        // console.log(appName , extList )
+        let config = extList[appName]
 
         return '\
         <div class="td-convo theme-transduction td-font" data-user-i-d='+ convo.userID + ' data-app-name=' + appName + ' muted=' + convo.muted + '>\
             <div class="col-appLogo">\
-                <img src="../res/pic/'+ appName + '.png">\
+                <img src="'+ path.join(config.dir, config.icon.any) + '">\
             </div>\
             <div class="col-hint">\
-                <div class="row-hint theme-'+ appName + '"></div>\
+                <div class="row-hint" style="background-color:'+ config.icon.color + ';"></div>\
             </div>\
             <div class="col-avatar d-flex justify-content-center">\
                 <div class="td-avatar align-self-center" style="background-image: url('+ avatar + ')"></div>\
@@ -897,7 +1016,7 @@ $(document).ready(function () {
                 if (DialogUserID && DialogWebTag
                     && DialogUserID == Convo.userID
                     && DialogWebTag == webTag) {
-                    // 判断窗口是否显示状态(可能打开的是extension), 并且滑条在最下面
+                    // 判断窗口是否显示状态(tool), 并且滑条在最下面
                     let strDialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
                     if ($(strDialogSelector).is(":visible") &&
                         $(strDialogSelector).scrollTop() + $(strDialogSelector)[0].clientHeight == $(strDialogSelector)[0].scrollHeight) {
@@ -1156,24 +1275,24 @@ $(document).ready(function () {
     /**
      * 
      * @param {String} sectionSelector 要插入的webview 的父节点
-     * @param {String} extensionName 插件名称
+     * @param {String} toolName 插件名称
      * @param {String} strUrl 插件地址
      * @param {String} strPathJS JS地址
      * @returns {Boolean} 加载成功或失败
      */
-    function loadExtension(sectionSelector, extensionName, strUrl, strPathJS) {
+    function loadTool(sectionSelector, toolName, strUrl, strPathJS = undefined) {
 
         // 检测selector
         if ($(sectionSelector).length == 0) {
-            console.log("loadExtension : cannot find section by " + sectionSelector)
+            console.log("loadTool : cannot find section by " + sectionSelector)
             return false
         } else if ($(sectionSelector).length > 1) {
-            console.log("loadExtension : multiple sections found by " + sectionSelector)
+            console.log("loadTool : multiple sections found by " + sectionSelector)
             return false
         }
 
         // 检查文件路径
-        if (strPathJS.length > 0) {
+        if (strPathJS) {
             let JSexist = false
             fs.stat(strPathJS, function (err, stat) {
                 if (stat && stat.isFile()) {
@@ -1181,65 +1300,45 @@ $(document).ready(function () {
                 }
             });
             if (!JSexist) {
-                console.log("loadExtension : cannot find JS file")
+                console.log("loadTool : cannot find JS file")
                 return false
             }
-
-
         }
 
+        // 隐藏其他webview
+        $(sectionSelector + " webview").each(function (index) {
+            $(this).hide();
+        });
+
+        let webSelector = sectionSelector + " webview[data-tool-name='" + toolName + "']"
 
 
-        let webSelector = sectionSelector + " webview[data-extension-name='" + extensionName + "']"
-        if ($(webSelector).length == 0) {
-            console.log("loadExtension : create extension")
-            // 隐藏所有webview
-            $(sectionSelector + " webview").each(function (index) {
-                $(this).hide();
-            });
-            $(sectionSelector).append("<webview style='width:100%; height:100%' data-extension-name='" + extensionName + "' src='' preload='' style='display:none;'></webview>")
+        // 已经加载过webview
+        if ($(webSelector).length > 0 && $(webSelector).css("display") == "none") {
+            console.log("loadTool : display tool")
 
-            $(webSelector).attr("data-extension-name", extensionName)
+            // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
+            if ($(webSelector).attr('src') != strUrl) {
+                $(webSelector).attr('src', strUrl)
+            }
+
+            $(webSelector).show()
+        } else {
+
+            if ($(webSelector).length == 0) {
+                $(sectionSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + toolName + "' src='' style='display:none;'></webview>")
+            }
+
+            $(webSelector).attr("data-tool-name", toolName)
 
             $(webSelector).attr('src', strUrl)
 
-            $(webSelector).attr('preload', strPathJS)
+            if (strPathJS) {
+                $(webSelector).attr('preload', strPathJS)
+            }
 
             $(webSelector).show()
 
-        } else {
-            if ($(webSelector).css("display") == "none") {
-                console.log("loadExtension : display extension")
-                $(sectionSelector + " webview").each(function (index) {
-                    $(this).hide();
-                });
-
-                // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
-                if ($(webSelector).attr('src') != strUrl) {
-                    $(webSelector).attr('src', strUrl)
-                }
-
-                $(webSelector).show()
-
-
-
-            } else {
-                // 隐藏所有webview
-                $(sectionSelector + " webview").each(function (index) {
-                    $(this).hide();
-                });
-                console.log("loadExtension : reload extension")
-
-                $(webSelector).attr("data-extension-name", extensionName)
-
-
-                $(webSelector).attr('src', strUrl)
-                // console.log("loadextension : ", strUrl, $(webSelector).attr('src'))
-
-                $(webSelector).attr('preload', strPathJS)
-
-                $(webSelector).show()
-            }
         }
 
         return true
@@ -1981,6 +2080,8 @@ $(document).ready(function () {
 
     }
 
+
+
     function loadWebview(webTag, url, strUserAgent) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
@@ -1999,12 +2100,253 @@ $(document).ready(function () {
             // 静音
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
-
         }
     }
 
+    /**
+     * path of configure.json
+     * @param {String} pathConfig  绝对路径
+     * @returns {Promise} config 
+     */
+    function loadExtConfigure(pathConfig) {
+
+        console.log("load extension config ...")
+
+        return new Promise((resolve, reject) => {
+
+            fs.readFile(pathConfig, (err, rawConfig) => {
+
+                if (err) {
+                    // 文件不存在, 或者 
+                    if (err.code === 'ENOENT') {
+                        console.error('no configure found in ', pathConfig)
+                    } else if (err.code === 'EISDIR') {
+                        console.error('configure path \' ', pathConfig, '\' is a directory')
+                    } else {
+                        console.error('configure read failed', pathConfig)
+                    }
+
+                    reject(err)
+                    return
+                } else {
+                    let config = JSON.parse(rawConfig)
+                    config.dir = path.dirname(pathConfig)
+                    config.path = pathConfig
+                    config.webTag = config.name + "-" + config.unicode
+
+                    // 必须含有name
+                    if (config.name === undefined
+                        || config.name === "") {
+                        reject("load extension error , no name found in ", pathConfig)
+                        return
+                    }
+
+                    // 必须含有type
+                    if (config.type !== 'app' && config.type !== 'tool') {
+                        reject("load extension error , unknown type in ", pathConfig)
+                        return
+                    }
+
+                    // 必须含有unicode
+                    if (config.unicode === undefined && config.unicode === "") {
+                        reject("load extension error , no unicode in ", pathConfig)
+                        return
+                    }
+
+                    try {
+                        // icon是必需的
+                        if (!fs.existsSync(path.join(config.dir, config.icon.any))) {
+                            reject("load extension error , no logo found in ", config.icon.any)
+                            return
+                        }
+                    } catch (err) {
+                        console.error(err)
+                        reject("load extension error , no logo found in ", config.icon.any)
+                        return
+                    }
+
+                    resolve(config)
 
 
+                }
+
+            });
+
+        })
+
+    }
+
+    function enableExtConfigure(config) {
+
+        console.log("act ", config.name, " config ...")
+
+        return new Promise((resolve, reject) => {
+
+            // -o 判断extension是否已安装
+            if ($('[id*="' + config.webTag + '"]').length > 0) {
+                console.log(config.name, " already enabled")
+                resolve('done')
+                return
+            }
+
+            if (config.type === 'app') {
+
+
+                // -o insert logo
+                $("div.td-app-status").append('\
+<img id="app-'+ config.webTag + '" class="app-offline" src="' + path.join(config.dir, config.icon.any) + '">')
+
+                // -o insert webview
+
+                $(".td-stealth").append('\
+<div id="modal-'+ config.webTag + '" class="modal fade" tabindex="-1" role="dialog">\
+<div class="modal-dialog modal-dialog-centered" role="document">\
+    <div class="modal-content">\
+        <div class="modal-body">\
+            <webview data-app-name="'+ config.webTag + '" preload="' + path.join(config.dir, config.webview.script) + '" style="width:800px; height:800px">\
+            </webview>\
+        </div>\
+        <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">\
+        <!-- <button reload>reload</button> -->\
+    </div>\
+</div>\
+</div>')
+
+                // -o load webview url
+                let strUserAgent = core.strUserAgentWin
+                if (config.webview.useragent == 'windows'
+                    || config.webview.useragent == ''
+                    || config.webview.useragent == undefined) {
+
+                } else if (config.webview.useragent == 'linux') {
+                    // strUserAgent = core.strUserAgentLinux
+                }
+
+                loadWebview(config.webTag, config.webview.url, strUserAgent)
+
+                // -o run action
+                try {
+                    if (!fs.existsSync(path.join(config.dir, config.action_script))) {
+                        console.log(config.name, " warning : no action file", config)
+                    } else {
+
+                        require(path.join(config.dir, config.action_script)).action()
+
+                    }
+
+                } catch (err) {
+                    console.log(config.name, " action error : ", err)
+                }
+
+                // -o add message listener
+                console.log("add listener")
+
+                core.WinReplyWeb(webTag2Selector(config.webTag), (key, arg) => {
+                    return respFuncWinReplyWeb(config.webTag, key, arg)
+                })
+            } else if (config.type === 'tool') {
+                // -o insert logo
+                $('div.td-chat div.td-toolbox').append(
+                    '<img id="tool-'
+                    + config.webTag + '" class="theme-transduction" src="'
+                    + path.join(config.dir, config.icon.any) + '">')
+
+            } else {
+                reject("unknown type")
+                return
+            }
+
+            // -o store config 
+            store.set("tdSettings.extList." + config.webTag,
+                {
+                    'name': config.name,
+                    'status': true,
+                    'configPath': config.path
+                })
+
+            // -o update global extList
+            extList[config.webTag] = config
+
+            resolve("done")
+        })
+    }
+
+    function disableExtConfigure(config) {
+
+        return new Promise((resolve, reject) => {
+
+
+            if (config.type == 'app') {
+                // check modal is on
+                if ($('#modal-' + config.webTag).hasClass('show')) {
+                    $('#modal-' + config.webTag).modal('hide')
+                }
+
+                // waiting modal is hiden
+                setTimeout(() => {
+                    // remove logo
+                    $('#app-' + config.webTag).off('click')
+
+                    $('#app-' + config.webTag).remove()
+
+                    // remove webview
+                    $('#modal-' + config.webTag + ' webview').off('load-commit')
+
+                    $('#modal-' + config.webTag + ' webview').off('dom-ready')
+
+                    $('#modal-' + config.webTag).off('show.bs.modal')
+
+                    $('#modal-' + config.webTag).remove()
+
+                    // flag turn off
+                    store.set("tdSettings.extList." + config.webTag,
+                        {
+                            'name': config.name,
+                            'status': false,
+                            'configPath': config.path
+                        })
+
+                    // remove convo
+                    $('div.td-convo[data-app-name="' + config.webTag + '"]').remove()
+
+                    // empty right
+                    rightBackToDefault()
+
+                    // remove from extList
+                    delete extList[config.webTag];
+
+                    resolve()
+                }, 1000);
+
+
+            } else if (config.type == 'tool') {
+                // -o is shown
+                if ($('#td-right div.td-chatLog[winType="tool"] webview[data-tool-name="' + config.webTag + '"]').is(":visible")) {
+                    $('tool-goBackChat').click()
+                }
+
+                // -o delete icon
+                $('#tool-' + config.webTag).remove()
+
+                // -o delete webview
+                $('webview[data-tool-name="' + config.webTag + '"]').remove()
+
+                // flag turn off
+                store.set("tdSettings.extList." + config.webTag,
+                    {
+                        'name': config.name,
+                        'status': false,
+                        'configPath': config.path
+                    })
+
+                // remove from extList
+                delete extList[config.webTag];
+                resolve()
+            }
+
+        })
+
+    }
 
     /**
      * 获取发送内容, 并发送
@@ -2103,14 +2445,6 @@ $(document).ready(function () {
 
     // =============================程序主体=============================
 
-    loadWebview("skype", "https://web.skype.com/", core.strUserAgentWin)
-    loadWebview("wechat", "https://wx2.qq.com", core.strUserAgentWin)
-    loadWebview("dingtalk", "https://im.dingtalk.com/", core.strUserAgentWin)
-
-
-    // openDevtool("skype")
-    // openDevtool("wechat")
-    // openDevtool("dingtalk")
 
 
     //==============================UI==============================
@@ -2121,12 +2455,12 @@ $(document).ready(function () {
         let target = document.getElementById('td-pin')
         let x = target.getBoundingClientRect().x
         let y = target.getBoundingClientRect().bottom
-        tdPinCoord = [x, window.innerHeight - y]
+        let pinCoord = [x, window.innerHeight - y]
         window.scrollTo(0, 0)
         document.getElementById('td-left').style.width = x + 'px'
         document.getElementById('td-input').style.height = window.innerHeight - y + 'px'
-        store.set('tdPinCoord', tdPinCoord)
-        // console.log('tdPinCoord changed to: ', tdPinCoord)
+        store.set('tdSettings.pinCoord', pinCoord)
+        // console.log('tdSettings.pinCoord changed to: ', pinCoord)
     }
 
     $('#td-pin').draggable({
@@ -2142,36 +2476,19 @@ $(document).ready(function () {
         },
     })
     followPin()
+
+    document.getElementById('swTray').addEventListener('click', function () {
+
+        store.set('tdSettings.swTray', this.checked)
+
+    })
+
+    // ==== waiting to move ext
     $('.modal').on('show.bs.modal', function (e) {
-        document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
-        document.getElementById('modal-wechat').querySelector('webview').insertCSS('.login.ng-scope{min-width: unset;}')
         $(this).css('left', '')
     })
 
-    document.getElementById('modal-wechat').querySelector('webview').addEventListener('load-commit', function () {
-        this.insertCSS('.login.ng-scope{min-width: unset;}')
-    })
-    document.getElementById('modal-wechat').querySelector('webview').addEventListener('dom-ready', function () {
-        this.insertCSS('.login.ng-scope{min-width: unset;}')
-    })
-    document.getElementById('modal-dingtalk').querySelector('webview').addEventListener('dom-ready', function () {
-        this.insertCSS('\
-        #layout-main {\
-            width:-webkit-fill-available !important;\
-            min-width:490px;\
-            max-width:1000px;\
-        }\
-        #content-pannel {\
-            flex:1 !important;\
-        }\
-        #menu-pannel {\
-            width:50px !important;\
-        }\
-        #chat-box > div > div {\
-            min-width: 320px;\
-        }\
-        ')
-    })
+    // ==============
 
     document.getElementById('debug-img-rotate').addEventListener('click', function (e) {
         console.warn($(e.target).siblings('div').first().children().first())
@@ -2218,10 +2535,41 @@ $(document).ready(function () {
         $(".modal-body > img", this).css({ "transform": "rotate(0deg)" })
     })
 
+    $('#modal-settings').on('show.bs.modal', function (e) {
+
+        $('div[extTag]').remove()
+        // load extList
+        if (store.has('tdSettings.extList')) {
+            let extListStore = store.get('tdSettings.extList')
+            $.each(extListStore, (webTag, details) => {
+
+                // console.log(' ', webTag,' | ', details.status ? "on":"off", " | ", details.configPath)
+                $("#modal-settings .modal-body").append(
+                    '<div extTag="' + webTag + '">\
+<input type="checkbox" ' + (details.status ? 'checked="checked"' : '') + '>\
+<label >'+ details.name + '</label>\
+</div>')
+
+            })
+        }
+    })
+
+    // ext被点击
+    $('#modal-settings').on('click', 'div[extTag] input', function (e) {
+
+        let webTag = $(e.target).parent('div[extTag]').attr('extTag')
+        let configPath = store.get("tdSettings.extList." + webTag).configPath
+        if (e.target.checked) {
+            installExt(configPath)
+        } else {
+            uninstallExt(configPath)
+        }
+    })
+
     /**
      * webview出现
      */
-    $('.td-app-status img[class]').on('click', function () {
+    $(document).on('click', '.td-app-status img[class]', function () {
         let webTag = this.id.substring(4)
 
         let webTagSelector = '#modal-' + webTag
@@ -2242,46 +2590,9 @@ $(document).ready(function () {
 
     })
 
-    //==========================UI_settingsPage=====================
-    function loadSettings() {
-        let tdSettings = store.get('tdSettings')
-        document.getElementById('swTray').checked = tdSettings == undefined ? false : tdSettings.swTray
-    }
-    loadSettings()
 
-    function applySettings() {
-        let tdSettings = store.get('tdSettings')
-        if (tdSettings.swTray) {
-
-        }
-    }
-
-    document.getElementById('swTray').addEventListener('click', function () {
-        // console.warn('UIsettings:', this.checked)
-        let tdSettings = store.get('tdSettings')
-        if (tdSettings == undefined) {
-            tdSettings = new Object()
-        }
-        tdSettings.swTray = this.checked
-        store.set('tdSettings', tdSettings)
-        applySettings()
-    })
 
     // ===========================接收消息===========================
-
-    // wechat
-    core.WinReplyWeb(webTag2Selector("wechat"), (key, arg) => {
-        return respFuncWinReplyWeb("wechat", key, arg)
-    })
-
-    // skype
-    core.WinReplyWeb(webTag2Selector("skype"), (key, arg) => {
-        return respFuncWinReplyWeb("skype", key, arg)
-    })
-    // dingtalk
-    core.WinReplyWeb(webTag2Selector("dingtalk"), (key, arg) => {
-        return respFuncWinReplyWeb("dingtalk", key, arg)
-    })
 
     core.WinReply((key, arg) => {
         return respFuncWinReply(key, arg)
@@ -2325,7 +2636,7 @@ $(document).ready(function () {
         $(".td-inputbox").append(inputHtml)
 
 
-        // 加载dialog(当前可能显示的是extension)
+        // 加载dialog(当前可能显示的是tool)
         $(debug_goBackChat_str).click()
         // 滑动条拖到最后
         let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
@@ -2355,7 +2666,7 @@ $(document).ready(function () {
             $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
             $("#td-right div.td-chat-title").attr("data-app-name", webTag)
             $("#td-right div.td-chat-title h2").text(nickName)
-            $("#td-right div.td-chat-title img").attr('src', "../res/pic/" + webTag + ".png")
+            $("#td-right div.td-chat-title img").attr('src', path.join(extList[webTag].dir, extList[webTag].icon.any))
             $("#td-right div.td-chatLog[wintype='chatLog']").empty()
 
             core.HostSendToWeb(
@@ -2389,53 +2700,34 @@ $(document).ready(function () {
 
 
 
-    // =================extension click==================
-    // extension click
-    $(debug_firefox_send_str).on('click', (e) => {
-        $('.td-toolbox > img').removeClass('theme-transduction-active')
-        $(e.target).addClass('theme-transduction-active')
-        let extensionName = "firefox-send"
-        $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://send.firefox.com/", '')
-    })
+    // =================tool click==================
+    // tool click
+    $('div.td-toolbox').on('click', '.theme-transduction', (e) => {
 
-    $(debug_latex_str).on('click', (e) => {
-        $('.td-toolbox > img').removeClass('theme-transduction-active')
-        $(e.target).addClass('theme-transduction-active')
+        if (e.target.id === 'tool-goBackChat') {
+            // 返回聊天窗口
+            $('.td-toolbox > img').removeClass('theme-transduction-active')
 
-        let extensionName = "latex2png"
-        $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "http://latex2png.com/", '')
-    })
+            $("#td-right div.td-chatLog[winType='chatLog']").show()
+            // webview隐藏, 防止再次点击刷新页面
+            $("#td-right div.td-chatLog[winType='tool'] webview").each(function (index) {
+                $(this).hide();
+            });
+            $("#td-right div.td-chatLog[winType='tool']").hide()
+        } else {
+            $('.td-toolbox > img').removeClass('theme-transduction-active')
+            $(e.target).addClass('theme-transduction-active')
+            let toolTagName = e.target.id.substring(5)
+            $("#td-right div.td-chatLog[winType='chatLog']").hide()
+            $("#td-right div.td-chatLog[winType='tool']").show()
 
-    $(debug_languagetool_str).on('click', (e) => {
-        $('.td-toolbox > img').removeClass('theme-transduction-active')
-        $(e.target).addClass('theme-transduction-active')
-
-        let extensionName = "languagetool"
-        $("#td-right div.td-chatLog[winType='chatLog']").hide()
-        $("#td-right div.td-chatLog[winType='extension']").show()
-        loadExtension("#td-right div.td-chatLog[winType='extension']", extensionName, "https://languagetool.org/", '')
-    })
-
-    // 隐藏extension
-    $(debug_goBackChat_str).on('click', () => {
-        $('.td-toolbox > img').removeClass('theme-transduction-active')
-
-        $("#td-right div.td-chatLog[winType='chatLog']").show()
-        // webview隐藏, 防止再次点击刷新页面
-        $("#td-right div.td-chatLog[winType='extension'] webview").each(function (index) {
-            $(this).hide();
-        });
-        $("#td-right div.td-chatLog[winType='extension']").hide()
-
+            loadTool("#td-right div.td-chatLog[winType='tool']", toolTagName, extList[toolTagName].webview.url, extList[toolTagName].webview.script)
+        }
     })
 
     // ======================拖入东西==========================
     // 检测到拖入到东西
-    // 当extension打开的时候, 只接受输入框位置拖入
+    // 当tool打开的时候, 只接受输入框位置拖入
     $('#td-right').on('dragenter', (event) => {
         // $('.td-dropFile').show()
         $('.td-dropFile').removeClass('hide')
@@ -2574,12 +2866,12 @@ $(document).ready(function () {
         if (this.href.substring(0, 4) == 'http') {
 
             if (this.href.search('https://send.firefox.com/download') !== -1) {
-                // 在extension打开
+                // 在tool打开
                 // console.log("click : ", this.href)
 
                 $(debug_firefox_send_str).click()
 
-                loadExtension("#td-right div.td-chatLog[winType='extension']", "firefox-send", this.href, '')
+                loadTool("#td-right div.td-chatLog[winType='tool']", "firefox-send", this.href, '')
             } else {
                 shell.openExternal(this.href);
                 // let options = {
@@ -2682,7 +2974,7 @@ $(document).ready(function () {
 
         let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
 
-        // 在dialog能看见的情况(不是在extension)
+        // 在dialog能看见的情况(不是在tool)
         if ($(dialogSelector).is(":visible")) {
 
             // 滑条没有在最后, 添加一键回到最后
@@ -2841,6 +3133,45 @@ $(document).ready(function () {
 
     })
 
+    $(document).on('contextmenu', (evt) => {
+        let target = $(evt.target).closest('div.td-convo')
+        let yOffset = 0
+        if (target.length) {
+            /**
+             * 画线，删线
+             */
+            if (target.hasClass('selected')) {
+                target.toggleClass('selected')
+                target.data('line').remove()
+            } else {
+                $('#td-mix').css('opacity', '1')
+                target.toggleClass('selected')
+                target.data('line', new LeaderLine(target[0], document.getElementById('td-mix'), { dropShadow: true, startPlug: 'disc', endPlug: 'disc', path: 'fluid' }))
+            }
+            /**
+             * 算convo高度的平均值，作为按钮的位置
+             */
+            $('div.td-convo.selected').each(function (index, element) {
+                yOffset -= yOffset / (index + 1)
+                yOffset += $(element).position().top / (index + 1)
+            })
+            /**
+             * 如果没有选中，按钮消失
+             */
+            $('#td-mix').css('transform', 'translateY(' + yOffset + 'px)')
+            if($('div.td-convo.selected').length === 0){
+                $('#td-mix').css('opacity', '0')
+            }
+        }
+    })
 
+    /**
+     * 更新线位置
+     */
+    $('#td-mix').on('transitionend', ()=>{
+        $('div.td-convo.selected').each(function(){
+            $(this).data('line').position()
+        })
+    })
 
 })

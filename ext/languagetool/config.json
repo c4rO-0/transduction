@@ -1,0 +1,19 @@
+{
+    "name": "languagetool", 
+    "version": "1.0",
+    "tr_version": "1.0.0",
+    "type": "tool",
+    "unicode":"6DHXAURGPK",
+    "webview": {
+        "url": "https://languagetool.org/",
+        "useragent": "windows",
+        "script": ""
+    },
+    "icon": {
+        "48":"",
+        "128":"",
+        "any":"src/languagetool.svg",
+        "color":"rgb(4, 92, 236)"
+    },
+    "action_script": ""
+}
