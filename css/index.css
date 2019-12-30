@@ -112,11 +112,23 @@ webview {
     width: 71px;
     overflow: hidden;
 }
-
 .col-appLogo>img, .td-chat-title>img {
     height: 66px;
     width: 66px;
     opacity: 0.3;
+}
+
+.col-trLogo {
+    position: absolute;
+    right: 0;
+    height: 56px;
+    width: 56px;
+    overflow: hidden;
+}
+.col-trLogo>img {
+    height: 56px;
+    width: 56px;
+    opacity: 0.45;
 }
 
 .td-toolbox>img {
@@ -155,6 +167,16 @@ webview {
     bottom: 7rem;
     height: 34px;
     width: 34px;
+    z-index: 1;
+}
+
+#td-mix {
+    transition: all 0.15s ease;
+    opacity: 0;
+    height: 40px;
+    position: relative;
+    left: 50px;
+    top: 8px;
     z-index: 1;
 }
 
@@ -477,6 +499,14 @@ webview {
 .theme-transduction-active-tran {
     background-color: #5b6ca7;
     /* background-color: #ffdeca; */
+}
+
+.td-convo.selected {
+    background-color: #AA3FE8;
+}
+
+.theme-tr {
+    background: linear-gradient(#45D5FF, #AA3FE8, #FF8352, #E8D83F, #47FF95);
 }
 
 #td-right, .td-toolbox {
