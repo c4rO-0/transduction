@@ -2085,7 +2085,7 @@ $(document).ready(function () {
 
 
 
-    function loadWebview(webTag, url, strUserAgent) {
+    function loadWebview(webTag, url, strUserAgent = undefined) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
             console.log("load")
