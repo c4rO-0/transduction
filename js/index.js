@@ -198,6 +198,7 @@ $(document).ready(function () {
                     path.resolve('ext/dingtalk/config.json'),
                     path.resolve('ext/latex2png/config.json'),
                     path.resolve('ext/languagetool/config.json'),
+                    path.resolve('ext/whatsapp/config.json')
                 ]
             defaultOffExtPathArray.forEach(pathConfig => {
                 uninstallExt(pathConfig)
@@ -2225,7 +2226,7 @@ $(document).ready(function () {
                     || config.webview.useragent == undefined) {
 
                 } else if (config.webview.useragent == 'linux') {
-                    // strUserAgent = core.strUserAgentLinux
+                    strUserAgent = core.strUserAgentLinux
                 }
 
                 loadWebview(config.webTag, config.webview.url, strUserAgent)
@@ -2451,7 +2452,6 @@ $(document).ready(function () {
 
     // =============================程序主体=============================
 
-    loadWebview("whatsapp", "https://web.whatsapp.com/", core.strUserAgentLinux)
 
 
     //==============================UI==============================

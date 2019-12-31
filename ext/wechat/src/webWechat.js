@@ -78,6 +78,7 @@ window.onload = function () {
     const { app } = require('electron').remote
     let rootDir = app.getAppPath()
     console.log("transduction root directory : ", rootDir )
+    console.log('current path : ', __dirname)
     const path = require('path')
     const core = require(path.join(rootDir, 'js/core.js'))
     // -----------------------

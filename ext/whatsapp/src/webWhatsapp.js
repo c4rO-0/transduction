@@ -1,13 +1,22 @@
 window.onload = function () {
 
-    const core = require("../js/core.js")
-    // const watchJS = require("../toolkit/watch-1.4.2.js")
-    // const http = require('http')
+
+    // ==============================
+    // setup transduction environment
+    const { app } = require('electron').remote
+    let rootDir = app.getAppPath()
+    console.log("transduction root directory : ", rootDir )
+    console.log('current path : ', __dirname)
+    const path = require('path')
+    const core = require(path.join(rootDir, 'js/core.js'))
+    window.$ = window.jQuery = require(path.join(rootDir, "toolkit/jquery-3.3.1.min.js"))
+    // -----------------------
+
     const fs = require('fs')
     const { net } = require('electron').remote
-    window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
+    
 
-    const wapi = require("../toolkit/wapi.js")
+    const wapi = require(path.join(__dirname, "wapi.js"))
 
     let logStatus = { "status": "offline" }
 
