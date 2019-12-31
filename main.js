@@ -13,6 +13,7 @@ const URL = require('url').URL
 const core = require("./js/core.js")
 
 const { download } = require('electron-dl');
+require('electron-reload')(__dirname)
 
 
 let win = undefined
@@ -86,10 +87,8 @@ function createWindow() {
   })
 
   win.on('close', (event) => {
-    let tdSettings = store.get('tdSettings')
-    // console.log('tdSettings : ', tdSettings)
 
-    if (tdSettings == undefined || !tdSettings.swTray) {
+    if (!store.has('tdSettings.swTray') || !store.get('tdSettings.swTray')) {
       isQuitting = true
     }
 

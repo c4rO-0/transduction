@@ -42,8 +42,16 @@ window.onload = function () {
     // console.info(process.versions.electron)
     // console.info(process.env.PWD)
     // console.info(process.cwd())
-    window.$ = window.jQuery = require("../toolkit/jquery-3.3.1.min.js")
-    const core = require("../js/core")
+    
+    // ==============================
+    // setup transduction environment
+    const { app } = require('electron').remote
+    let rootDir = app.getAppPath()
+    console.log("transduction root directory : ", rootDir )
+    const path = require('path')
+    const core = require(path.join(rootDir, 'js/core.js'))
+    window.$ = window.jQuery = require(path.join(rootDir, "toolkit/jquery-3.3.1.min.js"))
+    // -----------------------
 
     let logStatus = { "status": "offline" }
 

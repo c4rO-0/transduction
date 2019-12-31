@@ -9,6 +9,7 @@
     <link href=" ../toolkit/bootstrap-4.3.1-dist/css/bootstrap.css" rel="stylesheet" type="text/css">
     <script src="../toolkit/jquery-ui-1.12.1/jquery-ui.min.js"></script>
     <link href="../toolkit/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet" type="text/css">
+    <script src="../toolkit/leader-line.min.js"></script>
     <script src="../js/index.js"></script>
     <link href="../css/index.css" rel="stylesheet" type="text/css">
 </head>
@@ -24,14 +25,10 @@
                     <img id="weird" src="../res/pic/weird.png">
                 </div>
                 <div class="td-app-status">
-                    <img id="app-skype" class="app-offline" src="../res/pic/skype.png">
-                    <img id="app-wechat" class="app-offline" src="../res/pic/wechat.png">
-                    <img id="app-dingtalk" class="app-offline" src="../res/pic/dingtalk.png">
-                    <img id="app-whatsapp" class="app-offline" src="../res/pic/whatsapp.png">
                     <img id="td-request-status" src="../res/pic/refreshing.png">
                 </div>
             </div>
-            <div id="td-convo-container" style="overflow: auto;">
+            <div id="td-convo-container" style="overflow-y: auto; position: relative;">
                 <div class="td-convo theme-transduction td-font" style="display: none">
                     <div class="col-appLogo">
                         <img src="../res/pic/skype.png">
@@ -90,6 +87,39 @@
                         7:32 PM
                     </div>
                 </div>
+
+                <div class="td-convo theme-transduction td-font" style="display: none">
+                    <div class="col-trLogo">
+                        <img src="../res/pic/trBackground.png">
+                    </div>
+                    <div class="col-hint">
+                        <div class="row-hint theme-tr">
+                        </div>
+                    </div>
+                    <div class="col-avatar d-flex justify-content-center">
+                        <div class="td-avatar align-self-center"
+                            style="background-image: url('https://api.asm.skype.com/v1/objects/0-ea-d5-beb6f294abc5bdbd372f46002006dd6a/views/swx_avatar'); background-color: transparent">
+                        </div>
+                        <div class="td-counter">
+                            <div style="align-self:center">
+                                99
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-text flex-column justify-content-center">
+                        <div class="m-0 td-nickname">
+                            哇，这个sdfadf g字怎么这么长，躲在树后面完全就被发现了嘛
+                        </div>
+                        <div class="m-0 td-text">
+                            这个人afsadf啰 嗦地说了一大堆不知所云的废话，脑子有洞？
+                        </div>
+                    </div>
+                    <div class="col-auto pl-0 col-timestamp justify-content-around">
+                        7:32 PM
+                        <img class="td-invisible align-self-center" src="../res/pic/mute.svg" height="18px">
+                    </div>
+                </div>
+
             </div>
         </div>
         <div class="col-right td-font" id="td-right">
@@ -99,6 +129,7 @@
             </div>
             <div class="td-chat" winType="td-chat">
                 <img id="td-pin" src="../res/pic/pin.png">
+                <img id="td-mix" src="../res/pic/mix.png">
                 <div class="td-chatLog" winType="chatLog" ondragstart="return false">
                     <img id="debug-history" class="hide" src="../res/pic/history.png">
                     <div class="td-none">
@@ -224,15 +255,20 @@
                                         <img src="../res/pic/document.svg" height="56px">
                                         <div style="display: flex; flex-direction: column;">
                                             <p style="margin:0 0 0 1rem;">File Name: main_analyseData.ipynb</p>
-                                            <div style="display: flex; flex-direction:row; justify-content: space-around;">
+                                            <div
+                                                style="display: flex; flex-direction:row; justify-content: space-around;">
                                                 <p style="margin:0;">Size : 211.92 KB</p>
                                                 <button class="btn p-0 btn-link" download href="">Download</button>
-                                                <button class="btn p-0 btn-link td-downloaded" open path="">Open</button>
+                                                <button class="btn p-0 btn-link td-downloaded" open
+                                                    path="">Open</button>
                                             </div>
                                             <div class="progress td-downloading" style="height: 5px;">
-                                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 1%"></div>
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                    role="progressbar" aria-valuenow="75" aria-valuemin="0"
+                                                    aria-valuemax="100" style="width: 1%"></div>
                                             </div>
-                                            <div class="td-downloading" time-left style="text-align: end; font-size: 0.7rem;">time left：--:--</div>
+                                            <div class="td-downloading" time-left
+                                                style="text-align: end; font-size: 0.7rem;">time left：--:--</div>
                                         </div>
                                     </div>
                                     <p style="margin:0;"></p>
@@ -249,15 +285,20 @@
                                         <img src="../res/pic/document.svg" height="56px">
                                         <div style="display: flex; flex-direction: column;">
                                             <p style="margin:0 0 0 1rem;">File Name: main_analyseData.ipynb</p>
-                                            <div style="display: flex; flex-direction:row; justify-content: space-around;">
+                                            <div
+                                                style="display: flex; flex-direction:row; justify-content: space-around;">
                                                 <p style="margin:0;">Size : 211.92 KB</p>
                                                 <button class="btn p-0 btn-link" download href="">Download</button>
-                                                <button class="btn p-0 btn-link td-downloaded" open path="">Open</button>
+                                                <button class="btn p-0 btn-link td-downloaded" open
+                                                    path="">Open</button>
                                             </div>
                                             <div class="progress td-downloading" style="height: 5px;">
-                                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 1%"></div>
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                    role="progressbar" aria-valuenow="75" aria-valuemin="0"
+                                                    aria-valuemax="100" style="width: 1%"></div>
                                             </div>
-                                            <div class="td-downloading" time-left  style="text-align: start; font-size: 0.7rem;">time left：--:--</div>
+                                            <div class="td-downloading" time-left
+                                                style="text-align: start; font-size: 0.7rem;">time left：--:--</div>
                                         </div>
                                     </div>
                                     <p style="margin:0;"></p>
@@ -303,15 +344,12 @@
                         </p>
                     </div>
                 </div>
-                <div class="td-chatLog" winType="extension" style="display:none">
-                    <!-- 插入extension的地方 -->
-                    <!-- <webview data-extension-name="" src="" preload=""></webview> -->
+                <div class="td-chatLog" winType="tool" style="display:none">
+                    <!-- 插入tool的地方 -->
+                    <!-- <webview data-tool-name="" src="" preload=""></webview> -->
                 </div>
                 <div class="td-toolbox" ondragstart="return false">
-                    <img id="debug-goBackChat" class="theme-transduction" src="../res/pic/home.png">
-                    <img id="debug-firefox-send" class="theme-transduction" src="../res/pic/ffsend.png">
-                    <img id="debug-latex2png" class="theme-transduction" src="../res/pic/latex.png">
-                    <img id="debug-languagetool" class="theme-transduction" src="../res/pic/languagetool.svg">
+                    <img id="tool-goBackChat" class="theme-transduction" src="../res/pic/home.png">
                 </div>
             </div>
 
@@ -334,7 +372,8 @@
             <img style="max-width: 80vw; max-height: calc(80vh - 63px); min-width: 128px; min-height: 128px; align-self: center;"
                 data-file-ID="" src="../res/pic/nothing.png">
             <div style="align-self: center; padding-top: 7px;">
-                <img id="debug-img-send" style="width: 56px; height: 56px; margin-right: 40px;" src="../res/pic/mail.png">
+                <img id="debug-img-send" style="width: 56px; height: 56px; margin-right: 40px;"
+                    src="../res/pic/mail.png">
                 <img id="debug-img-cancel" style="width: 56px; height: 56px;" src="../res/pic/cancel.png">
             </div>
         </div>
@@ -343,62 +382,20 @@
 
     <!-- id : webview[大写字母]名称-->
     <div class="td-stealth">
-        <div id="modal-skype" class="modal fade" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <webview data-app-name="skype" preload="../js/skypePreloadv2.js" style="width:800px; height:800px"></webview>
-                    </div>
-                    <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">
-                    <!-- <button reload>reload</button> -->
-                </div>
-            </div>
-        </div>
-        <div id="modal-wechat" class="modal fade" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <webview data-app-name="wechat" preload="../js/webWechat.js" style="width:800px; height:800px">
-                        </webview>
-                    </div>
-                    <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">
-                    <!-- <button reload>reload</button> -->
-                </div>
-            </div>
-        </div>
-        <div id="modal-dingtalk" class="modal fade" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <webview data-app-name="dingtalk" preload="../js/webDingtalk.js" style="width:800px; height:800px">
-                        </webview>
-                    </div>
-                    <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">
-                    <!-- <button reload>reload</button> -->
-                </div>
-            </div>
-        </div> 
-        <div id="modal-whatsapp" class="modal fade" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <webview data-app-name="whatsapp" preload="../js/webWhatsapp.js" style="width:800px; height:800px">
-                        </webview>
-                    </div>
-                    <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">
-                    <!-- <button reload>reload</button> -->
-                </div>
-            </div>
-        </div>       
         <div id="modal-image" class="modal fade" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-body" style="display: flex; justify-content:center;">
-                        <img style="object-fit: contain; max-height: -webkit-fill-available; max-width: -webkit-fill-available;">
+                        <img
+                            style="object-fit: contain; max-height: -webkit-fill-available; max-width: -webkit-fill-available;">
                     </div>
-                    <img download href style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/download.png">
-                    <img forward href style="position: absolute; bottom: 0; left: 0; width: 42px; height: 42px;" src="../res/pic/upload.png">
-                    <img id="debug-img-rotate" style="position: absolute; bottom: 0; left: 50%; width: 42px; height: 42px; transform: translateX(-50%)" src="../res/pic/rotate.png">
+                    <img download href style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;"
+                        src="../res/pic/download.png">
+                    <img forward href style="position: absolute; bottom: 0; left: 0; width: 42px; height: 42px;"
+                        src="../res/pic/upload.png">
+                    <img id="debug-img-rotate"
+                        style="position: absolute; bottom: 0; left: 50%; width: 42px; height: 42px; transform: translateX(-50%)"
+                        src="../res/pic/rotate.png">
                     <!-- <button download href>保存</button> -->
                 </div>
             </div>
@@ -412,7 +409,7 @@
                         <div class="custom-control custom-switch">
                             <input type="checkbox" class="custom-control-input" id="swTray">
                             <label class="custom-control-label" for="swTray">Close to status bar</label>
-                          </div>
+                        </div>
                     </div>
                 </div>
             </div>
