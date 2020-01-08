@@ -15,6 +15,7 @@ Object.defineProperty(navigator, 'languages', {
 
 let initialContactList = undefined
 let isXRHinDocumentReady = false
+let isContactIDReady = false
 
 
 function addXMLRequestCallback(callback) {
@@ -123,32 +124,6 @@ window.onload = function () {
 
         // console.log("=====XMLRequest======")
         // console.dir(xhr);
-        if (!isXRHinDocumentReady && (initialContactList != undefined)) {
-
-            // console.log("change isXRHinDocumentReady", initialContactList)
-            isXRHinDocumentReady = true
-            setTimeout(() => {
-
-                initialContactList.forEach((element, index) => {
-
-                    if (_chatContent[element.UserName] != undefined) {
-                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
-                        convoScope.chatList.forEach((chat, convoIndex) => {
-                            if (chat.UserName == element.UserName) {
-                                let convo = grepConvoInChatList(chat)
-                                core.WebToHost({ "Convo-new": convo }).then((res) => {
-                                    console.log(res)
-                                }).catch((error) => {
-                                    throw error
-                                });
-                            }
-
-                        })
-                    }
-                })
-            }, 200);
-
-        }
 
         xhr.addEventListener("load", function () {
             // xhr.onreadystatechange = function () { if (xhr.readyState == 4 && xhr.status == 200) { 
@@ -254,6 +229,36 @@ window.onload = function () {
 
                         })
                     }, 200);
+                }
+
+                if (!isXRHinDocumentReady && isContactIDReady && (initialContactList != undefined)) {
+
+                    console.log("change isXRHinDocumentReady", initialContactList)
+                    isXRHinDocumentReady = true
+                    setTimeout(() => {
+        
+                        initialContactList.forEach((element, index) => {
+        
+                            if (_chatContent[element.UserName] != undefined) {
+                                let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                                convoScope.chatList.forEach((chat, convoIndex) => {
+                                    if (chat.UserName == element.UserName) {
+                                        let convo = grepConvoInChatList(chat)
+        
+                                        console.log("change isXRHinDocumentReady", convo)
+        
+                                        core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                            console.log(res)
+                                        }).catch((error) => {
+                                            throw error
+                                        });
+                                    }
+        
+                                })
+                            }
+                        })
+                    }, 200);
+        
                 }
             } catch (error) {
 
@@ -880,6 +885,7 @@ window.onload = function () {
                 window._contacts[userName].id = s.slice(s.indexOf('seq') + 'seq='.length, s.indexOf('&'))
 
             });
+            isContactIDReady = true
 
             // // 更新联系人
             // contacts = window._contacts
@@ -1006,7 +1012,7 @@ window.onload = function () {
                         let existInChatList = false
                         let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
                         convoScope.chatList.forEach((chat, convoIndex) => {
-                            if (_contact[chat.UserName].id == convoDel.userID) {
+                            if (_contacts[chat.UserName].id == convoDel.userID) {
                                 existInChatList = true
                             }
 
