@@ -873,6 +873,14 @@ window.onload = function () {
             $("#navContact").scrollTop(0)
             $("#navContact").scrollTop($("#navContact")[0].scrollHeight)
 
+            // 更新id
+            Object.keys(_contacts).forEach(function(userName) {
+
+                let s=_contacts[userName].HeadImgUrl
+                window._contacts[userName].id = s.slice(s.indexOf('seq')+'seq='.length,s.indexOf('&'))
+              
+            });
+
             // // 更新联系人
             // contacts = window._contacts
             // // 更新对话
