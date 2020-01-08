@@ -550,11 +550,11 @@ window.onload = function () {
         }
 
         let nickName = $(obj).find("div.info h3.nickname span").text()
-        let userID = $(obj).attr("data-username")
+        let userName = $(obj).attr("data-username")
 
 
         let time = new Date() // Now
-        let chatObj = _chatContent[userID]
+        let chatObj = _chatContent[userName]
         if (chatObj.length > 0) { // last MSG
             time = new Date((chatObj[chatObj.length - 1])["MMDisplayTime"] * 1000)
         }
@@ -568,11 +568,11 @@ window.onload = function () {
         let avatar = $(obj).find("div.avatar img").get(0).src
 
 
-        // console.log("convo exist : ", $("div[ng-click][data-username='" + userID + "']").length, $("div[data-username='" + userID + "']"))
-        // if ( $("div[ng-click][data-username='" + userID + "']").length == 0  ) {
+        // console.log("convo exist : ", $("div[ng-click][data-username='" + userName + "']").length, $("div[data-username='" + userName + "']"))
+        // if ( $("div[ng-click][data-username='" + userName + "']").length == 0  ) {
         //     // 元素被删除了
         //     return {
-        //         "userID": userID,
+        //         "userID": _contacts[userName].id,
         //         "time": time.getTime(),
         //         "message": "",
         //         "nickName": nickName,
@@ -607,7 +607,7 @@ window.onload = function () {
                     console.log("initial muted group")
                     counter = 0
                     if ($('#J_NavChatScrollBody').attr("data-username") == ""
-                        && (userID == "filehelper" || $(obj).hasClass("top"))) {
+                        && (userName == "filehelper" || $(obj).hasClass("top"))) {
                         action = 'a'
                     } else {
                         action = 'c'
@@ -637,7 +637,7 @@ window.onload = function () {
                 // 初始化
                 counter = 0
                 if ($('#J_NavChatScrollBody').attr("data-username") == ""
-                    && (userID == "filehelper" || $(obj).hasClass("top"))) {
+                    && (userName == "filehelper" || $(obj).hasClass("top"))) {
                     action = 'a'
                 } else {
                     action = 'c'
@@ -651,7 +651,7 @@ window.onload = function () {
         // icon web_wechat_reddot ng-scope 一个小点
 
         return {
-            "userID": userID,
+            "userID": _contacts[userName].id,
             "time": time.getTime(),
             "message": content,
             "nickName": nickName,
@@ -734,11 +734,11 @@ window.onload = function () {
             nickName = undefined
         }
 
-        let userID = obj.UserName
+        let userName = obj.UserName
 
 
         let time = new Date() // Now
-        let chatObj = _chatContent[userID]
+        let chatObj = _chatContent[userName]
         if (chatObj.length > 0) { // last MSG
             time = new Date((chatObj[chatObj.length - 1])["MMDisplayTime"] * 1000)
         }
@@ -752,11 +752,11 @@ window.onload = function () {
         let avatar = host + obj.HeadImgUrl
 
 
-        // console.log("convo exist : ", $("div[ng-click][data-username='" + userID + "']").length, $("div[data-username='" + userID + "']"))
-        // if ( $("div[ng-click][data-username='" + userID + "']").length == 0  ) {
+        // console.log("convo exist : ", $("div[ng-click][data-username='" + userName + "']").length, $("div[data-username='" + userName + "']"))
+        // if ( $("div[ng-click][data-username='" + userName + "']").length == 0  ) {
         //     // 元素被删除了
         //     return {
-        //         "userID": userID,
+        //         "userID": _contacts[userName].id,
         //         "time": time.getTime(),
         //         "message": "",
         //         "nickName": nickName,
@@ -787,7 +787,7 @@ window.onload = function () {
         let action = 'a'
         if (content == '') {
             if ($('#J_NavChatScrollBody').attr("data-username") == ""
-                && (userID == "filehelper" || obj.isTop() > 0)) {
+                && (userName == "filehelper" || obj.isTop() > 0)) {
                 action = 'a'
             } else {
                 action = 'c'
@@ -797,7 +797,7 @@ window.onload = function () {
         // icon web_wechat_reddot ng-scope 一个小点
 
         return {
-            "userID": userID,
+            "userID": _contacts[userName].id,
             "time": time.getTime(),
             "message": content,
             "nickName": nickName,
