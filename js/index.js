@@ -756,10 +756,15 @@ $(document).ready(function () {
                             $(objConvo).find("div.td-text").text(convo.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").text(convo.time)
+                            $(objConvo).find("div.col-timestamp").contents().filter(function(){ return this.nodeType == 3; }).first().replaceWith(convo.time);
                             break;
                         case "muted":
                             $(objConvo).attr('muted', convo.muted)
+                            if(convo.muted){
+                                $(objConvo).find('.align-self-center').removeClass('td-invisible')
+                            }else{
+                                $(objConvo).find('.align-self-center').addClass('td-invisible') 
+                            }
                             break;
                         default:
                             break;
