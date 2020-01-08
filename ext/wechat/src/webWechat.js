@@ -15,7 +15,6 @@ Object.defineProperty(navigator, 'languages', {
 
 let initialContactList = undefined
 let isXRHinDocumentReady = false
-let isContactIDReady = false
 
 
 function addXMLRequestCallback(callback) {
@@ -96,8 +95,6 @@ window.onload = function () {
 
     addXMLRequestCallback(processXHR);
 
-
-
     let wechatMSGType = {
         MSGTYPE_TEXT: 1,
         MSGTYPE_IMAGE: 3,
@@ -119,12 +116,55 @@ window.onload = function () {
     }
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
+    function getIDfromUserName(userName) {
+        if(_contacts[userName] !== undefined){
+            if(_contacts[userName].id !== undefined){
+                return _contacts[userName].id
+            }else{
+                let s = _contacts[userName].HeadImgUrl
+                window._contacts[userName].id = s.slice(s.indexOf('seq') + 'seq='.length, s.indexOf('&'))
+                return _contacts[userName].id
+            }
+        }else{
+            return undefined
+        }
+    }
 
     function processXHR(xhr) {
 
         // console.log("=====XMLRequest======")
         // console.dir(xhr);
 
+        if (!isXRHinDocumentReady && (initialContactList != undefined)) {
+
+            console.log("change isXRHinDocumentReady", initialContactList)
+            isXRHinDocumentReady = true
+            setTimeout(() => {
+
+                initialContactList.forEach((element, index) => {
+
+                    if (_chatContent[element.UserName] != undefined) {
+                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+                        convoScope.chatList.forEach((chat, convoIndex) => {
+                            if (chat.UserName == element.UserName) {
+                                let convo = grepConvoInChatList(chat)
+
+                                console.log("change isXRHinDocumentReady", convo)
+
+                                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                    console.log(res)
+                                }).catch((error) => {
+                                    throw error
+                                });
+                            }
+
+                        })
+                    }
+                })
+            }, 200);
+
+        }
+        
         xhr.addEventListener("load", function () {
             // xhr.onreadystatechange = function () { if (xhr.readyState == 4 && xhr.status == 200) { 
 
@@ -231,35 +271,6 @@ window.onload = function () {
                     }, 200);
                 }
 
-                if (!isXRHinDocumentReady && isContactIDReady && (initialContactList != undefined)) {
-
-                    console.log("change isXRHinDocumentReady", initialContactList)
-                    isXRHinDocumentReady = true
-                    setTimeout(() => {
-        
-                        initialContactList.forEach((element, index) => {
-        
-                            if (_chatContent[element.UserName] != undefined) {
-                                let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
-                                convoScope.chatList.forEach((chat, convoIndex) => {
-                                    if (chat.UserName == element.UserName) {
-                                        let convo = grepConvoInChatList(chat)
-        
-                                        console.log("change isXRHinDocumentReady", convo)
-        
-                                        core.WebToHost({ "Convo-new": convo }).then((res) => {
-                                            console.log(res)
-                                        }).catch((error) => {
-                                            throw error
-                                        });
-                                    }
-        
-                                })
-                            }
-                        })
-                    }, 200);
-        
-                }
             } catch (error) {
 
             }
@@ -577,7 +588,7 @@ window.onload = function () {
         // if ( $("div[ng-click][data-username='" + userName + "']").length == 0  ) {
         //     // 元素被删除了
         //     return {
-        //         "userID": _contacts[userName].id,
+        //         "userID": getIDfromUserName(userName),
         //         "time": time.getTime(),
         //         "message": "",
         //         "nickName": nickName,
@@ -656,7 +667,7 @@ window.onload = function () {
         // icon web_wechat_reddot ng-scope 一个小点
 
         return {
-            "userID": _contacts[userName].id,
+            "userID": getIDfromUserName(userName),
             "time": time.getTime(),
             "message": content,
             "nickName": nickName,
@@ -761,7 +772,7 @@ window.onload = function () {
         // if ( $("div[ng-click][data-username='" + userName + "']").length == 0  ) {
         //     // 元素被删除了
         //     return {
-        //         "userID": _contacts[userName].id,
+        //         "userID": getIDfromUserName(userName),
         //         "time": time.getTime(),
         //         "message": "",
         //         "nickName": nickName,
@@ -802,7 +813,7 @@ window.onload = function () {
         // icon web_wechat_reddot ng-scope 一个小点
 
         return {
-            "userID": _contacts[userName].id,
+            "userID": getIDfromUserName(userName),
             "time": time.getTime(),
             "message": content,
             "nickName": nickName,
@@ -854,7 +865,7 @@ window.onload = function () {
             }
             if (MSGList.length > 0) {
                 console.log("debug : dialog-----------");
-                (MSGList[0])["userID"] = _contacts[userName].id;
+                (MSGList[0])["userID"] = getIDfromUserName(userName);
                 // console.log(MSGList[0])
                 // console.log(userName)
                 // console.log(typeof(userName))
@@ -877,15 +888,6 @@ window.onload = function () {
             // console.log($("#navContact").scrollTop() , $("#navContact")[0].clientHeight, $("#navContact")[0].scrollHeight)
             $("#navContact").scrollTop(0)
             $("#navContact").scrollTop($("#navContact")[0].scrollHeight)
-
-            // 更新id
-            Object.keys(_contacts).forEach(function (userName) {
-
-                let s = _contacts[userName].HeadImgUrl
-                window._contacts[userName].id = s.slice(s.indexOf('seq') + 'seq='.length, s.indexOf('&'))
-
-            });
-            isContactIDReady = true
 
             // // 更新联系人
             // contacts = window._contacts
@@ -944,7 +946,7 @@ window.onload = function () {
                             let MSG = grepBubble(_contacts, objSlide[indexMSG], indexMSG)
                             if (MSG != undefined) {
 
-                                MSG["userID"] = _contacts[userName].id;
+                                MSG["userID"] = getIDfromUserName(userName);
                                 MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
                                 if (MSG["oldMsgID"] != '{{message.MsgId}}') {
                                     core.WebToHost({ "Dialog": [MSG] }).then((res) => {
