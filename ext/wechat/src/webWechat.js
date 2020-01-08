@@ -78,7 +78,7 @@ window.onload = function () {
     // setup transduction environment
     const { app } = require('electron').remote
     let rootDir = app.getAppPath()
-    console.log("transduction root directory : ", rootDir )
+    console.log("transduction root directory : ", rootDir)
     console.log('current path : ', __dirname)
     const path = require('path')
     const core = require(path.join(rootDir, 'js/core.js'))
@@ -458,37 +458,37 @@ window.onload = function () {
      * @param {String} strClass 
      * @returns {String}
      */
-    function emojiClasstoStr(strClass){
-        
+    function emojiClasstoStr(strClass) {
+
         let emojiRStr = strClass.slice(5)
         let emojiArray = []
         let emoji
-        if(emojiRStr.length == 4){
+        if (emojiRStr.length == 4) {
             //只有一个unicode
-            emojiArray.push('0x'+emojiRStr)
-        }else if(emojiRStr.length == 5 && emojiRStr.slice(0,2) == '1f' ){
+            emojiArray.push('0x' + emojiRStr)
+        } else if (emojiRStr.length == 5 && emojiRStr.slice(0, 2) == '1f') {
             // 以1f开头有5位
-            emojiArray.push('0x'+emojiRStr)
-        }else{
+            emojiArray.push('0x' + emojiRStr)
+        } else {
             // 估计是合成emoji, 进行拆分
             // qq的表情都是两个unicode合成的, 没有大于两个的
-            if(emojiRStr.length == 6 ){
-                emojiArray.push('0x'+emojiRStr.slice(0,2))
-                emojiArray.push('0x'+emojiRStr.slice(2))
-            }else if(emojiRStr.length == 8 ){
-                emojiArray.push('0x'+emojiRStr.slice(0,4))
-                emojiArray.push('0x'+emojiRStr.slice(4))
-            }else if(emojiRStr.length == 9){
-                if(emojiRStr.slice(0,2) == '1f'){
-                    emojiArray.push('0x'+emojiRStr.slice(0,5))
-                    emojiArray.push('0x'+emojiRStr.slice(5))
-                }else{
-                    emojiArray.push('0x'+emojiRStr.slice(0,4))
-                    emojiArray.push('0x'+emojiRStr.slice(4))
+            if (emojiRStr.length == 6) {
+                emojiArray.push('0x' + emojiRStr.slice(0, 2))
+                emojiArray.push('0x' + emojiRStr.slice(2))
+            } else if (emojiRStr.length == 8) {
+                emojiArray.push('0x' + emojiRStr.slice(0, 4))
+                emojiArray.push('0x' + emojiRStr.slice(4))
+            } else if (emojiRStr.length == 9) {
+                if (emojiRStr.slice(0, 2) == '1f') {
+                    emojiArray.push('0x' + emojiRStr.slice(0, 5))
+                    emojiArray.push('0x' + emojiRStr.slice(5))
+                } else {
+                    emojiArray.push('0x' + emojiRStr.slice(0, 4))
+                    emojiArray.push('0x' + emojiRStr.slice(4))
                 }
-            }else if(emojiRStr.length == 10){
-                emojiArray.push('0x'+emojiRStr.slice(0,5))
-                emojiArray.push('0x'+emojiRStr.slice(5))
+            } else if (emojiRStr.length == 10) {
+                emojiArray.push('0x' + emojiRStr.slice(0, 5))
+                emojiArray.push('0x' + emojiRStr.slice(5))
             }
         }
 
@@ -500,7 +500,7 @@ window.onload = function () {
         }
 
         return emoji
-    
+
     }
 
     // 
@@ -706,8 +706,8 @@ window.onload = function () {
 
         let nickNameHtml = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
         let nickName = ''
-        if(nickNameHtml && nickNameHtml != ''){
-            $('<p>'+nickNameHtml+'</p>').contents().toArray().forEach((c, i) => {
+        if (nickNameHtml && nickNameHtml != '') {
+            $('<p>' + nickNameHtml + '</p>').contents().toArray().forEach((c, i) => {
                 // 将内容进行切割, 判断是否为img
 
                 let nodeName = $(c).prop('nodeName')
@@ -730,7 +730,7 @@ window.onload = function () {
                 nickName = nickName + $(c).text()
 
             })
-        }else{
+        } else {
             nickName = undefined
         }
 
@@ -818,10 +818,10 @@ window.onload = function () {
 
 
         if ($('div.title_wrap a[data-username]').length > 0) {
-            let ID = $('div.title_wrap a[data-username]').attr('data-username')
+            let userName = $('div.title_wrap a[data-username]').attr('data-username')
 
-            let objSlide = _chatContent[ID]
-            // console.log("objSlide : id : ", ID ,objSlide)
+            let objSlide = _chatContent[userName]
+            // console.log("objSlide : userName : ", userName ,objSlide)
             let MSGList = new Array()
             for (let indexMSG in objSlide) {
                 // console.log("debug : ", indexMSG, "---->")
@@ -849,10 +849,10 @@ window.onload = function () {
             }
             if (MSGList.length > 0) {
                 console.log("debug : dialog-----------");
-                (MSGList[0])["userID"] = ID;
+                (MSGList[0])["userID"] = _contacts[userName].id;
                 // console.log(MSGList[0])
-                // console.log(ID)
-                // console.log(typeof(ID))
+                // console.log(userName)
+                // console.log(typeof(userName))
                 core.WebToHost({ "Dialog": MSGList }).then((res) => {
                     console.log(res)
                 }).catch((error) => {
@@ -874,11 +874,11 @@ window.onload = function () {
             $("#navContact").scrollTop($("#navContact")[0].scrollHeight)
 
             // 更新id
-            Object.keys(_contacts).forEach(function(userName) {
+            Object.keys(_contacts).forEach(function (userName) {
 
-                let s=_contacts[userName].HeadImgUrl
-                window._contacts[userName].id = s.slice(s.indexOf('seq')+'seq='.length,s.indexOf('&'))
-              
+                let s = _contacts[userName].HeadImgUrl
+                window._contacts[userName].id = s.slice(s.indexOf('seq') + 'seq='.length, s.indexOf('&'))
+
             });
 
             // // 更新联系人
@@ -928,9 +928,9 @@ window.onload = function () {
                 && getMSGIDFromString($(mutation.target).attr('data-cm')) != "{{message.MsgId}}") {
 
                 if ($('div.title_wrap a[data-username]').length > 0) {
-                    let ID = $('div.title_wrap a[data-username]').attr('data-username')
+                    let userName = $('div.title_wrap a[data-username]').attr('data-username')
 
-                    let objSlide = _chatContent[ID]
+                    let objSlide = _chatContent[userName]
                     for (let indexMSG in objSlide) {
 
                         if ((objSlide[indexMSG])["MsgId"] == getMSGIDFromString($(mutation.target).attr('data-cm')) &&
@@ -938,7 +938,7 @@ window.onload = function () {
                             let MSG = grepBubble(_contacts, objSlide[indexMSG], indexMSG)
                             if (MSG != undefined) {
 
-                                MSG["userID"] = ID;
+                                MSG["userID"] = _contacts[userName].id;
                                 MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
                                 if (MSG["oldMsgID"] != '{{message.MsgId}}') {
                                     core.WebToHost({ "Dialog": [MSG] }).then((res) => {
@@ -1006,7 +1006,7 @@ window.onload = function () {
                         let existInChatList = false
                         let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
                         convoScope.chatList.forEach((chat, convoIndex) => {
-                            if (chat.UserName == convoDel.userID) {
+                            if (_contact[chat.UserName].id == convoDel.userID) {
                                 existInChatList = true
                             }
 
@@ -1023,7 +1023,7 @@ window.onload = function () {
                 })
             }
 
-            if (document.hasFocus() &&  record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username') {
+            if (document.hasFocus() && record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username') {
                 // 点击新的用户
                 let convoObj = $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']")
                 if (convoObj != undefined) {
@@ -1188,27 +1188,33 @@ window.onload = function () {
 
                     console.log("debug : ", "---获取用户聊天记录----")
                     // 下面开始模拟点击
-                    let ID = arg.userID
+                    let userNameClicked = undefined
+                    Object.keys(_contacts).forEach(userNameInContact => {
+                        if (_contacts[userNameInContact].id == arg.userID) {
+                            userNameClicked = userNameInContact
+                        }
+                    })
 
-                        let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
-                        
-                        convoScope.itemClick(ID)
-                        convoScope.$apply();
 
-                        setTimeout(() => {
-                            convoScope.chatList.forEach((chat, convoIndex) => {
-                                if (chat.UserName == ID) {
-                                    let convo = grepConvoInChatList(chat)
-                                    core.WebToHost({ "Convo-new": convo }).then((res) => {
-                                        console.log(res)
-                                    }).catch((error) => {
-                                        throw error
-                                    });
-                                }
-    
-                            })
-                        }, 200);                        
-                    // }
+                    let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
+
+                    convoScope.itemClick(userNameClicked)
+                    convoScope.$apply();
+
+                    setTimeout(() => {
+                        convoScope.chatList.forEach((chat, convoIndex) => {
+                            if (chat.UserName == userNameClicked) {
+                                let convo = grepConvoInChatList(chat)
+                                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                    console.log(res)
+                                }).catch((error) => {
+                                    throw error
+                                });
+                            }
+
+                        })
+                    }, 200);
+
 
 
 
@@ -1230,8 +1236,14 @@ window.onload = function () {
                 } else if (key == 'sendDialog') {
                     console.log("--------sendDialog---")
                     // 检查
+                    let userName = undefined
+                    Object.keys(_contacts).forEach(userNameInContact => {
+                        if (_contacts[userNameInContact].id == arg[0]) {
+                            userName = userNameInContact
+                        }
+                    })
 
-                    if ($("div.title_wrap a[data-username='" + arg[0] + "']").length == 0) {
+                    if ($("div.title_wrap a[data-username='" + userName + "']").length == 0) {
                         reject("user not active")
                         return
                     }
