@@ -16,6 +16,7 @@ Object.defineProperty(navigator, 'languages', {
 let initialContactList = undefined
 let isXRHinDocumentReady = false
 
+
 function addXMLRequestCallback(callback) {
     var oldSend, i;
     if (XMLHttpRequest.callbacks) {
@@ -502,37 +503,6 @@ window.onload = function () {
     
     }
 
-    function findConvo(usrID) {
-        console.log("findConvo : ", usrID)
-        // 判断是否在_chatContent, 不在说明一定找不到
-        if (_chatContent[usrID] != undefined) {
-
-            console.log("start to search convo")
-            let convoList = "#J_NavChatScrollBody"
-
-            $(convoList).scrollTop(0)
-
-            do {
-                $(convoList).scrollTop($(convoList).scrollTop() + 60)
-
-                let convoObj = $(".chat_item.slide-left.ng-scope[data-username='" + usrID + "']")
-
-                if ($(convoObj).length > 0) {
-                    // 右侧找到convo
-                    console.log("scroll find !")
-                    return convoObj
-                } else {
-                    console.log("scroll not find")
-                }
-            } while ($(convoList).scrollTop() + $(convoList)[0].clientHeight != $(convoList)[0].scrollHeight)
-
-
-        } else {
-            console.log("findConvo : ", usrID, "not in _chatContent")
-            return undefined
-        }
-    }
-
     // 
     /**
      * 通过左侧边栏读取消息
@@ -541,8 +511,6 @@ window.onload = function () {
      * 
      */
     function grepNewMSG(obj) {
-
-
 
 
         // 筛选消息内容
@@ -1291,61 +1259,6 @@ window.onload = function () {
                             })
 
                         }
-
-                    }
-
-                    function waitSend(arrayValue, index) {
-                        // 等待发送完成
-                        let obsSwxUpdated = new MutationObserver((mutationList, observer) => {
-
-                            console.log("bubble changed : ", mutationList)
-                            mutationList.forEach((mutation, nodeIndex) => {
-                                let addedNodes = mutation.addedNodes
-                                console.log(addedNodes)
-                                if (addedNodes && $(addedNodes[0]).attr("ng-repeat") && $(addedNodes[0]).attr("ng-repeat") == "message in chatContent") {
-                                    console.log('---addedNodes----')
-                                    observer.disconnect()
-
-                                    let lastObj = $("div[ng-switch-default].me")
-                                        .last().find("div.bubble")
-                                    console.log("last me : ", $(lastObj).attr("class"), $(lastObj).attr("data-cm"))
-                                    if ($("div[ng-switch-default].me")
-                                        .last()
-                                        .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                                        .is(':hidden')) {
-                                        console.log('---send single 完成----', $("div[ng-switch-default].me")
-                                            .last().find('div.bubble').attr('data-cm'))
-                                        send(arrayValue, index + 1)
-                                    } else {
-                                        let obsFinished = new MutationObserver((mList, obs) => {
-                                            console.log('-------obs update--------')
-                                            console.log(mList)
-                                            if ($("div[ng-switch-default].me")
-                                                .last()
-                                                .find("[src='//res.wx.qq.com/a/wx_fed/webwx/res/static/img/xasUyAI.gif']")
-                                                .is(':hidden')) {
-                                                obs.disconnect()
-                                                send(arrayValue, index + 1)
-                                            }
-                                        })
-
-                                        obsFinished.observe($("div[ng-switch-default].me")
-                                            .last().find("div.bubble_cont.ng-scope")[0], {
-                                            // obsFinished.observe($('swx-message.me div.DeliveryStatus:not(.hide)').last()[0], {
-                                            subtree: true, childList: true, characterData: true, attributes: true,
-                                            attributeOldValue: false, characterDataOldValue: false
-                                        });
-                                    }
-
-
-                                }
-                            })
-
-                        })
-                        obsSwxUpdated.observe($("div[mm-repeat='message in chatContent']")[0], {
-                            subtree: false, childList: true, characterData: false, attributes: false,
-                            attributeOldValue: false, characterDataOldValue: false
-                        })
 
                     }
 
