@@ -761,9 +761,9 @@ $(document).ready(function () {
                         case "muted":
                             $(objConvo).attr('muted', convo.muted)
                             if(convo.muted){
-                                $(objConvo).find('.align-self-center').removeClass('td-invisible')
+                                $(objConvo).find('img.align-self-center').removeClass('td-invisible')
                             }else{
-                                $(objConvo).find('.align-self-center').addClass('td-invisible') 
+                                $(objConvo).find('img.align-self-center').addClass('td-invisible') 
                             }
                             break;
                         default:
@@ -986,6 +986,11 @@ $(document).ready(function () {
                 resolve("copy that.")
             } else if (key == 'Convo-new') {
                 // 有新消息来了
+
+                if(Obj.userID === undefined){
+                    reject("undefined user ID")
+                    return
+                }
 
                 let Convo = new conversation(
                     Obj.action,
