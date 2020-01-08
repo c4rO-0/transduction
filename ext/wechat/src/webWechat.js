@@ -91,18 +91,6 @@ window.onload = function () {
 
     let logStatus = { "status": "offline" }
     let skey = ''
-    // let meinUsername = undefined
-
-    // const request = require('request')
-    // const setimmediate = require('setimmediate')
-
-    // 禁止弹出提醒
-    // delete window.Notification
-
-    // var Notification = function (title, ops) {
-    //     // title is the title of the notifations, ops is the config object
-    //     console.log("Notification : ", title, ops)
-    // };
 
     addXMLRequestCallback(processXHR);
 
@@ -207,8 +195,6 @@ window.onload = function () {
                         }
 
                     })
-                    // console.log("new xrh--->")
-                    // console.log(response.AddMsgList)
 
                 }
 
@@ -245,15 +231,6 @@ window.onload = function () {
                 if (response.ContactList != undefined && response.ContactList.length > 0) {
 
                     console.log("initial initialContactList : ", response.ContactList)
-                    // let convoObj = findConvo('filehelper')
-                    // if (convoObj != undefined) {
-                    //     let convoClicked = grepNewMSG(convoObj)
-                    //     core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-                    //         console.log(res)
-                    //     }).catch((error) => {
-                    //         throw error
-                    //     });
-                    // }
 
                     setTimeout(() => {
 
@@ -407,34 +384,6 @@ window.onload = function () {
             // 缓存图片
             // console.log("type img")
             type = 'img'
-            // if (MSG["MMThumbSrc"]) { //小图片, 直接原图
-            //     content = MSG["MMThumbSrc"]
-            //     // let scriptSrc = $("script[async][src*='skey']").attr("src")
-            //     // console.log(scriptSrc)
-            //     // let posskey =  scriptSrc.indexOf('skey')
-            //     // let skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
-            //     // console.log(skey)
-            //     let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-            //         + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-            //         + "&skey=" + skey
-            //     // console.log(imgUrl)
-            //     content = imgUrl
-            // } else {
-            //     // 置换内容
-            //     let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + $(MSGObj).find("img.msg-img").attr("src")
-            //     if (imgUrl) {
-            //         content = imgUrl
-            //         // 还原为原始大小
-            //         content = content.slice(0, -"&type=slave".length)
-            //     } else { // 找不到地址, 可能网页元素已经被删除
-            //         content = MSG["MMThumbSrc"]
-            //         let imgUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'))
-            //             + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?&MsgID=" + MSGID
-            //             + "&skey=" + skey
-            //         // console.log(imgUrl)
-            //         content = imgUrl
-            //     }
-            // }
             if (status == 'sending' || status == 'failed') {
                 if (MSG["MMThumbSrc"]) {
                     content = MSG["MMThumbSrc"]
@@ -1039,28 +988,6 @@ window.onload = function () {
 
     }
 
-    // 消息发生变更
-    // var callbackChatInitial = function (records, observe) {
-
-    //     if (initialContactList != undefined) {
-    //         observe.disconnect()
-    //         initialContactList.forEach((element, index) => {
-
-    //             let convoObj = findConvo(element.UserName)
-    //             if (convoObj != undefined) {
-    //                 let convoClicked = grepNewMSG(convoObj)
-    //                 core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
-    //                     console.log(res)
-    //                 }).catch((error) => {
-    //                     throw error
-    //                 });
-    //             }
-
-    //         })
-    //         initialContactList = undefined
-    //     }
-
-    // }
 
     var callbackChat = function (records) {
         console.log("debug : ===========chat changed============")
@@ -1122,8 +1049,6 @@ window.onload = function () {
 
             if (document.hasFocus() &&  record.target == $("#J_NavChatScrollBody")[0] && record.attributeName == 'data-username') {
                 // 点击新的用户
-                // arrayObjUser.push(
-                //     $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']"))
                 let convoObj = $(".chat_item.slide-left.ng-scope[data-username='" + $("#J_NavChatScrollBody").attr('data-username') + "']")
                 if (convoObj != undefined) {
                     let convoClicked = grepNewMSG(convoObj)
@@ -1138,28 +1063,6 @@ window.onload = function () {
             }
 
         })
-
-        // console.log("debug : ", "------array:user-----")
-        // console.log(arrayObjUser)
-
-        // // console.log("debug : ", "------array:MSG-----")
-        // arrayObjUser.forEach((currentValue, index) => {
-        //     // console.log("debug : ", index)
-        //     arrayContent.push(grepNewMSG(currentValue))
-        // })
-
-        // // console.log("debug : ", "------array:MSG-----")
-        // // console.log(arrayContent)
-        // arrayContent.forEach((currentValue, index) => {
-        //     // 向index发出新消息提醒
-        //     core.WebToHost({ "Convo-new": currentValue }).then((res) => {
-        //         console.log(res)
-        //     }).catch((error) => {
-        //         throw error
-        //     });
-        // })
-
-
 
     };
 
@@ -1239,8 +1142,6 @@ window.onload = function () {
                     });
                     observer.disconnect()
 
-                    // addXMLRequestCallback(processXHR);
-
 
                 }
             }
@@ -1274,19 +1175,8 @@ window.onload = function () {
                 attributeFilter: ["src"],
                 attributes: true, attributeOldValue: true
             });
-            // let scriptSrc = $("script[async][src*='skey']").attr("src")
-            // // console.log(scriptSrc)
-            // let posskey =  scriptSrc.indexOf('skey')
-            // skey = scriptSrc.slice(posskey + 'skey='.length, scriptSrc.indexOf('&', posskey) )
 
-            // addXMLRequestCallback(processXHR);
         }
-
-
-        // let contacts = window._contacts
-        // let chatContent = window._chatContent
-
-        // let remarkName = "乐宏昊"
 
         // 等待拉取联系人
         let obsContact = new MutationObserver(callbackContact);
@@ -1297,15 +1187,6 @@ window.onload = function () {
 
         // 截取新消息
         // 观察左侧消息变动
-        // let obsChatInitial = new MutationObserver(callbackChatInitial);
-
-        // obsChatInitial.observe($("#J_NavChatScrollBody")[0], {
-        //     childList: true,
-        //     subtree: true,
-        //     characterData: false,
-        //     attributes: false, attributeOldValue: false
-        // });
-
         let obsChat = new MutationObserver(callbackChat);
 
         obsChat.observe($("#J_NavChatScrollBody")[0], {
@@ -1333,9 +1214,6 @@ window.onload = function () {
                     // 下面开始模拟点击
                     let ID = arg.userID
 
-                    // if ($("div.chat_item[data-username='" + ID + "']").length > 0) {
-                    //     $("div.chat_item[data-username='" + ID + "']").click()
-                    // } else {
                         let convoScope = angular.element(document.getElementById("J_NavChatScrollBody")).scope()
                         
                         convoScope.itemClick(ID)
@@ -1394,39 +1272,19 @@ window.onload = function () {
 
                         value = arrayValue[index]
                         if (typeof (value) == 'string') {
-                            // console.log(value)
 
-                            // $('#editArea').text(value)
                             angular.element('pre:last').scope().editAreaCtn = core.htmlEntities(value)
 
-                            // angular.element('pre:last').scope().editAreaCtn = $('#editArea').html()
-
-                            // let e = $.Event("keydown", { keyCode: 64 }); //64没有对应按键
-                            // $("#chatInputAreaWithQuotes").trigger(e);
-
-                            // let obsSend = new MutationObserver((mutationList, observer) => {
-                            // $('a[ng-click="sendTextMessage()"]').click()
                             angular.element('pre:last').scope().sendTextMessage();
 
                             console.log("---text---")
-                            // waitSend(arrayValue, index)
-                            // send(arrayValue, index + 1)
 
                             send(arrayValue, index + 1)
 
-                            // observer.disconnect()
-                            // });
-                            // obsSend.observe($('div.send-button-holder button')[0], {
-                            //     subtree: false, childList: false, characterData: false, attributes: true,
-                            //     attributeOldValue: false, characterDataOldValue: false
-                            // });
-
                         } else {
-                            // $("div.webuploader-pick").attr('class','webuploader-pick webuploader-pick-hover')
-                            // $('input.webuploader-element-invisible').click()
+
                             core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---", value)
-                                // waitSend(arrayValue, index)
 
                                 send(arrayValue, index + 1)
 
