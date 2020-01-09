@@ -1,0 +1,19 @@
+{
+    "name": "whatsapp", 
+    "version": "1.0",
+    "tr_version": "1.0.0",
+    "type": "app",
+    "unicode":"Q3PT3WJ1LP",
+    "webview": {
+        "url": "https://web.whatsapp.com/",
+        "useragent": "linux",
+        "script": "src/webWhatsapp.js"
+    },
+    "icon": {
+        "48":"",
+        "128":"",
+        "any":"src/whatsapp.png",
+        "color":"#1aad19"
+    },
+    "action_script": "src/action.js"
+}

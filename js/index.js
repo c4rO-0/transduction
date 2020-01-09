@@ -94,8 +94,6 @@ $(document).ready(function () {
     const fs = require('fs')
     const path = require('path')
 
-    console.log(process.versions.electron)
-
     /** 储存要发送的file object
      *  为了能够保证文件能够顺利的发送, fileList不会清除
      */
@@ -200,6 +198,7 @@ $(document).ready(function () {
                     path.resolve('ext/dingtalk/config.json'),
                     path.resolve('ext/latex2png/config.json'),
                     path.resolve('ext/languagetool/config.json'),
+                    path.resolve('ext/whatsapp/config.json')
                 ]
             defaultOffExtPathArray.forEach(pathConfig => {
                 uninstallExt(pathConfig)
@@ -757,10 +756,15 @@ $(document).ready(function () {
                             $(objConvo).find("div.td-text").text(convo.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").text(convo.time)
+                            $(objConvo).find("div.col-timestamp").contents().filter(function(){ return this.nodeType == 3; }).first().replaceWith(convo.time);
                             break;
                         case "muted":
                             $(objConvo).attr('muted', convo.muted)
+                            if(convo.muted){
+                                $(objConvo).find('img.align-self-center').removeClass('td-invisible')
+                            }else{
+                                $(objConvo).find('img.align-self-center').addClass('td-invisible') 
+                            }
                             break;
                         default:
                             break;
@@ -983,6 +987,11 @@ $(document).ready(function () {
             } else if (key == 'Convo-new') {
                 // 有新消息来了
 
+                if(Obj.userID === undefined){
+                    reject("undefined user ID")
+                    return
+                }
+
                 let Convo = new conversation(
                     Obj.action,
                     Obj.userID,
@@ -1124,6 +1133,12 @@ $(document).ready(function () {
                 // 按键模拟
 
                 keypressSimulator(webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
+
+                resolve("simulated")
+            } else if (key == 'simulateMouse') {
+                // 按键模拟
+                console.log("simulateMouse", Obj)
+                mouseSimulator(webTag2Selector(webTag), Obj.type, Obj.x, Obj.y)
 
                 resolve("simulated")
             } else if (key == 'logStatus') {
@@ -1982,6 +1997,58 @@ $(document).ready(function () {
 
     }
 
+
+    /**
+ * chrome debugger for mouse : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
+ * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
+ * @param {string} webSelector 'webview[data-app-name="skype"]'
+ * @param {string} type nousedown, mouseup, click
+ */
+    function mouseSimulator(webSelector, type, x, y) {
+
+
+        let wc = $(webSelector).get(0).getWebContents();
+
+        // console.log("---attachInputFile----")
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.2");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+
+        switch (type) {
+            case 'click':
+
+                wc.debugger
+                    .sendCommand("Input.dispatchMouseEvent", {
+                        type: 'mousePressed',
+                        x: x,
+                        y: y,
+                        button: "left",
+                        clickCount: 1
+                    })
+
+                wc.debugger
+                    .sendCommand("Input.dispatchMouseEvent", {
+                        type: 'mouseReleased',
+                        x: x,
+                        y: y,
+                        button: "left",
+                        clickCount: 1
+                    })
+                
+
+                break;
+            default:
+                throw new Error("Unknown type of event.");
+                break;
+        }
+
+
+    }
+
     function attachInputFile(webSelector, inputSelector, filePath) {
 
 
@@ -2028,20 +2095,24 @@ $(document).ready(function () {
 
 
 
-    function loadWebview(webTag, url, strUserAgent) {
+    function loadWebview(webTag, url, strUserAgent = undefined) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
             console.log("load")
 
             // $(webTag2Selector(webTag)).attr('partition',webTag)
 
+            if (strUserAgent) {
+                $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
+                    {
+                        "userAgent":
+                            "userAgent : " + strUserAgent,
+                        "extraHeaders": "User-Agent:" + strUserAgent + "\n"
+                    })
+            } else {
+                $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
+            }
 
-            $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
-                {
-                    "userAgent":
-                        "userAgent : " + strUserAgent,
-                    "extraHeaders": "User-Agent:" + strUserAgent + "\n"
-                })
 
             // 静音
             $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
@@ -2165,7 +2236,7 @@ $(document).ready(function () {
                     || config.webview.useragent == undefined) {
 
                 } else if (config.webview.useragent == 'linux') {
-                    // strUserAgent = core.strUserAgentLinux
+                    strUserAgent = core.strUserAgentLinux
                 }
 
                 loadWebview(config.webTag, config.webview.url, strUserAgent)
