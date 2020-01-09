@@ -965,7 +965,7 @@ window.onload = function () {
         })
 
         if (addedNewBubble) {
-            console.log(mutationList)
+            console.log("addedNewBubble", mutationList)
             grepAndSendRight()
         }
 
@@ -1229,7 +1229,7 @@ window.onload = function () {
                     obsRight.disconnect()
                     obsRight.observe($("div[mm-repeat='message in chatContent']")[0], {
                         subtree: true, childList: true, characterData: false, attributes: true,
-                        attributeFilter: ["data-cm"],
+                        // attributeFilter: ["data-cm"],
                         attributeOldValue: true, characterDataOldValue: false
                     })
 
