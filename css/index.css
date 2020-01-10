@@ -174,7 +174,7 @@ webview {
     transition: all 0.15s ease;
     opacity: 0;
     height: 40px;
-    position: relative;
+    position: absolute;
     left: 50px;
     top: 8px;
     z-index: 1;
