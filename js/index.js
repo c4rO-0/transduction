@@ -50,14 +50,21 @@ function toggleWebview(webTag) {
  * @param {string} appTag
  */
 function openDevtool(appTag) {
-    let web = $("webview[data-app-name='" + appTag + "']")[0];
-    web.openDevTools();
+
+    if($("webview[data-app-name='" + appTag + "']").length > 0 ){
+        let web = $("webview[data-app-name='" + appTag + "']")[0];
+        web.openDevTools();
+    }else if($("webview[data-tool-name='" + appTag + "']").length > 0 ){
+        let web = $("webview[data-tool-name='" + appTag + "']")[0];
+        web.openDevTools();
+    }else{
+        return false
+    }
+
+    return true
+
 }
 
-function openToolDevtool(toolTag) {
-    let web = $("webview[data-tool-name='" + toolTag + "']")[0];
-    web.openDevTools();
-}
 
 function listWebview() {
     $("webview").toArray().forEach((e, i) => {
@@ -2756,7 +2763,10 @@ $(document).ready(function () {
     })
 
     $(document).on('click', '[devtool]', (e)=>{
-        openDevtool( $(e.target).closest('div[exttag]').attr('exttag'))
+        let webTag = $(e.target).closest('div[exttag]').attr('exttag')
+        if(! openDevtool( webTag )){
+            console.error('open Devtool failed, because no webview with tag : ', webTag)
+        }
     })
     // ======================拖入东西==========================
     // 检测到拖入到东西
