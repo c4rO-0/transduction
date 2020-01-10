@@ -94,6 +94,14 @@ $(document).ready(function () {
     const fs = require('fs')
     const path = require('path')
 
+    let debug = false
+    core.sendToMain({'isDebug':''}).then((res)=>{
+        debug = res.isDebug
+        if(debug){
+            console.log('===You are in debug mod===')
+        }
+    })
+
     /** 储存要发送的file object
      *  为了能够保证文件能够顺利的发送, fileList不会清除
      */
@@ -2554,19 +2562,20 @@ $(document).ready(function () {
 
     $('#modal-settings').on('show.bs.modal', function (e) {
 
+
+        // 加载 ext
         $('div[extTag]').remove()
+        
         // load extList
         if (store.has('tdSettings.extList')) {
             let extListStore = store.get('tdSettings.extList')
             $.each(extListStore, (webTag, details) => {
-
-                // console.log(' ', webTag,' | ', details.status ? "on":"off", " | ", details.configPath)
+                // console.log(' ', webTag,' | ', details.status , debug, (debug && details.status) )
                 $("#modal-settings .modal-body").append(
                     '<div extTag="' + webTag + '">\
 <input type="checkbox" ' + (details.status ? 'checked="checked"' : '') + '>\
-<label >'+ details.name + '</label>\
-</div>')
-
+<label >'+ details.name + '</label>'+ ( (debug && details.status) ? ' <button devTool>devTool</button>' : '' )
++'</div>')
             })
         }
     })
@@ -2742,6 +2751,13 @@ $(document).ready(function () {
         }
     })
 
+    $('#openDevTools').on('click', ()=>{
+        core.sendToMain({ "openDevTools": "" })
+    })
+
+    $(document).on('click', '[devtool]', (e)=>{
+        openDevtool( $(e.target).closest('div[exttag]').attr('exttag'))
+    })
     // ======================拖入东西==========================
     // 检测到拖入到东西
     // 当tool打开的时候, 只接受输入框位置拖入
