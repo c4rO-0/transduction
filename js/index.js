@@ -106,6 +106,9 @@ $(document).ready(function () {
         debug = res.isDebug
         if(debug){
             console.log('===You are in debug mod===')
+            $("#openDevTools").show()
+        }else{
+            $("#openDevTools").hide()
         }
     })
 
