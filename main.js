@@ -3,7 +3,7 @@ const Store = require('electron-store')
 const config = new Store()
 const store = new Store()
 
-const debug = /--debug/.test(process.argv[2])
+
 
 const os = require('os');
 const path = require('path');
@@ -11,6 +11,9 @@ const fs = require('fs');
 const URL = require('url').URL
 
 const core = require("./js/core.js")
+
+const debug = /--debug/.test(process.argv[2])
+
 
 const { download } = require('electron-dl');
 require('electron-reload')(__dirname)
@@ -36,6 +39,7 @@ function createWindow() {
   // console.log(opts)  
   win = new BrowserWindow(opts)
   win.loadFile('./html/index.html')
+
   if (debug) {
     win.webContents.openDevTools()
   }
@@ -273,6 +277,10 @@ function respFuncMainReply(key, Obj) {
       win.focus()
     } else if (key == 'show') {
       win.show()
+    } else if (key == 'openDevTools'){
+      win.webContents.openDevTools()
+    } else if (key == 'isDebug'){
+      resolve(debug)
     }
   })])
 }

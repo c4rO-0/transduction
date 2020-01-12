@@ -50,14 +50,21 @@ function toggleWebview(webTag) {
  * @param {string} appTag
  */
 function openDevtool(appTag) {
-    let web = $("webview[data-app-name='" + appTag + "']")[0];
-    web.openDevTools();
+
+    if($("webview[data-app-name='" + appTag + "']").length > 0 ){
+        let web = $("webview[data-app-name='" + appTag + "']")[0];
+        web.openDevTools();
+    }else if($("webview[data-tool-name='" + appTag + "']").length > 0 ){
+        let web = $("webview[data-tool-name='" + appTag + "']")[0];
+        web.openDevTools();
+    }else{
+        return false
+    }
+
+    return true
+
 }
 
-function openToolDevtool(toolTag) {
-    let web = $("webview[data-tool-name='" + toolTag + "']")[0];
-    web.openDevTools();
-}
 
 function listWebview() {
     $("webview").toArray().forEach((e, i) => {
@@ -93,6 +100,17 @@ $(document).ready(function () {
     const request = require('request')
     const fs = require('fs')
     const path = require('path')
+
+    let debug = false
+    core.sendToMain({'isDebug':''}).then((res)=>{
+        debug = res.isDebug
+        if(debug){
+            console.log('===You are in debug mod===')
+            $("#openDevTools").show()
+        }else{
+            $("#openDevTools").hide()
+        }
+    })
 
     /** 储存要发送的file object
      *  为了能够保证文件能够顺利的发送, fileList不会清除
@@ -2554,19 +2572,20 @@ $(document).ready(function () {
 
     $('#modal-settings').on('show.bs.modal', function (e) {
 
+
+        // 加载 ext
         $('div[extTag]').remove()
+        
         // load extList
         if (store.has('tdSettings.extList')) {
             let extListStore = store.get('tdSettings.extList')
             $.each(extListStore, (webTag, details) => {
-
-                // console.log(' ', webTag,' | ', details.status ? "on":"off", " | ", details.configPath)
+                // console.log(' ', webTag,' | ', details.status , debug, (debug && details.status) )
                 $("#modal-settings .modal-body").append(
                     '<div extTag="' + webTag + '">\
 <input type="checkbox" ' + (details.status ? 'checked="checked"' : '') + '>\
-<label >'+ details.name + '</label>\
-</div>')
-
+<label >'+ details.name + '</label>'+ ( (debug && details.status) ? ' <button devTool>devTool</button>' : '' )
++'</div>')
             })
         }
     })
@@ -2742,6 +2761,16 @@ $(document).ready(function () {
         }
     })
 
+    $('#openDevTools').on('click', ()=>{
+        core.sendToMain({ "openDevTools": "" })
+    })
+
+    $(document).on('click', '[devtool]', (e)=>{
+        let webTag = $(e.target).closest('div[exttag]').attr('exttag')
+        if(! openDevtool( webTag )){
+            console.error('open Devtool failed, because no webview with tag : ', webTag)
+        }
+    })
     // ======================拖入东西==========================
     // 检测到拖入到东西
     // 当tool打开的时候, 只接受输入框位置拖入
