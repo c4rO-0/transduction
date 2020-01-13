@@ -14,7 +14,7 @@ const $ = require("jquery")
 const {tdBasic} = require("tdBasic")
 
 
-class Message {
+class tdMessage {
     constructor() {
 
     }
@@ -543,4 +543,4 @@ static mainSendToWin(win, msg) {
     }
 }
 
-module.exports = {Message}
+module.exports = {tdMessage}

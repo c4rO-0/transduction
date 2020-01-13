@@ -23,7 +23,8 @@
     "jquery": "^3.4.1",
     "mkdirp": "^0.5.1",
     "request": "^2.88.0",
-    "tdBasic": "file:module/tdBasic"
+    "tdBasic": "file:module/tdBasic",
+    "tdMessage": "file:module/tdMessage"
   },
   "build": {
     "appId": "com.aaronlenoir.gnucash-reporter",
