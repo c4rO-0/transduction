@@ -10,18 +10,7 @@ const electron = require("electron");
 const ipcRender = electron.ipcRenderer
 const ipcMain = electron.ipcMain
 
-const path = require('path')
-
-let rootDir = undefined
-try {
-    rootDir =  require('electron').remote.app.getAppPath()
-} catch (error) {
-    rootDir = require('electron').app.getAppPath()
-}
-console.log("transduction root directory : ", rootDir )
-console.log('current path : ', __dirname)
-
-const $ = require(path.join(rootDir, "toolkit/jquery-3.3.1.min.js"))
+const $ = require("jquery")
 const {tdBasic} = require("tdBasic")
 
 
