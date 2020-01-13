@@ -10,9 +10,19 @@ const electron = require("electron");
 const ipcRender = electron.ipcRenderer
 const ipcMain = electron.ipcMain
 
-const $ = require('jquery')
+const path = require('path')
 
-const {Basic} = require("basic")
+let rootDir = undefined
+try {
+    rootDir =  require('electron').remote.app.getAppPath()
+} catch (error) {
+    rootDir = require('electron').app.getAppPath()
+}
+console.log("transduction root directory : ", rootDir )
+console.log('current path : ', __dirname)
+
+const $ = require(path.join(rootDir, "toolkit/jquery-3.3.1.min.js"))
+const {Basic} = require(path.join(rootDir, "js/lib/basic.js"))
 
 
 class Message {
@@ -25,7 +35,7 @@ class Message {
      * @returns {Promise}
      * 对方通过调用MainReply返回回来的消息.
      */
-    sendToMain(msg) {
+    static sendToMain(msg) {
         // console.log(Basic.uniqueStr())
 
         return Promise.race([new Promise((resolve, reject) => {
@@ -89,7 +99,7 @@ class Message {
      * 实际要传递的内容
      * return Promise
      */
-    MainReply(fcnResponse) {
+    static MainReply(fcnResponse) {
         ipcMain.on('msg-ipc-asy-to-main', function (event, uStr, arg) {
 
             console.log("========================")
@@ -130,7 +140,7 @@ class Message {
  * @returns {Promise} 
  * 对方通过调用WinReply返回回来的消息.
  */
-    sendToWin(winID, msg) {
+static sendToWin(winID, msg) {
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -192,7 +202,7 @@ class Message {
  * 实际要传递的内容
  * return Promise
  */
-    WinReply(fcnResponse) {
+static WinReply(fcnResponse) {
 
         // win to win
         ipcRender.on('msg-ipc-asy-to-win', function (event, uStr, arg) {
@@ -267,7 +277,7 @@ class Message {
 * @returns {Promise} 
 * 对方通过调用WinReply返回回来的消息.
 */
-    mainSendToWin(win, msg) {
+static mainSendToWin(win, msg) {
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -324,7 +334,7 @@ class Message {
      * @returns {Promise} 
      * 对方通过调用WebReply返回的消息
      */
-    HostSendToWeb(webSelector, msg, timeout = 5000) {
+    static HostSendToWeb(webSelector, msg, timeout = 5000) {
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -395,7 +405,7 @@ class Message {
      * 实际要传递的内容
      * return Promise
      */
-    WebReply(fcnResponse) {
+    static WebReply(fcnResponse) {
 
         ipcRender.on('msg-ipc-asy-from-host-to-web', function (event, uStr, arg) {
 
@@ -435,7 +445,7 @@ class Message {
      * @returns {Promise} 
      * 对方通过调用WinReplyWeb返回回来的消息
      */
-    WebToHost(msg) {
+    static WebToHost(msg) {
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -499,7 +509,7 @@ class Message {
      * 实际要传递的内容
      * return Promise
      */
-    WinReplyWeb(webSelector, fcnResponse) {
+    static WinReplyWeb(webSelector, fcnResponse) {
         // let web = document.getElementById(webviewID);
 
         if ($(webSelector).length == 0) {
