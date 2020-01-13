@@ -2,7 +2,6 @@
  * all message passed here
  */
 
-
 // ====================================
 //  require
 // ------------------------------------
@@ -10,31 +9,24 @@
 const electron = require("electron");
 const ipcRender = electron.ipcRenderer
 const ipcMain = electron.ipcMain
-//  读取本地文件
-const fs = require('fs');
-// 声明Jquery
-const $ = require('../toolkit/jquery-3.3.1.min.js')
 
-// =============================
-// local Function
-// 库函数需要的一些局域函数
-// -----------------------------
+const $ = require('jquery')
+
+const {Basic} = require("basic")
 
 
-// ====================================
-/**
- * core Module Function
- */
-module.exports = {
+class Message {
+    constructor() {
 
+    }
     /**
      * 向Main发送消息
      * @param {Object} msg 要发送的信息, object.length必须为1
      * @returns {Promise}
      * 对方通过调用MainReply返回回来的消息.
      */
-    sendToMain: function (msg) {
-        // console.log(UniqueStr())
+    sendToMain(msg) {
+        // console.log(Basic.uniqueStr())
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -63,7 +55,7 @@ module.exports = {
 
                 }
 
-                let uStr = UniqueStr()
+                let uStr = Basic.uniqueStr()
                 ipcRender.send('msg-ipc-asy-to-main', uStr, msg);
                 // 等待回复
                 let listenerRe = ipcRender.once('msg-ipc-asy-main-reply-' + uStr, handleMsg)
@@ -83,7 +75,7 @@ module.exports = {
         //         reject("HostSendToWeb : time out")
         //     }, 5000);
         // })])
-    },
+    }
     /**
      * main process 处理消息并返回处理结果.
      * 例如 : 查询全部窗口的id
@@ -97,7 +89,7 @@ module.exports = {
      * 实际要传递的内容
      * return Promise
      */
-    MainReply: function (fcnResponse) {
+    MainReply(fcnResponse) {
         ipcMain.on('msg-ipc-asy-to-main', function (event, uStr, arg) {
 
             console.log("========================")
@@ -127,17 +119,18 @@ module.exports = {
                 event.sender.send('msg-ipc-asy-main-reply-' + uStr, returnValue)
             }
         })
-    },
+    }
+
     /**
-     * 向某个窗口发送消息
-     * @param {Int} winID 
-     * 要发送的窗口ID
-     * @param {Object} msg 
-     * 要发送的信息, object.length必须为1
-     * @returns {Promise} 
-     * 对方通过调用WinReply返回回来的消息.
-     */
-    sendToWin: function (winID, msg) {
+ * 向某个窗口发送消息
+ * @param {Int} winID 
+ * 要发送的窗口ID
+ * @param {Object} msg 
+ * 要发送的信息, object.length必须为1
+ * @returns {Promise} 
+ * 对方通过调用WinReply返回回来的消息.
+ */
+    sendToWin(winID, msg) {
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -162,7 +155,7 @@ module.exports = {
 
                 }
 
-                let uStr = UniqueStr()
+                let uStr = Basic.uniqueStr()
                 ipcRender.sendTo(winID, 'msg-ipc-asy-to-win', uStr, msg);
                 // 等待回复
                 let listenerRe = ipcRender.once('msg-ipc-asy-win-reply-' + uStr, handleMsg)
@@ -183,23 +176,23 @@ module.exports = {
         //         reject("HostSendToWeb : time out")
         //     }, 5000);
         // })])
-    },
+    }
     /**
-     * window 处理sendToWin函数发来的消息.
-     * 该函数只负责给收到的信息进行分类和将处理结果返回给发送者.
-     * 具体对消息进行响应的是fcnResponse
-     * @param {Function} fcnResponse 
-     * 实际处理的处理函数.
-     * @returns {null}
-     * 
-     * @function fcnResponse(key,arg)
-     * @param {String} key
-     * 发送数据的标识 query, execute...
-     * @param {any} arg
-     * 实际要传递的内容
-     * return Promise
-     */
-    WinReply: function (fcnResponse) {
+ * window 处理sendToWin函数发来的消息.
+ * 该函数只负责给收到的信息进行分类和将处理结果返回给发送者.
+ * 具体对消息进行响应的是fcnResponse
+ * @param {Function} fcnResponse 
+ * 实际处理的处理函数.
+ * @returns {null}
+ * 
+ * @function fcnResponse(key,arg)
+ * @param {String} key
+ * 发送数据的标识 query, execute...
+ * @param {any} arg
+ * 实际要传递的内容
+ * return Promise
+ */
+    WinReply(fcnResponse) {
 
         // win to win
         ipcRender.on('msg-ipc-asy-to-win', function (event, uStr, arg) {
@@ -263,17 +256,18 @@ module.exports = {
             }
 
         })
-    },
+    }
+
     /**
-    * 向某个窗口发送消息
-    * @param {} win
-    * 要发送的窗口ID
-    * @param {Object} msg 
-    * 要发送的信息, object.length必须为1
-    * @returns {Promise} 
-    * 对方通过调用WinReply返回回来的消息.
-    */
-    mainSendToWin: function (win, msg) {
+* 向某个窗口发送消息
+* @param {} win
+* 要发送的窗口ID
+* @param {Object} msg 
+* 要发送的信息, object.length必须为1
+* @returns {Promise} 
+* 对方通过调用WinReply返回回来的消息.
+*/
+    mainSendToWin(win, msg) {
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -298,7 +292,7 @@ module.exports = {
 
                 }
 
-                let uStr = UniqueStr()
+                let uStr = Basic.uniqueStr()
                 win.webContents.send('msg-ipc-asy-main-to-win', uStr, msg);
                 // 等待回复
                 let listenerRe = ipcMain.once('msg-ipc-asy-win-reply-main-' + uStr, handleMsg)
@@ -319,7 +313,8 @@ module.exports = {
         //         reject("HostSendToWeb : time out")
         //     }, 5000);
         // })])
-    },
+    }
+
     /**
      * 窗口向该窗口下某个webview发送消息
      * @param {String} webSelector
@@ -329,7 +324,7 @@ module.exports = {
      * @returns {Promise} 
      * 对方通过调用WebReply返回的消息
      */
-    HostSendToWeb: function (webSelector, msg, timeout = 5000) {
+    HostSendToWeb(webSelector, msg, timeout = 5000) {
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -359,7 +354,7 @@ module.exports = {
 
                 }
 
-                let uStr = UniqueStr()
+                let uStr = Basic.uniqueStr()
 
                 // let web = document.getElementById(webviewID);
                 let web = $(webSelector).get(0);
@@ -383,7 +378,8 @@ module.exports = {
                 reject("HostSendToWeb : time out")
             }, timeout);
         })])
-    },
+    }
+
     /**
      * webview 处理HostSendToWeb函数发来的消息.
      * 该函数只负责给收到的信息进行分类和将处理结果返回给发送者.
@@ -399,7 +395,7 @@ module.exports = {
      * 实际要传递的内容
      * return Promise
      */
-    WebReply: function (fcnResponse) {
+    WebReply(fcnResponse) {
 
         ipcRender.on('msg-ipc-asy-from-host-to-web', function (event, uStr, arg) {
 
@@ -430,7 +426,8 @@ module.exports = {
             }
 
         })
-    },
+    }
+
     /**
      * webview像其所属窗口发送消息
      * @param {Object} msg 
@@ -438,8 +435,8 @@ module.exports = {
      * @returns {Promise} 
      * 对方通过调用WinReplyWeb返回回来的消息
      */
-    WebToHost: function (msg) {
-        
+    WebToHost(msg) {
+
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
                 reject("WebToHost : no msg")
@@ -463,7 +460,7 @@ module.exports = {
 
                 }
 
-                let uStr = UniqueStr()
+                let uStr = Basic.uniqueStr()
                 ipcRender.sendToHost('msg-ipc-asy-web-to-host', uStr, msg);
                 // 等待回复
                 let listenerRe = ipcRender.once('msg-ipc-asy-win-reply-web-' + uStr, handleMsg)
@@ -483,7 +480,8 @@ module.exports = {
         //         reject("HostSendToWeb : time out")
         //     }, 5000);
         // })])
-    },
+    }
+
     /**
      * window 处理WebToHost函数发来的消息.
      * 该函数只负责给收到的信息进行分类和将处理结果返回给发送者.
@@ -501,7 +499,7 @@ module.exports = {
      * 实际要传递的内容
      * return Promise
      */
-    WinReplyWeb: function (webSelector, fcnResponse) {
+    WinReplyWeb(webSelector, fcnResponse) {
         // let web = document.getElementById(webviewID);
 
         if ($(webSelector).length == 0) {
@@ -545,3 +543,5 @@ module.exports = {
 
     }
 }
+
+module.exports = [Message]
