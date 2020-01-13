@@ -104,4 +104,4 @@ class Simulator {
 }
 
 // export multi
-module.exports = [Simulator];
+module.exports = {Simulator};

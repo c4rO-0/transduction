@@ -16,9 +16,9 @@ class Basic {
      * 目前被用在消息传递的时候创建一个独一无二的channel
      * @returns {String} uniqueStr 
      */
-    uniqueStr() {
+    static uniqueStr() {
         return (Date.now() + Math.random()).toString()
     }
 }
 
-module.exports = [Basic]
+module.exports = {Basic}
