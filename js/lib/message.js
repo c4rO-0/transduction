@@ -22,7 +22,7 @@ console.log("transduction root directory : ", rootDir )
 console.log('current path : ', __dirname)
 
 const $ = require(path.join(rootDir, "toolkit/jquery-3.3.1.min.js"))
-const {Basic} = require(path.join(rootDir, "js/lib/basic.js"))
+const {tdBasic} = require("tdBasic")
 
 
 class Message {
@@ -36,7 +36,7 @@ class Message {
      * 对方通过调用MainReply返回回来的消息.
      */
     static sendToMain(msg) {
-        // console.log(Basic.uniqueStr())
+        // console.log(tdBasic.uniqueStr())
 
         return Promise.race([new Promise((resolve, reject) => {
             if (Object.keys(msg).length == 0) {
@@ -65,7 +65,7 @@ class Message {
 
                 }
 
-                let uStr = Basic.uniqueStr()
+                let uStr = tdBasic.uniqueStr()
                 ipcRender.send('msg-ipc-asy-to-main', uStr, msg);
                 // 等待回复
                 let listenerRe = ipcRender.once('msg-ipc-asy-main-reply-' + uStr, handleMsg)
@@ -165,7 +165,7 @@ static sendToWin(winID, msg) {
 
                 }
 
-                let uStr = Basic.uniqueStr()
+                let uStr = tdBasic.uniqueStr()
                 ipcRender.sendTo(winID, 'msg-ipc-asy-to-win', uStr, msg);
                 // 等待回复
                 let listenerRe = ipcRender.once('msg-ipc-asy-win-reply-' + uStr, handleMsg)
@@ -302,7 +302,7 @@ static mainSendToWin(win, msg) {
 
                 }
 
-                let uStr = Basic.uniqueStr()
+                let uStr = tdBasic.uniqueStr()
                 win.webContents.send('msg-ipc-asy-main-to-win', uStr, msg);
                 // 等待回复
                 let listenerRe = ipcMain.once('msg-ipc-asy-win-reply-main-' + uStr, handleMsg)
@@ -364,7 +364,7 @@ static mainSendToWin(win, msg) {
 
                 }
 
-                let uStr = Basic.uniqueStr()
+                let uStr = tdBasic.uniqueStr()
 
                 // let web = document.getElementById(webviewID);
                 let web = $(webSelector).get(0);
@@ -470,7 +470,7 @@ static mainSendToWin(win, msg) {
 
                 }
 
-                let uStr = Basic.uniqueStr()
+                let uStr = tdBasic.uniqueStr()
                 ipcRender.sendToHost('msg-ipc-asy-web-to-host', uStr, msg);
                 // 等待回复
                 let listenerRe = ipcRender.once('msg-ipc-asy-win-reply-web-' + uStr, handleMsg)

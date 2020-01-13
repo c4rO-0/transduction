@@ -1,7 +1,7 @@
 /**
  * basic functions
  */
-class Basic {
+class tdBasic {
     constructor() {
 
     }
@@ -21,4 +21,4 @@ class Basic {
     }
 }
 
-module.exports = {Basic}
+module.exports = {tdBasic}
