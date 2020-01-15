@@ -1,25 +1,32 @@
-/**
- * 删除系统某个文件夹及其子文件
- * @param {string} dir 绝对路径
- */
-function removeDir(dir) {
-    let files = fs.readdirSync(dir)
-    for (var i = 0; i < files.length; i++) {
-        let childPath = path.join(dir, files[i]);
-        let stat = fs.statSync(childPath)
-        if (stat.isDirectory()) {
-            // 递归
-            removeDir(childPath);
-        } else {
-            //删除文件
-            fs.unlinkSync(childPath);
-        }
+class sys {
+    constructor() {
+
     }
-    fs.rmdirSync(dir)
+
+    /**
+     * 删除系统某个文件夹及其子文件
+     * @param {string} dir 绝对路径
+     */
+    static removeDir(dir) {
+        let files = fs.readdirSync(dir)
+        for (var i = 0; i < files.length; i++) {
+            let childPath = path.join(dir, files[i]);
+            let stat = fs.statSync(childPath)
+            if (stat.isDirectory()) {
+                // 递归
+                removeDir(childPath);
+            } else {
+                //删除文件
+                fs.unlinkSync(childPath);
+            }
+        }
+        fs.rmdirSync(dir)
+    }
+
 }
 
 
-fileSend: class {
+class fileSend {
     constructor(name, path, webkitRelativePath, fileID = '', dataUrl = undefined) {
         this.name = name
         this.path = path
@@ -116,7 +123,8 @@ fileSend: class {
 
     }
     clear() {
-        removeDir(path.join(this.pathRoot, this.fileID))
+        sys.removeDir(path.join(this.pathRoot, this.fileID))
     }
+}
 
-},
+module.exports = {sys, fileSend}
