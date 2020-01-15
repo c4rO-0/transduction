@@ -24,7 +24,8 @@
     "mkdirp": "^0.5.1",
     "request": "^2.88.0",
     "tdBasic": "file:module/tdBasic",
-    "tdMessage": "file:module/tdMessage"
+    "tdMessage": "file:module/tdMessage",
+    "tdSys": "file:module/tdSys"
   },
   "build": {
     "appId": "com.aaronlenoir.gnucash-reporter",
