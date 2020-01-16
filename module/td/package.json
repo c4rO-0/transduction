@@ -7,5 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "c4r",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "dependencies": {
+    "tdBasic": "file:../tdBasic",
+    "tdSys": "file:../tdSys",
+    "tdMessage":"file:../tdSys",
+    "tdSimulator":"file:../tdSimulator"
+  }
 }
