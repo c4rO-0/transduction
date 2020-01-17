@@ -116,11 +116,11 @@ class tdOS{
 
     }
     strUserAgentWin = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-    AppleWebKit/537.36 (KHTML, like Gecko) \
-    Chrome/73.0.3683.121 Safari/537.36"
+AppleWebKit/537.36 (KHTML, like Gecko) \
+Chrome/73.0.3683.121 Safari/537.36"
     strUserAgentLinux = "Mozilla/5.0 (X11; Linux x86_64) \
-    AppleWebKit/537.36 (KHTML, like Gecko) \
-    Chrome/73.0.3683.121 Safari/537.36"
+AppleWebKit/537.36 (KHTML, like Gecko) \
+Chrome/73.0.3683.121 Safari/537.36"
     /**
      * 删除系统某个文件夹及其子文件
      * @param {string} dir 绝对路径

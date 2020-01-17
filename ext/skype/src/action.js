@@ -5,7 +5,7 @@ module.exports = {
         console.log("start skype action js ...")
 
         $('#modal-skype-5X0FME1YRT').on('show.bs.modal', function (e) {
-            document.getElementById('modal-skype').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
+            document.getElementById('modal-skype-5X0FME1YRT').querySelector('webview').insertCSS('::-webkit-scrollbar{display:none;}')
         })
 
         $('#modal-wechat-5X0FME1YRT').on('load-commit', function () {

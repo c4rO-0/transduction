@@ -86,7 +86,9 @@ function createWindow() {
     }
 
     console.log('allowed : ', isAllowed)
-    callback(isAllowed)
+    if(typeof(tcallback)  === 'function'){
+      callback(isAllowed)
+    }
     console.log("-----------------------")
   })
 
