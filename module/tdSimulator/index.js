@@ -15,7 +15,7 @@ class tdSimulator {
      * @param {string} webSelector 'webview[data-app-name="skype"]'
      * @param {string} type nousedown, mouseup, click
      */
-    mouseSimulator(webSelector, type, x, y) {
+    static mouseSimulator(webSelector, type, x, y) {
 
 
         let wc = $(webSelector).get(0).getWebContents();
@@ -61,7 +61,7 @@ class tdSimulator {
     }
 
 
-    attachInputFile(webSelector, inputSelector, filePath) {
+    static attachInputFile(webSelector, inputSelector, filePath) {
 
         let wc = $(webSelector).get(0).getWebContents();
 
@@ -98,6 +98,73 @@ class tdSimulator {
 
         });
         // }, 3000);
+
+    }
+
+
+    /**
+     * chrome debugger for key : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
+     * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
+     * @param {string} webSelector 'webview[data-app-name="skype"]'
+     * @param {string} type keyup, keydown, keypress
+     * @param {int} charCode windowsVirtualKeyCode(目前只对字母好使) code列表 https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+     * @param {boolean} [shift=false] 
+     * @param {boolean} [alt=false] 
+     * @param {boolean} [ctrl=false]  
+     * @param {boolean} [cmd=false]  
+     */
+    static keypressSimulator(webSelector, type, charCode, shift = false, alt = false, ctrl = false, cmd = false) {
+
+
+        let wc = $(webSelector).get(0).getWebContents();
+
+        // console.log("---attachInputFile----")
+        try {
+            if (!wc.debugger.isAttached()) {
+                wc.debugger.attach("1.2");
+            }
+        } catch (err) {
+            console.error("Debugger attach failed : ", err);
+        };
+        var text = "";
+
+        switch (type) {
+            case 'keyup':
+                type = 'keyUp';
+                break;
+            case 'keydown':
+                type = 'rawKeyDown';
+                break;
+            case 'keypress':
+                type = 'char';
+                text = String.fromCharCode(charCode);
+                break;
+            default:
+                throw new Error("Unknown type of event.");
+                break;
+        }
+
+        var modifiers = 0;
+        if (shift) {
+            modifiers += 8;
+        }
+        if (alt) {
+            modifiers += 1;
+        }
+        if (ctrl) {
+            modifiers += 2;
+        }
+        if (cmd) {
+            modifiers += 4;
+        }
+
+        return wc.debugger
+            .sendCommand("Input.dispatchKeyEvent", {
+                type: type,
+                windowsVirtualKeyCode: charCode,
+                modifiers: modifiers,
+                text: text
+            });
 
     }
 
