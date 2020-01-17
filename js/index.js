@@ -1383,7 +1383,7 @@ $(document).ready(function () {
                             if (img.isEmpty()) {
                                 reject('filterDataTransfer : img not access')
                             } else {
-                                let imgSend = new td.tdSys.fileSend(getFileNameFromUrl(pathFile), pathFile, '', undefined, img.toDataURL())
+                                let imgSend = new td.fileSend(getFileNameFromUrl(pathFile), pathFile, '', undefined, img.toDataURL())
                                 resolve(imgSend)
                             }
                         }))
@@ -1399,7 +1399,7 @@ $(document).ready(function () {
                                     // console.log("------request-----")
                                     // console.log(strRequest)
                                     if (strRequest) {
-                                        let imgSend = new td.tdSys.fileSend(getFileNameFromUrl(pathR), '', pathR, undefined, urldata)
+                                        let imgSend = new td.fileSend(getFileNameFromUrl(pathR), '', pathR, undefined, urldata)
                                         resolve(imgSend)
                                     } else {
                                         reject('filterDataTransfer : img not access')
@@ -1470,7 +1470,7 @@ $(document).ready(function () {
 
                                     // console.log("file")
                                     let file = items[i].getAsFile()
-                                    let imgSend = new td.tdSys.fileSend(file.name, file.path, '')
+                                    let imgSend = new td.fileSend(file.name, file.path, '')
                                     let reader = new FileReader();
                                     reader.onload = function (e) {
                                         imgSend.addDataUrl(reader.result)
@@ -1492,7 +1492,7 @@ $(document).ready(function () {
 
                         arrayItem.push(new Promise(
                             (resolve, reject) => {
-                                let imgSend = new td.tdSys.fileSend(file.name, file.path, '')
+                                let imgSend = new td.fileSend(file.name, file.path, '')
                                 let reader = new FileReader();
                                 reader.onload = function (e) {
                                     imgSend.addDataUrl(reader.result)
@@ -1567,7 +1567,7 @@ $(document).ready(function () {
 
                 arrayItem.push(new Promise(
                     (resolve, reject) => {
-                        let imgSend = new td.tdSys.fileSend(file.name, file.path, '')
+                        let imgSend = new td.fileSend(file.name, file.path, '')
                         let reader = new FileReader();
                         reader.onload = function (e) {
                             imgSend.addDataUrl(reader.result)
