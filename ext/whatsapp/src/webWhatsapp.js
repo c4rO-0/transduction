@@ -9,7 +9,7 @@ window.onload = function () {
     console.log('current path : ', __dirname)
     const path = require('path')
     const {tdMessage} = require('td')
-    window.$ = window.jQuery = require(path.join(rootDir, "toolkit/jquery-3.3.1.min.js"))
+    window.$ = window.jQuery = require('jquery')
     // -----------------------
 
     const fs = require('fs')
