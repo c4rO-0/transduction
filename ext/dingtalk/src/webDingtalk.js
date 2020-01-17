@@ -7,7 +7,7 @@ window.onload = function () {
     console.log("transduction root directory : ", rootDir )
     console.log('current path : ', __dirname)
     const path = require('path')
-    const core = require(path.join(rootDir, 'js/core.js'))
+    const {tdMessage} = require('td')
     // -----------------------
 
     // const http = require('http')
@@ -363,7 +363,7 @@ window.onload = function () {
                 // console.log(bubbleList[0])
                 // console.log(ID)
                 // console.log(typeof(ID))
-                core.WebToHost({ "Dialog": bubbleList }).then((res) => {
+                tdMessage.WebToHost({ "Dialog": bubbleList }).then((res) => {
                     console.log(res)
                 }).catch((error) => {
                     throw error
@@ -428,7 +428,7 @@ window.onload = function () {
 
         arrayContent.forEach((currentValue, index) => {
             // 向index发出新消息提醒
-            core.WebToHost({ "Convo-new": currentValue }).then((res) => {
+            tdMessage.WebToHost({ "Convo-new": currentValue }).then((res) => {
                 console.log(res)
             }).catch((error) => {
                 throw error
@@ -470,7 +470,7 @@ window.onload = function () {
                             if (bubble != undefined) {
                                 bubble["userID"] = ID;
                                 bubble["oldMsgID"] = mutation.oldValue
-                                core.WebToHost({ "Dialog": [bubble] }).then((res) => {
+                                tdMessage.WebToHost({ "Dialog": [bubble] }).then((res) => {
                                     console.log(res)
                                 }).catch((error) => {
                                     throw error
@@ -501,8 +501,8 @@ window.onload = function () {
         if ($('#menu-pannel').length == 0) {
             console.log("********************offline***************************************")
             logStatus.status = "offline"
-            core.WebToHost({ "logStatus": logStatus })
-            core.WebToHost({ "show": {} })
+            tdMessage.WebToHost({ "logStatus": logStatus })
+            tdMessage.WebToHost({ "show": {} })
 
             let callbackobsLogin = function (mutationList, observer) {
                 // console.log("log status changed : ", mutationList)
@@ -510,8 +510,8 @@ window.onload = function () {
                     logStatus.status = "online"
                     console.log("=======================online=====================================")
                     // console.log($("div.login"))
-                    core.WebToHost({ "logStatus": logStatus })
-                    core.WebToHost({ "hide": {} })
+                    tdMessage.WebToHost({ "logStatus": logStatus })
+                    tdMessage.WebToHost({ "hide": {} })
                     observer.disconnect()
 
                     obsChatLeft.observe(document.getElementById('sub-menu-pannel'), {
@@ -537,8 +537,8 @@ window.onload = function () {
             logStatus.status = "online"
             console.log("=======================online=====================================")
             // console.log($("div.login"))
-            core.WebToHost({ "logStatus": logStatus })
-            core.WebToHost({ "hide": {} })
+            tdMessage.WebToHost({ "logStatus": logStatus })
+            tdMessage.WebToHost({ "hide": {} })
 
             obsChatLeft.observe(document.getElementById('sub-menu-pannel'), {
                 childList: true,
@@ -554,7 +554,7 @@ window.onload = function () {
 
         let obsRight = new MutationObserver(callbackRight);
 
-        core.WebReply((key, arg) => {
+        tdMessage.WebReply((key, arg) => {
             return new Promise((resolve, reject) => {
                 if (key == 'queryDialog') {
                     // 索取右侧
@@ -647,7 +647,7 @@ window.onload = function () {
                                         // 重新发送
                                         // console.log("重新发送")
                                         // isClickSend = false
-                                        // core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
+                                        // tdMessage.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
 
                                         // })
                                         console.log("发送失败")
@@ -668,7 +668,7 @@ window.onload = function () {
                             });
 
                             // setTimeout(() => {
-                            core.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
+                            tdMessage.WebToHost({ "attachFile": { "selector": "input.normal-file", "file": value } }).then((resHost) => {
 
                             })
                             // }, 5000);

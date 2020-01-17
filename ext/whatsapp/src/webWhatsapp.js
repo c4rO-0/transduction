@@ -8,7 +8,7 @@ window.onload = function () {
     console.log("transduction root directory : ", rootDir )
     console.log('current path : ', __dirname)
     const path = require('path')
-    const core = require(path.join(rootDir, 'js/core.js'))
+    const {tdMessage} = require('td')
     window.$ = window.jQuery = require(path.join(rootDir, "toolkit/jquery-3.3.1.min.js"))
     // -----------------------
 
@@ -218,7 +218,7 @@ window.onload = function () {
                     if ( (chat.pin !== undefined && chat.pin > 0 )
                         || convo.counter > 0) {
                         convo.action = 'a'
-                        core.WebToHost({ "Convo-new": convo }).then((res) => {
+                        tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                             console.log(res)
                         }).catch((error) => {
                             throw error
@@ -245,7 +245,7 @@ window.onload = function () {
 
             newChatList.forEach((userID) => {
                 let convo = grepConvo(userID)
-                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                     console.log(res)
                 }).catch((error) => {
                     throw error
@@ -255,7 +255,7 @@ window.onload = function () {
         })
 
 
-        core.WebReply((key, arg) => {
+        tdMessage.WebReply((key, arg) => {
             return new Promise((resolve, reject) => {
                 if (key == 'queryDialog') {
                     // 索取右侧
@@ -273,7 +273,7 @@ window.onload = function () {
                         if (indexChat == getIndex(element)) {
                             console.log("click")
                             rect = $(element).find("span[title][dir]").get(0).getBoundingClientRect()
-                            core.WebToHost({
+                            tdMessage.WebToHost({
                                 "simulateMouse": {
                                     type: "click",
                                     x: rect.x,
@@ -289,7 +289,7 @@ window.onload = function () {
 
                                     // 加载convo
                                     let convo = grepConvo(userID)
-                                    core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                    tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                         console.log(res)
                                     }).catch((error) => {
                                         throw error
@@ -348,8 +348,8 @@ window.onload = function () {
             if ($('#pane-side').length == 0) {
                 console.log("********************offline***************************************")
                 logStatus.status = "offline"
-                core.WebToHost({ "logStatus": logStatus })
-                core.WebToHost({ "show": {} })
+                tdMessage.WebToHost({ "logStatus": logStatus })
+                tdMessage.WebToHost({ "show": {} })
 
                 let callbackobsLogin = function (mutationList, observer) {
                     // console.log("log status changed : ", mutationList)
@@ -357,8 +357,8 @@ window.onload = function () {
                         logStatus.status = "online"
                         console.log("=======================online=====================================")
                         // console.log($("div.login"))
-                        core.WebToHost({ "logStatus": logStatus })
-                        core.WebToHost({ "hide": {} })
+                        tdMessage.WebToHost({ "logStatus": logStatus })
+                        tdMessage.WebToHost({ "hide": {} })
                         observer.disconnect()
 
                         setTimeout(() => {
@@ -383,8 +383,8 @@ window.onload = function () {
                 logStatus.status = "online"
                 console.log("=======================online=====================================")
                 // console.log($("div.login"))
-                core.WebToHost({ "logStatus": logStatus })
-                core.WebToHost({ "hide": {} })
+                tdMessage.WebToHost({ "logStatus": logStatus })
+                tdMessage.WebToHost({ "hide": {} })
                 setTimeout(() => {
                     console.log("initialize WAPI")
                     wapi.init()
@@ -405,7 +405,7 @@ window.onload = function () {
                 // console.log('click ', $(ObjUsr), getIndex(ObjUsr), userID)
                 let convo = grepConvo(userID)
                 convo.action = 'a'
-                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                     console.log(res)
                 }).catch((error) => {
                     throw error

@@ -81,7 +81,7 @@ window.onload = function () {
     console.log("transduction root directory : ", rootDir)
     console.log('current path : ', __dirname)
     const path = require('path')
-    const core = require(path.join(rootDir, 'js/core.js'))
+    const {tdMessage, tdPage} = require('td')
     // -----------------------
 
     const fs = require('fs')
@@ -151,7 +151,7 @@ window.onload = function () {
 
                                 console.log("change isXRHinDocumentReady", convo)
 
-                                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                     console.log(res)
                                 }).catch((error) => {
                                     throw error
@@ -198,7 +198,7 @@ window.onload = function () {
                                 convoScope.chatList.forEach((chat, convoIndex) => {
                                     if (chat.UserName == fromUserName) {
                                         let convo = grepConvoInChatList(chat)
-                                        core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                        tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                             console.log(res)
                                         }).catch((error) => {
                                             throw error
@@ -228,7 +228,7 @@ window.onload = function () {
 
                                         if (chat.UserName == usrID) {
                                             let convo = grepConvoInChatList(chat)
-                                            core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                            tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                                 console.log(res)
                                             }).catch((error) => {
                                                 throw error
@@ -257,7 +257,7 @@ window.onload = function () {
                                 convoScope.chatList.forEach((chat, convoIndex) => {
                                     if (chat.UserName == element.UserName) {
                                         let convo = grepConvoInChatList(chat)
-                                        core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                        tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                             console.log(res)
                                         }).catch((error) => {
                                             throw error
@@ -869,7 +869,7 @@ window.onload = function () {
                 // console.log(MSGList[0])
                 // console.log(userName)
                 // console.log(typeof(userName))
-                core.WebToHost({ "Dialog": MSGList }).then((res) => {
+                tdMessage.WebToHost({ "Dialog": MSGList }).then((res) => {
                     console.log(res)
                 }).catch((error) => {
                     throw error
@@ -949,7 +949,7 @@ window.onload = function () {
                                 MSG["userID"] = getIDfromUserName(userName);
                                 MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
                                 if (MSG["oldMsgID"] != '{{message.MsgId}}') {
-                                    core.WebToHost({ "Dialog": [MSG] }).then((res) => {
+                                    tdMessage.WebToHost({ "Dialog": [MSG] }).then((res) => {
                                         console.log(res)
                                     }).catch((error) => {
                                         throw error
@@ -1021,7 +1021,7 @@ window.onload = function () {
                         })
                         if (!existInChatList) {
                             convoDel.action = 'r'
-                            core.WebToHost({ "Convo-new": convoDel }).then((res) => {
+                            tdMessage.WebToHost({ "Convo-new": convoDel }).then((res) => {
                                 console.log(res)
                             }).catch((error) => {
                                 throw error
@@ -1037,7 +1037,7 @@ window.onload = function () {
                 if (convoObj != undefined) {
                     let convoClicked = grepNewMSG(convoObj)
                     convoClicked.action = 'a'
-                    core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                    tdMessage.WebToHost({ "Convo-new": convoClicked }).then((res) => {
                         console.log(res)
                     }).catch((error) => {
                         throw error
@@ -1079,8 +1079,8 @@ window.onload = function () {
         if ($("div.login").length > 0) {
             console.log("********************offline***************************************")
             logStatus.status = "offline"
-            core.WebToHost({ "logStatus": logStatus })
-            core.WebToHost({ "show": {} })
+            tdMessage.WebToHost({ "logStatus": logStatus })
+            tdMessage.WebToHost({ "show": {} })
 
 
             session.defaultSession.cookies.get({ url: window.location.href }, (err, cookies) => {
@@ -1113,8 +1113,8 @@ window.onload = function () {
                     logStatus.status = "online"
                     console.log("=======================online=====================================")
                     // console.log($("div.login"))
-                    core.WebToHost({ "logStatus": logStatus })
-                    core.WebToHost({ "hide": {} })
+                    tdMessage.WebToHost({ "logStatus": logStatus })
+                    tdMessage.WebToHost({ "hide": {} })
 
                     // =====skey=========
                     obsHead.observe($("head")[0], {
@@ -1148,8 +1148,8 @@ window.onload = function () {
             logStatus.status = "online"
             console.log("=======================online=====================================")
             // console.log($("div.login"))
-            core.WebToHost({ "logStatus": logStatus })
-            core.WebToHost({ "hide": {} })
+            tdMessage.WebToHost({ "logStatus": logStatus })
+            tdMessage.WebToHost({ "hide": {} })
 
             // =====skey=========
             obsHead.observe($("head")[0], {
@@ -1185,12 +1185,12 @@ window.onload = function () {
 
 
         $(document).on('click', 'a[download]', function () {
-            core.sendToMain({ 'download': { 'url': $(this).attr('href') } })
+            tdMessage.sendToMain({ 'download': { 'url': $(this).attr('href') } })
         })
 
 
         // 接收上层消息
-        core.WebReply((key, arg) => {
+        tdMessage.WebReply((key, arg) => {
             return new Promise((resolve, reject) => {
                 if (key == 'queryDialog') {
 
@@ -1213,7 +1213,7 @@ window.onload = function () {
                         convoScope.chatList.forEach((chat, convoIndex) => {
                             if (chat.UserName == userNameClicked) {
                                 let convo = grepConvoInChatList(chat)
-                                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                     console.log(res)
                                 }).catch((error) => {
                                     throw error
@@ -1269,7 +1269,7 @@ window.onload = function () {
                         value = arrayValue[index]
                         if (typeof (value) == 'string') {
 
-                            angular.element('pre:last').scope().editAreaCtn = core.htmlEntities(value)
+                            angular.element('pre:last').scope().editAreaCtn = tdPage.htmlEntities(value)
 
                             angular.element('pre:last').scope().sendTextMessage();
 
@@ -1279,7 +1279,7 @@ window.onload = function () {
 
                         } else {
 
-                            core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
+                            tdMessage.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---", value)
 
                                 send(arrayValue, index + 1)
