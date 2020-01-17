@@ -5,6 +5,7 @@
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
+const mkdirp = require('mkdirp')
 
 class fileSend {
     constructor(name, path, webkitRelativePath, fileID = '', dataUrl = undefined) {
