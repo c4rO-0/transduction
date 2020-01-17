@@ -10,8 +10,8 @@
   "license": "MPL-2.0",
   "dependencies": {
     "tdBasic": "file:../tdBasic",
-    "tdSys": "file:../tdSys",
-    "tdMessage":"file:../tdSys",
-    "tdSimulator":"file:../tdSimulator"
+    "tdMessage": "file:../tdMessage",
+    "tdSimulator": "file:../tdSimulator",
+    "tdSys": "file:../tdSys"
   }
 }
