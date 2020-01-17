@@ -18,32 +18,6 @@ Object.defineProperty(navigator, 'languages', {
 })
 // *********************************************
 
-// /**
-//  * 开关webview
-//  */
-// function toggleWebview() {
-//     // document.querySelectorAll('webview').forEach((e) => {
-//     //     if (e.style.display === 'none') {
-//     //         e.style.display = ''
-//     //     } else {
-//     //         e.style.display = 'none'
-//     //     }
-//     // })
-//     if (document.body.style.overflow === 'hidden') {
-//         document.body.style.overflow = ''
-//     } else {
-//         window.scrollTo(0, 0)
-//         document.body.style.overflow = 'hidden'
-//     }
-// }
-
-/**
- * 指定开关webview
- * @param {String} webTag webview名字 skype, wechat....
- */
-function toggleWebview(webTag) {
-    $("#modal-" + webTag).modal('toggle')
-}
 
 /**
  * 打开webview Devtool
