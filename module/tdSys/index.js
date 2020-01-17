@@ -3,6 +3,8 @@
  */
 
 const fs = require('fs')
+const os = require('os')
+const path = require('path')
 
 class fileSend {
     constructor(name, path, webkitRelativePath, fileID = '', dataUrl = undefined) {
