@@ -203,7 +203,7 @@ $(document).ready(function () {
             ]
         defaultOnExtPathArray.forEach(pathConfig => {
             installExt(pathConfig)
-    })
+        })
 
         // -o load extList : app/tool
         /**
@@ -2056,6 +2056,18 @@ $(document).ready(function () {
 </div>\
 </div>')
 
+                // -o replace hide
+                let element = $('#modal-' + config.webTag).get(0)
+                if (!element.matches('#modal-image') && !element.matches('#modal-settings')) {
+                    $('>div.modal-dialog', element).removeClass('modal-xl')
+                }
+                // $('#modal-wechat > div.modal-dialog').css('left', '')
+                $(element).css('left', '100000px')
+                $(element).show()
+
+                $(webTag2Selector(element.id.substring(6))).width("800px")
+                $(webTag2Selector(element.id.substring(6))).height("800px")
+
                 // -o load webview url
                 let strUserAgent = td.tdOS.strUserAgentWin
                 if (config.webview.useragent == 'windows'
@@ -2316,7 +2328,7 @@ $(document).ready(function () {
     })
 
     // ==== waiting to move ext
-    $('.modal').on('show.bs.modal', function (e) {
+    $(document).on('show.bs.modal', '.modal', function (e) {
         $(this).css('left', '')
     })
 
@@ -2349,7 +2361,7 @@ $(document).ready(function () {
         $(webTag2Selector(element.id.substring(6))).width("800px")
         $(webTag2Selector(element.id.substring(6))).height("800px")
     })
-    $('.modal').on('hidden.bs.modal', function (e) {
+    $(document).on('hidden.bs.modal', '.modal', function (e) {
         if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
             $('>div.modal-dialog', this).removeClass('modal-xl')
             // 关闭webview app重新静音
@@ -2372,7 +2384,7 @@ $(document).ready(function () {
 
         // 加载 ext
         $('div[extTag]').remove()
-        
+
         // load extList
         if (store.has('tdSettings.extList')) {
             let extListStore = store.get('tdSettings.extList')
