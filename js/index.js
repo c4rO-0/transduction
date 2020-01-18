@@ -51,13 +51,13 @@ function toggleWebview(webTag) {
  */
 function openDevtool(appTag) {
 
-    if($("webview[data-app-name='" + appTag + "']").length > 0 ){
+    if ($("webview[data-app-name='" + appTag + "']").length > 0) {
         let web = $("webview[data-app-name='" + appTag + "']")[0];
         web.openDevTools();
-    }else if($("webview[data-tool-name='" + appTag + "']").length > 0 ){
+    } else if ($("webview[data-tool-name='" + appTag + "']").length > 0) {
         let web = $("webview[data-tool-name='" + appTag + "']")[0];
         web.openDevTools();
-    }else{
+    } else {
         return false
     }
 
@@ -102,12 +102,12 @@ $(document).ready(function () {
     const path = require('path')
 
     let debug = false
-    core.sendToMain({'isDebug':''}).then((res)=>{
+    core.sendToMain({ 'isDebug': '' }).then((res) => {
         debug = res.isDebug
-        if(debug){
+        if (debug) {
             console.log('===You are in debug mod===')
             $("#openDevTools").show()
-        }else{
+        } else {
             $("#openDevTools").hide()
         }
     })
@@ -229,7 +229,7 @@ $(document).ready(function () {
             ]
         defaultOnExtPathArray.forEach(pathConfig => {
             installExt(pathConfig)
-    })
+        })
 
         // -o load extList : app/tool
         /**
@@ -774,14 +774,14 @@ $(document).ready(function () {
                             $(objConvo).find("div.td-text").text(convo.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").contents().filter(function(){ return this.nodeType == 3; }).first().replaceWith(convo.time);
+                            $(objConvo).find("div.col-timestamp").contents().filter(function () { return this.nodeType == 3; }).first().replaceWith(convo.time);
                             break;
                         case "muted":
                             $(objConvo).attr('muted', convo.muted)
-                            if(convo.muted){
+                            if (convo.muted) {
                                 $(objConvo).find('img.align-self-center').removeClass('td-invisible')
-                            }else{
-                                $(objConvo).find('img.align-self-center').addClass('td-invisible') 
+                            } else {
+                                $(objConvo).find('img.align-self-center').addClass('td-invisible')
                             }
                             break;
                         default:
@@ -1005,7 +1005,7 @@ $(document).ready(function () {
             } else if (key == 'Convo-new') {
                 // 有新消息来了
 
-                if(Obj.userID === undefined){
+                if (Obj.userID === undefined) {
                     reject("undefined user ID")
                     return
                 }
@@ -2056,7 +2056,7 @@ $(document).ready(function () {
                         button: "left",
                         clickCount: 1
                     })
-                
+
 
                 break;
             default:
@@ -2246,6 +2246,18 @@ $(document).ready(function () {
     </div>\
 </div>\
 </div>')
+
+                // -o replace hide
+                let element = $('#modal-' + config.webTag).get(0)
+                if (!element.matches('#modal-image') && !element.matches('#modal-settings')) {
+                    $('>div.modal-dialog', element).removeClass('modal-xl')
+                }
+                // $('#modal-wechat > div.modal-dialog').css('left', '')
+                $(element).css('left', '100000px')
+                $(element).show()
+
+                $(webTag2Selector(element.id.substring(6))).width("800px")
+                $(webTag2Selector(element.id.substring(6))).height("800px")
 
                 // -o load webview url
                 let strUserAgent = core.strUserAgentWin
@@ -2519,7 +2531,7 @@ $(document).ready(function () {
     })
 
     // ==== waiting to move ext
-    $('.modal').on('show.bs.modal', function (e) {
+    $(document).on('show.bs.modal', '.modal', function (e) {
         $(this).css('left', '')
     })
 
@@ -2552,7 +2564,7 @@ $(document).ready(function () {
         $(webTag2Selector(element.id.substring(6))).width("800px")
         $(webTag2Selector(element.id.substring(6))).height("800px")
     })
-    $('.modal').on('hidden.bs.modal', function (e) {
+    $(document).on('hidden.bs.modal', '.modal', function (e) {
         if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
             $('>div.modal-dialog', this).removeClass('modal-xl')
             // 关闭webview app重新静音
@@ -2575,7 +2587,7 @@ $(document).ready(function () {
 
         // 加载 ext
         $('div[extTag]').remove()
-        
+
         // load extList
         if (store.has('tdSettings.extList')) {
             let extListStore = store.get('tdSettings.extList')
@@ -2584,8 +2596,8 @@ $(document).ready(function () {
                 $("#modal-settings .modal-body").append(
                     '<div extTag="' + webTag + '">\
 <input type="checkbox" ' + (details.status ? 'checked="checked"' : '') + '>\
-<label >'+ details.name + '</label>'+ ( (debug && details.status) ? ' <button devTool>devTool</button>' : '' )
-+'</div>')
+<label >'+ details.name + '</label>' + ((debug && details.status) ? ' <button devTool>devTool</button>' : '')
+                    + '</div>')
             })
         }
     })
@@ -2761,13 +2773,13 @@ $(document).ready(function () {
         }
     })
 
-    $('#openDevTools').on('click', ()=>{
+    $('#openDevTools').on('click', () => {
         core.sendToMain({ "openDevTools": "" })
     })
 
-    $(document).on('click', '[devtool]', (e)=>{
+    $(document).on('click', '[devtool]', (e) => {
         let webTag = $(e.target).closest('div[exttag]').attr('exttag')
-        if(! openDevtool( webTag )){
+        if (!openDevtool(webTag)) {
             console.error('open Devtool failed, because no webview with tag : ', webTag)
         }
     })
@@ -3205,7 +3217,7 @@ $(document).ready(function () {
              * 如果没有选中，按钮消失
              */
             $('#td-mix').css('transform', 'translateY(' + yOffset + 'px)')
-            if($('div.td-convo.selected').length === 0){
+            if ($('div.td-convo.selected').length === 0) {
                 $('#td-mix').css('opacity', '0')
             }
         }
@@ -3214,8 +3226,8 @@ $(document).ready(function () {
     /**
      * 更新线位置
      */
-    $('#td-mix').on('transitionend', ()=>{
-        $('div.td-convo.selected').each(function(){
+    $('#td-mix').on('transitionend', () => {
+        $('div.td-convo.selected').each(function () {
             $(this).data('line').position()
         })
     })
