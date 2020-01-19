@@ -7,7 +7,7 @@ const os = require('os')
 const path = require('path')
 const mkdirp = require('mkdirp')
 
-class fileSend {
+class tdFileSend {
     constructor(name, path, webkitRelativePath, fileID = '', dataUrl = undefined) {
         this.name = name
         this.path = path
@@ -145,4 +145,4 @@ Chrome/73.0.3683.121 Safari/537.36"
 
 }
 
-module.exports = {fileSend, tdOS}
+module.exports = {tdFileSend, tdOS}
