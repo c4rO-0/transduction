@@ -68,7 +68,7 @@ class tdPage {
     }
 
     /**
-     * 在webview页面插入<p id=electronReady>来标记页面已经加载好.
+     * 在页面插入<p id=electronReady>来标记页面已经加载好.
      * 可以通过该手段在页面发生跳转后重新执行脚本.
      */
     static insertReady() {
