@@ -11,7 +11,7 @@ class tdSimulator {
 
     /**
      * chrome debugger for mouse : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
-     * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
+     * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',)
      * @param {string} webSelector 'webview[data-app-name="skype"]'
      * @param {string} type nousedown, mouseup, click
      */
