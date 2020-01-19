@@ -126,6 +126,10 @@ Chrome/73.0.3683.121 Safari/537.36"
      * @param {string} dir 绝对路径
      */
     static removeDir(dir) {
+        if(! path.isAbsolute(dir)){
+            return
+        }
+        
         let files = fs.readdirSync(dir)
         for (var i = 0; i < files.length; i++) {
             let childPath = path.join(dir, files[i]);

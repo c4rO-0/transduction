@@ -67,4 +67,21 @@ path将被替换为储存后的路径.
 - fileID `String` 独一无二的ID
 - dataUrl `String` 储存图片的dataUrl
 
-### 
+----
+
+## class : tdOS
+
+### Static Priorities
+
+- strUserAgentWin : Winodws user-agent
+- strUserAgentLinux : Linux user-agent
+
+### Static Methods
+
+#### removeDir(dir)
+
+删除文件夹及其子文件夹
+
+##### Input
+
+- dir `String` : 要删除的文件夹绝对路径
