@@ -430,4 +430,18 @@ class tdBubble {
     }
 }
 
+/**
+ * index.js 后台处理的函数大概都在这
+ */
+class tdAPI{
+
+}
+/**
+ * 相应配套渲染UI的函数在这
+ */
+class tdUI{
+
+
+}
+
 module.exports = {tdFileSend, tdOS}
