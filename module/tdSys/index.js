@@ -6,6 +6,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const mkdirp = require('mkdirp')
+const events = require('events')
 
 class tdFileSend {
     constructor(name, path, webkitRelativePath, fileID = '', dataUrl = undefined) {
@@ -111,8 +112,8 @@ class tdFileSend {
 /**
  * all things about operating system
  */
-class tdOS{
-    constructor(){
+class tdOS {
+    constructor() {
 
     }
     static strUserAgentWin = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
@@ -126,10 +127,10 @@ Chrome/73.0.3683.121 Safari/537.36"
      * @param {string} dir 绝对路径
      */
     static removeDir(dir) {
-        if(! path.isAbsolute(dir)){
+        if (!path.isAbsolute(dir)) {
             return
         }
-        
+
         let files = fs.readdirSync(dir)
         for (var i = 0; i < files.length; i++) {
             let childPath = path.join(dir, files[i]);
@@ -378,10 +379,98 @@ class tdBubble {
     }
 }
 
+class tdExt {
+
+    dir
+    path
+    webTag
+
+
+    /**
+    * path of configure.json
+    * @param {String} pathConfig  绝对路径
+    * @returns {Promise} config 
+    */
+   loadExtConfigure(pathConfig) {
+
+            console.log("load extension config ...")
+
+            return new Promise((resolve, reject) => {
+
+                fs.readFile(pathConfig, (err, rawConfig) => {
+
+                    if (err) {
+                        // 文件不存在, 或者 
+                        if (err.code === 'ENOENT') {
+                            console.error('no configure found in ', pathConfig)
+                        } else if (err.code === 'EISDIR') {
+                            console.error('configure path \' ', pathConfig, '\' is a directory')
+                        } else {
+                            console.error('configure read failed', pathConfig)
+                        }
+
+                        reject(err)
+                        return
+                    } else {
+                        let config = JSON.parse(rawConfig)
+                        config.dir = path.dirname(pathConfig)
+                        config.path = pathConfig
+                        config.webTag = config.name + "-" + config.unicode
+
+                        // 必须含有name
+                        if (config.name === undefined
+                            || config.name === "") {
+                            reject("load extension error , no name found in ", pathConfig)
+                            return
+                        }
+
+                        // 必须含有type
+                        if (config.type !== 'app' && config.type !== 'tool') {
+                            reject("load extension error , unknown type in ", pathConfig)
+                            return
+                        }
+
+                        // 必须含有unicode
+                        if (config.unicode === undefined && config.unicode === "") {
+                            reject("load extension error , no unicode in ", pathConfig)
+                            return
+                        }
+
+                        try {
+                            // icon是必需的
+                            if (!fs.existsSync(path.join(config.dir, config.icon.any))) {
+                                reject("load extension error , no logo found in ", config.icon.any)
+                                return
+                            }
+                        } catch (err) {
+                            console.error(err)
+                            reject("load extension error , no logo found in ", config.icon.any)
+                            return
+                        }
+
+                        resolve(config)
+
+
+                    }
+
+                });
+
+            })
+
+        }
+
+    static install() {
+
+    }
+    static remove() {
+
+    }
+}
+
 /**
  * index.js 后台处理的函数大概都在这
  */
-class tdAPI{
+class tdAPI {
 
     /**
      * 函数构想
@@ -393,15 +482,60 @@ class tdAPI{
      * - 获取设置
      * - 更改设置
      * - 下载列表
-     */ 
+     */
+
+    static fileSendList
+    static donwloadList
+    static convoList
+    static bubbleList
+
+    /**
+     * event list
+     * ready : 初始化完毕
+     * 
+     * ext-install
+     * ext-remove
+     * 
+     * convo-new : 从webview接收到新的Convo
+     * convo-update : convoList有更新
+     * convo-active : convo被激活
+     * 
+     * bubble-new :
+     * bubble-update :
+     * 
+     * 
+     */
+    static event
+
+    static initialize() {
+
+        // set event
+        this.event = new events.EventEmitter();
+
+
+        // initial variable
+        this.fileSendList = undefined
+        this.donwloadList = undefined
+        this.convoList = undefined
+        this.bubbleList = undefined
+    }
+    /**
+     * 更新convoList
+     * @param {tdConvo} convo 
+     */
+    static updateConvoList(convo) {
+
+    }
+
+
 
 }
 /**
  * 相应配套渲染UI的函数在这
  */
-class tdUI{
+class tdUI {
 
 
 }
 
-module.exports = {tdFileSend, tdOS}
+module.exports = { tdFileSend, tdOS }
