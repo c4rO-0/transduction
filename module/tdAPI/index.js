@@ -15,7 +15,10 @@ const {tdMessage} = require('tdMessage')
  * list本质是object
  */
 class tdList {
-    list
+
+    constructor(){
+        this.list = {}
+    }
     addListFromSub(subList){
         this.list = {...this.list, ...subList}
     }
@@ -51,37 +54,52 @@ class tdList {
         this.list[key] = value
     }
     print(){
-        console.log(list)
+        console.log(this.list)
     }
-    toObjList(funToObj=(obj)=>{
-        return obj
+    toJSONList(funToJSON=(obj)=>{
+        return JSON.stringify(obj)
     }){
         let pList
         for (let key in this.list){
-            pList[key] = funToObj(this.list[key])
+            pList[key] = funToJSON(this.list[key])
         }
         return pList
     }
-    fromObjList(pList, funFromObj=(obj)=>{
+    fromJSONList(pList, funFromJSON=(obj)=>{
         return obj
     }){
         for (let key in pList){
-            this.list[key] = funFromObj(pList[key])
+            this.list[key] = funFromJSON(pList[key])
         }
     }
     getListInSore(path,funFromObj=(obj)=>{
         return obj
     }){
-        this.list = this.fromObjList(store.get(path), funFromObj)
+        this.fromJSONList(store.get(path), funFromObj)
     }
-    saveListInStore(path, override = true,funToObj=(obj)=>{
-        return obj
+    saveListInStore(path, override = true,funToJSON=(obj)=>{
+        return JSON.stringify(obj)
     }){
         if(override){
-            store.set(path, this.toObjList(funToObj))
+            store.set(path, this.toJSONList(funToJSON))
         }else{
             if( ! store.has(path)){
-                store.set(path, this.toObjList(funToObj))
+                store.set(path, this.toJSONList(funToJSON))
+            }
+        }
+    }
+    saveEleInStore(key, path, override = true,funToJSON=(obj)=>{
+        return JSON.stringify(obj)
+    }){
+        if(!(key in this.list)){
+            return
+        }
+
+        if(override){
+            store.set(path+'.'+key, funToJSON(this.list[key]))
+        }else{
+            if( ! store.has(path+'.'+key)){
+                store.set(path+'.'+key, funToJSON(this.list[key]))
             }
         }
     }
@@ -107,12 +125,13 @@ class tdAPI {
      * - 下载列表
      */
 
-    static isDebugOn
+    // static isDebugOn
 
-    static fileSendList
-    static donwloadList
-    static convoList
-    static bubbleList
+    // static fileSendList
+    // static donwloadList
+    // static convoList
+    // static bubbleList
+    static extList
 
     /**
      * event list
@@ -388,6 +407,11 @@ class tdBubble {
 
 class tdExt {
 
+    static fromJSON(json){
+        
+        return Object.assign(new tdExt(), json);
+    }
+
     static loadWebview(webTag, url, strUserAgent = undefined) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
@@ -445,6 +469,7 @@ class tdExt {
                     config.webTag = config.name + "-" + config.unicode
 
                     // 必须含有name
+                    // 不能含有. - 
                     if (config.name === undefined
                         || config.name === "") {
                         reject("load extension error , no name found in ", pathConfig)
@@ -475,7 +500,7 @@ class tdExt {
                         return
                     }
 
-                    resolve(config)
+                    resolve(this.fromJSON(config))
 
                 }
 
@@ -484,34 +509,34 @@ class tdExt {
         })
     }
 
-    static enableExtConfigure(config) {
+    static enableExtConfigure() {
 
-        console.log("act ", config.name, " config ...")
+        console.log("act ", this.name, " config ...")
 
         return new Promise((resolve, reject) => {
 
             // -o 判断extension是否已安装
-            if ($('[id*="' + config.webTag + '"]').length > 0) {
+            if ($('[id*="' + this.webTag + '"]').length > 0) {
                 console.log(config.name, " already enabled")
                 resolve('done')
                 return
             }
 
-            if (config.type === 'app') {
+            if (this.type === 'app') {
 
 
                 // -o insert logo
                 $("div.td-app-status").append('\
-<img id="app-'+ config.webTag + '" class="app-offline" src="' + path.join(config.dir, config.icon.any) + '">')
+<img id="app-'+ this.webTag + '" class="app-offline" src="' + path.join(this.dir, this.icon.any) + '">')
 
                 // -o insert webview
 
                 $(".td-stealth").append('\
-<div id="modal-'+ config.webTag + '" class="modal fade" tabindex="-1" role="dialog">\
+<div id="modal-'+ this.webTag + '" class="modal fade" tabindex="-1" role="dialog">\
 <div class="modal-dialog modal-dialog-centered" role="document">\
     <div class="modal-content">\
         <div class="modal-body">\
-            <webview data-app-name="'+ config.webTag + '" preload="' + path.join(config.dir, config.webview.script) + '" style="width:800px; height:800px">\
+            <webview data-app-name="'+ this.webTag + '" preload="' + path.join(this.dir, this.webview.script) + '" style="width:800px; height:800px">\
             </webview>\
         </div>\
         <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">\
@@ -521,7 +546,7 @@ class tdExt {
 </div>')
 
                 // -o replace hide
-                let element = $('#modal-' + config.webTag).get(0)
+                let element = $('#modal-' + this.webTag).get(0)
                 if (!element.matches('#modal-image') && !element.matches('#modal-settings')) {
                     $('>div.modal-dialog', element).removeClass('modal-xl')
                 }
@@ -534,42 +559,42 @@ class tdExt {
 
                 // -o load webview url
                 let strUserAgent = td.tdOS.strUserAgentWin
-                if (config.webview.useragent == 'windows'
-                    || config.webview.useragent == ''
-                    || config.webview.useragent == undefined) {
+                if (this.webview.useragent == 'windows'
+                    || this.webview.useragent == ''
+                    || this.webview.useragent == undefined) {
 
-                } else if (config.webview.useragent == 'linux') {
+                } else if (this.webview.useragent == 'linux') {
                     strUserAgent = td.tdOS.strUserAgentLinux
                 }
 
-                this.loadWebview(config.webTag, config.webview.url, strUserAgent)
+                this.loadWebview(this.webTag, this.webview.url, strUserAgent)
 
                 // -o run action
                 try {
-                    if (!fs.existsSync(path.join(config.dir, config.action_script))) {
-                        console.log(config.name, " warning : no action file", config)
+                    if (!fs.existsSync(path.join(this.dir, this.action_script))) {
+                        console.log(this.name, " warning : no action file", this)
                     } else {
 
-                        require(path.join(config.dir, config.action_script)).action()
+                        require(path.join(this.dir, this.action_script)).action()
 
                     }
 
                 } catch (err) {
-                    console.log(config.name, " action error : ", err)
+                    console.log(this.name, " action error : ", err)
                 }
 
                 // -o add message listener
                 console.log("add listener")
 
-                td.tdMessage.WinReplyWeb(webTag2Selector(config.webTag), (key, arg) => {
-                    return respFuncWinReplyWeb(config.webTag, key, arg)
+                td.tdMessage.WinReplyWeb(webTag2Selector(this.webTag), (key, arg) => {
+                    return respFuncWinReplyWeb(this.webTag, key, arg)
                 })
-            } else if (config.type === 'tool') {
+            } else if (this.type === 'tool') {
                 // -o insert logo
                 $('div.td-chat div.td-toolbox').append(
                     '<img id="tool-'
-                    + config.webTag + '" class="theme-transduction" src="'
-                    + path.join(config.dir, config.icon.any) + '">')
+                    + this.webTag + '" class="theme-transduction" src="'
+                    + path.join(this.dir, this.icon.any) + '">')
 
             } else {
                 reject("unknown type")
@@ -577,91 +602,91 @@ class tdExt {
             }
 
             // -o store config 
-            store.set("tdSettings.extList." + config.webTag,
+            store.set("tdSettings.extList." + this.webTag,
                 {
-                    'name': config.name,
+                    'name': this.name,
                     'status': true,
-                    'configPath': config.path
+                    'configPath': this.path
                 })
 
             // -o update global extList
-            extList[config.webTag] = config
+            extList[this.webTag] = this
 
             resolve("done")
         })
     }
 
     
-    static disableExtConfigure(config) {
+    static disableExtConfigure() {
 
         return new Promise((resolve, reject) => {
 
 
-            if (config.type == 'app') {
+            if (this.type == 'app') {
                 // check modal is on
-                if ($('#modal-' + config.webTag).hasClass('show')) {
-                    $('#modal-' + config.webTag).modal('hide')
+                if ($('#modal-' + this.webTag).hasClass('show')) {
+                    $('#modal-' + this.webTag).modal('hide')
                 }
 
                 // waiting modal is hiden
                 setTimeout(() => {
                     // remove logo
-                    $('#app-' + config.webTag).off('click')
+                    $('#app-' + this.webTag).off('click')
 
-                    $('#app-' + config.webTag).remove()
+                    $('#app-' + this.webTag).remove()
 
                     // remove webview
-                    $('#modal-' + config.webTag + ' webview').off('load-commit')
+                    $('#modal-' + this.webTag + ' webview').off('load-commit')
 
-                    $('#modal-' + config.webTag + ' webview').off('dom-ready')
+                    $('#modal-' + this.webTag + ' webview').off('dom-ready')
 
-                    $('#modal-' + config.webTag).off('show.bs.modal')
+                    $('#modal-' + this.webTag).off('show.bs.modal')
 
-                    $('#modal-' + config.webTag).remove()
+                    $('#modal-' + this.webTag).remove()
 
                     // flag turn off
-                    store.set("tdSettings.extList." + config.webTag,
+                    store.set("tdSettings.extList." + this.webTag,
                         {
-                            'name': config.name,
+                            'name': this.name,
                             'status': false,
-                            'configPath': config.path
+                            'configPath': this.path
                         })
 
                     // remove convo
-                    $('div.td-convo[data-app-name="' + config.webTag + '"]').remove()
+                    $('div.td-convo[data-app-name="' + this.webTag + '"]').remove()
 
                     // empty right
                     rightBackToDefault()
 
                     // remove from extList
-                    delete extList[config.webTag];
+                    delete extList[this.webTag];
 
                     resolve()
                 }, 1000);
 
 
-            } else if (config.type == 'tool') {
+            } else if (this.type == 'tool') {
                 // -o is shown
-                if ($('#td-right div.td-chatLog[winType="tool"] webview[data-tool-name="' + config.webTag + '"]').is(":visible")) {
+                if ($('#td-right div.td-chatLog[winType="tool"] webview[data-tool-name="' + this.webTag + '"]').is(":visible")) {
                     $('tool-goBackChat').click()
                 }
 
                 // -o delete icon
-                $('#tool-' + config.webTag).remove()
+                $('#tool-' + this.webTag).remove()
 
                 // -o delete webview
-                $('webview[data-tool-name="' + config.webTag + '"]').remove()
+                $('webview[data-tool-name="' + this.webTag + '"]').remove()
 
                 // flag turn off
-                store.set("tdSettings.extList." + config.webTag,
+                store.set("tdSettings.extList." + this.webTag,
                     {
-                        'name': config.name,
+                        'name': this.name,
                         'status': false,
-                        'configPath': config.path
+                        'configPath': this.path
                     })
 
                 // remove from extList
-                delete extList[config.webTag];
+                delete extList[this.webTag];
                 resolve()
             }
 
@@ -678,4 +703,4 @@ class tdUI {
 
 }
 
-module.exports = { tdAPI, tdExt }
+module.exports = { tdAPI, tdExt, tdList }
