@@ -154,14 +154,11 @@ class tdAPI {
     static initialize() {
 
         // set event
-        this.event = new events.EventEmitter();
+        // this.event = new events.EventEmitter();
 
+        this.extList = new td.tdList()
+        this.extList.getListInSore('tdSettings.extList', td.tdExt.fromJSON)
 
-        // initial variable
-        this.fileSendList = undefined
-        this.donwloadList = undefined
-        this.convoList = undefined
-        this.bubbleList = undefined
     }
     /**
      * 更新convoList
