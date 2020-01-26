@@ -1,6 +1,5 @@
 /**
- * 库函数
- * @module 封装的库函数
+ * index.js 后台处理的函数大概都在这
  */
 
 const events = require('events')
@@ -9,9 +8,91 @@ const Store = require('electron-store');
 const store = new Store();
 
 const {tdMessage} = require('tdMessage')
+
 /**
- * index.js 后台处理的函数大概都在这
+ * 用来统一管理List
+ * 比如 extList, downloadList等
+ * list本质是object
  */
+class tdList {
+    list
+    addListFromSub(subList){
+        this.list = {...this.list, ...subList}
+    }
+    addListFromEle(key, element){
+        this.list[key] = element
+    }
+    deleteEleByKey(key){
+        delete this.list[key]
+    }
+    deleteEleByIndex(index){
+        delete this.list[Object.keys(this.list)[index]];
+    }
+    getLen(){
+        return (Object.keys(this.list)).length
+    }
+    getList(){
+        return this.list
+    }
+    getValueByKey(key){
+        return this.list[key]
+    }
+    getSubByKeys(...keys){
+        let subList = new tdList()
+        keys.forEach(key =>{
+            subList.addListFromEle(key, this.list[key])
+        })
+        return subList
+    }
+    getValueByIndex(index){
+        return this.list[Object.keys(this.list)[index]]
+    }
+    updateEleValue(key,value){
+        this.list[key] = value
+    }
+    print(){
+        console.log(list)
+    }
+    toObjList(funToObj=(obj)=>{
+        return obj
+    }){
+        let pList
+        for (let key in this.list){
+            pList[key] = funToObj(this.list[key])
+        }
+        return pList
+    }
+    fromObjList(pList, funFromObj=(obj)=>{
+        return obj
+    }){
+        for (let key in pList){
+            this.list[key] = funFromObj(pList[key])
+        }
+    }
+    getListInSore(path,funFromObj=(obj)=>{
+        return obj
+    }){
+        this.list = this.fromObjList(store.get(path), funFromObj)
+    }
+    saveListInStore(path, override = true,funToObj=(obj)=>{
+        return obj
+    }){
+        if(override){
+            store.set(path, this.toObjList(funToObj))
+        }else{
+            if( ! store.has(path)){
+                store.set(path, this.toObjList(funToObj))
+            }
+        }
+    }
+    resetListInStore(path){
+        store.reset(path)
+    }
+    deleteListInStore(path){
+        store.delete(path)
+    }
+}
+
 class tdAPI {
 
     /**
