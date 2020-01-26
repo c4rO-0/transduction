@@ -75,7 +75,12 @@ class tdList {
     getListInSore(path,funFromObj=(obj)=>{
         return obj
     }){
-        this.fromJSONList(store.get(path), funFromObj)
+        if(store.has(path)){
+            this.fromJSONList(store.get(path), funFromObj)
+        }else{
+            console.error('no ', path, ' in store.')
+        }
+        
     }
     saveListInStore(path, override = true,funToJSON=(obj)=>{
         return JSON.stringify(obj)
@@ -156,8 +161,33 @@ class tdAPI {
         // set event
         // this.event = new events.EventEmitter();
 
-        this.extList = new td.tdList()
-        this.extList.getListInSore('tdSettings.extList', td.tdExt.fromJSON)
+        // - initial extension list
+        this.extList = new tdList()
+        this.extList.getListInSore(tdExt.rootPathInStore, td.tdExt.fromJSON)
+
+        if (store.has(tdExt.rootPathInStore)) {
+            let extListStore = store.get('tdSettings.extList')
+            console.log('loading extList', extListStore)
+            $.each(extListStore, (webTag, details) => {
+                // console.log('load ', webTag)
+                if (details.status === true && extList[webTag] === undefined) {
+                    td.tdExt.loadExtConfigure(details.configPath).then((config) => {
+
+                        // -o check unicode is same with store
+                        if (webTag !== config.webTag) {
+                            console.error(config.name, ' unicode check failed')
+                        } else {
+                            // -o load
+                            td.tdExt.enableExtConfigure(config)
+                        }
+
+                    }).catch((loadError) => {
+                        console.error(loadError)
+                    })
+                }
+            })
+        }        
+
 
     }
     /**
@@ -404,6 +434,8 @@ class tdBubble {
 
 class tdExt {
 
+    static rootPathInStore='tdSettings.extList'
+    
     static fromJSON(json){
         
         return Object.assign(new tdExt(), json);
