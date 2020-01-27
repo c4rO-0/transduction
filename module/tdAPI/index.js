@@ -189,26 +189,24 @@ class tdAPI {
 
         // set event
         // this.event = new events.EventEmitter();
-        // tdUI.rightBackToDefault()
 
+        //=================================
         // - initial extension list
         this.extList = new tdList(tdExt.rootPathInStore)
-        if (this.extList.hasListInStore()) {
-            this.extList.getListInSore(tdExt.fromJSON)
-            // this.extList.print('----extension list-----')
 
+        if (! this.extList.hasListInStore()) {
+            // load default extList
+        }else{
+            this.extList.getListInSore(tdExt.fromJSON)
             $.each(this.extList.getList(), (webTag, ext) => {
-                // console.log(webTag, ext)
+
                 if (ext.status) {
                     ext.loadExtConfigure().then(() => {
-                        // -o load
-                        // ext.print('---ext---')
                         ext.enableExtConfigure()
                     }).then(() => {
                         // save
-                        // ext.saveExtInStore()
+                        ext.saveExtInStore()
                     })
-
                 }
             })
         }
