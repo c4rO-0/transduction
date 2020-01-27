@@ -1,19 +1,23 @@
 const td = require('td')
+const Store = require('electron-store');
+const store = new Store();
 
 $(document).ready(() => {
 
+    console.log(td.tdOS.tdRootPath())
+
     td.tdAPI.initialize()
 
-    // on
+
     /**
-     * webview出现
+     * app icon clicked
      */
     $(document).on('click', '.td-app-status img[class]', function () {
         let webTag = this.id.substring(4)
 
         let webTagSelector = '#modal-' + webTag
-        $(td.tdPage.webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
-        $(td.tdPage.webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+        $(td.tdUI.webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+        $(td.tdUI.webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
 
         if (this.matches('.app-offline')) {
             $(webTagSelector).modal('show')
@@ -24,7 +28,7 @@ $(document).ready(() => {
         }
 
         // 打开webview app, 取消静音
-        $(td.tdPage.webTag2Selector(webTag)).get(0).setAudioMuted(false)
+        $(td.tdUI.webTag2Selector(webTag)).get(0).setAudioMuted(false)
 
 
     })
@@ -35,20 +39,21 @@ $(document).ready(() => {
             // 返回聊天窗口
             $('.td-toolbox > img').removeClass('theme-transduction-active')
 
-            $("#td-right div.td-chatLog[winType='chatLog']").show()
+            $(td.tdUI.chatLogSelector).show()
             // webview隐藏, 防止再次点击刷新页面
-            $("#td-right div.td-chatLog[winType='tool'] webview").each(function (index) {
+            $(td.tdUI.toolboxSelector + " webview").each(function (index) {
                 $(this).hide();
             });
-            $("#td-right div.td-chatLog[winType='tool']").hide()
+            $(td.tdUI.toolboxSelector).hide()
         } else {
             $('.td-toolbox > img').removeClass('theme-transduction-active')
             $(e.target).addClass('theme-transduction-active')
             let toolTagName = e.target.id.substring(5)
-            $("#td-right div.td-chatLog[winType='chatLog']").hide()
-            $("#td-right div.td-chatLog[winType='tool']").show()
+            $(td.tdUI.chatLogSelector).hide()
+            $(td.tdUI.toolboxSelector).show()
 
-            loadTool("#td-right div.td-chatLog[winType='tool']", toolTagName, extList[toolTagName].webview.url, extList[toolTagName].webview.script)
+            td.tdAPI.extList.getValueByKey(toolTagName).loadTool()
+
         }
     })
 
@@ -59,7 +64,7 @@ $(document).ready(() => {
 
     $(document).on('click', '[devtool]', (e)=>{
         let webTag = $(e.target).closest('div[exttag]').attr('exttag')
-        if(! openDevtool( webTag )){
+        if(! td.tdAPI.openDevtool( webTag )){
             console.error('open Devtool failed, because no webview with tag : ', webTag)
         }
     })
@@ -72,14 +77,14 @@ $(document).ready(() => {
         if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
             $('>div.modal-dialog', this).removeClass('modal-xl')
             // 关闭webview app重新静音
-            $(td.tdPage.webTag2Selector(this.id.substring(6))).get(0).setAudioMuted(true)
+            $(td.tdUI.webTag2Selector(this.id.substring(6))).get(0).setAudioMuted(true)
         }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(this).css('left', '100000px')
         $(this).show()
 
-        $(td.tdPage.webTag2Selector(this.id.substring(6))).width("800px")
-        $(td.tdPage.webTag2Selector(this.id.substring(6))).height("800px")
+        $(td.tdUI.webTag2Selector(this.id.substring(6))).width("800px")
+        $(td.tdUI.webTag2Selector(this.id.substring(6))).height("800px")
     })
     $('#modal-image').on('hidden.bs.modal', function (e) {
         angle = 0
@@ -91,30 +96,26 @@ $(document).ready(() => {
 
         // 加载 ext
         $('div[extTag]').remove()
-
         // load extList
-        if (store.has('tdSettings.extList')) {
-            let extListStore = store.get('tdSettings.extList')
-            $.each(extListStore, (webTag, details) => {
-                // console.log(' ', webTag,' | ', details.status , debug, (debug && details.status) )
-                $("#modal-settings .modal-body").append(
-                    '<div extTag="' + webTag + '">\
-<input type="checkbox" ' + (details.status ? 'checked="checked"' : '') + '>\
-<label >'+ details.name + '</label>'+ ( (debug && details.status) ? ' <button devTool>devTool</button>' : '' )
+        $.each(td.tdAPI.extList.getList(), (webTag, ext) => {
+            // console.log(' ', webTag,' | ', details.status , debug, (debug && details.status) )
+            $("#modal-settings .modal-body").append(
+                '<div extTag="' + webTag + '">\
+<input type="checkbox" ' + (ext.status ? 'checked="checked"' : '') + '>\
+<label >'+ ext.name + '</label>'+ ( (td.tdAPI.isDebugOn && ext.status) ? ' <button devTool>devTool</button>' : '' )
 +'</div>')
-            })
-        }
+        })
     })
 
     // ext被点击
     $('#modal-settings').on('click', 'div[extTag] input', function (e) {
 
         let webTag = $(e.target).parent('div[extTag]').attr('extTag')
-        let configPath = store.get("tdSettings.extList." + webTag).configPath
+        let ext = td.tdAPI.extList.getValueByKey(webTag)
         if (e.target.checked) {
-            installExt(configPath)
+            ext.installExt()
         } else {
-            uninstallExt(configPath)
+            ext.removeExt()
         }
     })
 

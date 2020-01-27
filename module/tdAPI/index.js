@@ -11,7 +11,7 @@ const store = new Store();
 const { tdMessage } = require('tdMessage')
 const { tdPage } = require('tdBasic')
 const { tdOS } = require('tdSys')
-const { tdSimulator} = require('tdSimulator')
+const { tdSimulator } = require('tdSimulator')
 
 /**
  * 用来统一管理List
@@ -115,7 +115,7 @@ class tdList {
         }
     }
     saveEleInStore(key, override = true, funToJSON = (obj) => {
-        return JSON.stringify(obj)
+        return JSON.parse(JSON.stringify(obj))
     }) {
         if (!(key in this.list)) {
             return
@@ -159,7 +159,7 @@ class tdAPI {
      * - 下载列表
      */
 
-    // static isDebugOn
+    static isDebugOn
 
     // static fileSendList
     // static donwloadList
@@ -190,23 +190,48 @@ class tdAPI {
         // set event
         // this.event = new events.EventEmitter();
 
+        tdAPI.getDebugStatus().then((status)=>{
+            // console.log("debug status :", status)
+            tdAPI.isDebugOn = status
+
+            if(status){
+                console.log('===You are in debug mod===')
+                $("#openDevTools").show()
+            }else{
+                $("#openDevTools").hide()
+            }
+        })
+
+
         //=================================
         // - initial extension list
-        this.extList = new tdList(tdExt.rootPathInStore)
+        tdAPI.extList = new tdList(tdExt.rootPathInStore)
 
-        if (! this.extList.hasListInStore()) {
+        if (!tdAPI.extList.hasListInStore()) {
             // load default extList
-        }else{
-            this.extList.getListInSore(tdExt.fromJSON)
-            $.each(this.extList.getList(), (webTag, ext) => {
+            let tdrootPath = tdOS.tdRootPath()
+            let defaultOffExtPathArray =
+                [
+                    path.resolve(tdrootPath, 'ext/wechat/config.json'),
+                    path.resolve(tdrootPath, 'ext/skype/config.json'),
+                    path.resolve(tdrootPath, 'ext/dingtalk/config.json'),
+                    path.resolve(tdrootPath, 'ext/latex2png/config.json'),
+                    path.resolve(tdrootPath, 'ext/languagetool/config.json'),
+                    path.resolve(tdrootPath, 'ext/whatsapp/config.json')
+                ]
+            defaultOffExtPathArray.forEach(pathConfig => {
+                let ext = new tdExt(pathConfig)
+                ext.loadExtConfigure().then(() => {
+                    ext.removeExt()
+                })
+            })
 
+        } else {
+            tdAPI.extList.getListInSore(tdExt.fromJSON)
+            $.each(tdAPI.extList.getList(), (webTag, ext) => {
+                // ext.print()
                 if (ext.status) {
-                    ext.loadExtConfigure().then(() => {
-                        ext.enableExtConfigure()
-                    }).then(() => {
-                        // save
-                        ext.saveExtInStore()
-                    })
+                    ext.installExt()
                 }
             })
         }
@@ -214,7 +239,35 @@ class tdAPI {
     }
 
 
-    
+    static getDebugStatus() {
+        return new Promise((resolve, reject) => {
+            tdMessage.sendToMain({ 'isDebug': '' }).then((res) => {
+                // console.log('debug reply:',res)
+                resolve(res.isDebug)
+            })
+        })
+    }
+
+    /**
+     * 打开webview Devtool
+     * @param {string} appTag
+     */
+    static openDevtool(appTag) {
+
+        if($("webview[data-app-name='" + appTag + "']").length > 0 ){
+            let web = $("webview[data-app-name='" + appTag + "']")[0];
+            web.openDevTools();
+        }else if($("webview[data-tool-name='" + appTag + "']").length > 0 ){
+            let web = $("webview[data-tool-name='" + appTag + "']")[0];
+            web.openDevTools();
+        }else{
+            return false
+        }
+
+        return true
+
+    }
+
     //------------------------
     // 处理消息
     /**
@@ -230,7 +283,7 @@ class tdAPI {
 
         return Promise.race([new Promise((resolve, reject) => {
 
-            if ($(tdPage.webTag2Selector(webTag)).length == 0) {
+            if ($(tdUI.webTag2Selector(webTag)).length == 0) {
                 reject("respFuncWinReplyWeb : no " + webTag + "exist")
                 return
             }
@@ -385,7 +438,7 @@ class tdAPI {
                     // fixme : -----------------------
                     // 目前程序已经去除对webview focus, 理论上来说不需要blur
                     console.log('bluring outttttttttttttttttttt')
-                    $(tdPage.webTag2Selector(webTag)).blur()
+                    $(tdUI.webTag2Selector(webTag)).blur()
                     //--------------------------------
 
                     $(dialogSelector + " div.td-bubble").each((index, element) => {
@@ -407,7 +460,7 @@ class tdAPI {
             } else if (key == 'Convo-new') {
                 // 有新消息来了
 
-                if(Obj.userID === undefined){
+                if (Obj.userID === undefined) {
                     reject("undefined user ID")
                     return
                 }
@@ -469,7 +522,7 @@ class tdAPI {
                 if (!Convo.muted // 非静音
                     && Convo.action != 'r' // 类型是a或者c
                     && Convo.message != undefined && Convo.message != ''
-                    && !(document.hasFocus() || $(tdPage.webTag2Selector(webTag)).get(0).getWebContents().isFocused())
+                    && !(document.hasFocus() || $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().isFocused())
                 ) {
                     if (Convo.counter > 0) { //未读消息 >0
                         notifyLocal()
@@ -528,7 +581,7 @@ class tdAPI {
             } else if (key == 'focus') {
                 console.log('focusing innnnnnnnnnnn')
                 // let activeE = document.activeElement
-                $(tdPage.webTag2Selector(webTag)).focus()
+                $(tdUI.webTag2Selector(webTag)).focus()
                 setTimeout(() => {
                     // $(activeE).focus()
                     $(".td-inputbox").focus()
@@ -537,7 +590,7 @@ class tdAPI {
                 resolve("focus done")
             } else if (key == 'blur') {
                 console.log('bluring outttttttttttttttttttt')
-                $(tdPage.webTag2Selector(webTag)).blur()
+                $(tdUI.webTag2Selector(webTag)).blur()
                 console.log(document.activeElement)
                 resolve("blur done")
             } else if (key == 'attachFile') {
@@ -546,19 +599,19 @@ class tdAPI {
                     "selector": str 
                     "file" : obj file
                 */
-                tdSimulator.attachInputFile(tdPage.webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
+                tdSimulator.attachInputFile(tdUI.webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
 
                 resolve("attached")
             } else if (key == 'simulateKey') {
                 // 按键模拟
 
-                tdSimulator.keypressSimulator(tdPage.webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
+                tdSimulator.keypressSimulator(tdUI.webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
 
                 resolve("simulated")
             } else if (key == 'simulateMouse') {
                 // 按键模拟
                 console.log("simulateMouse", Obj)
-                tdSimulator.mouseSimulator(tdPage.webTag2Selector(webTag), Obj.type, Obj.x, Obj.y)
+                tdSimulator.mouseSimulator(tdUI.webTag2Selector(webTag), Obj.type, Obj.x, Obj.y)
 
                 resolve("simulated")
             } else if (key == 'logStatus') {
@@ -636,6 +689,7 @@ class tdAPI {
         })])
 
     }
+
 
 }
 
@@ -873,6 +927,10 @@ class tdBubble {
 
 class tdExt {
 
+    constructor(configPath = undefined) {
+        this.configPath = configPath
+    }
+
     static rootPathInStore = 'tdSettings.extList'
 
     static fromJSON(json) {
@@ -881,28 +939,28 @@ class tdExt {
     }
 
     loadWebview() {
-        
+
 
         let webTag = this.webTag
         let url = this.webview.url
         let strUserAgent = this.getUserAgent()
 
 
-        if ($(tdPage.webTag2Selector(webTag)).length > 0) {
+        if ($(tdUI.webTag2Selector(webTag)).length > 0) {
             console.log("load")
             if (strUserAgent) {
-                $(tdPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
+                $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
                     {
                         "userAgent":
                             "userAgent : " + strUserAgent,
                         "extraHeaders": "User-Agent:" + strUserAgent + "\n"
                     })
             } else {
-                $(tdPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
+                $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
             }
 
             // 静音
-            $(tdPage.webTag2Selector(webTag)).get(0).setAudioMuted(true)
+            $(tdUI.webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
         }
     }
@@ -931,7 +989,7 @@ class tdExt {
                 } else {
                     let config = JSON.parse(rawConfig)
                     config.dir = path.dirname(this.configPath)
-                    config.pathConfig = this.configPath
+                    config.configPath = this.configPath
                     config.webTag = config.name + "-" + config.unicode
 
                     // 必须含有name
@@ -977,6 +1035,53 @@ class tdExt {
         })
     }
 
+    /**
+     * 加载tool的webview
+     */
+    loadTool() {
+
+
+        // 隐藏其他webview
+        $(tdUI.toolboxSelector + " webview").each(function (index, element) {
+            $(element).hide();
+        });
+
+        let webSelector = tdUI.webTag2Selector(this.webTag, this.type)
+
+
+        // 已经加载过webview
+        if ($(webSelector).length > 0 && $(webSelector).css("display") == "none") {
+            console.log("loadTool : display tool")
+
+            // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
+            if ($(webSelector).attr('src') != this.webview.url) {
+                $(webSelector).attr('src', this.webview.url)
+            }
+
+            $(webSelector).show()
+        } else {
+
+            if ($(webSelector).length == 0) {
+
+                $(tdUI.toolboxSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + this.webTag + "' src='' style='display:none;'></webview>")
+
+            }
+
+            $(webSelector).attr("data-tool-name", this.webTag)
+
+            $(webSelector).attr('src', this.webview.url)
+
+            if (this.webview.script !== undefined || this.webview.script !== '') {
+                $(webSelector).attr('preload', this.webview.script)
+            }
+
+            $(webSelector).show()
+
+        }
+
+        return true
+    }
+
     enableExtConfigure() {
 
         console.log("act ", this.name, " config ...")
@@ -1018,8 +1123,8 @@ class tdExt {
                 $(element).css('left', '100000px')
                 $(element).show()
 
-                $(tdPage.webTag2Selector(element.id.substring(6))).width("800px")
-                $(tdPage.webTag2Selector(element.id.substring(6))).height("800px")
+                $(tdUI.webTag2Selector(element.id.substring(6))).width("800px")
+                $(tdUI.webTag2Selector(element.id.substring(6))).height("800px")
 
 
                 this.loadWebview()
@@ -1035,13 +1140,14 @@ class tdExt {
                     }
 
                 } catch (err) {
-                    console.log(this.name, " action error : ", err)
+                    console.error(this.name, " action error : ", err)
+
                 }
 
                 // -o add message listener
                 console.log("add listener")
 
-                tdMessage.WinReplyWeb(tdPage.webTag2Selector(this.webTag), (key, arg) => {
+                tdMessage.WinReplyWeb(tdUI.webTag2Selector(this.webTag), (key, arg) => {
                     return tdAPI.respFuncWinReplyWeb(this.webTag, key, arg)
                 })
             } else if (this.type === 'tool') {
@@ -1056,27 +1162,54 @@ class tdExt {
                 return
             }
 
-            // -o store config 
-            // store.set("tdSettings.extList." + this.webTag,
-            //     {
-            //         'name': this.name,
-            //         'status': true,
-            //         'configPath': this.path
-            //     })
-
-            // // -o update global extList
-            // extList[this.webTag] = this
+            this.status = true
 
             resolve("done")
         })
     }
 
 
-    static disableExtConfigure() {
+    installExt() {
 
         return new Promise((resolve, reject) => {
 
+            this.loadExtConfigure().then(() => {
+                this.enableExtConfigure()
+            }).then(() => {
+                // save
+                this.saveExtInStore()
+            }).then(() => {
+                tdAPI.extList.addListFromEle(this.webTag, this)
 
+                resolve()
+            }).catch(err => {
+                reject(err)
+            })
+
+        })
+    }
+
+    removeExt() {
+
+        return new Promise((resolve, reject) => {
+            this.disableExtConfigure().then(() => {
+                this.saveExtInStore()
+            }).then(() => {
+                tdAPI.extList.addListFromEle(this.webTag, this)
+                resolve()
+            }).catch(err => {
+                reject(err)
+            })
+
+        })
+    }
+
+
+    disableExtConfigure() {
+
+        return new Promise((resolve, reject) => {
+
+            this.status = false
             if (this.type == 'app') {
                 // check modal is on
                 if ($('#modal-' + this.webTag).hasClass('show')) {
@@ -1099,22 +1232,12 @@ class tdExt {
 
                     $('#modal-' + this.webTag).remove()
 
-                    // flag turn off
-                    store.set("tdSettings.extList." + this.webTag,
-                        {
-                            'name': this.name,
-                            'status': false,
-                            'configPath': this.path
-                        })
-
                     // remove convo
                     $('div.td-convo[data-app-name="' + this.webTag + '"]').remove()
 
                     // empty right
                     tdUI.rightBackToDefault()
 
-                    // remove from extList
-                    delete extList[this.webTag];
 
                     resolve()
                 }, 1000);
@@ -1132,16 +1255,6 @@ class tdExt {
                 // -o delete webview
                 $('webview[data-tool-name="' + this.webTag + '"]').remove()
 
-                // flag turn off
-                store.set("tdSettings.extList." + this.webTag,
-                    {
-                        'name': this.name,
-                        'status': false,
-                        'configPath': this.path
-                    })
-
-                // remove from extList
-                delete extList[this.webTag];
                 resolve()
             }
 
@@ -1163,18 +1276,19 @@ class tdExt {
     }
 
     saveExtInStore(override = true, funToJSON = (obj) => {
-        return JSON.stringify(obj)
+        return JSON.parse(JSON.stringify(obj))
     }) {
 
         if (override) {
-            store.set(this.rootPathInStore + '.' + this.webTag, funToJSON(this))
+
+            store.set(tdExt.rootPathInStore + '.' + this.webTag, funToJSON(this))
         } else {
-            if (!store.has(this.rootPathInStore + '.' + this.webTag)) {
-                store.set(this.rootPathInStore + '.' + this.webTag, funToJSON(this))
+            if (!store.has(tdExt.rootPathInStore + '.' + this.webTag)) {
+                store.set(tdExt.rootPathInStore + '.' + this.webTag, funToJSON(this))
             }
         }
     }
-    getUserAgent(){
+    getUserAgent() {
         let strUserAgent = tdOS.strUserAgentWin
         if (this.webview.useragent == 'windows'
             || this.webview.useragent == ''
@@ -1182,7 +1296,7 @@ class tdExt {
 
         } else if (this.webview.useragent == 'linux') {
             strUserAgent = tdOS.strUserAgentLinux
-        }else{
+        } else {
             strUserAgent = this.webview.useragent
         }
         return strUserAgent
@@ -1193,6 +1307,11 @@ class tdExt {
  * 相应配套渲染UI的函数在这
  */
 class tdUI {
+
+    static toolboxSelector = "#td-right div.td-chatLog[winType='tool']"
+    static chatLogSelector = "#td-right div.td-chatLog[winType='chatLog']"
+
+
     static rightBackToDefault() {
         // 右侧恢复到开始状态
         $('.td-chat-title').removeAttr('data-user-i-d')
@@ -1212,6 +1331,20 @@ class tdUI {
                             </p>\
                         </div>')
     }
+
+
+
+    /**
+     * 
+     * @param {String} webTag slype, wechat...
+     * @param {String} type app/tool
+     * @returns {String} webview的selector
+     */
+    static webTag2Selector(webTag, type = 'app') {
+
+        return "webview[data-" + type + "-name='" + webTag + "']"
+    }
+
 
 }
 

@@ -146,6 +146,16 @@ Chrome/73.0.3683.121 Safari/537.36"
         fs.rmdirSync(dir)
     }
 
+    static tdRootPath(){
+
+        try {
+            return require('electron').remote.app.getAppPath()
+        } catch (error) {
+            return require('electron').app.getAppPath()
+        }
+        
+    }
+
 }
 
 module.exports = { tdFileSend, tdOS }

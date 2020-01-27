@@ -10,7 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const URL = require('url').URL
 
-const {tdMessage} = require("td")
+const {tdMessage, tdOS} = require("td")
 
 const debug = /--debug/.test(process.argv[2])
 
@@ -22,6 +22,7 @@ require('electron-reload')(__dirname)
 let win = undefined
 let tray = null
 let isQuitting = false
+
 
 function createWindow() {
 
