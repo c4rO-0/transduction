@@ -189,6 +189,7 @@ class tdAPI {
 
         // set event
         // this.event = new events.EventEmitter();
+        // tdUI.rightBackToDefault()
 
         // - initial extension list
         this.extList = new tdList(tdExt.rootPathInStore)
@@ -1216,4 +1217,4 @@ class tdUI {
 
 }
 
-module.exports = { tdAPI, tdExt, tdList }
+module.exports = { tdAPI, tdExt, tdList, tdUI }
