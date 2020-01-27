@@ -9,6 +9,9 @@ const Store = require('electron-store');
 const store = new Store();
 
 const { tdMessage } = require('tdMessage')
+const { tdPage } = require('tdBasic')
+const { tdOS } = require('tdSys')
+const { tdSimulator} = require('tdSimulator')
 
 /**
  * 用来统一管理List
@@ -190,16 +193,16 @@ class tdAPI {
         // - initial extension list
         this.extList = new tdList(tdExt.rootPathInStore)
         if (this.extList.hasListInStore()) {
-            this.extList.getListInSore(td.tdExt.fromJSON)
+            this.extList.getListInSore(tdExt.fromJSON)
             // this.extList.print('----extension list-----')
 
             $.each(this.extList.getList(), (webTag, ext) => {
-                console.log(webTag, ext)
+                // console.log(webTag, ext)
                 if (ext.status) {
                     ext.loadExtConfigure().then(() => {
                         // -o load
-                        ext.print('---ext---')
-                        // ext.enableExtConfigure()
+                        // ext.print('---ext---')
+                        ext.enableExtConfigure()
                     }).then(() => {
                         // save
                         // ext.saveExtInStore()
@@ -208,6 +211,430 @@ class tdAPI {
                 }
             })
         }
+
+    }
+
+
+    
+    //------------------------
+    // 处理消息
+    /**
+     * tdMessage.WinReplyWeb 处理消息的函数
+     * @param {String} webTag 区分web
+     * @param {String} key MSG的类别 : 
+     * MSG-Log : 收到右侧窗口聊天记录
+     * MSG-new : 左侧提示有新消息
+     * @param {Object} Obj 收到的具体消息
+     */
+    static respFuncWinReplyWeb(webTag, key, Obj) {
+
+
+        return Promise.race([new Promise((resolve, reject) => {
+
+            if ($(tdPage.webTag2Selector(webTag)).length == 0) {
+                reject("respFuncWinReplyWeb : no " + webTag + "exist")
+                return
+            }
+
+            console.log("debug : ", "----------------------")
+            console.log("debug : ", "Convo from ", webTag)
+            console.log(Obj)
+
+
+            if (key == 'Dialog') {
+                // 收到某个用户聊天记录
+                console.log("debug : ", "==========Dialog============")
+                if (Obj.length == 0) {
+                    reject("error : respFuncWinReplyWeb : no Dialog")
+                    return
+                }
+                // console.log(Obj)
+                let userID = (Obj[0])["userID"]
+                if (!userID) {
+                    reject("error : respFuncWinReplyWeb : no userID")
+                    return
+                }
+                if (webTag != $("#td-right div.td-chat-title").attr('data-app-name')) {
+                    resolve("nothing change")
+                    return
+                }
+                if (userID != $("#td-right div.td-chat-title").attr('data-user-i-d')) {
+                    resolve("nothing change")
+                    return
+                }
+
+
+                // 判断当前用户是否在看最后一条
+                let atBottom = false
+
+                let dialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+                // 附加到右边
+                if ($(dialogSelector + " div.td-bubble").length == 0) {
+                    // 窗口已被清空, 直接附加
+                    Obj.reverse().forEach((value, index) => {
+                        $(dialogSelector).prepend(bubble.createBubble(value))
+                    })
+
+                    // 滑动到最下面
+                    atBottom = true
+                } else {
+
+                    if ($(dialogSelector).is(":visible") &&
+                        Math.abs($(dialogSelector).scrollTop() + $(dialogSelector)[0].clientHeight - $(dialogSelector)[0].scrollHeight) < 64) {
+                        atBottom = true
+                        console.log("要滚动啊.......")
+
+                    } else {
+                        console.log("滑条 : ", $(dialogSelector).scrollTop(), $(dialogSelector)[0].clientHeight, $(dialogSelector)[0].scrollHeight)
+                        console.log("不滚动啊.......")
+                    }
+
+                    // 首先检查有没有msgID变更
+                    Obj.forEach((value, index) => {
+                        if (value.oldMsgID != undefined && $(dialogSelector + " [msgID='" + value['oldMsgID'] + "']").length > 0) {
+                            $(dialogSelector + " [msgID='" + value['oldMsgID'] + "']").attr('msgID', value.msgID)
+                        }
+                    })
+
+                    // 拿到已有bubble的时间, 并且按照顺序储存
+                    let arrayExistBubble = new Array()
+                    $(dialogSelector + " div.td-bubble").each((index, element) => {
+                        let msgTimeStr = $(element).attr("msgTime")
+                        let msgTime = parseInt(msgTimeStr)
+                        let msgId = $(element).attr("msgID")
+                        if (msgTimeStr != undefined && msgId != undefined) {
+
+                            arrayExistBubble.push({ 'msgTime': msgTime, 'msgID': msgId })
+                        }
+                    })
+
+                    Obj.forEach((value, index) => {
+
+                        if (value.oldMsgID != undefined && $(dialogSelector + " [msgID='" + value['msgID'] + "']").length == 0) {
+                            // 可能后台传上来一个oldMsgIDv不存在的消息
+                        } else {
+
+                            let timeObj = undefined
+
+                            if (typeof (value["time"]) === 'number') {
+                                timeObj = new Date(value["time"])
+                            } else if (typeof (value["time"]) == "string") {
+                                timeObj = new Date(value["time"])
+                            } else if (typeof (value["time"]) == "object") {
+                                timeObj = value["time"]
+                            } else {
+                                timeObj = new Date()
+                            }
+
+                            let timeWaitInsert = timeObj.getTime()
+                            // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
+
+                            // 在index对应的bubble之前插入
+                            let currentInsertIndex = 0
+                            for (let indexOfExistBubble = 0;
+                                indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
+                                if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
+                                    currentInsertIndex = -(indexOfExistBubble + 1)
+                                }
+                                if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
+                                    // console.log("later : ", indexOfExistBubble, arrayExistBubble[indexOfExistBubble].msgTime)
+                                    currentInsertIndex = indexOfExistBubble
+                                }
+                            }
+
+                            // console.log('insert before : ', currentInsertIndex, 'in ', arrayExistBubble)
+
+                            if (currentInsertIndex >= 0) {
+                                if (currentInsertIndex == arrayExistBubble.length - 1
+                                    && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
+
+                                    $(dialogSelector).append(bubble.createBubble(value))
+
+                                    arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                                } else {
+                                    $(bubble.createBubble(value))
+                                        .insertBefore(
+                                            dialogSelector
+                                            + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
+                                        )
+
+                                    arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                                }
+
+                            } else {
+                                // 重复的ID, 替换成新的
+                                $(dialogSelector
+                                    + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
+                                    .replaceWith(bubble.createBubble(value)
+                                    )
+                                // arrayExistBubble[-currentInsertIndex - 1].msgTime
+                            }
+                        }
+
+                    })
+                    // 
+
+                }
+
+
+                // 判断用户当前所在位置, 如果用户在阅读之前的bubble就不应该滚动滑条
+                if (atBottom) {
+
+                    $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+
+
+                    // fixme : -----------------------
+                    // 目前程序已经去除对webview focus, 理论上来说不需要blur
+                    console.log('bluring outttttttttttttttttttt')
+                    $(tdPage.webTag2Selector(webTag)).blur()
+                    //--------------------------------
+
+                    $(dialogSelector + " div.td-bubble").each((index, element) => {
+                        if ($(element).find('.td-chatImg').length > 0) {
+                            ($(element).find('.td-chatImg > img').get(0)).onload = function () {
+                                $(dialogSelector).scrollTop($(dialogSelector)[0].scrollHeight)
+                            }
+                        }
+                    })
+                } else {
+
+                    // 该处不需要blur, 因为不滚动, 要保持未读消息数
+                    console.log("dialog updated. new bubble(s) not display...")
+                }
+
+
+
+                resolve("copy that.")
+            } else if (key == 'Convo-new') {
+                // 有新消息来了
+
+                if(Obj.userID === undefined){
+                    reject("undefined user ID")
+                    return
+                }
+
+                let Convo = new conversation(
+                    Obj.action,
+                    Obj.userID,
+                    Obj.nickName,
+                    Obj.time,
+                    Obj.avatar,
+                    Obj.message,
+                    Obj.counter,
+                    Obj.index,
+                    Obj.muted)
+                console.log("debug : ", "new Convo")
+                Convo.print()
+
+                // 判断右侧窗口是否为当前convo
+
+                let DialogUserID = $("#td-right div.td-chat-title").attr("data-user-i-d")
+                let DialogWebTag = $("#td-right div.td-chat-title").attr("data-app-name")
+                if (DialogUserID && DialogWebTag
+                    && DialogUserID == Convo.userID
+                    && DialogWebTag == webTag) {
+                    // 判断窗口是否显示状态(tool), 并且滑条在最下面
+                    let strDialogSelector = "#td-right div.td-chatLog[wintype='chatLog']"
+                    if ($(strDialogSelector).is(":visible") &&
+                        $(strDialogSelector).scrollTop() + $(strDialogSelector)[0].clientHeight == $(strDialogSelector)[0].scrollHeight) {
+
+                        if (document.hasFocus()) {
+                            // 取消新消息未读, 和声音提示
+                            Convo.counter = 0
+                        }
+
+                    }
+
+                }
+
+
+                // 前台闪烁图标, 发送notification, 并响铃
+                function notifyLocal() {
+                    tdMessage.sendToMain({ 'flash': Convo.nickName + ':' + Convo.message })
+                    let convoNotification = new Notification('Tr| ' + webTag, {
+                        body: Convo.nickName + '|' + Convo.message,
+                        silent: true
+                    })
+                    // 因为系统原因, Notification silent在ubuntu失效, 所以需要统一播放声音
+                    const noise = new Audio('../res/mp3/to-the-point.mp3')
+                    noise.play()
+
+                    convoNotification.onclick = () => {
+                        // 弹出transduction, 并点击对应convo
+                        tdMessage.sendToMain({ 'show': '' })
+                        tdMessage.sendToMain({ 'focus': '' })
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                    }
+                }
+
+                if (!Convo.muted // 非静音
+                    && Convo.action != 'r' // 类型是a或者c
+                    && Convo.message != undefined && Convo.message != ''
+                    && !(document.hasFocus() || $(tdPage.webTag2Selector(webTag)).get(0).getWebContents().isFocused())
+                ) {
+                    if (Convo.counter > 0) { //未读消息 >0
+                        notifyLocal()
+                    } else {
+                        // 如果是选中的convo, 那么可能存在对方发消息, counter(未读消息) == 0, 
+                        // 但实际并没有读取.
+                        // 检查右侧如果不是自己发的, 就要弹提醒
+                        if ($('div.td-chat-title[data-user-i-d="' + Convo.userID + '"]').length > 0) {
+                            setTimeout(() => {
+                                if ($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child > div').hasClass('td-them')) {
+                                    notifyLocal()
+                                }
+                            }, 300);
+                        }
+                    }
+                }
+
+                if (Convo.action === 'a') {
+                    console.log('going to insert html snippet')
+                    // console.log(typeof Convo.time)
+                    // console.log(convoHtml('skype', Convo))
+                    // 覆盖消息
+                    let active =
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
+                            .hasClass('theme-transduction-active')
+
+                    $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
+                    $('#td-convo-container').prepend(AddConvoHtml(webTag, Convo))
+                    if (active) {
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
+                            .addClass('theme-transduction-active')
+                    }
+
+                    // webTag
+                    let webTagSelector = '#modal-' + webTag
+                    if ($(webTagSelector).hasClass('show') && Convo.counter == 0) {
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                        $(webTagSelector).modal('hide')
+                    }
+                } else if (Convo.action === 'c') {
+                    console.log('going to change html snippet')
+                    ChangeConvoHtml(webTag, Convo)
+                } else if (Convo.action === 'r') {
+                    console.log('going to remove convo')
+                    let active =
+                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
+                            .hasClass('theme-transduction-active')
+
+                    $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
+                    if (active) {
+                        tdUI.rightBackToDefault()
+                    }
+                }
+
+                resolve("copy that")
+            } else if (key == 'focus') {
+                console.log('focusing innnnnnnnnnnn')
+                // let activeE = document.activeElement
+                $(tdPage.webTag2Selector(webTag)).focus()
+                setTimeout(() => {
+                    // $(activeE).focus()
+                    $(".td-inputbox").focus()
+                    console.log(document.activeElement)
+                }, 3000);
+                resolve("focus done")
+            } else if (key == 'blur') {
+                console.log('bluring outttttttttttttttttttt')
+                $(tdPage.webTag2Selector(webTag)).blur()
+                console.log(document.activeElement)
+                resolve("blur done")
+            } else if (key == 'attachFile') {
+                // 上传文件
+                /* obj
+                    "selector": str 
+                    "file" : obj file
+                */
+                tdSimulator.attachInputFile(tdPage.webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
+
+                resolve("attached")
+            } else if (key == 'simulateKey') {
+                // 按键模拟
+
+                tdSimulator.keypressSimulator(tdPage.webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
+
+                resolve("simulated")
+            } else if (key == 'simulateMouse') {
+                // 按键模拟
+                console.log("simulateMouse", Obj)
+                tdSimulator.mouseSimulator(tdPage.webTag2Selector(webTag), Obj.type, Obj.x, Obj.y)
+
+                resolve("simulated")
+            } else if (key == 'logStatus') {
+                // 登录状态
+                // console.log("============================================================")
+                if (Obj.status) {
+                    // let color = 'red'
+
+                    if (Obj.status == 'offline') {
+                        console.log(webTag + " not log yet.")
+                        $('#app-' + webTag).removeClass('app-online')
+                        $('#app-' + webTag).addClass('app-offline')
+
+                        // 去掉聊天记录
+                        $('#td-convo-container > div').each((index, element) => {
+                            if ($(element).is('[data-app-name="' + webTag + '"]')) {
+                                $(element).remove()
+                            }
+                        })
+                        // 右侧恢复到开始状态
+                        if ($('.app-online').length == 0) {
+                            // 空白页
+                            tdUI.rightBackToDefault()
+                        }
+
+
+
+                    } else if (Obj.status == 'online') {
+                        console.log(webTag + " is logged already.")
+                        $('#app-' + webTag).removeClass('app-offline')
+                        $('#app-' + webTag).addClass('app-online')
+                        // color = 'green'
+                    } else if (Obj.status == 'failure') {
+                        console.log(webTag + " log failed")
+                        $('#app-' + webTag).removeClass('app-online')
+                        $('#app-' + webTag).addClass('app-offline')
+                    }
+
+                    // 修改登录状态
+                    //     let selector = "#test-2 p[data-app-name='" + webTag + "']"
+                    //     if ($(selector).length == 0) {
+                    //         $("#test-2").append(
+                    //             "<p data-app-name='" + webTag + "'>" + webTag + " : " + Obj.status + "</p>")
+                    //         $(selector).css("background-color", color);
+                    //     } else {
+                    //         $(selector).text(webTag + " : " + Obj.status)
+                    //         $(selector).css("background-color", color);
+                    //     }
+                }
+
+            } else if (key == 'queryToggleStatus') {
+                // webview查询自己是打开还是关闭的
+
+            } else if (key == 'show') {
+                // 显示对应webview
+                // Obj里应该储存要定位的位置
+                console.log(webTag + "说 : 我要显摆我自己~")
+                // $('#modal-' + webTag).modal('show')
+                // $("#test-" + webTag + "-toggle").text("快打开" + webTag)
+                // $("#test-" + webTag + "-toggle").css("background-color", '#ffc107')
+            } else if (key == 'hide') {
+                // 隐藏webview
+                console.log(webTag + "说 : 快把我关掉!")
+                $('#modal-' + webTag).modal('hide')
+                // $("#test-" + webTag + "-toggle").text("快关上" + webTag)
+                // $("#test-" + webTag + "-toggle").css("background-color", '#866606')
+            }
+
+        }),
+        new Promise((resolve, reject) => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
+                reject("respFuncWinReplyWeb : " + key + " time out")
+            }, 5000);
+        })])
 
     }
 
@@ -454,13 +881,16 @@ class tdExt {
         return Object.assign(new tdExt(), json);
     }
 
-    static loadWebview(webTag, url, strUserAgent = undefined) {
-        // console.log(strUserAgent)
+    loadWebview() {
+        
+
+        let webTag = this.webTag
+        let url = this.webview.url
+        let strUserAgent = this.getUserAgent()
+
+
         if ($(tdPage.webTag2Selector(webTag)).length > 0) {
             console.log("load")
-
-            // $(tdPage.webTag2Selector(webTag)).attr('partition',webTag)
-
             if (strUserAgent) {
                 $(tdPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
                     {
@@ -471,7 +901,6 @@ class tdExt {
             } else {
                 $(tdPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
             }
-
 
             // 静音
             $(tdPage.webTag2Selector(webTag)).get(0).setAudioMuted(true)
@@ -593,17 +1022,8 @@ class tdExt {
                 $(tdPage.webTag2Selector(element.id.substring(6))).width("800px")
                 $(tdPage.webTag2Selector(element.id.substring(6))).height("800px")
 
-                // -o load webview url
-                let strUserAgent = tdOS.strUserAgentWin
-                if (this.webview.useragent == 'windows'
-                    || this.webview.useragent == ''
-                    || this.webview.useragent == undefined) {
 
-                } else if (this.webview.useragent == 'linux') {
-                    strUserAgent = tdOS.strUserAgentLinux
-                }
-
-                this.loadWebview(this.webTag, this.webview.url, strUserAgent)
+                this.loadWebview()
 
                 // -o run action
                 try {
@@ -623,7 +1043,7 @@ class tdExt {
                 console.log("add listener")
 
                 tdMessage.WinReplyWeb(tdPage.webTag2Selector(this.webTag), (key, arg) => {
-                    return respFuncWinReplyWeb(this.webTag, key, arg)
+                    return tdAPI.respFuncWinReplyWeb(this.webTag, key, arg)
                 })
             } else if (this.type === 'tool') {
                 // -o insert logo
@@ -692,7 +1112,7 @@ class tdExt {
                     $('div.td-convo[data-app-name="' + this.webTag + '"]').remove()
 
                     // empty right
-                    rightBackToDefault()
+                    tdUI.rightBackToDefault()
 
                     // remove from extList
                     delete extList[this.webTag];
@@ -755,13 +1175,44 @@ class tdExt {
             }
         }
     }
+    getUserAgent(){
+        let strUserAgent = tdOS.strUserAgentWin
+        if (this.webview.useragent == 'windows'
+            || this.webview.useragent == ''
+            || this.webview.useragent == undefined) {
+
+        } else if (this.webview.useragent == 'linux') {
+            strUserAgent = tdOS.strUserAgentLinux
+        }else{
+            strUserAgent = this.webview.useragent
+        }
+        return strUserAgent
+    }
 }
 
 /**
  * 相应配套渲染UI的函数在这
  */
 class tdUI {
+    static rightBackToDefault() {
+        // 右侧恢复到开始状态
+        $('.td-chat-title').removeAttr('data-user-i-d')
+        $('.td-chat-title').removeAttr('data-app-name')
+        $('.td-chat-title > h2').text('')
+        $('.td-chat-title > img').attr('src', '../res/pic/nothing.png')
 
+        $('.td-chatLog[wintype="chatLog"]').empty()
+        $('.td-chatLog[wintype="chatLog"]').append('\
+                        <img id="debug-history" class="hide" src="../res/pic/history.png">\
+                        <div class="td-default">\
+                            <p>\
+                                问题反馈，请联系c4r。\
+                            </p>\
+                            <p>\
+                                bug report, please contact c4r.\
+                            </p>\
+                        </div>')
+    }
 
 }
 

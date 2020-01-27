@@ -9,6 +9,8 @@
   "author": "c4r",
   "license": "MPL-2.0",
   "dependencies": {
-    "tdMessage": "file:../tdMessage"
+    "tdBasic": "file:../tdBasic",
+    "tdMessage": "file:../tdMessage",
+    "tdSys": "file:../tdSys"
   }
 }
