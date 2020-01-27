@@ -3,11 +3,12 @@
  */
 
 const events = require('events')
-
+const fs = require('fs')
+const path = require('path')
 const Store = require('electron-store');
 const store = new Store();
 
-const {tdMessage} = require('tdMessage')
+const { tdMessage } = require('tdMessage')
 
 /**
  * 用来统一管理List
@@ -16,127 +17,127 @@ const {tdMessage} = require('tdMessage')
  */
 class tdList {
 
-    constructor(pathInStore = undefined){
+    constructor(pathInStore = undefined) {
         this.list = {}
         this.pathInStore = pathInStore
     }
-    addListFromSub(subList){
-        this.list = {...this.list, ...subList}
+    addListFromSub(subList) {
+        this.list = { ...this.list, ...subList }
     }
-    addListFromEle(key, element){
+    addListFromEle(key, element) {
         this.list[key] = element
     }
-    deleteEleByKey(key){
+    deleteEleByKey(key) {
         delete this.list[key]
     }
-    deleteEleByIndex(index){
+    deleteEleByIndex(index) {
         delete this.list[Object.keys(this.list)[index]];
     }
-    getLen(){
+    getLen() {
         return (Object.keys(this.list)).length
     }
-    getList(){
+    getList() {
         return this.list
     }
-    getValueByKey(key){
+    getValueByKey(key) {
         return this.list[key]
     }
-    getSubByKeys(...keys){
+    getSubByKeys(...keys) {
         let subList = new tdList()
-        keys.forEach(key =>{
+        keys.forEach(key => {
             subList.addListFromEle(key, this.list[key])
         })
         return subList
     }
-    getValueByIndex(index){
+    getValueByIndex(index) {
         return this.list[Object.keys(this.list)[index]]
     }
-    updateEleValue(key,value){
+    updateEleValue(key, value) {
         this.list[key] = value
     }
-    print(commit=undefined){
-        if(commit){
+    print(commit = undefined) {
+        if (commit) {
             console.log(commit)
         }
         console.log(this.list)
     }
-    toJSONList(funToJSON=(obj)=>{
+    toJSONList(funToJSON = (obj) => {
         return JSON.stringify(obj)
-    }){
+    }) {
         let pList
-        for (let key in this.list){
+        for (let key in this.list) {
             pList[key] = funToJSON(this.list[key])
         }
         return pList
     }
-    fromJSONList(pList, funFromJSON=(obj)=>{
+    fromJSONList(pList, funFromJSON = (obj) => {
         return obj
-    }){
-        for (let key in pList){
+    }) {
+        for (let key in pList) {
             this.list[key] = funFromJSON(pList[key])
         }
     }
-    getPathInStore(){
+    getPathInStore() {
         return this.pathInStore
     }
-    hasPathInSore(){
-        return !(this.pathInStore === undefined 
-        || this.pathInStore === '')
+    hasPathInSore() {
+        return !(this.pathInStore === undefined
+            || this.pathInStore === '')
     }
-    setPathInStore(pathInStore){
+    setPathInStore(pathInStore) {
         this.pathInStore = pathInStore
-        if(! this.hasPathInSore()){
-            throw('illegal path : ', pathInStore);
+        if (!this.hasPathInSore()) {
+            throw ('illegal path : ', pathInStore);
         }
     }
-    getListInSore(funFromObj=(obj)=>{
+    getListInSore(funFromObj = (obj) => {
         return obj
-    }){
-        if(store.has(this.pathInStore)){
+    }) {
+        if (store.has(this.pathInStore)) {
             this.fromJSONList(store.get(this.pathInStore), funFromObj)
-        }else{
+        } else {
             console.error('no ', this.pathInStore, ' in store.')
         }
-        
+
     }
-    saveListInStore(override = true,funToJSON=(obj)=>{
+    saveListInStore(override = true, funToJSON = (obj) => {
         return JSON.stringify(obj)
-    }){
-        if(override){
+    }) {
+        if (override) {
             store.set(this.pathInStore, this.toJSONList(funToJSON))
-        }else{
-            if( ! store.has(this.pathInStore)){
+        } else {
+            if (!store.has(this.pathInStore)) {
                 store.set(this.pathInStore, this.toJSONList(funToJSON))
             }
         }
     }
-    saveEleInStore(key, override = true,funToJSON=(obj)=>{
+    saveEleInStore(key, override = true, funToJSON = (obj) => {
         return JSON.stringify(obj)
-    }){
-        if(!(key in this.list)){
+    }) {
+        if (!(key in this.list)) {
             return
         }
 
-        if(override){
-            store.set(this.pathInStore+'.'+key, funToJSON(this.list[key]))
-        }else{
-            if( ! store.has(this.pathInStore+'.'+key)){
-                store.set(this.pathInStore+'.'+key, funToJSON(this.list[key]))
+        if (override) {
+            store.set(this.pathInStore + '.' + key, funToJSON(this.list[key]))
+        } else {
+            if (!store.has(this.pathInStore + '.' + key)) {
+                store.set(this.pathInStore + '.' + key, funToJSON(this.list[key]))
             }
         }
     }
-    resetListInStore(){
-        if(this.hasPathInSore()){
+    resetListInStore() {
+        if (this.hasPathInSore()) {
             store.reset(this.pathInStore)
         }
-        
+
     }
-    deleteListInStore(){
-        if(this.hasPathInSore()){
+    deleteListInStore() {
+        if (this.hasPathInSore()) {
             store.delete(this.pathInStore)
         }
     }
-    hasListInStore(){
+    hasListInStore() {
         return (this.hasPathInSore() && store.has(this.pathInStore))
     }
 }
@@ -190,21 +191,24 @@ class tdAPI {
         this.extList = new tdList(tdExt.rootPathInStore)
         if (this.extList.hasListInStore()) {
             this.extList.getListInSore(td.tdExt.fromJSON)
-            this.extList.print('----extension list-----')
-            $.each(this.extList, (webTag, ext) => {
+            // this.extList.print('----extension list-----')
+
+            $.each(this.extList.getList(), (webTag, ext) => {
+                console.log(webTag, ext)
                 if (ext.status) {
-                    ext.loadExtConfigure().then(()=>{
+                    ext.loadExtConfigure().then(() => {
                         // -o load
-                        ext.enableExtConfigure()
-                    }).then(()=>{
+                        ext.print('---ext---')
+                        // ext.enableExtConfigure()
+                    }).then(() => {
                         // save
-                        ext.saveExtInStore()
+                        // ext.saveExtInStore()
                     })
 
                 }
             })
         }
-     
+
     }
 
 }
@@ -443,10 +447,10 @@ class tdBubble {
 
 class tdExt {
 
-    static rootPathInStore='tdSettings.extList'
-    
-    static fromJSON(json){
-        
+    static rootPathInStore = 'tdSettings.extList'
+
+    static fromJSON(json) {
+
         return Object.assign(new tdExt(), json);
     }
 
@@ -475,54 +479,50 @@ class tdExt {
         }
     }
 
-    /**
-    * path of configure.json
-    * @param {String} pathConfig  绝对路径
-    * @returns {Promise} config 
-    */
+
     loadExtConfigure() {
 
         console.log("load extension config ...")
 
         return new Promise((resolve, reject) => {
 
-            fs.readFile(pathConfig, (err, rawConfig) => {
+            fs.readFile(this.configPath, (err, rawConfig) => {
 
                 if (err) {
                     // 文件不存在, 或者 
                     if (err.code === 'ENOENT') {
-                        console.error('no configure found in ', pathConfig)
+                        console.error('no configure found in ', this.configPath)
                     } else if (err.code === 'EISDIR') {
-                        console.error('configure path \' ', pathConfig, '\' is a directory')
+                        console.error('configure path \' ', this.configPath, '\' is a directory')
                     } else {
-                        console.error('configure read failed', pathConfig)
+                        console.error('configure read failed', this.configPath)
                     }
 
                     reject(err)
                     return
                 } else {
                     let config = JSON.parse(rawConfig)
-                    config.dir = path.dirname(pathConfig)
-                    config.path = pathConfig
+                    config.dir = path.dirname(this.configPath)
+                    config.pathConfig = this.configPath
                     config.webTag = config.name + "-" + config.unicode
 
                     // 必须含有name
                     // 不能含有. - 
                     if (config.name === undefined
                         || config.name === "") {
-                        reject("load extension error , no name found in ", pathConfig)
+                        reject("load extension error , no name found in ", this.configPath)
                         return
                     }
 
                     // 必须含有type
                     if (config.type !== 'app' && config.type !== 'tool') {
-                        reject("load extension error , unknown type in ", pathConfig)
+                        reject("load extension error , unknown type in ", this.configPath)
                         return
                     }
 
                     // 必须含有unicode
                     if (config.unicode === undefined && config.unicode === "") {
-                        reject("load extension error , no unicode in ", pathConfig)
+                        reject("load extension error , no unicode in ", this.configPath)
                         return
                     }
 
@@ -538,7 +538,9 @@ class tdExt {
                         return
                     }
 
-                    resolve(this = this.fromJSON(config))
+
+                    Object.assign(this, tdExt.fromJSON(config));
+                    resolve('done')
 
                 }
 
@@ -650,7 +652,7 @@ class tdExt {
         })
     }
 
-    
+
     static disableExtConfigure() {
 
         return new Promise((resolve, reject) => {
@@ -728,21 +730,28 @@ class tdExt {
 
     }
 
-    isExtLoaded(){
+    isExtLoaded() {
 
         return ($('[id*="' + this.webTag + '"]').length > 0)
 
     }
 
-    saveExtInStore(override = true,funToJSON=(obj)=>{
-        return JSON.stringify(obj)
-    }){
+    print(commit = undefined) {
+        if (commit) {
+            console.log(commit)
+        }
+        console.log(this)
+    }
 
-        if(override){
-            store.set(this.rootPathInStore+'.'+this.webTag, funToJSON(this))
-        }else{
-            if( ! store.has(this.rootPathInStore+'.'+this.webTag)){
-                store.set(this.rootPathInStore+'.'+this.webTag, funToJSON(this))
+    saveExtInStore(override = true, funToJSON = (obj) => {
+        return JSON.stringify(obj)
+    }) {
+
+        if (override) {
+            store.set(this.rootPathInStore + '.' + this.webTag, funToJSON(this))
+        } else {
+            if (!store.has(this.rootPathInStore + '.' + this.webTag)) {
+                store.set(this.rootPathInStore + '.' + this.webTag, funToJSON(this))
             }
         }
     }
