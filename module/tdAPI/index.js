@@ -16,8 +16,9 @@ const {tdMessage} = require('tdMessage')
  */
 class tdList {
 
-    constructor(){
+    constructor(pathInStore = undefined){
         this.list = {}
+        this.pathInStore = pathInStore
     }
     addListFromSub(subList){
         this.list = {...this.list, ...subList}
@@ -53,7 +54,10 @@ class tdList {
     updateEleValue(key,value){
         this.list[key] = value
     }
-    print(){
+    print(commit=undefined){
+        if(commit){
+            console.log(commit)
+        }
         console.log(this.list)
     }
     toJSONList(funToJSON=(obj)=>{
@@ -72,28 +76,41 @@ class tdList {
             this.list[key] = funFromJSON(pList[key])
         }
     }
-    getListInSore(path,funFromObj=(obj)=>{
+    getPathInStore(){
+        return this.pathInStore
+    }
+    hasPathInSore(){
+        return !(this.pathInStore === undefined 
+        || this.pathInStore === '')
+    }
+    setPathInStore(pathInStore){
+        this.pathInStore = pathInStore
+        if(! this.hasPathInSore()){
+            throw('illegal path : ', pathInStore);
+        }
+    }
+    getListInSore(funFromObj=(obj)=>{
         return obj
     }){
-        if(store.has(path)){
-            this.fromJSONList(store.get(path), funFromObj)
+        if(store.has(this.pathInStore)){
+            this.fromJSONList(store.get(this.pathInStore), funFromObj)
         }else{
-            console.error('no ', path, ' in store.')
+            console.error('no ', this.pathInStore, ' in store.')
         }
         
     }
-    saveListInStore(path, override = true,funToJSON=(obj)=>{
+    saveListInStore(override = true,funToJSON=(obj)=>{
         return JSON.stringify(obj)
     }){
         if(override){
-            store.set(path, this.toJSONList(funToJSON))
+            store.set(this.pathInStore, this.toJSONList(funToJSON))
         }else{
-            if( ! store.has(path)){
-                store.set(path, this.toJSONList(funToJSON))
+            if( ! store.has(this.pathInStore)){
+                store.set(this.pathInStore, this.toJSONList(funToJSON))
             }
         }
     }
-    saveEleInStore(key, path, override = true,funToJSON=(obj)=>{
+    saveEleInStore(key, override = true,funToJSON=(obj)=>{
         return JSON.stringify(obj)
     }){
         if(!(key in this.list)){
@@ -101,18 +118,26 @@ class tdList {
         }
 
         if(override){
-            store.set(path+'.'+key, funToJSON(this.list[key]))
+            store.set(this.pathInStore+'.'+key, funToJSON(this.list[key]))
         }else{
-            if( ! store.has(path+'.'+key)){
-                store.set(path+'.'+key, funToJSON(this.list[key]))
+            if( ! store.has(this.pathInStore+'.'+key)){
+                store.set(this.pathInStore+'.'+key, funToJSON(this.list[key]))
             }
         }
     }
-    resetListInStore(path){
-        store.reset(path)
+    resetListInStore(){
+        if(this.hasPathInSore()){
+            store.reset(this.pathInStore)
+        }
+        
     }
-    deleteListInStore(path){
-        store.delete(path)
+    deleteListInStore(){
+        if(this.hasPathInSore()){
+            store.delete(this.pathInStore)
+        }
+    }
+    hasListInStore(){
+        return (this.hasPathInSore() && store.has(this.pathInStore))
     }
 }
 
@@ -162,40 +187,24 @@ class tdAPI {
         // this.event = new events.EventEmitter();
 
         // - initial extension list
-        this.extList = new tdList()
-        this.extList.getListInSore(tdExt.rootPathInStore, td.tdExt.fromJSON)
-
-        if (store.has(tdExt.rootPathInStore)) {
-            let extListStore = store.get('tdSettings.extList')
-            console.log('loading extList', extListStore)
-            $.each(extListStore, (webTag, details) => {
-                // console.log('load ', webTag)
-                if (details.status === true && extList[webTag] === undefined) {
-                    td.tdExt.loadExtConfigure(details.configPath).then((config) => {
-
-                        // -o check unicode is same with store
-                        if (webTag !== config.webTag) {
-                            console.error(config.name, ' unicode check failed')
-                        } else {
-                            // -o load
-                            td.tdExt.enableExtConfigure(config)
-                        }
-
-                    }).catch((loadError) => {
-                        console.error(loadError)
+        this.extList = new tdList(tdExt.rootPathInStore)
+        if (this.extList.hasListInStore()) {
+            this.extList.getListInSore(td.tdExt.fromJSON)
+            this.extList.print('----extension list-----')
+            $.each(this.extList, (webTag, ext) => {
+                if (ext.status) {
+                    ext.loadExtConfigure().then(()=>{
+                        // -o load
+                        ext.enableExtConfigure()
+                    }).then(()=>{
+                        // save
+                        ext.saveExtInStore()
                     })
+
                 }
             })
-        }        
-
-
-    }
-    /**
-     * 更新convoList
-     * @param {tdConvo} convo 
-     */
-    static updateConvoList(convo) {
-
+        }
+     
     }
 
 }
@@ -443,25 +452,25 @@ class tdExt {
 
     static loadWebview(webTag, url, strUserAgent = undefined) {
         // console.log(strUserAgent)
-        if ($(webTag2Selector(webTag)).length > 0) {
+        if ($(tdPage.webTag2Selector(webTag)).length > 0) {
             console.log("load")
 
-            // $(webTag2Selector(webTag)).attr('partition',webTag)
+            // $(tdPage.webTag2Selector(webTag)).attr('partition',webTag)
 
             if (strUserAgent) {
-                $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
+                $(tdPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
                     {
                         "userAgent":
                             "userAgent : " + strUserAgent,
                         "extraHeaders": "User-Agent:" + strUserAgent + "\n"
                     })
             } else {
-                $(webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
+                $(tdPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
             }
 
 
             // 静音
-            $(webTag2Selector(webTag)).get(0).setAudioMuted(true)
+            $(tdPage.webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
         }
     }
@@ -471,7 +480,7 @@ class tdExt {
     * @param {String} pathConfig  绝对路径
     * @returns {Promise} config 
     */
-    static loadExtConfigure(pathConfig) {
+    loadExtConfigure() {
 
         console.log("load extension config ...")
 
@@ -529,7 +538,7 @@ class tdExt {
                         return
                     }
 
-                    resolve(this.fromJSON(config))
+                    resolve(this = this.fromJSON(config))
 
                 }
 
@@ -538,28 +547,25 @@ class tdExt {
         })
     }
 
-    static enableExtConfigure() {
+    enableExtConfigure() {
 
         console.log("act ", this.name, " config ...")
 
         return new Promise((resolve, reject) => {
 
             // -o 判断extension是否已安装
-            if ($('[id*="' + this.webTag + '"]').length > 0) {
-                console.log(config.name, " already enabled")
+            if (this.isExtLoaded()) {
+                console.log(this.name, " already enabled")
                 resolve('done')
                 return
             }
 
             if (this.type === 'app') {
-
-
                 // -o insert logo
                 $("div.td-app-status").append('\
 <img id="app-'+ this.webTag + '" class="app-offline" src="' + path.join(this.dir, this.icon.any) + '">')
 
                 // -o insert webview
-
                 $(".td-stealth").append('\
 <div id="modal-'+ this.webTag + '" class="modal fade" tabindex="-1" role="dialog">\
 <div class="modal-dialog modal-dialog-centered" role="document">\
@@ -579,21 +585,20 @@ class tdExt {
                 if (!element.matches('#modal-image') && !element.matches('#modal-settings')) {
                     $('>div.modal-dialog', element).removeClass('modal-xl')
                 }
-                // $('#modal-wechat > div.modal-dialog').css('left', '')
                 $(element).css('left', '100000px')
                 $(element).show()
 
-                $(webTag2Selector(element.id.substring(6))).width("800px")
-                $(webTag2Selector(element.id.substring(6))).height("800px")
+                $(tdPage.webTag2Selector(element.id.substring(6))).width("800px")
+                $(tdPage.webTag2Selector(element.id.substring(6))).height("800px")
 
                 // -o load webview url
-                let strUserAgent = td.tdOS.strUserAgentWin
+                let strUserAgent = tdOS.strUserAgentWin
                 if (this.webview.useragent == 'windows'
                     || this.webview.useragent == ''
                     || this.webview.useragent == undefined) {
 
                 } else if (this.webview.useragent == 'linux') {
-                    strUserAgent = td.tdOS.strUserAgentLinux
+                    strUserAgent = tdOS.strUserAgentLinux
                 }
 
                 this.loadWebview(this.webTag, this.webview.url, strUserAgent)
@@ -615,7 +620,7 @@ class tdExt {
                 // -o add message listener
                 console.log("add listener")
 
-                td.tdMessage.WinReplyWeb(webTag2Selector(this.webTag), (key, arg) => {
+                tdMessage.WinReplyWeb(tdPage.webTag2Selector(this.webTag), (key, arg) => {
                     return respFuncWinReplyWeb(this.webTag, key, arg)
                 })
             } else if (this.type === 'tool') {
@@ -631,15 +636,15 @@ class tdExt {
             }
 
             // -o store config 
-            store.set("tdSettings.extList." + this.webTag,
-                {
-                    'name': this.name,
-                    'status': true,
-                    'configPath': this.path
-                })
+            // store.set("tdSettings.extList." + this.webTag,
+            //     {
+            //         'name': this.name,
+            //         'status': true,
+            //         'configPath': this.path
+            //     })
 
-            // -o update global extList
-            extList[this.webTag] = this
+            // // -o update global extList
+            // extList[this.webTag] = this
 
             resolve("done")
         })
@@ -721,6 +726,25 @@ class tdExt {
 
         })
 
+    }
+
+    isExtLoaded(){
+
+        return ($('[id*="' + this.webTag + '"]').length > 0)
+
+    }
+
+    saveExtInStore(override = true,funToJSON=(obj)=>{
+        return JSON.stringify(obj)
+    }){
+
+        if(override){
+            store.set(this.rootPathInStore+'.'+this.webTag, funToJSON(this))
+        }else{
+            if( ! store.has(this.rootPathInStore+'.'+this.webTag)){
+                store.set(this.rootPathInStore+'.'+this.webTag, funToJSON(this))
+            }
+        }
     }
 }
 

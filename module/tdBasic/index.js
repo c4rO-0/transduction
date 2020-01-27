@@ -131,6 +131,15 @@ document.body.appendChild(el);}")
         })
 
     }
+
+    /**
+     * 
+     * @param {String} webTag slype, wechat...
+     * @returns {String} webview的selector
+     */
+    static webTag2Selector(webTag) {
+        return "webview[data-app-name='" + webTag + "']"
+    }
 }
 
 class tdMath {
