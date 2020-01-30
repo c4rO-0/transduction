@@ -550,8 +550,12 @@ class tdAPI {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
                             .hasClass('theme-transduction-active')
 
-                    $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
-                    $('#td-convo-container').prepend(Convo.AddConvoHtml())
+                    if($('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').length == 0){
+                        $('#td-convo-container').prepend(Convo.toHTML())
+                    }else{
+                        Convo.updateHTML()
+                    }
+                    
                     if (active) {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
                             .addClass('theme-transduction-active')
@@ -565,7 +569,7 @@ class tdAPI {
                     }
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
-                    ChangeConvoHtml(webTag, Convo)
+                    Convo.updateHTML()
                 } else if (Convo.action === 'r') {
                     console.log('going to remove convo')
                     let active =
@@ -811,7 +815,7 @@ class tdConvo {
     }
 
 
-    AddConvoHtml() {
+    toHTML() {
         let displayCounter = "display: none;"
         let visibility = "td-invisible"
         if (this.counter) {
@@ -848,6 +852,51 @@ class tdConvo {
                 <img class="' + visibility + ' align-self-center" src="../res/pic/mute.svg" height="18px">\
             </div>\
         </div > '
+    }
+
+    
+    updateHTML() {
+        let objConvo = $('#td-convo-container [data-app-name=' + this.webTag + '][data-user-i-d="' + this.userID + '"]')
+        if (objConvo.length) { // 检测存在
+            // $('#td-convo-container [data-app-name=' + this.webTag + '][data-user-i-d="' + this.userID + '"]').remove()
+            for (let key in this) {
+                if (this[key] != undefined) {
+                    switch (key) {
+                        case "avatar":
+                            $(objConvo).find("div.td-avatar").attr("style", 'background-image: url(' + this.avatar + ')')
+                            break;
+                        case "counter":
+                            $(objConvo).find("div.td-counter div").text(this.counter)
+                            if (this.counter) {
+                                $(objConvo).find("div.td-counter").css("display", "")
+                            } else {
+                                $(objConvo).find("div.td-counter").css("display", "none")
+                            }
+                            break;
+                        case "nickName":
+                            $(objConvo).find("div.td-nickname").text(this.nickName)
+                            break;
+                        case "message":
+                            $(objConvo).find("div.td-text").text(this.message)
+                            break;
+                        case "time":
+                            $(objConvo).find("div.col-timestamp").contents().filter(function(){ return this.nodeType == 3; }).first().replaceWith(this.time);
+                            break;
+                        case "muted":
+                            $(objConvo).attr('muted', this.muted)
+                            if(this.muted){
+                                $(objConvo).find('img.align-self-center').removeClass('td-invisible')
+                            }else{
+                                $(objConvo).find('img.align-self-center').addClass('td-invisible') 
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            // $('#td-convo-container').prepend(objConvo)
+        }
     }
 
 }
