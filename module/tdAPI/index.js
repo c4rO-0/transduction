@@ -190,14 +190,14 @@ class tdAPI {
         // set event
         // this.event = new events.EventEmitter();
 
-        tdAPI.getDebugStatus().then((status)=>{
+        tdAPI.getDebugStatus().then((status) => {
             // console.log("debug status :", status)
             tdAPI.isDebugOn = status
 
-            if(status){
+            if (status) {
                 console.log('===You are in debug mod===')
                 $("#openDevTools").show()
-            }else{
+            } else {
                 $("#openDevTools").hide()
             }
         })
@@ -209,15 +209,15 @@ class tdAPI {
 
         if (!tdAPI.extList.hasListInStore()) {
             // load default extList
-            let tdrootPath = tdOS.tdRootPath()
+            let tdRootPath = tdOS.tdRootPath()
             let defaultOffExtPathArray =
                 [
-                    path.resolve(tdrootPath, 'ext/wechat/config.json'),
-                    path.resolve(tdrootPath, 'ext/skype/config.json'),
-                    path.resolve(tdrootPath, 'ext/dingtalk/config.json'),
-                    path.resolve(tdrootPath, 'ext/latex2png/config.json'),
-                    path.resolve(tdrootPath, 'ext/languagetool/config.json'),
-                    path.resolve(tdrootPath, 'ext/whatsapp/config.json')
+                    path.resolve(tdRootPath, 'ext/wechat/config.json'),
+                    path.resolve(tdRootPath, 'ext/skype/config.json'),
+                    path.resolve(tdRootPath, 'ext/dingtalk/config.json'),
+                    path.resolve(tdRootPath, 'ext/latex2png/config.json'),
+                    path.resolve(tdRootPath, 'ext/languagetool/config.json'),
+                    path.resolve(tdRootPath, 'ext/whatsapp/config.json')
                 ]
             defaultOffExtPathArray.forEach(pathConfig => {
                 let ext = new tdExt(pathConfig)
@@ -254,18 +254,40 @@ class tdAPI {
      */
     static openDevtool(appTag) {
 
-        if($("webview[data-app-name='" + appTag + "']").length > 0 ){
+        if ($("webview[data-app-name='" + appTag + "']").length > 0) {
             let web = $("webview[data-app-name='" + appTag + "']")[0];
             web.openDevTools();
-        }else if($("webview[data-tool-name='" + appTag + "']").length > 0 ){
+        } else if ($("webview[data-tool-name='" + appTag + "']").length > 0) {
             let web = $("webview[data-tool-name='" + appTag + "']")[0];
             web.openDevTools();
-        }else{
+        } else {
             return false
         }
 
         return true
 
+    }
+
+    static notifyLocal(flash = true, sound = true, notTile = undefined, notBody = undefined, notCallback = undefined) {
+        if (flash) {
+            tdMessage.sendToMain({ 'flash': '' })
+        }
+
+        if (sound) {
+            // 因为系统原因, Notification silent在ubuntu失效, 所以需要统一播放声音
+            const noise = new Audio(path.resolve(tdOS.tdRootPath(), 'res/mp3/to-the-point.mp3'))
+            noise.play()
+        }
+
+        if (notTile) {
+            let convoNotification = new Notification('Tr| ' + notTile, {
+                body: notBody,
+                silent: true
+            })
+        }
+        convoNotification.onclick = () => {
+            notCallback()
+        }
     }
 
     //------------------------
@@ -501,32 +523,17 @@ class tdAPI {
                 }
 
 
-                // 前台闪烁图标, 发送notification, 并响铃
-                function notifyLocal() {
-                    tdMessage.sendToMain({ 'flash': Convo.nickName + ':' + Convo.message })
-                    let convoNotification = new Notification('Tr| ' + webTag, {
-                        body: Convo.nickName + '|' + Convo.message,
-                        silent: true
-                    })
-                    // 因为系统原因, Notification silent在ubuntu失效, 所以需要统一播放声音
-                    const noise = new Audio('../res/mp3/to-the-point.mp3')
-                    noise.play()
-
-                    convoNotification.onclick = () => {
-                        // 弹出transduction, 并点击对应convo
-                        tdMessage.sendToMain({ 'show': '' })
-                        tdMessage.sendToMain({ 'focus': '' })
-                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
-                    }
-                }
-
                 if (!Convo.muted // 非静音
                     && Convo.action != 'r' // 类型是a或者c
                     && Convo.message != undefined && Convo.message != ''
                     && !(document.hasFocus() || $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().isFocused())
                 ) {
                     if (Convo.counter > 0) { //未读消息 >0
-                        notifyLocal()
+                        notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, ()=>{
+                            tdMessage.sendToMain({ 'show': '' })
+                            tdMessage.sendToMain({ 'focus': '' })
+                            $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                        })
                     } else {
                         // 如果是选中的convo, 那么可能存在对方发消息, counter(未读消息) == 0, 
                         // 但实际并没有读取.
@@ -534,7 +541,11 @@ class tdAPI {
                         if ($('div.td-chat-title[data-user-i-d="' + Convo.userID + '"]').length > 0) {
                             setTimeout(() => {
                                 if ($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child > div').hasClass('td-them')) {
-                                    notifyLocal()
+                                    notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, ()=>{
+                                        tdMessage.sendToMain({ 'show': '' })
+                                        tdMessage.sendToMain({ 'focus': '' })
+                                        $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
+                                    })
                                 }
                             }, 300);
                         }
@@ -550,12 +561,8 @@ class tdAPI {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
                             .hasClass('theme-transduction-active')
 
-                    if($('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').length == 0){
-                        $('#td-convo-container').prepend(Convo.toHTML())
-                    }else{
-                        Convo.updateHTML()
-                    }
-                    
+                    Convo.addToPage(true)
+
                     if (active) {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
                             .addClass('theme-transduction-active')
@@ -569,7 +576,7 @@ class tdAPI {
                     }
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
-                    Convo.updateHTML()
+                    Convo.addToPage()
                 } else if (Convo.action === 'r') {
                     console.log('going to remove convo')
                     let active =
@@ -854,11 +861,12 @@ class tdConvo {
         </div > '
     }
 
-    
-    updateHTML() {
+
+    addToPage(isPretend = false) {
         let objConvo = $('#td-convo-container [data-app-name=' + this.webTag + '][data-user-i-d="' + this.userID + '"]')
-        if (objConvo.length) { // 检测存在
-            // $('#td-convo-container [data-app-name=' + this.webTag + '][data-user-i-d="' + this.userID + '"]').remove()
+        if (objConvo.length == 0 && isPretend) {
+            $('#td-convo-container').prepend(this.toHTML())
+        } else { // 检测存在
             for (let key in this) {
                 if (this[key] != undefined) {
                     switch (key) {
@@ -880,14 +888,14 @@ class tdConvo {
                             $(objConvo).find("div.td-text").text(this.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").contents().filter(function(){ return this.nodeType == 3; }).first().replaceWith(this.time);
+                            $(objConvo).find("div.col-timestamp").contents().filter(function () { return this.nodeType == 3; }).first().replaceWith(this.time);
                             break;
                         case "muted":
                             $(objConvo).attr('muted', this.muted)
-                            if(this.muted){
+                            if (this.muted) {
                                 $(objConvo).find('img.align-self-center').removeClass('td-invisible')
-                            }else{
-                                $(objConvo).find('img.align-self-center').addClass('td-invisible') 
+                            } else {
+                                $(objConvo).find('img.align-self-center').addClass('td-invisible')
                             }
                             break;
                         default:
@@ -895,7 +903,6 @@ class tdConvo {
                     }
                 }
             }
-            // $('#td-convo-container').prepend(objConvo)
         }
     }
 
