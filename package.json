@@ -15,15 +15,15 @@
   "devDependencies": {
     "electron": "^5.0.4",
     "electron-builder": "^20.43.0",
-    "electron-reload": "^1.5.0"
+    "electron-reload": "^1.5.0",
+    "td": "file:module/td"
   },
   "dependencies": {
     "electron-dl": "^1.14.0",
     "electron-store": "^2.0.0",
     "jquery": "^3.4.1",
     "mkdirp": "^0.5.1",
-    "request": "^2.88.0",
-    "td": "file:module/td"
+    "request": "^2.88.0"
   },
   "build": {
     "appId": "com.aaronlenoir.gnucash-reporter",
