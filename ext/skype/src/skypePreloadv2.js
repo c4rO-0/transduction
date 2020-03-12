@@ -50,7 +50,7 @@ window.onload = function () {
     console.log("transduction root directory : ", rootDir )
     console.log('current path : ', __dirname)
     const path = require('path')
-    const core = require(path.join(rootDir, 'js/core.js'))
+    const {tdMessage} = require('td')
     window.$ = window.jQuery = require(path.join(rootDir, "toolkit/jquery-3.3.1.min.js"))
     // -----------------------
 
@@ -79,7 +79,7 @@ window.onload = function () {
          * 发送消息到Win
          */
         send() {
-            core.WebToHost({
+            tdMessage.WebToHost({
                 "Convo-new":
                 {
                     "userID": this.userID,
@@ -753,7 +753,7 @@ window.onload = function () {
             if (msgArray.length > 0) {
                 (msgArray[0])["userID"] = userID;
 
-                core.WebToHost({ "Dialog": msgArray }).then((res) => {
+                tdMessage.WebToHost({ "Dialog": msgArray }).then((res) => {
                     // console.info("send dialog res : ", res)
                 }).catch((error) => {
                     throw error
@@ -862,8 +862,8 @@ window.onload = function () {
 
                     // 发送登录消息
                     logStatus.status = "online"
-                    core.WebToHost({ "logStatus": logStatus })
-                    core.WebToHost({ "hide": {} })
+                    tdMessage.WebToHost({ "logStatus": logStatus })
+                    tdMessage.WebToHost({ "hide": {} })
 
                     // 运行页面爬虫脚本
                     runMain()
@@ -884,14 +884,14 @@ window.onload = function () {
         if (document.getElementById("i0281") || document.getElementById("forgotUsername")) {
             logStatus.status = "offline"
             console.info("********************offline***************************************")
-            core.WebToHost({ "logStatus": logStatus })
-            core.WebToHost({ "show": {} })
+            tdMessage.WebToHost({ "logStatus": logStatus })
+            tdMessage.WebToHost({ "show": {} })
         }
     })
 
     //========================
     // 等待win发来消息
-    core.WebReply((key, arg) => {
+    tdMessage.WebReply((key, arg) => {
         return new Promise((resolve, reject) => {
             //  收到消息进行处理
             console.info('WebReply : ', key)
@@ -998,19 +998,19 @@ window.onload = function () {
 
                                     // 3. 输入空格
                                     $('div.public-DraftEditor-content').focus()
-                                    core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } }).then(() => {
+                                    tdMessage.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } }).then(() => {
                                         // 4. 光标移动到最开始
                                         $('div.public-DraftEditor-content').focus()
-                                        core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x24 } })
+                                        tdMessage.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x24 } })
                                     }).then(() => {
                                         // 5. 两次 Del 去掉字母A
                                         $('div.public-DraftEditor-content').focus()
                                         setTimeout(() => {
-                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                            tdMessage.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
                                         }, 200);
                                     }).then(() => {
                                         setTimeout(() => {
-                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                            tdMessage.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
                                         }, 400);
                                     }).then(() => {
                                         // 6. 发送
@@ -1037,17 +1037,17 @@ window.onload = function () {
 
                                     // 3. 输入空格
                                     $('div.public-DraftEditor-content').focus()
-                                    core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } }).then(() => {
+                                    tdMessage.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } }).then(() => {
                                         // 4. 光标移动到最开始
                                         $('div.public-DraftEditor-content').focus()
-                                        core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x24 } })
+                                        tdMessage.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x24 } })
                                     }).then(() => {
                                         // 5. 两次 Del 去掉字母A
                                         $('div.public-DraftEditor-content').focus()
                                         setTimeout(() => {
-                                            core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                            tdMessage.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
                                             setTimeout(() => {
-                                                core.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
+                                                tdMessage.WebToHost({ 'simulateKey': { 'type': 'keydown', 'charCode': 0x2E } })
 
                                                 // 6. 发送
                                                 setTimeout(() => {
@@ -1079,17 +1079,17 @@ window.onload = function () {
                         });
                         // console.info($('button[aria-label="Open Expression picker"]').parent())
                         // 1. 敲击键盘 输入字母A 
-                        core.WebToHost({ "focus": '' }).then(() => {
+                        tdMessage.WebToHost({ "focus": '' }).then(() => {
                             $('div.public-DraftEditor-content').focus()
-                            core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } })
-                            core.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x41 } })
+                            tdMessage.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x20 } })
+                            tdMessage.WebToHost({ 'simulateKey': { 'type': 'keypress', 'charCode': 0x41 } })
                         })
 
 
 
                     } else {
                         console.info("---file---")
-                        core.WebToHost({ "focus": '' }).then(() => {
+                        tdMessage.WebToHost({ "focus": '' }).then(() => {
                             // if ($('input[type="file"]').length == 0) {
                             if ($('button[role="button"][title="Add files"]').length == 0) {
                                 if ($('button[role="button"][title="More"][aria-label="More"]').length == 0) {
@@ -1104,7 +1104,7 @@ window.onload = function () {
                             $('button[role="button"][title="Add files"]').click()
                             // }
 
-                            core.WebToHost({ "attachFile": { "selector": "input[type='file']", "file": value } }).then((resHost) => {
+                            tdMessage.WebToHost({ "attachFile": { "selector": "input[type='file']", "file": value } }).then((resHost) => {
 
 
                                 waitSend(arrayValue, index)

@@ -18,32 +18,6 @@ Object.defineProperty(navigator, 'languages', {
 })
 // *********************************************
 
-// /**
-//  * 开关webview
-//  */
-// function toggleWebview() {
-//     // document.querySelectorAll('webview').forEach((e) => {
-//     //     if (e.style.display === 'none') {
-//     //         e.style.display = ''
-//     //     } else {
-//     //         e.style.display = 'none'
-//     //     }
-//     // })
-//     if (document.body.style.overflow === 'hidden') {
-//         document.body.style.overflow = ''
-//     } else {
-//         window.scrollTo(0, 0)
-//         document.body.style.overflow = 'hidden'
-//     }
-// }
-
-/**
- * 指定开关webview
- * @param {String} webTag webview名字 skype, wechat....
- */
-function toggleWebview(webTag) {
-    $("#modal-" + webTag).modal('toggle')
-}
 
 /**
  * 打开webview Devtool
@@ -51,13 +25,13 @@ function toggleWebview(webTag) {
  */
 function openDevtool(appTag) {
 
-    if ($("webview[data-app-name='" + appTag + "']").length > 0) {
+    if($("webview[data-app-name='" + appTag + "']").length > 0 ){
         let web = $("webview[data-app-name='" + appTag + "']")[0];
         web.openDevTools();
-    } else if ($("webview[data-tool-name='" + appTag + "']").length > 0) {
+    }else if($("webview[data-tool-name='" + appTag + "']").length > 0 ){
         let web = $("webview[data-tool-name='" + appTag + "']")[0];
         web.openDevTools();
-    } else {
+    }else{
         return false
     }
 
@@ -93,7 +67,7 @@ function editStore() {
 
 $(document).ready(function () {
 
-    const core = require("../js/core.js")
+    const td = require('td')
     const { nativeImage, dialog, shell, session } = require('electron').remote
     const Store = require('electron-store');
     const store = new Store();
@@ -102,12 +76,12 @@ $(document).ready(function () {
     const path = require('path')
 
     let debug = false
-    core.sendToMain({ 'isDebug': '' }).then((res) => {
+    td.tdMessage.sendToMain({'isDebug':''}).then((res)=>{
         debug = res.isDebug
-        if (debug) {
+        if(debug){
             console.log('===You are in debug mod===')
             $("#openDevTools").show()
-        } else {
+        }else{
             $("#openDevTools").hide()
         }
     })
@@ -623,7 +597,7 @@ $(document).ready(function () {
             </div >\
         <div class="col col-text flex-column justify-content-center">\
                 <div class="m-0 td-nickname">'+ convo.nickName + '</div>\
-                <div class="m-0 td-text">'+ core.htmlEntities(convo.message) + '</div>\
+                <div class="m-0 td-text">'+ td.tdPage.htmlEntities(convo.message) + '</div>\
             </div>\
             <div class="col-auto pl-0 col-timestamp justify-content-around">\
                 '+ convo.time + '\
@@ -657,7 +631,7 @@ $(document).ready(function () {
         if (dialog['type'] == 'text') {
             content =
                 '<div class="td-chatText">'
-                + core.htmlEntities(dialog['message']) +
+                + td.tdPage.htmlEntities(dialog['message']) +
                 '</div>'
         } else if (dialog['type'] == 'img') {
             content =
@@ -774,14 +748,14 @@ $(document).ready(function () {
                             $(objConvo).find("div.td-text").text(convo.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").contents().filter(function () { return this.nodeType == 3; }).first().replaceWith(convo.time);
+                            $(objConvo).find("div.col-timestamp").contents().filter(function(){ return this.nodeType == 3; }).first().replaceWith(convo.time);
                             break;
                         case "muted":
                             $(objConvo).attr('muted', convo.muted)
-                            if (convo.muted) {
+                            if(convo.muted){
                                 $(objConvo).find('img.align-self-center').removeClass('td-invisible')
-                            } else {
-                                $(objConvo).find('img.align-self-center').addClass('td-invisible')
+                            }else{
+                                $(objConvo).find('img.align-self-center').addClass('td-invisible') 
                             }
                             break;
                         default:
@@ -816,7 +790,7 @@ $(document).ready(function () {
     //------------------------
     // 处理消息
     /**
-     * core.WinReplyWeb 处理消息的函数
+     * td.tdMessage.WinReplyWeb 处理消息的函数
      * @param {String} webTag 区分web
      * @param {String} key MSG的类别 : 
      * MSG-Log : 收到右侧窗口聊天记录
@@ -1005,7 +979,7 @@ $(document).ready(function () {
             } else if (key == 'Convo-new') {
                 // 有新消息来了
 
-                if (Obj.userID === undefined) {
+                if(Obj.userID === undefined){
                     reject("undefined user ID")
                     return
                 }
@@ -1047,7 +1021,7 @@ $(document).ready(function () {
 
                 // 前台闪烁图标, 发送notification, 并响铃
                 function notifyLocal() {
-                    core.sendToMain({ 'flash': Convo.nickName + ':' + Convo.message })
+                    td.tdMessage.sendToMain({ 'flash': Convo.nickName + ':' + Convo.message })
                     let convoNotification = new Notification('Tr| ' + webTag, {
                         body: Convo.nickName + '|' + Convo.message,
                         silent: true
@@ -1058,8 +1032,8 @@ $(document).ready(function () {
 
                     convoNotification.onclick = () => {
                         // 弹出transduction, 并点击对应convo
-                        core.sendToMain({ 'show': '' })
-                        core.sendToMain({ 'focus': '' })
+                        td.tdMessage.sendToMain({ 'show': '' })
+                        td.tdMessage.sendToMain({ 'focus': '' })
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
                     }
                 }
@@ -1144,19 +1118,19 @@ $(document).ready(function () {
                     "selector": str 
                     "file" : obj file
                 */
-                attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
+                td.tdSimulator.attachInputFile(webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
 
                 resolve("attached")
             } else if (key == 'simulateKey') {
                 // 按键模拟
 
-                keypressSimulator(webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
+                td.tdSimulator.keypressSimulator(webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
 
                 resolve("simulated")
             } else if (key == 'simulateMouse') {
                 // 按键模拟
                 console.log("simulateMouse", Obj)
-                mouseSimulator(webTag2Selector(webTag), Obj.type, Obj.x, Obj.y)
+                td.tdSimulator.mouseSimulator(webTag2Selector(webTag), Obj.type, Obj.x, Obj.y)
 
                 resolve("simulated")
             } else if (key == 'logStatus') {
@@ -1237,7 +1211,7 @@ $(document).ready(function () {
 
     // 处理消息
     /**
-     * core.WinReply 处理消息的函数
+     * td.tdMessage.WinReply 处理消息的函数
      * @param {String} key MSG的类别 : 
      * MSG-Log : 收到右侧窗口聊天记录
      * MSG-new : 左侧提示有新消息
@@ -1409,7 +1383,7 @@ $(document).ready(function () {
                             if (img.isEmpty()) {
                                 reject('filterDataTransfer : img not access')
                             } else {
-                                let imgSend = new core.fileSend(getFileNameFromUrl(pathFile), pathFile, '', undefined, img.toDataURL())
+                                let imgSend = new td.tdFileSend(getFileNameFromUrl(pathFile), pathFile, '', undefined, img.toDataURL())
                                 resolve(imgSend)
                             }
                         }))
@@ -1425,7 +1399,7 @@ $(document).ready(function () {
                                     // console.log("------request-----")
                                     // console.log(strRequest)
                                     if (strRequest) {
-                                        let imgSend = new core.fileSend(getFileNameFromUrl(pathR), '', pathR, undefined, urldata)
+                                        let imgSend = new td.tdFileSend(getFileNameFromUrl(pathR), '', pathR, undefined, urldata)
                                         resolve(imgSend)
                                     } else {
                                         reject('filterDataTransfer : img not access')
@@ -1496,7 +1470,7 @@ $(document).ready(function () {
 
                                     // console.log("file")
                                     let file = items[i].getAsFile()
-                                    let imgSend = new core.fileSend(file.name, file.path, '')
+                                    let imgSend = new td.tdFileSend(file.name, file.path, '')
                                     let reader = new FileReader();
                                     reader.onload = function (e) {
                                         imgSend.addDataUrl(reader.result)
@@ -1518,7 +1492,7 @@ $(document).ready(function () {
 
                         arrayItem.push(new Promise(
                             (resolve, reject) => {
-                                let imgSend = new core.fileSend(file.name, file.path, '')
+                                let imgSend = new td.tdFileSend(file.name, file.path, '')
                                 let reader = new FileReader();
                                 reader.onload = function (e) {
                                     imgSend.addDataUrl(reader.result)
@@ -1593,7 +1567,7 @@ $(document).ready(function () {
 
                 arrayItem.push(new Promise(
                     (resolve, reject) => {
-                        let imgSend = new core.fileSend(file.name, file.path, '')
+                        let imgSend = new td.tdFileSend(file.name, file.path, '')
                         let reader = new FileReader();
                         reader.onload = function (e) {
                             imgSend.addDataUrl(reader.result)
@@ -1686,7 +1660,7 @@ $(document).ready(function () {
                 resolve("")
             } else {
                 // insert file
-                item.addFileID(core.UniqueStr())
+                item.addFileID(td.tdBasic.uniqueStr())
                 //插入html
                 // pasteHtmlAtCaret("&nbsp;<a data-file-ID='" + fileID + "' contenteditable=false>" + item.name + "</a>&nbsp;", 'div.td-inputbox')
 
@@ -1948,171 +1922,6 @@ $(document).ready(function () {
         return arraySimpleInput
     }
 
-
-    /**
-     * chrome debugger for key : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
-     * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
-     * @param {string} webSelector 'webview[data-app-name="skype"]'
-     * @param {string} type keyup, keydown, keypress
-     * @param {int} charCode windowsVirtualKeyCode(目前只对字母好使) code列表 https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
-     * @param {boolean} [shift=false] 
-     * @param {boolean} [alt=false] 
-     * @param {boolean} [ctrl=false]  
-     * @param {boolean} [cmd=false]  
-     */
-    function keypressSimulator(webSelector, type, charCode, shift = false, alt = false, ctrl = false, cmd = false) {
-
-
-        let wc = $(webSelector).get(0).getWebContents();
-
-        // console.log("---attachInputFile----")
-        try {
-            if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.2");
-            }
-        } catch (err) {
-            console.error("Debugger attach failed : ", err);
-        };
-        var text = "";
-
-        switch (type) {
-            case 'keyup':
-                type = 'keyUp';
-                break;
-            case 'keydown':
-                type = 'rawKeyDown';
-                break;
-            case 'keypress':
-                type = 'char';
-                text = String.fromCharCode(charCode);
-                break;
-            default:
-                throw new Error("Unknown type of event.");
-                break;
-        }
-
-        var modifiers = 0;
-        if (shift) {
-            modifiers += 8;
-        }
-        if (alt) {
-            modifiers += 1;
-        }
-        if (ctrl) {
-            modifiers += 2;
-        }
-        if (cmd) {
-            modifiers += 4;
-        }
-
-        return wc.debugger
-            .sendCommand("Input.dispatchKeyEvent", {
-                type: type,
-                windowsVirtualKeyCode: charCode,
-                modifiers: modifiers,
-                text: text
-            });
-
-    }
-
-
-    /**
- * chrome debugger for mouse : https://chromedevtools.github.io/devtools-protocol/1-2/Input 
- * e.g. : keypressSimulator('webview[data-app-name="skype"]','keypress',0x41)
- * @param {string} webSelector 'webview[data-app-name="skype"]'
- * @param {string} type nousedown, mouseup, click
- */
-    function mouseSimulator(webSelector, type, x, y) {
-
-
-        let wc = $(webSelector).get(0).getWebContents();
-
-        // console.log("---attachInputFile----")
-        try {
-            if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.2");
-            }
-        } catch (err) {
-            console.error("Debugger attach failed : ", err);
-        };
-
-        switch (type) {
-            case 'click':
-
-                wc.debugger
-                    .sendCommand("Input.dispatchMouseEvent", {
-                        type: 'mousePressed',
-                        x: x,
-                        y: y,
-                        button: "left",
-                        clickCount: 1
-                    })
-
-                wc.debugger
-                    .sendCommand("Input.dispatchMouseEvent", {
-                        type: 'mouseReleased',
-                        x: x,
-                        y: y,
-                        button: "left",
-                        clickCount: 1
-                    })
-
-
-                break;
-            default:
-                throw new Error("Unknown type of event.");
-                break;
-        }
-
-
-    }
-
-    function attachInputFile(webSelector, inputSelector, filePath) {
-
-
-
-
-        let wc = $(webSelector).get(0).getWebContents();
-
-        // wc.executeJavaScript('$("'+inputSelector+'").get(0).click(); console.log("click from index");', true);
-
-        // setTimeout(() => {
-        console.log("---attachInputFile----")
-        try {
-            if (!wc.debugger.isAttached()) {
-                wc.debugger.attach("1.2");
-            }
-        } catch (err) {
-            console.error("Debugger attach failed : ", err);
-        };
-
-
-        wc.debugger.sendCommand("DOM.getDocument", {}, function (err, res) {
-            wc.debugger.sendCommand("DOM.querySelector", {
-                nodeId: res.root.nodeId,
-                selector: inputSelector  // CSS selector of input[type=file] element                                        
-            }, function (err, res) {
-                if (res) { // 防止不存在inputSelector
-                    wc.debugger.sendCommand("DOM.setFileInputFiles", {
-                        nodeId: res.nodeId,
-                        files: [filePath]  // Actual list of paths                                                        
-                    }, function (err, res) {
-
-                        wc.debugger.detach();
-                    });
-                } else {
-                    console.log("error : attachInputFile : inputSelector : '", inputSelector, "' not exist.")
-                }
-            });
-
-        });
-        // }, 3000);
-
-
-    }
-
-
-
     function loadWebview(webTag, url, strUserAgent = undefined) {
         // console.log(strUserAgent)
         if ($(webTag2Selector(webTag)).length > 0) {
@@ -2260,13 +2069,13 @@ $(document).ready(function () {
                 $(webTag2Selector(element.id.substring(6))).height("800px")
 
                 // -o load webview url
-                let strUserAgent = core.strUserAgentWin
+                let strUserAgent = td.tdOS.strUserAgentWin
                 if (config.webview.useragent == 'windows'
                     || config.webview.useragent == ''
                     || config.webview.useragent == undefined) {
 
                 } else if (config.webview.useragent == 'linux') {
-                    strUserAgent = core.strUserAgentLinux
+                    strUserAgent = td.tdOS.strUserAgentLinux
                 }
 
                 loadWebview(config.webTag, config.webview.url, strUserAgent)
@@ -2288,7 +2097,7 @@ $(document).ready(function () {
                 // -o add message listener
                 console.log("add listener")
 
-                core.WinReplyWeb(webTag2Selector(config.webTag), (key, arg) => {
+                td.tdMessage.WinReplyWeb(webTag2Selector(config.webTag), (key, arg) => {
                     return respFuncWinReplyWeb(config.webTag, key, arg)
                 })
             } else if (config.type === 'tool') {
@@ -2424,18 +2233,7 @@ $(document).ready(function () {
 
                 arraySend.unshift(userID)
                 // $(webTag2Selector(webTag)).focus()
-                core.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
-
-                    // 索取新的dialog
-                    // core.HostSendToWeb(
-                    //     webTag2Selector(webTag),
-                    //     { "queryDialog": { "userID": userID } }
-                    // ).then((res) => {
-                    //     console.log("queryDialog : webReply : ", res)
-
-                    // }).catch((error) => {
-                    //     throw error
-                    // })
+                td.tdMessage.HostSendToWeb(webTag2Selector(webTag), { 'sendDialog': arraySend }, 500000).then(() => {
 
                     //删除File list
                     // arraySend.forEach((value, index) => {
@@ -2449,8 +2247,7 @@ $(document).ready(function () {
 
                 }).catch((err) => {
                     console.log("send failed", err)
-
-                    // $("#td-sending").remove()                    
+         
                 })
             }
         }
@@ -2596,8 +2393,8 @@ $(document).ready(function () {
                 $("#modal-settings .modal-body").append(
                     '<div extTag="' + webTag + '">\
 <input type="checkbox" ' + (details.status ? 'checked="checked"' : '') + '>\
-<label >'+ details.name + '</label>' + ((debug && details.status) ? ' <button devTool>devTool</button>' : '')
-                    + '</div>')
+<label >'+ details.name + '</label>'+ ( (debug && details.status) ? ' <button devTool>devTool</button>' : '' )
++'</div>')
             })
         }
     })
@@ -2642,7 +2439,7 @@ $(document).ready(function () {
 
     // ===========================接收消息===========================
 
-    core.WinReply((key, arg) => {
+    td.tdMessage.WinReply((key, arg) => {
         return respFuncWinReply(key, arg)
     })
 
@@ -2696,7 +2493,7 @@ $(document).ready(function () {
             && $("#td-right div.td-chat-title h2").text() == nickName
         ) {
             // 当前聊天内容不需要清空, 只需要补充
-            core.HostSendToWeb(
+            td.tdMessage.HostSendToWeb(
                 webTag2Selector(webTag),
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
@@ -2717,7 +2514,7 @@ $(document).ready(function () {
             $("#td-right div.td-chat-title img").attr('src', path.join(extList[webTag].dir, extList[webTag].icon.any))
             $("#td-right div.td-chatLog[wintype='chatLog']").empty()
 
-            core.HostSendToWeb(
+            td.tdMessage.HostSendToWeb(
                 webTag2Selector(webTag),
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
@@ -2773,13 +2570,13 @@ $(document).ready(function () {
         }
     })
 
-    $('#openDevTools').on('click', () => {
-        core.sendToMain({ "openDevTools": "" })
+    $('#openDevTools').on('click', ()=>{
+        td.tdMessage.sendToMain({ "openDevTools": "" })
     })
 
-    $(document).on('click', '[devtool]', (e) => {
+    $(document).on('click', '[devtool]', (e)=>{
         let webTag = $(e.target).closest('div[exttag]').attr('exttag')
-        if (!openDevtool(webTag)) {
+        if(! openDevtool( webTag )){
             console.error('open Devtool failed, because no webview with tag : ', webTag)
         }
     })
@@ -2811,7 +2608,7 @@ $(document).ready(function () {
 
             $(".td-inputbox").focus()
 
-            core.sendToMain({ "focus": "" })
+            td.tdMessage.sendToMain({ "focus": "" })
 
             console.log("insert input done")
         })
@@ -2880,7 +2677,7 @@ $(document).ready(function () {
         // $("webview[data-app-name]").each((index, el) => {
         //     let webTag = $(el).attr("data-app-name")
         //     // console.log()
-        //     core.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
+        //     td.tdMessage.HostSendToWeb(webTag2Selector(webTag), { 'queryLogStatus': '' }).then((obj) => {
         //         // let color = 'red'
         //         // console.log((obj['queryLogStatus'+":"+""]))
         //         let logStatus = (obj['queryLogStatus' + ":" + ""])
@@ -2904,12 +2701,12 @@ $(document).ready(function () {
         //     })
         // })
 
-        core.HostSendToWeb(webTag2Selector("wechat"), { 'logoff': '' }).then((obj) => {
+        td.tdMessage.HostSendToWeb(webTag2Selector("wechat"), { 'logoff': '' }).then((obj) => {
 
         })
 
         // $(webTag2Selector("skype")).focus()
-        core.HostSendToWeb(webTag2Selector("skype"), { 'logoff': '' }).then((obj) => {
+        td.tdMessage.HostSendToWeb(webTag2Selector("skype"), { 'logoff': '' }).then((obj) => {
 
         })
 
@@ -2982,10 +2779,10 @@ $(document).ready(function () {
             $(this).closest('div.td-bubble').addClass('td-downloading')
         }
 
-        core.sendToMain({
+        td.tdMessage.sendToMain({
             'download': {
                 'url': $(this).attr('href'),
-                'unicode': core.UniqueStr(),
+                'unicode': td.tdBasic.uniqueStr(),
                 'webTag': $("div.td-chat-title").attr('data-app-name'),
                 'userID': $("div.td-chat-title").attr('data-user-i-d'),
                 'msgID': msgID,
@@ -3013,7 +2810,7 @@ $(document).ready(function () {
 
     $(document).on('click', 'img[reload]', function (event) {
         console.log('reload : ', $(this), $(this).closest('modal-content').find('webview'))
-        // core.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
+        // td.tdMessage.sendToMain({'download':{'url': $(this).attr('href'), 'path':'/temp/'}})
         let webview = $(this).closest('.modal-content').find('webview')
         if (webview) {
             $(webview).get(0).reload()
@@ -3125,18 +2922,18 @@ $(document).ready(function () {
                     // 有active, 没有Tactive : 根据方向键选择active的邻近一个
                     if (event.which == 38) {
                         // up
-                        let nextP = core.periodicPos(activePos - 1, lengthConvo)
+                        let nextP = td.tdMath.periodicPos(activePos - 1, lengthConvo)
                         $(convoSelector).eq(nextP).addClass(classTactive)
 
                     } else if (event.which == 40) {
                         // down
-                        let nextP = core.periodicPos(activePos + 1, lengthConvo)
+                        let nextP = td.tdMath.periodicPos(activePos + 1, lengthConvo)
                         $(convoSelector).eq(nextP).addClass(classTactive)
                     }
                 } else if (lengthConvo > 1 && TactivePos > -1) {
                     if (event.which == 38) {
                         // up
-                        let nextP = core.periodicPos(TactivePos - 1, lengthConvo)
+                        let nextP = td.tdMath.periodicPos(TactivePos - 1, lengthConvo)
                         if (nextP == activePos) {
 
                         } else {
@@ -3145,7 +2942,7 @@ $(document).ready(function () {
 
                     } else if (event.which == 40) {
                         // down
-                        let nextP = core.periodicPos(TactivePos + 1, lengthConvo)
+                        let nextP = td.tdMath.periodicPos(TactivePos + 1, lengthConvo)
                         if (nextP == activePos) {
 
                         } else {
@@ -3217,7 +3014,7 @@ $(document).ready(function () {
              * 如果没有选中，按钮消失
              */
             $('#td-mix').css('transform', 'translateY(' + yOffset + 'px)')
-            if ($('div.td-convo.selected').length === 0) {
+            if($('div.td-convo.selected').length === 0){
                 $('#td-mix').css('opacity', '0')
             }
         }
@@ -3226,8 +3023,8 @@ $(document).ready(function () {
     /**
      * 更新线位置
      */
-    $('#td-mix').on('transitionend', () => {
-        $('div.td-convo.selected').each(function () {
+    $('#td-mix').on('transitionend', ()=>{
+        $('div.td-convo.selected').each(function(){
             $(this).data('line').position()
         })
     })
