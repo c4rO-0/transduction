@@ -117,12 +117,22 @@ window.onload = function () {
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
     function getIDfromUserName(userName) {
+        // console.log("getting id from : ", userName, '')
         if(_contacts[userName] !== undefined){
+            // console.log("found user Obj:", _contacts[userName])
             if(_contacts[userName].id !== undefined){
+                // console.log("id is defined ", _contacts[userName].id)
                 return _contacts[userName].id
             }else{
                 let s = _contacts[userName].HeadImgUrl
-                window._contacts[userName].id = s.slice(s.indexOf('seq') + 'seq='.length, s.indexOf('&'))
+                // console.log("id not found, grep from ", s)
+                let id = s.slice(s.indexOf('seq') + 'seq='.length, s.indexOf('&'))
+                if(id.length < 4 ){ // at initializing step, id is '0'
+                    return undefined
+                }
+
+                window._contacts[userName].id = id
+
                 return _contacts[userName].id
             }
         }else{
