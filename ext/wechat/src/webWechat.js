@@ -451,6 +451,11 @@ window.onload = function () {
             type = 'unknown'
         }
 
+        // 防止消息过长
+        if(type == 'unknown'){
+            content = content.slice(0,100)
+        }
+
         let usernameStr = $('div.header .avatar img.img').attr('mm-src')
 
         let posUsername = usernameStr.indexOf('username')
@@ -464,7 +469,7 @@ window.onload = function () {
 
 
         return {
-            "from": MSG["FromUserName"] == meinUsername ? undefined : (remarkName == '' ? nickName : remarkName),
+            "from": nickNameEmoji(MSG["FromUserName"] == meinUsername ? undefined : (remarkName == '' ? nickName : remarkName)),
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
@@ -529,6 +534,41 @@ window.onload = function () {
 
     }
 
+
+    function nickNameEmoji(nickNameHtml){
+
+        let nickName = ''
+        if (nickNameHtml && nickNameHtml != '') {
+            $('<p>' + nickNameHtml + '</p>').contents().toArray().forEach((c, i) => {
+                // 将内容进行切割, 判断是否为img
+
+                let nodeName = $(c).prop('nodeName')
+                if (nodeName == "IMG" || nodeName == "SPAN") {
+                    // 对左侧栏筛选字符表情
+                    if ($(c).hasClass("qqemoji")) {
+                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        let strEmoji = $(c).attr("text")
+                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
+                        nickName = nickName + strEmoji
+                    } else if ($(c).hasClass("emoji")) {
+                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        nickName = nickName + emojiClasstoStr(c.classList[1])
+                    } else {
+                        nickName = nickName + "[image]"
+                    }
+                }
+
+                // 链接文字
+                nickName = nickName + $(c).text()
+
+            })
+        } else {
+            nickName = undefined
+        }
+
+        return nickName
+    }
+
     // 
     /**
      * 通过左侧边栏读取消息
@@ -575,12 +615,14 @@ window.onload = function () {
 
         }
 
-        let nickName = $(obj).find("div.info h3.nickname span").text()
+        // let nickName = $(obj).find("div.info h3.nickname span").text()
         let userName = $(obj).attr("data-username")
+        let nickName = _contacts[userName].getDisplayName()
 
 
         let time = new Date() // Now
         let chatObj = _chatContent[userName]
+        
         if (chatObj.length > 0) { // last MSG
             time = new Date((chatObj[chatObj.length - 1])["MMDisplayTime"] * 1000)
         }
@@ -731,34 +773,7 @@ window.onload = function () {
         }
 
         let nickNameHtml = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
-        let nickName = ''
-        if (nickNameHtml && nickNameHtml != '') {
-            $('<p>' + nickNameHtml + '</p>').contents().toArray().forEach((c, i) => {
-                // 将内容进行切割, 判断是否为img
-
-                let nodeName = $(c).prop('nodeName')
-                if (nodeName == "IMG") {
-                    // 对左侧栏筛选字符表情
-                    if ($(c).hasClass("qqemoji")) {
-                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                        let strEmoji = $(c).attr("text")
-                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
-                        nickName = nickName + strEmoji
-                    } else if ($(c).hasClass("emoji")) {
-                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                        nickName = nickName + emojiClasstoStr(c.classList[1])
-                    } else {
-                        nickName = nickName + "[image]"
-                    }
-                }
-
-                // 链接文字
-                nickName = nickName + $(c).text()
-
-            })
-        } else {
-            nickName = undefined
-        }
+        let nickName = nickNameEmoji(nickNameHtml)
 
         let userName = obj.UserName
 
@@ -837,6 +852,7 @@ window.onload = function () {
 
 
     }
+
 
 
 
