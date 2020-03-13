@@ -451,6 +451,11 @@ window.onload = function () {
             type = 'unknown'
         }
 
+        // 防止消息过长
+        if(type == 'unknown'){
+            content = content.slice(0,100)
+        }
+
         let usernameStr = $('div.header .avatar img.img').attr('mm-src')
 
         let posUsername = usernameStr.indexOf('username')
