@@ -325,6 +325,12 @@ window.onload = function () {
                     foundName = true
                 }
             })
+            if(! foundName){
+                // wechat bug, cannot get  blocked user information
+                avatar = undefined
+                remarkName = "(blocked user)"
+
+            }
             // console.log('member name : ', remarkName, nickName)
             // console.log('memberlist : ', memberList)
         } else if (contacts[fromUserName] != undefined) {
