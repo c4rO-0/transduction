@@ -2582,7 +2582,6 @@ $(document).ready(function () {
     })
     // ======================拖入东西==========================
     // 检测到拖入到东西
-    // 当tool打开的时候, 只接受输入框位置拖入
     $('#td-right').on('dragenter', (event) => {
         // $('.td-dropFile').show()
         $('.td-dropFile').removeClass('hide')
@@ -2606,7 +2605,11 @@ $(document).ready(function () {
 
         processDataTransfer(event.originalEvent.dataTransfer).then(() => {
 
-            $(".td-inputbox").focus()
+            if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
+                $(".td-dropFile").focus()
+            }else{
+                $(".td-inputbox").focus()
+            }
 
             td.tdMessage.sendToMain({ "focus": "" })
 
@@ -2622,7 +2625,13 @@ $(document).ready(function () {
 
         let clipData = event.originalEvent.clipboardData || window.clipboardData;
         processDataTransfer(clipData).then(() => {
-            $(".td-inputbox").focus()
+            if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
+                $(".td-dropFile").focus()
+            }else{
+                $(".td-inputbox").focus()
+            }
+
+            td.tdMessage.sendToMain({ "focus": "" })
             console.log("paste insert input done")
         })
 
@@ -2635,23 +2644,29 @@ $(document).ready(function () {
 
     $('.td-toolbox > input[type="file"]').on("change", function (event) {
         processFileList(event.target.files).then(() => {
-            $(".td-inputbox").focus()
+            if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
+                $(".td-dropFile").focus()
+            }else{
+                $(".td-inputbox").focus()
+            }
+
+            td.tdMessage.sendToMain({ "focus": "" })
+
             console.log("insert input done")
         })
     });
 
 
     // ===========================发送消息===========================
-    $(debug_send_str).on('click', event => {
 
+    // 文字消息
+    $(debug_send_str).on('click', event => {
         sendInput()
     })
 
     // 发送图片
     $('#debug-img-send').on('click', function () {
         // console.log("send clicked------>")
-
-
         sendInput($('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
 
         $("div.td-dropFile > img").removeClass("td-none")
@@ -2659,7 +2674,7 @@ $(document).ready(function () {
         $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
         $('div.td-dropFile > div').addClass('td-none')
         $('.td-dropFile').addClass('hide')
-
+        $(".td-inputbox").focus()
     })
 
     //取消发送图片
@@ -2669,6 +2684,7 @@ $(document).ready(function () {
         $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
         $('div.td-dropFile > div').addClass('td-none')
         $('.td-dropFile').addClass('hide')
+        $(".td-inputbox").focus()
     })
 
     // ===查询后台登录情况===
@@ -2853,26 +2869,33 @@ $(document).ready(function () {
         // console.log('focus : ',$(document.activeElement).is(".td-inputbox"), ' key press : ', event.which, event.ctrlKey)
         // $(".td-inputbox").focus()
 
-        if ($(document.activeElement).is(".td-inputbox")) {
-
-            if (event.which == 13) {
-                // enter pressed
+        // enter
+        if (event.which == 13) {
+            if ($(document.activeElement).is(".td-inputbox")) {
                 $(debug_send_str).click()
                 return false
             }
-            // ctr+enter : newline
-            if (event.ctrlKey && event.which == 10) {
+
+            // 图片确认界面
+            if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
+                $('#debug-img-send').click()
+                return false
+            }
+        }
+
+        // ctr+enter : newline
+        if (event.ctrlKey && event.which == 10) {
+            if ($(document.activeElement).is(".td-inputbox")) {
                 arrayIn = jQuery.parseHTML($('div.td-inputbox').get(0).innerHTML)
                 if (($(arrayIn)[arrayIn.length - 1].nodeName != 'BR')) {
                     $('div.td-inputbox').append('<br>')
                 }
                 pasteHtmlAtCaret("<br>", 'div.td-inputbox')
             }
-
-
-        } else {
-            // 闪烁
         }
+
+
+
 
     })
 
@@ -2956,13 +2979,14 @@ $(document).ready(function () {
 
         // esc按下
         if (event.which == 27) {
-            // console.log('esc pressed')
+            // console.log('esc down')
             // 图片确认界面
             if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
                 $('#debug-img-cancel').click()
             }
 
         }
+
     })
 
 
