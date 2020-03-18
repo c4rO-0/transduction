@@ -778,10 +778,12 @@ window.onload = function () {
 
         }
 
-        let nickNameHtml = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
-        let nickName = nickNameEmoji(nickNameHtml)
+
 
         let userName = obj.UserName
+
+        // let nickNameHtml = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
+        let nickName = nickNameEmoji(_contacts[userName].getDisplayName())
 
 
         let time = new Date() // Now
