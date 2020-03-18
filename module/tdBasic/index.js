@@ -18,6 +18,41 @@ class tdBasic {
         return (Date.now() + Math.random()).toString()
     }
 
+    static timeAny2Obj(timeAny){
+        let timeObj = undefined
+
+        if (typeof (timeAny) === 'number') {
+            timeObj = new Date(timeAny)
+        } else if (typeof (timeAny) == "string") {
+            timeObj = new Date(timeAny)
+        } else if (typeof (timeAny) == "object") {
+            timeObj = timeAny
+        } else {
+            timeObj = new Date()
+        }
+
+        return timeObj
+    }
+    static timeObj2Str(timeObj){
+        return timeObj.toTimeString().slice(0, 5)
+    }
+
+    static size2Str(size){
+        let sizeStr
+        if (size < 1024.) {
+            sizeStr = size.toFixed().toString() + ' B'
+        } else if (size < 1024. ** 2) {
+            sizeStr = (size / 1024.).toFixed(1).toString() + ' KB'
+        } else if (size < 1024. ** 3) {
+            sizeStr = (size / 1024. ** 2).toFixed(1).toString() + ' MB'
+        } else if (size < 1024. ** 4) {
+            sizeStr = (size / 1024. ** 3).toFixed(1).toString() + ' GB'
+        } else {
+            sizeStr = (size / 1024. ** 4).toFixed(1).toString() + ' TB'
+        }
+        return sizeStr
+    }
+
 }
 
 class tdPage {
