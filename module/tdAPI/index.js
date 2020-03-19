@@ -166,6 +166,7 @@ class tdAPI {
     // static convoList
     // static bubbleList
     static extList
+    static donwloadList
 
     /**
      * event list
@@ -245,6 +246,10 @@ class tdAPI {
                 }
             })
         }
+
+        //=================================
+        // - Download List
+        tdAPI.donwloadList = new tdList(tdDownloadItem.rootPathInStore)
 
     }
 
@@ -1007,7 +1012,7 @@ class tdBubble {
 
     }
 
-    createBubble(donwloadList) {
+    createBubble() {
 
         let cUser = $('div.td-chat-title').attr('data-user-i-d')
         let cwebTag = $('div.td-chat-title').attr('data-app-name')
@@ -1071,12 +1076,9 @@ class tdBubble {
     
                 // 查看 是否已经下载
                 // console.log('cwebTag:',cwebTag, 'cUser:',cUser)
-                for (let index = 0; index < donwloadList.length; index++) {
-                    // console.log('index:',donwloadList[index])
-                    if (donwloadList[index].webTag == cwebTag
-                        && donwloadList[index].userID == cUser
-                        && donwloadList[index].msgID == dialog.msgID) {
-    
+                for(key in tdAPI.donwloadList.keys()){
+                    if(tdAPI.donwloadList[key].isSame(cwebTag,cUser,dialog.msgID)){
+                            
                         $(bHTML).addClass('td-downloaded')
     
                         $(bHTML).find('button[open]').attr('path', donwloadList[index].savePath)
@@ -1521,6 +1523,32 @@ class tdExt {
             strUserAgent = this.webview.useragent
         }
         return strUserAgent
+    }
+}
+
+class tdDownloadItem {
+
+    static rootPathInStore = 'donwloadList'
+
+    constructor (msgID, webTag, userID, type = undefined, url = undefined, savePath = undefined){
+        this.url = url
+        this.unicode = tdBasic.uniqueStr()
+        this.webTag = webTag
+        this.userID = userID
+        this.msgID = msgID
+        this.type = type
+        this.savePath = savePath
+    }
+
+    isSame(webTag, userID, msgID ){
+        if(this.webTag == webTag &&
+            this.userID == userID &&
+            this.msgID == msgID
+            ){
+                return true
+            }else{
+                return false
+            }
     }
 }
 
