@@ -36,6 +36,9 @@ class tdList {
     deleteEleByIndex(index) {
         delete this.list[Object.keys(this.list)[index]];
     }
+    hasEle(key){
+        return this.list.hasOwnProperty(key)
+    }
     getLen() {
         return (Object.keys(this.list)).length
     }
@@ -167,6 +170,7 @@ class tdAPI {
     // static bubbleList
     static extList
     static donwloadList
+    static draftList
 
     /**
      * event list
@@ -250,6 +254,10 @@ class tdAPI {
         //=================================
         // - Download List
         tdAPI.donwloadList = new tdList(tdDownloadItem.rootPathInStore)
+
+        //=================================
+        // - daft list
+        tdAPI.draftList = new tdList()
 
     }
 
@@ -361,7 +369,7 @@ class tdAPI {
                 if ($(dialogSelector + " div.td-bubble").length == 0) {
                     // 窗口已被清空, 直接附加
                     Obj.reverse().forEach((value, index) => {
-                        $(dialogSelector).prepend(tdAPI.bubble.createBubble(value))
+                        $(dialogSelector).prepend(tdBubble.genFromDialog(value).createBubble())
                     })
 
                     // 滑动到最下面
@@ -437,11 +445,11 @@ class tdAPI {
                                 if (currentInsertIndex == arrayExistBubble.length - 1
                                     && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
 
-                                    $(dialogSelector).append(tdAPI.bubble.createBubble(value))
+                                    $(dialogSelector).append(tdBubble.genFromDialog(value).createBubble())
 
                                     arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                                 } else {
-                                    $(tdAPI.bubble.createBubble(value))
+                                    $(tdBubble.genFromDialog(value).createBubble())
                                         .insertBefore(
                                             dialogSelector
                                             + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
@@ -454,7 +462,7 @@ class tdAPI {
                                 // 重复的ID, 替换成新的
                                 $(dialogSelector
                                     + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
-                                    .replaceWith(tdAPI.bubble.createBubble(value)
+                                    .replaceWith(tdBubble.genFromDialog(value).createBubble()
                                     )
                                 // arrayExistBubble[-currentInsertIndex - 1].msgTime
                             }
@@ -544,7 +552,7 @@ class tdAPI {
                     && !(document.hasFocus() || $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().isFocused())
                 ) {
                     if (Convo.counter > 0) { //未读消息 >0
-                        notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, ()=>{
+                        notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, () => {
                             tdMessage.sendToMain({ 'show': '' })
                             tdMessage.sendToMain({ 'focus': '' })
                             $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
@@ -556,7 +564,7 @@ class tdAPI {
                         if ($('div.td-chat-title[data-user-i-d="' + Convo.userID + '"]').length > 0) {
                             setTimeout(() => {
                                 if ($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child > div').hasClass('td-them')) {
-                                    notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, ()=>{
+                                    notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, () => {
                                         tdMessage.sendToMain({ 'show': '' })
                                         tdMessage.sendToMain({ 'focus': '' })
                                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
@@ -938,25 +946,25 @@ class tdBubble {
     static bImgL
     static bImgR
 
-    constructor(msgid, 
-        time = undefined, 
-        status = undefined, 
-        type = undefined, 
-        from = undefined, 
+    constructor(msgID,
+        time = undefined,
+        status = undefined,
+        type = undefined,
+        from = undefined,
         avatar = undefined,
-        message = undefined, 
-        fileName = undefined, 
+        message = undefined,
+        fileName = undefined,
         fileSize = undefined) {
-        
-        this.msgid = msgid
+
+        this.msgID = msgID
 
         // time
-        if(time){
+        if (time) {
             this.time = time
-        }else{
+        } else {
             this.time = new Date()
         }
-    
+
         this.status = status
 
         // type  'text' 'img' 'url' 'file' 'unknown' undefined
@@ -997,17 +1005,17 @@ class tdBubble {
     }
 
 
-    static genFromDialog(dialog){
+    static genFromDialog(dialog) {
 
         return new tdBubble(
-            dialog['msgid'], 
-            tdBasic.timeAny2Obj(dialog["time"]), 
+            dialog['msgID'],
+            tdBasic.timeAny2Obj(dialog["time"]),
             dialog["status"],
             dialog['type'],
-            dialog["from"], 
+            dialog["from"],
             dialog["avatar"],
-            dialog['message'], 
-            dialog['fileName'], 
+            dialog['message'],
+            dialog['fileName'],
             dialog['fileSize'])
 
     }
@@ -1028,7 +1036,7 @@ class tdBubble {
                 } else {
                     bHTML = $(tdBubble.bTextR).clone()
                 }
-    
+
                 $(bHTML).find('div.td-chatText').text(this.message)
                 break;
             case 'img':
@@ -1037,7 +1045,7 @@ class tdBubble {
                 } else {
                     bHTML = $(tdBubble.bImgR).clone()
                 }
-    
+
                 $(bHTML).find('div.td-chatImg img').attr('src', this.message)
                 break;
             case 'url':
@@ -1055,10 +1063,10 @@ class tdBubble {
                         bHTML = $(tdBubble.bUrlR).clone()
                     }
                 }
-    
+
                 $(bHTML).find('div.td-chatText a').attr('href', this.message)
                 $(bHTML).find('div.td-chatText a').text(this.message)
-        
+
                 break;
             case 'file':
                 if (this.from) {
@@ -1070,23 +1078,23 @@ class tdBubble {
                 $(bHTML).find('div.td-chatText > div > div > p').text("File Name: " + this.fileName)
 
                 let sizeStr = tdBasic.size2Str(dialog['fileSize'])
-    
+
                 $(bHTML).find('div.td-chatText > div > div > div > p').text("Size: " + sizeStr)
                 $(bHTML).find('div.td-chatText button[download]').attr('href', this.message)
-    
+
                 // 查看 是否已经下载
                 // console.log('cwebTag:',cwebTag, 'cUser:',cUser)
-                for(key in tdAPI.donwloadList.keys()){
-                    if(tdAPI.donwloadList[key].isSame(cwebTag,cUser,dialog.msgID)){
-                            
+                for (key in tdAPI.donwloadList.keys()) {
+                    if (tdAPI.donwloadList[key].isSame(cwebTag, cUser, dialog.msgID)) {
+
                         $(bHTML).addClass('td-downloaded')
-    
+
                         $(bHTML).find('button[open]').attr('path', donwloadList[index].savePath)
-    
+
                         break
                     }
                 }
-        
+
                 break;
             case 'unknown':
                 if (this.from) {
@@ -1139,7 +1147,7 @@ class tdBubble {
 
 
         $(bHTML).attr('msgTime', this.time.getTime())
-        $(bHTML).attr('msgid', this.msgid)
+        $(bHTML).attr('msgid', this.msgID)
 
         // console.log("create bubble from : ", dialog)
 
@@ -1530,7 +1538,7 @@ class tdDownloadItem {
 
     static rootPathInStore = 'donwloadList'
 
-    constructor (msgID, webTag, userID, type = undefined, url = undefined, savePath = undefined){
+    constructor(msgID, webTag, userID, type = undefined, url = undefined, savePath = undefined) {
         this.url = url
         this.unicode = tdBasic.uniqueStr()
         this.webTag = webTag
@@ -1540,15 +1548,15 @@ class tdDownloadItem {
         this.savePath = savePath
     }
 
-    isSame(webTag, userID, msgID ){
-        if(this.webTag == webTag &&
+    isSame(webTag, userID, msgID) {
+        if (this.webTag == webTag &&
             this.userID == userID &&
             this.msgID == msgID
-            ){
-                return true
-            }else{
-                return false
-            }
+        ) {
+            return true
+        } else {
+            return false
+        }
     }
 }
 
@@ -1559,7 +1567,8 @@ class tdUI {
 
     static toolboxSelector = "#td-right div.td-chatLog[winType='tool']"
     static chatLogSelector = "#td-right div.td-chatLog[winType='chatLog']"
-
+    static inputboxSeletor = ".td-inputbox"
+    static goBackSelector = "#debug-goBackChat"
 
     static rightBackToDefault() {
         // 右侧恢复到开始状态
@@ -1604,7 +1613,7 @@ class tdSettings {
      * 获取全部设置
      * @returns 返回全部设置的值
      */
-    static getAllSettings(){
+    static getAllSettings() {
 
         return store.get(tdSettings.rootPathInStore, undefined)
     }
@@ -1614,7 +1623,7 @@ class tdSettings {
      * @param {string} property 指定的设置项
      * @returns 返回指定设置的值
      */
-    static getSettings(property){
+    static getSettings(property) {
 
         return store.get(tdSettings.rootPathInStore + '.' + property, undefined)
 
@@ -1623,8 +1632,8 @@ class tdSettings {
     /**
      * 重置设置
      * @param {*} value 值
-     */    
-    static resetSettings(value=undefined){
+     */
+    static resetSettings(value = undefined) {
         store.set(tdSettings.rootPathInStore, value)
     }
 
@@ -1634,13 +1643,38 @@ class tdSettings {
      * @param {*} value 值
      * @param {boolean} reset 如果存在是否覆盖, 默认不覆盖
      */
-    static setSettings(property, value, reset=false){
+    static setSettings(property, value, reset = false) {
 
         let path = tdSettings.rootPathInStore + '.' + property
         if (!store.has(path) || reset) {
             store.set(path, value)
         }
     }
+
+
 }
 
-module.exports = { tdAPI, tdExt, tdList, tdUI, tdSettings }
+
+/**
+ * input草稿
+ * 以字典的形式储存字符串
+ * ["webtag+ID":"content"]
+ */
+class tdDraft {
+    constructor(key, content) {
+        this.key = key
+        this.content = content
+    }
+    static genKey(webTag, userID){
+        return webTag + userID
+    }
+    getKey(){
+        return this.key
+    }
+    getContent(){
+        return this.content
+    }
+}
+
+module.exports = { 
+    tdAPI, tdExt, tdList, tdUI, tdSettings, tdDraft, tdDownloadItem }

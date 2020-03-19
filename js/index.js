@@ -1,6 +1,7 @@
 const td = require('td')
 const Store = require('electron-store');
 const store = new Store();
+const path = require('path');
 
 $(document).ready(() => {
 
@@ -57,14 +58,14 @@ $(document).ready(() => {
         }
     })
 
-    
-    $('#openDevTools').on('click', ()=>{
+
+    $('#openDevTools').on('click', () => {
         td.tdMessage.sendToMain({ "openDevTools": "" })
     })
 
-    $(document).on('click', '[devtool]', (e)=>{
+    $(document).on('click', '[devtool]', (e) => {
         let webTag = $(e.target).closest('div[exttag]').attr('exttag')
-        if(! td.tdAPI.openDevtool( webTag )){
+        if (!td.tdAPI.openDevtool(webTag)) {
             console.error('open Devtool failed, because no webview with tag : ', webTag)
         }
     })
@@ -102,8 +103,8 @@ $(document).ready(() => {
             $("#modal-settings .modal-body").append(
                 '<div extTag="' + webTag + '">\
 <input type="checkbox" ' + (ext.status ? 'checked="checked"' : '') + '>\
-<label >'+ ext.name + '</label>'+ ( (td.tdAPI.isDebugOn && ext.status) ? ' <button devTool>devTool</button>' : '' )
-+'</div>')
+<label >'+ ext.name + '</label>' + ((td.tdAPI.isDebugOn && ext.status) ? ' <button devTool>devTool</button>' : '')
+                + '</div>')
         })
     })
 
@@ -121,6 +122,109 @@ $(document).ready(() => {
 
     // convo被点击
     $('#td-convo-container').on('click', 'div.td-convo', function () {
+
+
+        // 识别webtag
+        let cWebTag = $("div.td-chat-title").attr("data-app-name")
+        let cUserID = $("div.td-chat-title").attr("data-user-i-d")
+        let webTag = $(this).attr("data-app-name")
+        let userID = $(this).attr("data-user-i-d")
+        let nickName = $(this).find("div.td-nickname").text()
+
+        if (webTag == undefined || userID == undefined) {
+            console.log("error : click obj error.")
+            console.log("obj : ", this)
+            console.log("userID : ", userID)
+            return
+        }
+
+        $('#td-convo-container div.td-convo').removeClass('theme-transduction-active')
+        $(this).addClass('theme-transduction-active')
+
+        // 读取和临时储存草稿
+        //去掉focus, focus在向后台发送查询后再添加
+        $(td.tdUI.inputboxSeletor).blur()
+        // 记录
+        let inputHtml = $(td.tdUI.inputboxSeletor).html()
+        if (cWebTag != undefined && cUserID != undefined) {
+            let key = td.tdDraft.genKey(cWebTag, cUserID)
+            td.tdAPI.draftList.addListFromEle(
+                key,
+                new td.tdDraft(key, inputHtml)
+            )
+        }
+        // 读取
+        let key = td.tdDraft.genKey(webTag, userID)
+        if (td.tdAPI.draftList.hasEle(key)) {
+            inputHtml = td.tdAPI.draftList.getValueByKey(key).getContent()
+        } else {
+            inputHtml = ''
+        }
+        $(td.tdUI.inputboxSeletor).empty()
+        $(td.tdUI.inputboxSeletor).append(inputHtml)
+
+
+        // 加载dialog(当前可能显示的是tool)
+        $(td.tdUI.goBackSelector).click()
+        // 滑动条拖到最后
+        $(td.tdUI.chatLogSelector).scrollTop($(td.tdUI.chatLogSelector)[0].scrollHeight)
+
+        if (
+            $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
+            && $("#td-right div.td-chat-title").attr("data-app-name") == webTag
+            && $("#td-right div.td-chat-title h2").text() == nickName
+        ) {
+            // 当前聊天内容不需要清空, 只需要补充
+            td.tdMessage.HostSendToWeb(
+                td.tdUI.webTag2Selector(webTag),
+                { "queryDialog": { "userID": userID } }
+            ).then((res) => {
+                console.log("queryDialog : webReply : ", res)
+                $(td.tdUI.inputboxSeletor).focus()
+                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSeletor).get(0))
+            }).catch((error) => {
+                $(td.tdUI.inputboxSeletor).focus()
+                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSeletor).get(0))
+                throw error
+            })
+
+        } else {
+            // ---------右侧标题-----------
+            $("#td-right div.td-chat-title").attr("data-user-i-d", userID)
+            $("#td-right div.td-chat-title").attr("data-app-name", webTag)
+            $("#td-right div.td-chat-title h2").text(nickName)
+            let ext = td.tdAPI.extList.getValueByKey(webTag)
+            $("#td-right div.td-chat-title img").attr('src',
+                path.join(
+                    ext.dir, ext.icon.any
+                )
+            )
+            $(td.tdUI.chatLogSelector).empty()
+
+            td.tdMessage.HostSendToWeb(
+                td.tdUI.webTag2Selector(webTag),
+                { "queryDialog": { "userID": userID } }
+            ).then((res) => {
+                console.log("queryDialog : webReply : ", res)
+
+                $(td.tdUI.inputboxSeletor).focus()
+                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSeletor).get(0))
+
+            }).catch((error) => {
+                $(td.tdUI.inputboxSeletor).focus()
+
+                $(td.tdUI.inputboxSeletor).get(0).setSelectionRange(
+                    $(td.tdUI.inputboxSeletor).html().length,
+                    $(td.tdUI.inputboxSeletor).html().length)
+
+                td.tdPage.setEndOfContenteditable(
+                    $(td.tdUI.inputboxSeletor).get(0)
+                )
+
+                throw error
+
+            })
+        }
 
     })
 
