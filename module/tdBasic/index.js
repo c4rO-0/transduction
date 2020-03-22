@@ -15,7 +15,7 @@ class tdBasic {
      * @returns {String} uniqueStr 
      */
     static uniqueStr() {
-        return (Date.now() + Math.random()).toString()
+        return ( Math.round((Date.now() + Math.random())*1000) ).toString()
     }
 
     static timeAny2Obj(timeAny){
