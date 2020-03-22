@@ -2,6 +2,8 @@ const td = require('td')
 const Store = require('electron-store');
 const store = new Store();
 const path = require('path');
+const { nativeImage, dialog, shell, session } = require('electron').remote
+
 
 $(document).ready(() => {
 
@@ -228,7 +230,58 @@ $(document).ready(() => {
 
     })
 
+    
+    // 下载
+    $(document).on('click', '[download]', function (event) {
+        // console.log('download : ', this)
+        let type = undefined
+        let msgID = undefined
+        if (event.target.nodeName == 'IMG') {
+            type = 'img'
+            msgID = event.target.msgId
+        } else {
+            type = 'file'
+            msgID = $(this).closest('div.td-bubble').attr('msgid')
 
+            $(this).closest('div.td-bubble').addClass('td-downloading')
+        }
+
+        let downloadItem = new td.tdDownloadItem(msgID, 
+            $("div.td-chat-title").attr('data-app-name'),   //webTag
+            $("div.td-chat-title").attr('data-user-i-d'),   //userID
+            type,                                           // type
+            $(this).attr('href')                            // url
+            )
+
+        td.tdMessage.sendToMain({'download':downloadItem.toObj()})
+            .then((saveInfo) => {
+                console.log("download complete , info : ", saveInfo.download)
+                if (type == 'img') {
+
+                } else {
+                    $(this).closest('div.td-bubble').removeClass('td-downloading')
+
+                    $(this).closest('div.td-bubble').addClass('td-downloaded')
+
+                    $(this).closest('div.td-bubble').find('button[open]').attr('path', saveInfo.download.savePath)
+
+                }
+                // 储存 donloadList
+                downloadItem = td.tdDownloadItem.fromObj(saveInfo.download)
+
+                td.tdAPI.donwloadList.addListFromEle(downloadItem.unicode,downloadItem)
+
+                td.tdAPI.donwloadList.saveEleInStore(downloadItem.unicode)
+
+            })
+
+    });
+
+    // open directory
+    $(document).on('click', '[open]', function (event) {
+        console.log("show item : ", $(this).closest('div.td-bubble button[open]').attr('path'),
+            shell.showItemInFolder($(this).closest('div.td-bubble button[open]').attr('path')))
+    })
 
 })
 

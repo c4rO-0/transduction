@@ -254,6 +254,7 @@ class tdAPI {
         //=================================
         // - Download List
         tdAPI.donwloadList = new tdList(tdDownloadItem.rootPathInStore)
+        tdAPI.donwloadList.getListInSore(tdDownloadItem.fromJSON)
 
         //=================================
         // - daft list
@@ -1077,19 +1078,20 @@ class tdBubble {
 
                 $(bHTML).find('div.td-chatText > div > div > p').text("File Name: " + this.fileName)
 
-                let sizeStr = tdBasic.size2Str(dialog['fileSize'])
+                let sizeStr = tdBasic.size2Str(this.fileSize)
 
                 $(bHTML).find('div.td-chatText > div > div > div > p').text("Size: " + sizeStr)
                 $(bHTML).find('div.td-chatText button[download]').attr('href', this.message)
 
                 // 查看 是否已经下载
-                // console.log('cwebTag:',cwebTag, 'cUser:',cUser)
-                for (key in tdAPI.donwloadList.keys()) {
-                    if (tdAPI.donwloadList[key].isSame(cwebTag, cUser, dialog.msgID)) {
+                // console.log("download list", tdAPI.donwloadList.getList())
+                for (let key in tdAPI.donwloadList.getList()) {
+                    // console.log("key", key)
+                    if (tdAPI.donwloadList.getValueByKey(key).isSame(cwebTag, cUser, this.msgID)) {
 
                         $(bHTML).addClass('td-downloaded')
 
-                        $(bHTML).find('button[open]').attr('path', donwloadList[index].savePath)
+                        $(bHTML).find('button[open]').attr('path', tdAPI.donwloadList.getValueByKey(key).savePath)
 
                         break
                     }
@@ -1546,6 +1548,38 @@ class tdDownloadItem {
         this.msgID = msgID
         this.type = type
         this.savePath = savePath
+    }
+    
+    static fromObj(obj){
+        let val =  new tdDownloadItem(
+            obj.msgID,
+            obj.webTag,
+            obj.userID,
+            obj.type,
+            obj.url,
+            obj.savePath
+        )
+        if(obj.unicode !== undefined){
+            val.unicode = obj.unicode
+        }
+        return val
+    }
+
+    static fromJSON(json){
+        // console.log("obj from json ", json)
+        return tdDownloadItem.fromObj(json)
+    }
+
+    toObj(){
+        return {
+            'url': this.url,
+            'unicode': this.unicode,
+            'webTag': this.webTag,
+            'userID': this.userID,
+            'msgID': this.msgID,
+            'type': this.type,
+            'savePath': this.savePath
+        }
     }
 
     isSame(webTag, userID, msgID) {
