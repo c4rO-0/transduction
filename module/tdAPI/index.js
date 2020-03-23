@@ -175,7 +175,7 @@ class tdAPI {
     // static bubbleList
     static extList
     static donwloadList
-    static draftList
+    static inputList
 
     /**
      * event list
@@ -267,7 +267,7 @@ class tdAPI {
 
         //=================================
         // - daft list
-        tdAPI.draftList = new tdList()
+        tdAPI.inputList = new tdList()
 
     }
 
@@ -1612,7 +1612,7 @@ class tdUI {
 
     static toolboxSelector = "#td-right div.td-chatLog[winType='tool']"
     static chatLogSelector = "#td-right div.td-chatLog[winType='chatLog']"
-    static inputboxSeletor = ".td-inputbox"
+    static inputboxSelector = ".td-inputbox"
     static goBackSelector = "#debug-goBackChat"
 
     static rightBackToDefault() {
@@ -1664,6 +1664,21 @@ class tdUI {
         // store.set('tdSettings.pinCoord', pinCoord)
         tdSettings.setSettings('pinCoord', pinCoord, true)
         // console.log('tdSettings.pinCoord changed to: ', pinCoord)
+    }
+
+
+    static getInputHTML(){
+        return $(tdUI.inputboxSelector).html()
+    }
+
+    static resetInput(html=undefined){
+        $(tdUI.inputboxSelector).empty()
+        if(html){
+            $(tdUI.inputboxSelector).append(html)
+        }
+    }
+    static appendInputHTML(html){
+        $(tdUI.inputboxSelector).append(html)
     }
 
 }
@@ -1724,23 +1739,33 @@ class tdSettings {
  * 以字典的形式储存字符串
  * ["webtag+ID":"content"]
  */
-class tdDraft {
-    constructor(key, content) {
-        this.key = key
-        this.content = content
+class tdInput {
+    constructor(webTag = undefined, userID=undefined, draftHTML=undefined) {
+        
+        this.wenTag = webTag
+        this.userID = userID
+
+        if(webTag && userID){
+            this.key = tdInput.genKey(webTag, userID)
+        }else{
+            this.key = undefined
+        }
+        this.draftHTML = draftHTML
     }
     static genKey(webTag, userID){
-        return webTag + userID
+        return webTag +'-'+ userID
     }
+
     getKey(){
         return this.key
     }
-    getContent(){
-        return this.content
+    getDraftHTML(){
+        return this.draftHTML
     }
+
 
     
 }
 
 module.exports = { 
-    tdAPI, tdExt, tdList, tdUI, tdSettings, tdDraft, tdDownloadItem }
+    tdAPI, tdExt, tdList, tdUI, tdSettings, tdInput, tdDownloadItem }

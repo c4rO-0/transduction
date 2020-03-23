@@ -144,25 +144,28 @@ $(document).ready(() => {
 
         // 读取和临时储存草稿
         //去掉focus, focus在向后台发送查询后再添加
-        $(td.tdUI.inputboxSeletor).blur()
+        $(td.tdUI.inputboxSelector).blur()
         // 记录
-        let inputHtml = $(td.tdUI.inputboxSeletor).html()
         if (cWebTag != undefined && cUserID != undefined) {
-            let key = td.tdDraft.genKey(cWebTag, cUserID)
-            td.tdAPI.draftList.addListFromEle(
-                key,
-                new td.tdDraft(key, inputHtml)
+
+
+            let draft = new td.tdInput(cWebTag, cUserID, td.tdUI.getInputHTML())
+
+            td.tdAPI.inputList.addListFromEle(
+                draft.getKey(),
+                draft
             )
         }
         // 读取
-        let key = td.tdDraft.genKey(webTag, userID)
-        if (td.tdAPI.draftList.hasEle(key)) {
-            inputHtml = td.tdAPI.draftList.getValueByKey(key).getContent()
+        let inputHtml
+        let key = td.tdInput.genKey(webTag, userID)
+        if (td.tdAPI.inputList.hasEle(key)) {
+            inputHtml = td.tdAPI.inputList.getValueByKey(key).getDraftHTML()
         } else {
             inputHtml = ''
         }
-        $(td.tdUI.inputboxSeletor).empty()
-        $(td.tdUI.inputboxSeletor).append(inputHtml)
+        td.tdUI.resetInput(inputHtml)
+
 
 
         // 加载dialog(当前可能显示的是tool)
@@ -181,11 +184,11 @@ $(document).ready(() => {
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
-                $(td.tdUI.inputboxSeletor).focus()
-                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSeletor).get(0))
+                $(td.tdUI.inputboxSelector).focus()
+                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSelector).get(0))
             }).catch((error) => {
-                $(td.tdUI.inputboxSeletor).focus()
-                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSeletor).get(0))
+                $(td.tdUI.inputboxSelector).focus()
+                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSelector).get(0))
                 throw error
             })
 
@@ -208,18 +211,18 @@ $(document).ready(() => {
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
 
-                $(td.tdUI.inputboxSeletor).focus()
-                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSeletor).get(0))
+                $(td.tdUI.inputboxSelector).focus()
+                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSelector).get(0))
 
             }).catch((error) => {
-                $(td.tdUI.inputboxSeletor).focus()
+                $(td.tdUI.inputboxSelector).focus()
 
-                $(td.tdUI.inputboxSeletor).get(0).setSelectionRange(
-                    $(td.tdUI.inputboxSeletor).html().length,
-                    $(td.tdUI.inputboxSeletor).html().length)
+                $(td.tdUI.inputboxSelector).get(0).setSelectionRange(
+                    $(td.tdUI.inputboxSelector).html().length,
+                    $(td.tdUI.inputboxSelector).html().length)
 
                 td.tdPage.setEndOfContenteditable(
-                    $(td.tdUI.inputboxSeletor).get(0)
+                    $(td.tdUI.inputboxSelector).get(0)
                 )
 
                 throw error
