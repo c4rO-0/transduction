@@ -218,6 +218,8 @@ class tdAPI {
         // - settings
         tdSettings.setSettings('swTray', true, false)
         tdSettings.setSettings('pinCoord', [0, 0], false)
+        tdUI.setPin(tdSettings.getSettings('pinCoord'))
+
 
         //=================================
         // initialize bubble valuable
@@ -1646,6 +1648,24 @@ class tdUI {
         return "webview[data-" + type + "-name='" + webTag + "']"
     }
 
+    static setPin(pinCoord){
+        document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
+        document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
+    }
+
+    static followPin() {
+        let target = document.getElementById('td-pin')
+        let x = target.getBoundingClientRect().x
+        let y = target.getBoundingClientRect().bottom
+        let pinCoord = [x, window.innerHeight - y]
+        window.scrollTo(0, 0)
+        document.getElementById('td-left').style.width = x + 'px'
+        document.getElementById('td-input').style.height = window.innerHeight - y + 'px'
+        // store.set('tdSettings.pinCoord', pinCoord)
+        tdSettings.setSettings('pinCoord', pinCoord, true)
+        // console.log('tdSettings.pinCoord changed to: ', pinCoord)
+    }
+
 }
 
 class tdSettings {
@@ -1718,6 +1738,8 @@ class tdDraft {
     getContent(){
         return this.content
     }
+
+    
 }
 
 module.exports = { 
