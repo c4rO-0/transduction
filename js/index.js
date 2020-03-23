@@ -340,6 +340,11 @@ $(document).ready(() => {
     })
     td.tdUI.followPin()
 
+    document.getElementById('swTray').addEventListener('click', function () {
+        // store.set('tdSettings.swTray', this.checked)
+        td.tdSettings.setSettings('swTray', this.checked, true)
+    })
+
 
     // ===========================发送消息===========================
     $(td.tdUI.sendSelector).on('click', event => {
@@ -350,7 +355,7 @@ $(document).ready(() => {
         let draft = new td.tdInput(cWebTag, cUserID, td.tdUI.getInputHTML())
 
         draft.send().then((res)=>{
-            console.log("send done : ", res)
+            // console.log("send done : ", res)
             td.tdUI.resetInput()
         }).catch(err=>{
             console.log("send failed : ", err)

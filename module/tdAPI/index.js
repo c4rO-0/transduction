@@ -217,6 +217,8 @@ class tdAPI {
         //=================================
         // - settings
         tdSettings.setSettings('swTray', true, false)
+        tdUI.setSwTray(tdSettings.getSettings('swTray'))
+        
         tdSettings.setSettings('pinCoord', [0, 0], false)
         tdUI.setPin(tdSettings.getSettings('pinCoord'))
 
@@ -1652,6 +1654,10 @@ class tdUI {
     static setPin(pinCoord){
         document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
         document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
+    }
+
+    static setSwTray(value){
+        document.getElementById('swTray').checked = value == undefined ? false : value
     }
 
     static followPin() {
