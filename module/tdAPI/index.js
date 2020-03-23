@@ -1614,6 +1614,7 @@ class tdUI {
     static chatLogSelector = "#td-right div.td-chatLog[winType='chatLog']"
     static inputboxSelector = ".td-inputbox"
     static goBackSelector = "#debug-goBackChat"
+    static sendSelector = "#debug-send"
 
     static rightBackToDefault() {
         // 右侧恢复到开始状态
@@ -1742,7 +1743,7 @@ class tdSettings {
 class tdInput {
     constructor(webTag = undefined, userID=undefined, draftHTML=undefined) {
         
-        this.wenTag = webTag
+        this.webTag = webTag
         this.userID = userID
 
         if(webTag && userID){
@@ -1764,7 +1765,103 @@ class tdInput {
     }
 
 
+    /**
+     * 去掉input html中的tag
+     * getInput函数调用该函数
+     * @param {String} HTML 
+     * @returns {Array} 数组只包含string和File, 并按照input中顺序排列
+     */
+    static simpleInput(HTML) {
+        let arrayHTML = jQuery.parseHTML(HTML);
+
+        let sendStr = new Array()
+
+        $.each(arrayHTML, function (i, el) {
+            // console.log(el)
+            if ($(el)[0].nodeName == '#text') {
+                sendStr.push($(el).text())
+            } else if ($(el)[0].nodeName == 'IMG') {
+                let fileID = $(el).attr('data-file-ID')
+                // let dataUrl = $(el).attr('data-file-id')
+                sendStr.push(fileList[fileID])
+                // sendStr.push(dataUrl)
+            } else {
+                sendStr = sendStr.concat(tdInput.simpleInput($(el).html()))
+            }
+        })
+
+        return sendStr
+    }
+
+    /**
+     * 从给定的html中直接拿到sending
+     * @param {String} innerHTML 
+     * @returns {Array} 以数组形式储存, 只含有string和File. 
+     */
+    static getInputFromHtml(innerHTML) {
+        let arrayInput = tdInput.simpleInput(innerHTML)
+        let arraySimpleInput = new Array()
+
+
+        let fileIndex = -1
+        let strInput = ''
+        arrayInput.forEach((value, index) => {
+            // console.log(index, typeof (value), '----')
+            // console.log(value)
+            if (typeof (value) != 'string') {
+                strInput = arrayInput.slice(fileIndex + 1, index).join('\n')
+                if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+                arraySimpleInput.push(value)
+                fileIndex = index
+            }
+        })
+
+        strInput = arrayInput.slice(fileIndex + 1).join('\n')
+        if (strInput.length > 0) arraySimpleInput.push(strInput)
+
+        return arraySimpleInput
+    }
+    /**
+     * 获取发送内容, 并发送
+     * 如果给fromHtml, 那就从fromHtml中抓取消息发送
+     * @param {String} fromHtml 
+     */
+    send(fromHtml = undefined) {
+        console.log("start send", this)
+
+        return new Promise((resolve, reject)=>{
+            console.log(this.userID, this.userID !== undefined 
+                , this.webTag , this.webTag !== undefined)
+            if (this.userID !== undefined 
+                && this.webTag !== undefined) {
+
+                let arraySend = undefined
+                if (fromHtml == undefined) {
+                    arraySend = tdInput.getInputFromHtml(this.getDraftHTML())
+                } else {
+                    arraySend = tdInput.getInputFromHtml(fromHtml)
+                }
     
+                // console.log('-----send-----')
+                if (arraySend.length > 0) {
+    
+                    arraySend.unshift(this.userID)
+                    // $(webTag2Selector(webTag)).focus()
+                    tdMessage.HostSendToWeb(tdUI.webTag2Selector(this.webTag), { 'sendDialog': arraySend }, 500000).then(() => {
+                        resolve("send success")
+                    }).catch((err) => {
+                        // console.log("send failed", err)
+                        reject(err)
+                    })
+                }else{
+                    resolve("no content")
+                }
+            }else{
+                resolve("no user&webTag")
+            }
+        })
+    }
 }
 
 module.exports = { 

@@ -167,7 +167,6 @@ $(document).ready(() => {
         td.tdUI.resetInput(inputHtml)
 
 
-
         // 加载dialog(当前可能显示的是tool)
         $(td.tdUI.goBackSelector).click()
         // 滑动条拖到最后
@@ -343,9 +342,20 @@ $(document).ready(() => {
 
 
     // ===========================发送消息===========================
-    $(debug_send_str).on('click', event => {
+    $(td.tdUI.sendSelector).on('click', event => {
+        console.log("send click")
+        let cWebTag = $("div.td-chat-title").attr("data-app-name")
+        let cUserID = $("div.td-chat-title").attr("data-user-i-d")
 
-        sendInput()
+        let draft = new td.tdInput(cWebTag, cUserID, td.tdUI.getInputHTML())
+
+        draft.send().then((res)=>{
+            console.log("send done : ", res)
+            td.tdUI.resetInput()
+        }).catch(err=>{
+            console.log("send failed : ", err)
+        })
+        
     })
 
 
