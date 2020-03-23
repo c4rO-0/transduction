@@ -1,6 +1,5 @@
 const td = require('td')
 const Store = require('electron-store');
-const store = new Store();
 const path = require('path');
 const { nativeImage, dialog, shell, session } = require('electron').remote
 

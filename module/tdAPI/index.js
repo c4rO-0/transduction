@@ -6,8 +6,6 @@ const events = require('events')
 const fs = require('fs')
 const path = require('path')
 const Store = require('electron-store');
-const store = new Store();
-
 const { tdMessage } = require('tdMessage')
 const { tdBasic, tdPage } = require('tdBasic')
 const { tdOS } = require('tdSys')
@@ -20,9 +18,16 @@ const { tdSimulator } = require('tdSimulator')
  */
 class tdList {
 
-    constructor(pathInStore = undefined) {
+    constructor(pathInStore = undefined, storeIn = undefined) {
         this.list = {}
         this.pathInStore = pathInStore
+        if(storeIn){
+            this.store = storeIn 
+        }else{
+            this.store = new Store()
+        }
+        
+        // console.log(this.pathInStore, this.store)
     }
     addListFromSub(subList) {
         this.list = { ...this.list, ...subList }
@@ -99,8 +104,8 @@ class tdList {
     getListInSore(funFromObj = (obj) => {
         return obj
     }) {
-        if (store.has(this.pathInStore)) {
-            this.fromJSONList(store.get(this.pathInStore), funFromObj)
+        if (this.store.has(this.pathInStore)) {
+            this.fromJSONList(this.store.get(this.pathInStore), funFromObj)
         } else {
             console.error('no ', this.pathInStore, ' in store.')
         }
@@ -110,10 +115,10 @@ class tdList {
         return JSON.stringify(obj)
     }) {
         if (override) {
-            store.set(this.pathInStore, this.toJSONList(funToJSON))
+            this.store.set(this.pathInStore, this.toJSONList(funToJSON))
         } else {
-            if (!store.has(this.pathInStore)) {
-                store.set(this.pathInStore, this.toJSONList(funToJSON))
+            if (!this.store.has(this.pathInStore)) {
+                this.store.set(this.pathInStore, this.toJSONList(funToJSON))
             }
         }
     }
@@ -125,26 +130,26 @@ class tdList {
         }
 
         if (override) {
-            store.set(this.pathInStore + '.' + key, funToJSON(this.list[key]))
+            this.store.set(this.pathInStore + '.' + key, funToJSON(this.list[key]))
         } else {
-            if (!store.has(this.pathInStore + '.' + key)) {
-                store.set(this.pathInStore + '.' + key, funToJSON(this.list[key]))
+            if (!this.store.has(this.pathInStore + '.' + key)) {
+                this.store.set(this.pathInStore + '.' + key, funToJSON(this.list[key]))
             }
         }
     }
     resetListInStore() {
         if (this.hasPathInSore()) {
-            store.reset(this.pathInStore)
+            this.store.reset(this.pathInStore)
         }
 
     }
     deleteListInStore() {
         if (this.hasPathInSore()) {
-            store.delete(this.pathInStore)
+            this.store.delete(this.pathInStore)
         }
     }
     hasListInStore() {
-        return (this.hasPathInSore() && store.has(this.pathInStore))
+        return (this.hasPathInSore() && this.store.has(this.pathInStore))
     }
 }
 
@@ -227,6 +232,7 @@ class tdAPI {
             let tdRootPath = tdOS.tdRootPath()
             let defaultOffExtPathArray =
                 [
+                    path.resolve(tdRootPath, 'ext/firefoxsend/config.json'),
                     path.resolve(tdRootPath, 'ext/wechat/config.json'),
                     path.resolve(tdRootPath, 'ext/skype/config.json'),
                     path.resolve(tdRootPath, 'ext/dingtalk/config.json'),
@@ -253,7 +259,8 @@ class tdAPI {
 
         //=================================
         // - Download List
-        tdAPI.donwloadList = new tdList(tdDownloadItem.rootPathInStore)
+        tdAPI.donwloadList = new tdList(tdDownloadItem.rootPathInStore,new Store({'name':'downloadList'}))
+        // console.log(tdAPI.donwloadList.store)
         tdAPI.donwloadList.getListInSore(tdDownloadItem.fromJSON)
 
         //=================================
@@ -1166,6 +1173,8 @@ class tdExt {
 
     static rootPathInStore = 'tdSettings.extList'
 
+    static store = new Store();
+
     static fromJSON(json) {
 
         return Object.assign(new tdExt(), json);
@@ -1514,10 +1523,10 @@ class tdExt {
 
         if (override) {
 
-            store.set(tdExt.rootPathInStore + '.' + this.webTag, funToJSON(this))
+            tdExt.store.set(tdExt.rootPathInStore + '.' + this.webTag, funToJSON(this))
         } else {
-            if (!store.has(tdExt.rootPathInStore + '.' + this.webTag)) {
-                store.set(tdExt.rootPathInStore + '.' + this.webTag, funToJSON(this))
+            if (!tdExt.store.has(tdExt.rootPathInStore + '.' + this.webTag)) {
+                tdExt.store.set(tdExt.rootPathInStore + '.' + this.webTag, funToJSON(this))
             }
         }
     }
@@ -1642,6 +1651,7 @@ class tdUI {
 class tdSettings {
 
     static rootPathInStore = 'tdSettings'
+    static store = new Store()
 
     /**
      * 获取全部设置
@@ -1649,7 +1659,7 @@ class tdSettings {
      */
     static getAllSettings() {
 
-        return store.get(tdSettings.rootPathInStore, undefined)
+        return tdSettings.store.get(tdSettings.rootPathInStore, undefined)
     }
 
     /**
@@ -1659,7 +1669,7 @@ class tdSettings {
      */
     static getSettings(property) {
 
-        return store.get(tdSettings.rootPathInStore + '.' + property, undefined)
+        return tdSettings.store.get(tdSettings.rootPathInStore + '.' + property, undefined)
 
     }
 
@@ -1668,7 +1678,7 @@ class tdSettings {
      * @param {*} value 值
      */
     static resetSettings(value = undefined) {
-        store.set(tdSettings.rootPathInStore, value)
+        tdSettings.store.set(tdSettings.rootPathInStore, value)
     }
 
     /**
@@ -1680,8 +1690,8 @@ class tdSettings {
     static setSettings(property, value, reset = false) {
 
         let path = tdSettings.rootPathInStore + '.' + property
-        if (!store.has(path) || reset) {
-            store.set(path, value)
+        if (!tdSettings.store.has(path) || reset) {
+            tdSettings.store.set(path, value)
         }
     }
 
