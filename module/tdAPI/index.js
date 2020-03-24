@@ -8,7 +8,7 @@ const path = require('path')
 const Store = require('electron-store');
 const { tdMessage } = require('tdMessage')
 const { tdBasic, tdPage } = require('tdBasic')
-const { tdOS } = require('tdSys')
+const { tdOS, tdFileSend } = require('tdSys')
 const { tdSimulator } = require('tdSimulator')
 
 /**
@@ -176,6 +176,7 @@ class tdAPI {
     static extList
     static donwloadList
     static inputList
+    static fileList
 
     /**
      * event list
@@ -270,6 +271,10 @@ class tdAPI {
         //=================================
         // - daft list
         tdAPI.inputList = new tdList()
+
+        //=================================
+        // - send file list
+        tdAPI.fileList = new tdList()
 
     }
 
@@ -646,7 +651,10 @@ class tdAPI {
                     "selector": str 
                     "file" : obj file
                 */
-                tdSimulator.attachInputFile(tdUI.webTag2Selector(webTag), Obj.selector, fileList[Obj.file.fileID].path)
+                tdSimulator.attachInputFile(
+                    tdUI.webTag2Selector(webTag), 
+                    Obj.selector, 
+                    (tdAPI.fileList.getValueByKey(Obj.file.fileID)).path)
 
                 resolve("attached")
             } else if (key == 'simulateKey') {
@@ -1617,6 +1625,10 @@ class tdUI {
     static inputboxSelector = ".td-inputbox"
     static goBackSelector = "#debug-goBackChat"
     static sendSelector = "#debug-send"
+    static imgButtonSelector = "#debug-image"
+
+    static inputImgHeightLimit = 100
+    static inputImgWeightLimit = 600
 
     static rightBackToDefault() {
         // 右侧恢复到开始状态
@@ -1687,6 +1699,388 @@ class tdUI {
     static appendInputHTML(html){
         $(tdUI.inputboxSelector).append(html)
     }
+
+        /**
+     * get  image height and width from dataUrl
+     * @param {dataUrl} dataUrl 
+     * @returns {Promise} { width: , height:  }
+     */
+    static getImageSizeFromDataurl(dataUrl) {
+        return new Promise(function (resolved, rejected) {
+            var i = new Image()
+            i.onload = function () {
+                resolved({ width: i.width, height: i.height })
+            };
+            i.src = dataUrl
+        })
+    }
+
+    /**
+     * 图片根据最大宽度和高度, 按比例调整后的高宽. 该程序不对图片本身改变
+     * @param {dataUrl} dataUrl 
+     * @param {int} widthLimit 最大宽度
+     * @param {int} heightLimit 最大高度
+     * @returns {Promise} { "height":  , "width":  }
+     */
+    static autoSizeImg(dataUrl, widthLimit, heightLimit) {
+        return new Promise(function (resolved, rejected) {
+            // 准备压缩图片
+            // let nImg = nativeImage.createFromDataURL(dataUrl)
+            // let size = nImg.getSize()
+            let size = tdUI.getImageSizeFromDataurl(dataUrl).then((size) => {
+
+                let scaleFactorHeight = 1.0
+                let scaleFactorWidth = 1.0
+
+                if (heightLimit > 0) {
+                    scaleFactorHeight = heightLimit / size.height
+                }
+
+                if (widthLimit > 0) {
+                    scaleFactorWidth = widthLimit / size.width
+                }
+
+                let scaleFactor = scaleFactorHeight > scaleFactorWidth ? scaleFactorWidth : scaleFactorHeight
+
+                // let nPng = nativeImage.createFromBuffer(nImg.toPNG(),
+                // {"width":Math.round(size.width*scaleFactor),
+                // 'height':Math.round(size.height*scaleFactor) }) 
+
+                // console.log("autoSizeImg : ", size.height, size.width, scaleFactor)
+
+                resolved({ "height": size.height * scaleFactor, "width": size.width * scaleFactor })
+            }).catch((err) => {
+                rejected(err)
+            })
+
+        })
+
+    }
+    
+    /**
+     * 在光标处插入代码 
+     * @param {String} html 
+     * @param {String} selector JQselector 确保插入到正确的位置
+     * @returns {boolean} 是否正确储存
+     */
+    static pasteHtmlAtCaret(html, selector = undefined) {
+        var sel, range;
+        if (window.getSelection) {
+            // IE9 and non-IE
+            sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
+                range = sel.getRangeAt(0);
+                range.deleteContents();
+
+                var el = document.createElement("div");
+                el.innerHTML = html;
+                var frag = document.createDocumentFragment(), node, lastNode;
+                while ((node = el.firstChild)) {
+                    lastNode = frag.appendChild(node);
+                }
+
+                if (selector === undefined || $(range.startContainer).closest(selector).length > 0) {
+                    range.insertNode(frag);
+
+                    // Preserve the selection
+                    if (lastNode) {
+                        range = range.cloneRange();
+                        range.setStartAfter(lastNode);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                    return true
+                }
+
+            }
+        }
+        //  else if (document.selection && document.selection.type != "Control") {
+        //     // IE < 9
+        //     document.selection.createRange().pasteHTML(html);
+        // }
+
+        if (selector != undefined && $(selector).length > 0) {
+            $(selector).append(html)
+            return true
+        }
+
+        return false
+
+    }
+
+
+    static itemToHTML(item) {
+        return new Promise((resolve, reject) => {
+
+            if (typeof (item) == 'string') {
+                // insert string
+                tdUI.pasteHtmlAtCaret($($("<div> </div>").text(item)).html(), 'div.td-inputbox')
+
+                resolve("")
+            } else {
+                // insert file
+                item.addFileID(tdBasic.uniqueStr())
+
+                tdUI.autoSizeImg(item.dataUrl, tdUI.inputImgWeightLimit, tdUI.inputImgHeightLimit).then((newSize) => {
+
+                    item.localSave().then(() => {
+                        // console.log("debug : path : ", item.path, "-----------------------------------")
+                        tdAPI.fileList.addListFromEle(item.fileID, item)
+
+                        $("div.td-dropFile > img").addClass("td-none")
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('src', item.path)
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
+                        $('div.td-dropFile > div').removeClass('td-none')
+                        $('.td-dropFile').removeClass('hide')
+
+
+                        resolve("")
+                    }).catch((err) => {
+                        console.log("error : itemToHTML : localSave ")
+                        console.log(err)
+                        reject(err)
+                    })
+
+                }).catch((err) => {
+                    reject("error : itemToHTML : autoSizeImg")
+                })
+
+            }
+        })
+    }
+
+
+    /**
+     * 将拖拽到网页或者粘贴到网页的DataTransfer转化成array
+     * bug : 粘贴url时text和url不一致不能合并, 如papercomment.tech网址直接拖拽
+     * @param {DataTransfer} data 
+     * @returns {Promise} 
+     *  arra[{'key':value},{}] 
+     *  key : file text url
+     */
+    static filterDataTransfer(data) {
+
+        return new Promise((resolve, reject) => {
+            let arrayItem = new Array();
+
+            let uniqueItem = new Array();
+
+            let arrayString = new Array()
+
+            console.log("filterDataTransfer : data : ", data)
+
+            let objHTML = data.getData('text/html') // 拖拽的是一个含有链接的东西, html, 在线img, 文件
+            let strURL = data.getData('URL')
+            console.log('--------objHTML-----------')
+            console.log(objHTML)
+            console.log('--------strURL-----------')
+            console.log(strURL)
+            if (objHTML && $(objHTML).get(0) && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
+                console.log("发现图片")
+                let pathR = $(objHTML).attr('src')
+                let pathFile = undefined
+
+                if (pathR.length >= 8 && pathR.substring(0, 7) == 'file://') {
+
+                    pathFile = pathR.substring(7)
+                    // console.log("本地文件", pathFile)
+                    let img = nativeImage.createFromPath(pathFile)
+                    arrayItem.push(new Promise(
+                        (resolve, reject) => {
+
+                            if (img.isEmpty()) {
+                                reject('filterDataTransfer : img not access')
+                            } else {
+                                let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathFile), pathFile, '', undefined, img.toDataURL())
+                                resolve(imgSend)
+                            }
+                        }))
+                } else if ((pathR.length > 9 && pathR.substring(0, 8) == 'https://') || (pathR.length > 8 && pathR.substring(0, 7) == 'http://')) {
+                    arrayItem.push(new Promise(
+                        (resolve, reject) => {
+                            var valRequest = request.defaults({ encoding: null });
+
+                            valRequest.get(pathR, function (error, response, body) {
+                                if (!error && response.statusCode == 200) {
+                                    let strRequest = new Buffer(body).toString('base64')
+                                    let urldata = "data:" + response.headers["content-type"] + ";base64," + strRequest;
+                                    // console.log("------request-----")
+                                    // console.log(strRequest)
+                                    if (strRequest) {
+                                        let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathR), '', pathR, undefined, urldata)
+                                        resolve(imgSend)
+                                    } else {
+                                        reject('filterDataTransfer : img not access')
+                                    }
+
+
+                                }
+
+                            });
+
+
+                        }))
+                }
+
+                // console.log(img.getSize())
+
+            } else if (strURL) {
+                console.log("发现网址")
+                arrayItem.push(Promise.resolve(strURL))
+            } else {
+                if (data.items) {
+                    let items = data.items
+
+                    console.log("---found items---", items.length)
+                    // Use DataTransferItemList interface to access the file(s)
+                    for (var i = 0; i < items.length; i++) {
+                        console.log(i, "item", items[i].kind, items[i].type, items[i])
+                        // If dropped items aren't files, reject them
+                        if ((items[i].kind == 'string') &&
+                            (items[i].type.match('^text/plain'))) {
+                            // This item is the target node
+
+                            arrayItem.push(new Promise(
+                                (resolve, reject) => {
+                                    items[i].getAsString(function (s) {
+                                        // console.log("... Drop: text ", typeof (s), s)
+                                        // ev.target.appendChild(document.getElementById(s));
+                                        resolve(s)
+                                    });
+                                }))
+
+                        } else if ((items[i].kind == 'string') &&
+                            (items[i].type.match('^text/html'))) {
+                            // Drag data item is HTML
+                            items[i].getAsString(function (s) {
+                                // console.log("... Drop: HTML", s)
+                                // ev.target.appendChild(document.getElementById(s));
+                            });
+                        } else if ((items[i].kind == 'string') &&
+                            (items[i].type.match('^text/uri-list'))) {
+                            // Drag data item is URI
+                            // arrayItem.push(new Promise(
+                            //     (resolve, reject) => {
+
+                            //         items[i].getAsString(function (s) {
+                            //             // console.log("... Drop: URI ", typeof (s), s)
+                            //             // ev.target.appendChild(document.getElementById(s));
+                            //             arrayString.push(s)
+                            //             resolve(s)
+                            //         });
+                            //     }))
+
+                        } else if ((items[i].kind == 'file') &&
+                            (items[i].type.match('^image/'))) {
+                            // Drag data item is an image file
+                            arrayItem.push(new Promise(
+                                (resolve, reject) => {
+
+                                    // console.log("file")
+                                    let file = items[i].getAsFile()
+                                    let imgSend = new tdFileSend(file.name, file.path, '')
+                                    let reader = new FileReader();
+                                    reader.onload = function (e) {
+                                        imgSend.addDataUrl(reader.result)
+                                        resolve(imgSend)
+                                    }
+                                    reader.readAsDataURL(file)
+
+                                }))
+                            // console.log('... name = ' + file.name + ' path = ' + file.path);
+                        }
+                    }
+
+                } else {
+                    console.log("---found files---")
+                    // Use DataTransfer interface to access the file(s)
+                    for (var i = 0; i < data.files.length; i++) {
+                        // console.log(data.files[i])
+                        let file = data.files[i]
+
+                        arrayItem.push(new Promise(
+                            (resolve, reject) => {
+                                let imgSend = new tdFileSend(file.name, file.path, '')
+                                let reader = new FileReader();
+                                reader.onload = function (e) {
+                                    imgSend.addDataUrl(reader.result)
+                                    resolve(imgSend)
+                                }
+                                reader.readAsDataURL(file)
+                            }))
+
+
+                    }
+                }
+            }
+
+
+
+            // arrayString = uniqueString
+
+            Promise.all(arrayItem).then((valueItems) => {
+                // console.log("finish array")
+                // console.log(arrayString.length)
+
+                uniqueItem = uniqueItem.concat(arrayString)
+
+                // console.log(uniqueItem)
+
+                valueItems.forEach((item, index) => {
+                    if (typeof (item) == "string") {
+                        // arrayString.push(item)
+                        let contains = false
+                        arrayString.forEach(iStr => {
+                            contains = (contains || iStr.includes(item))
+                        })
+                        if (!contains) {
+                            uniqueItem.push(item)
+                        }
+
+                    } else {
+                        uniqueItem.push(item)
+                    }
+                })
+
+                console.log('-----uniqueItem-------')
+                console.log(uniqueItem)
+
+                resolve(uniqueItem)
+
+            }).catch(error => {
+                reject({ 'string': error })
+            })
+
+        })
+    }
+
+    
+    /**
+     * 将data数据转化为Html附加到页面上
+     * @param {dataTransfer} data 
+     */
+    static processDataTransfer(data) {
+
+        return new Promise((resolve, reject) => {
+
+            tdUI.filterDataTransfer(data).then((items) => {
+                // console.log("start insert")
+                items.forEach((item) => {
+
+                    tdUI.itemToHTML(item).then((resolveItemToHTML) => {
+                        resolve(resolveItemToHTML)
+                    }).catch(errorItemToHTML => {
+                        reject(errorItemToHTML)
+                    })
+                })
+
+            }).catch(error => {
+                reject(error)
+            })
+        })
+    }
+
 
 }
 
@@ -1789,7 +2183,7 @@ class tdInput {
             } else if ($(el)[0].nodeName == 'IMG') {
                 let fileID = $(el).attr('data-file-ID')
                 // let dataUrl = $(el).attr('data-file-id')
-                sendStr.push(fileList[fileID])
+                sendStr.push(tdAPI.fileID.getValueByKey(fileID))
                 // sendStr.push(dataUrl)
             } else {
                 sendStr = sendStr.concat(tdInput.simpleInput($(el).html()))
@@ -1868,6 +2262,8 @@ class tdInput {
             }
         })
     }
+
+     
 }
 
 module.exports = { 

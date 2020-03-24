@@ -363,6 +363,71 @@ $(document).ready(() => {
         
     })
 
+    // ======================拖入东西==========================
+    //--------------------------------------
+    // 在bubble区域检测到拖入
+    $('#td-right').on('dragenter', (event) => {
+        // $('.td-dropFile').show()
+        $('.td-dropFile').removeClass('hide')
+    })
+
+    //--------------------------------------
+    // 在input检测到拖入
+    $('div.td-inputbox').on('dragenter', (event) => {
+        $('.td-dropFile').removeClass('hide')
+    })
+
+    //--------------------------------------
+    // 离开拖入区
+    $('.td-dropFile').on('dragleave', (event) => {
+        $('.td-dropFile').addClass('hide')
+    })
+
+    //--------------------------------------
+    // 拖入并松手
+    $('.td-dropFile').on('drop', (event) => {
+        // console.log('drop')
+        $('.td-dropFile').addClass('hide')
+        event.preventDefault();
+
+        td.tdUI.processDataTransfer(event.originalEvent.dataTransfer).then(() => {
+
+            $(".td-inputbox").focus()
+
+            td.tdMessage.sendToMain({ "focus": "" })
+
+            console.log("insert input done")
+        })
+    })
+
+
+    //--------------------------------------
+    // 粘贴
+    $("div.td-inputbox").on("paste", function (event) {
+        event.preventDefault();
+        // event.stopPropagation();
+
+        let clipData = event.originalEvent.clipboardData || window.clipboardData;
+        td.tdUI.processDataTransfer(clipData).then(() => {
+            $(".td-inputbox").focus()
+            console.log("paste insert input done")
+        })
+
+    });
+
+    //--------------------------------------
+    // 通过按钮添加文件
+    $(td.tdUI.imgButtonSelector).on('click', event => {
+        $('.td-toolbox > input[type="file"]').get(0).click()
+    })
+
+    $('.td-toolbox > input[type="file"]').on("change", function (event) {
+        td.tdUI.processFileList(event.target.files).then(() => {
+            $(".td-inputbox").focus()
+            console.log("insert input done")
+        })
+    });
+
 
 })
 

@@ -53,6 +53,10 @@ class tdBasic {
         return sizeStr
     }
 
+    static getFileNameFromUrl(url) {
+        return url.split('/').pop().split('#')[0].split('?')[0];
+    }
+
 }
 
 class tdPage {
