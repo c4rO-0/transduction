@@ -1625,7 +1625,9 @@ class tdUI {
     static inputboxSelector = ".td-inputbox"
     static goBackSelector = "#debug-goBackChat"
     static sendSelector = "#debug-send"
-    static imgButtonSelector = "#debug-image"
+    static imgChooseSelector = "#debug-image"
+    static imgSendSelector = '#debug-img-send'
+    static imgCancelSelector = '#debug-img-cancel'
 
     static inputImgHeightLimit = 100
     static inputImgWeightLimit = 600

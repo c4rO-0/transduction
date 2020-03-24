@@ -363,6 +363,42 @@ $(document).ready(() => {
         
     })
 
+    
+    // 发送图片
+    $(td.tdUI.imgSendSelector).on('click', function () {
+        // console.log("send clicked------>")
+
+        // sendInput($('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
+        let cWebTag = $("div.td-chat-title").attr("data-app-name")
+        let cUserID = $("div.td-chat-title").attr("data-user-i-d")
+
+        let draft = new td.tdInput(cWebTag, cUserID, 
+            $('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
+        draft.send().then((res)=>{
+            // console.log("send done : ", res)
+            // td.tdUI.resetInput()
+        }).catch(err=>{
+            console.log("send failed : ", err)
+        })
+                 
+
+        $("div.td-dropFile > img").removeClass("td-none")
+        $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
+        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
+        $('div.td-dropFile > div').addClass('td-none')
+        $('.td-dropFile').addClass('hide')
+
+    })
+
+    //取消发送图片
+    $(td.tdUI.imgCancelSelector).on('click', function () {
+        $("div.td-dropFile > img").removeClass("td-none")
+        $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
+        $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
+        $('div.td-dropFile > div').addClass('td-none')
+        $('.td-dropFile').addClass('hide')
+    })
+
     // ======================拖入东西==========================
     //--------------------------------------
     // 在bubble区域检测到拖入
@@ -417,7 +453,7 @@ $(document).ready(() => {
 
     //--------------------------------------
     // 通过按钮添加文件
-    $(td.tdUI.imgButtonSelector).on('click', event => {
+    $(td.tdUI.imgChooseSelector).on('click', event => {
         $('.td-toolbox > input[type="file"]').get(0).click()
     })
 
