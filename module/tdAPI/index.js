@@ -1815,18 +1815,41 @@ class tdUI {
                 tdUI.pasteHtmlAtCaret($($("<div> </div>").text(item)).html(), 'div.td-inputbox')
 
                 resolve("")
-            } else {
+            } else if(item.constructor.name == 'tdFileSend'){
                 // insert file
                 item.addFileID(tdBasic.uniqueStr())
 
-                tdUI.autoSizeImg(item.dataUrl, tdUI.inputImgWeightLimit, tdUI.inputImgHeightLimit).then((newSize) => {
+                if(item.isImg()){
+                    tdUI.autoSizeImg(item.dataUrl, tdUI.inputImgWeightLimit, tdUI.inputImgHeightLimit).then((newSize) => {
 
+                        item.localSave().then(() => {
+                            // console.log("debug : path : ", item.path, "-----------------------------------")
+                            tdAPI.fileList.addListFromEle(item.fileID, item)
+    
+                            $("div.td-dropFile > img").addClass("td-none")
+                            $('div.td-dropFile > div > img:nth-child(1)').attr('src', item.path)
+                            $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
+                            $('div.td-dropFile > div').removeClass('td-none')
+                            $('.td-dropFile').removeClass('hide')
+    
+    
+                            resolve("")
+                        }).catch((err) => {
+                            console.log("error : itemToHTML : localSave ")
+                            console.log(err)
+                            reject(err)
+                        })
+    
+                    }).catch((err) => {
+                        reject("error : itemToHTML : autoSizeImg")
+                    })
+                }else{
                     item.localSave().then(() => {
                         // console.log("debug : path : ", item.path, "-----------------------------------")
                         tdAPI.fileList.addListFromEle(item.fileID, item)
 
                         $("div.td-dropFile > img").addClass("td-none")
-                        $('div.td-dropFile > div > img:nth-child(1)').attr('src', item.path)
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('src')
                         $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
                         $('div.td-dropFile > div').removeClass('td-none')
                         $('.td-dropFile').removeClass('hide')
@@ -1838,10 +1861,7 @@ class tdUI {
                         console.log(err)
                         reject(err)
                     })
-
-                }).catch((err) => {
-                    reject("error : itemToHTML : autoSizeImg")
-                })
+                }
 
             }
         })
@@ -1968,22 +1988,22 @@ class tdUI {
                             //         });
                             //     }))
 
-                        } else if ((items[i].kind == 'file') &&
-                            (items[i].type.match('^image/'))) {
+                        } else if ((items[i].kind == 'file') ) {
                             // Drag data item is an image file
+                            let file = items[i].getAsFile()
                             arrayItem.push(new Promise(
                                 (resolve, reject) => {
-
-                                    // console.log("file")
-                                    let file = items[i].getAsFile()
-                                    let imgSend = new tdFileSend(file.name, file.path, '')
-                                    let reader = new FileReader();
-                                    reader.onload = function (e) {
-                                        imgSend.addDataUrl(reader.result)
-                                        resolve(imgSend)
+                                    let fileSend = tdFileSend.fromFile(file)
+                                    if(fileSend.isImg()){
+                                        let reader = new FileReader();
+                                        reader.onload = function (e) {
+                                            fileSend.addDataUrl(reader.result)
+                                            resolve(fileSend)
+                                        }
+                                        reader.readAsDataURL(file)
+                                    }else{
+                                        resolve(fileSend)
                                     }
-                                    reader.readAsDataURL(file)
-
                                 }))
                             // console.log('... name = ' + file.name + ' path = ' + file.path);
                         }
@@ -1998,13 +2018,17 @@ class tdUI {
 
                         arrayItem.push(new Promise(
                             (resolve, reject) => {
-                                let imgSend = new tdFileSend(file.name, file.path, '')
-                                let reader = new FileReader();
-                                reader.onload = function (e) {
-                                    imgSend.addDataUrl(reader.result)
-                                    resolve(imgSend)
+                                let fileSend = tdFileSend.fromFile(file)
+                                if(fileSend.isImg()){
+                                    let reader = new FileReader();
+                                    reader.onload = function (e) {
+                                        fileSend.addDataUrl(reader.result)
+                                        resolve(fileSend)
+                                    }
+                                    reader.readAsDataURL(file)
+                                }else{
+                                    resolve(fileSend)
                                 }
-                                reader.readAsDataURL(file)
                             }))
 
 
@@ -2099,13 +2123,17 @@ class tdUI {
 
                 arrayItem.push(new Promise(
                     (resolve, reject) => {
-                        let imgSend = new td.tdFileSend(file.name, file.path, '')
-                        let reader = new FileReader();
-                        reader.onload = function (e) {
-                            imgSend.addDataUrl(reader.result)
-                            resolve(imgSend)
+                        let fileSend = tdFileSend.fromFile(file)
+                        if(fileSend.isImg()){
+                            let reader = new FileReader();
+                            reader.onload = function (e) {
+                                fileSend.addDataUrl(reader.result)
+                                resolve(fileSend)
+                            }
+                            reader.readAsDataURL(file)
+                        }else{
+                            resolve(fileSend)
                         }
-                        reader.readAsDataURL(file)
                     }))
 
 
