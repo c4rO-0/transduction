@@ -21,12 +21,12 @@ class tdList {
     constructor(pathInStore = undefined, storeIn = undefined) {
         this.list = {}
         this.pathInStore = pathInStore
-        if(storeIn){
-            this.store = storeIn 
-        }else{
+        if (storeIn) {
+            this.store = storeIn
+        } else {
             this.store = new Store()
         }
-        
+
         // console.log(this.pathInStore, this.store)
     }
     addListFromSub(subList) {
@@ -41,7 +41,7 @@ class tdList {
     deleteEleByIndex(index) {
         delete this.list[Object.keys(this.list)[index]];
     }
-    hasEle(key){
+    hasEle(key) {
         return this.list.hasOwnProperty(key)
     }
     getLen() {
@@ -219,7 +219,7 @@ class tdAPI {
         // - settings
         tdSettings.setSettings('swTray', true, false)
         tdUI.setSwTray(tdSettings.getSettings('swTray'))
-        
+
         tdSettings.setSettings('pinCoord', [0, 0], false)
         tdUI.setPin(tdSettings.getSettings('pinCoord'))
 
@@ -264,7 +264,7 @@ class tdAPI {
 
         //=================================
         // - Download List
-        tdAPI.donwloadList = new tdList(tdDownloadItem.rootPathInStore,new Store({'name':'downloadList'}))
+        tdAPI.donwloadList = new tdList(tdDownloadItem.rootPathInStore, new Store({ 'name': 'downloadList' }))
         // console.log(tdAPI.donwloadList.store)
         tdAPI.donwloadList.getListInSore(tdDownloadItem.fromJSON)
 
@@ -652,8 +652,8 @@ class tdAPI {
                     "file" : obj file
                 */
                 tdSimulator.attachInputFile(
-                    tdUI.webTag2Selector(webTag), 
-                    Obj.selector, 
+                    tdUI.webTag2Selector(webTag),
+                    Obj.selector,
                     (tdAPI.fileList.getValueByKey(Obj.file.fileID)).path)
 
                 resolve("attached")
@@ -1570,9 +1570,9 @@ class tdDownloadItem {
         this.type = type
         this.savePath = savePath
     }
-    
-    static fromObj(obj){
-        let val =  new tdDownloadItem(
+
+    static fromObj(obj) {
+        let val = new tdDownloadItem(
             obj.msgID,
             obj.webTag,
             obj.userID,
@@ -1580,18 +1580,18 @@ class tdDownloadItem {
             obj.url,
             obj.savePath
         )
-        if(obj.unicode !== undefined){
+        if (obj.unicode !== undefined) {
             val.unicode = obj.unicode
         }
         return val
     }
 
-    static fromJSON(json){
+    static fromJSON(json) {
         // console.log("obj from json ", json)
         return tdDownloadItem.fromObj(json)
     }
 
-    toObj(){
+    toObj() {
         return {
             'url': this.url,
             'unicode': this.unicode,
@@ -1663,12 +1663,12 @@ class tdUI {
         return "webview[data-" + type + "-name='" + webTag + "']"
     }
 
-    static setPin(pinCoord){
+    static setPin(pinCoord) {
         document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
         document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
     }
 
-    static setSwTray(value){
+    static setSwTray(value) {
         document.getElementById('swTray').checked = value == undefined ? false : value
     }
 
@@ -1686,25 +1686,25 @@ class tdUI {
     }
 
 
-    static getInputHTML(){
+    static getInputHTML() {
         return $(tdUI.inputboxSelector).html()
     }
 
-    static resetInput(html=undefined){
+    static resetInput(html = undefined) {
         $(tdUI.inputboxSelector).empty()
-        if(html){
+        if (html) {
             $(tdUI.inputboxSelector).append(html)
         }
     }
-    static appendInputHTML(html){
+    static appendInputHTML(html) {
         $(tdUI.inputboxSelector).append(html)
     }
 
-        /**
-     * get  image height and width from dataUrl
-     * @param {dataUrl} dataUrl 
-     * @returns {Promise} { width: , height:  }
-     */
+    /**
+ * get  image height and width from dataUrl
+ * @param {dataUrl} dataUrl 
+ * @returns {Promise} { width: , height:  }
+ */
     static getImageSizeFromDataurl(dataUrl) {
         return new Promise(function (resolved, rejected) {
             var i = new Image()
@@ -1756,7 +1756,7 @@ class tdUI {
         })
 
     }
-    
+
     /**
      * 在光标处插入代码 
      * @param {String} html 
@@ -2055,7 +2055,7 @@ class tdUI {
         })
     }
 
-    
+
     /**
      * 将data数据转化为Html附加到页面上
      * @param {dataTransfer} data 
@@ -2081,6 +2081,74 @@ class tdUI {
         })
     }
 
+
+    /**
+     * 将input转化成array
+     * @param {FileList} data 
+     * @returns {Promise} 
+     *  arra[{'key':value},{}] 
+     *  key : file text url
+     */
+    static filterFiles(files) {
+
+        return new Promise((resolve, reject) => {
+            let arrayItem = new Array();
+
+            console.log("---found files---")
+            // Use DataTransfer interface to access the file(s)
+            for (var i = 0; i < files.length; i++) {
+                // console.log(data.files[i])
+                let file = files[i]
+
+                arrayItem.push(new Promise(
+                    (resolve, reject) => {
+                        let imgSend = new td.tdFileSend(file.name, file.path, '')
+                        let reader = new FileReader();
+                        reader.onload = function (e) {
+                            imgSend.addDataUrl(reader.result)
+                            resolve(imgSend)
+                        }
+                        reader.readAsDataURL(file)
+                    }))
+
+
+            }
+
+
+            Promise.all(arrayItem).then((valueItems) => {
+
+                resolve(valueItems)
+
+            }).catch(error => {
+                reject({ 'string': error })
+            })
+
+        })
+    }
+
+
+    /**
+     * 将input传入的data数据转化为Html附加到页面上
+     * @param {FileList} fileList 
+     */
+    static processFileList(fileList) {
+        return new Promise((resolve, reject) => {
+
+            tdUI.filterFiles(fileList).then((items) => {
+                // console.log("start insert")
+                items.forEach((item) => {
+                    tdUI.itemToHTML(item).then((resolveItemToHTML) => {
+                        resolve(resolveItemToHTML)
+                    }).catch(errorItemToHTML => {
+                        reject(errorItemToHTML)
+                    })
+                })
+            }).catch(error => {
+                reject(error)
+            })
+        })
+
+    }
 
 }
 
@@ -2141,26 +2209,26 @@ class tdSettings {
  * ["webtag+ID":"content"]
  */
 class tdInput {
-    constructor(webTag = undefined, userID=undefined, draftHTML=undefined) {
-        
+    constructor(webTag = undefined, userID = undefined, draftHTML = undefined) {
+
         this.webTag = webTag
         this.userID = userID
 
-        if(webTag && userID){
+        if (webTag && userID) {
             this.key = tdInput.genKey(webTag, userID)
-        }else{
+        } else {
             this.key = undefined
         }
         this.draftHTML = draftHTML
     }
-    static genKey(webTag, userID){
-        return webTag +'-'+ userID
+    static genKey(webTag, userID) {
+        return webTag + '-' + userID
     }
 
-    getKey(){
+    getKey() {
         return this.key
     }
-    getDraftHTML(){
+    getDraftHTML() {
         return this.draftHTML
     }
 
@@ -2230,10 +2298,10 @@ class tdInput {
     send(fromHtml = undefined) {
         console.log("start send", this)
 
-        return new Promise((resolve, reject)=>{
-            console.log(this.userID, this.userID !== undefined 
-                , this.webTag , this.webTag !== undefined)
-            if (this.userID !== undefined 
+        return new Promise((resolve, reject) => {
+            console.log(this.userID, this.userID !== undefined
+                , this.webTag, this.webTag !== undefined)
+            if (this.userID !== undefined
                 && this.webTag !== undefined) {
 
                 let arraySend = undefined
@@ -2242,10 +2310,10 @@ class tdInput {
                 } else {
                     arraySend = tdInput.getInputFromHtml(fromHtml)
                 }
-    
+
                 // console.log('-----send-----')
                 if (arraySend.length > 0) {
-    
+
                     arraySend.unshift(this.userID)
                     // $(webTag2Selector(webTag)).focus()
                     tdMessage.HostSendToWeb(tdUI.webTag2Selector(this.webTag), { 'sendDialog': arraySend }, 500000).then(() => {
@@ -2254,17 +2322,18 @@ class tdInput {
                         // console.log("send failed", err)
                         reject(err)
                     })
-                }else{
+                } else {
                     resolve("no content")
                 }
-            }else{
+            } else {
                 resolve("no user&webTag")
             }
         })
     }
 
-     
+
 }
 
-module.exports = { 
-    tdAPI, tdExt, tdList, tdUI, tdSettings, tdInput, tdDownloadItem }
+module.exports = {
+    tdAPI, tdExt, tdList, tdUI, tdSettings, tdInput, tdDownloadItem
+}
