@@ -220,8 +220,7 @@ class tdAPI {
         tdSettings.setSettings('swTray', true, false)
         tdUI.setSwTray(tdSettings.getSettings('swTray'))
 
-        tdSettings.setSettings('pinCoord', [0, 0], false)
-        tdUI.setPin(tdSettings.getSettings('pinCoord'))
+        tdUI.setPin()
 
 
         //=================================
@@ -1665,16 +1664,12 @@ class tdUI {
         return "webview[data-" + type + "-name='" + webTag + "']"
     }
 
-    static setPin(pinCoord) {
-        document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
-        document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
-    }
 
     static setSwTray(value) {
         document.getElementById('swTray').checked = value == undefined ? false : value
     }
 
-    static followPin() {
+    static setPin() {
         let target = document.getElementById('td-pin')
         let x = target.getBoundingClientRect().x
         let y = target.getBoundingClientRect().bottom

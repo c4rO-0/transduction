@@ -338,7 +338,7 @@ $(document).ready(() => {
             target.style.top = ''
         },
     })
-    td.tdUI.followPin()
+    
 
     document.getElementById('swTray').addEventListener('click', function () {
         // store.set('tdSettings.swTray', this.checked)
