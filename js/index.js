@@ -465,6 +465,158 @@ $(document).ready(() => {
     });
 
 
+    // ======================键盘响应==========================
+    $(document).on('keypress', function (event) {
+        // console.log("keypress",event.which )
+        // if(document.activeElement == $(".td-inputbox").get(0)){
+
+        // }else{
+
+        // }
+        // console.log('focus : ',$(document.activeElement).is(".td-inputbox"), ' key press : ', event.which, event.ctrlKey)
+        // $(".td-inputbox").focus()
+
+        // enter
+        if (event.which == 13) {
+            if ($(document.activeElement).is(".td-inputbox")) {
+                $(td.tdUI.sendSelector).click()
+                return false
+            }
+
+            // 图片确认界面
+            if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
+                $(td.tdUI.imgSendSelector).click()
+                return false
+            }
+        }
+
+        // ctr+enter : newline
+        if (event.ctrlKey && event.which == 10) {
+            if ($(document.activeElement).is(td.tdUI.inputboxSelector)) {
+                arrayIn = jQuery.parseHTML($(td.tdUI.inputboxSelector).get(0).innerHTML)
+                if (arrayIn.length == 0 || ($(arrayIn)[arrayIn.length - 1].nodeName != 'BR')) {
+                    $(td.tdUI.inputboxSelector).append('<br>')
+                }
+                td.tdUI.pasteHtmlAtCaret("<br>", td.tdUI.inputboxSelector)
+            }
+        }
+
+    })
+
+    $(document).keydown(function (event) {
+
+        // console.log("keydown",event.which )
+        if ($(document.activeElement).is(td.tdUI.inputboxSelector)) {
+
+            // tab 只能激活keydown, 不能激活keypress
+            if (!event.ctrlKey && event.which == 9) {
+                // console.log("tab down")
+                // $('div.td-inputbox').append('&nbsp;')
+                event.preventDefault();
+                event.stopPropagation();
+                td.tdUI.pasteHtmlAtCaret("\t", td.tdUI.inputboxSelector)
+            }
+
+        }
+
+
+        // ctrl+up/down 切换convo
+        if (event.ctrlKey && (event.which == 38 || event.which == 40)) {
+            // console.log("tab down")
+            event.preventDefault();
+            event.stopPropagation();
+            // 
+            // console.log("切换联系人")
+            let lengthConvo = $('.td-convo:visible').length
+            let classTactive = 'theme-transduction-active-tran'
+            let cStrSelector = '.' + classTactive
+
+            let convoSelector = '.td-convo:visible'
+
+            if (lengthConvo > 0) {
+
+                let activePos = $(convoSelector).index($('.theme-transduction-active'))
+
+                let TactivePos = $(convoSelector).index($(cStrSelector))
+
+                $(convoSelector).removeClass(classTactive)
+
+                if ((activePos == -1 && TactivePos == -1)) {
+                    // 既没有active也没有临时(Tactive), Tactive放在第一位 
+                    // console.log("add tactive at 0")
+                    $(convoSelector).eq(0).addClass(classTactive)
+                } else if (lengthConvo > 1 && activePos > -1 && TactivePos == -1) {
+                    // 有active, 没有Tactive : 根据方向键选择active的邻近一个
+                    if (event.which == 38) {
+                        // up
+                        let nextP = td.tdMath.periodicPos(activePos - 1, lengthConvo)
+                        $(convoSelector).eq(nextP).addClass(classTactive)
+
+                    } else if (event.which == 40) {
+                        // down
+                        let nextP = td.tdMath.periodicPos(activePos + 1, lengthConvo)
+                        $(convoSelector).eq(nextP).addClass(classTactive)
+                    }
+                } else if (lengthConvo > 1 && TactivePos > -1) {
+                    if (event.which == 38) {
+                        // up
+                        let nextP = td.tdMath.periodicPos(TactivePos - 1, lengthConvo)
+                        if (nextP == activePos) {
+
+                        } else {
+                            $(convoSelector).eq(nextP).addClass(classTactive)
+                        }
+
+                    } else if (event.which == 40) {
+                        // down
+                        let nextP = td.tdMath.periodicPos(TactivePos + 1, lengthConvo)
+                        if (nextP == activePos) {
+
+                        } else {
+                            $(convoSelector).eq(nextP).addClass(classTactive)
+                        }
+                    }
+                }
+            }
+
+        }
+
+        // esc按下
+        if (event.which == 27) {
+            // console.log('esc down')
+            // 图片确认界面
+            if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
+                $(td.tdUI.imgCancelSelector).click()
+            }
+
+        }
+
+    })
+
+
+    $(document).keyup(function (event) {
+        // console.log("keyup",event.which )
+
+        if (event.which == 17) {
+            // control 抬起
+            let classTactive = 'theme-transduction-active-tran'
+            let cStrSelector = '.' + classTactive
+            let convoSelector = '.td-convo:visible'
+
+            if ($(cStrSelector).length > 0) {
+                // tacitve存在, 切换联系人
+                event.preventDefault();
+                event.stopPropagation();
+
+                let TactivePos = $(convoSelector).index($(cStrSelector))
+                $(convoSelector).removeClass(classTactive)
+                $(convoSelector).eq(TactivePos).get(0).click()
+            }
+        }
+
+    })
+
+
 })
 
 
