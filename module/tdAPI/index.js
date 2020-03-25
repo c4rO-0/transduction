@@ -2295,7 +2295,7 @@ class tdInput {
             } else if ($(el)[0].nodeName == 'IMG') {
                 let fileID = $(el).attr('data-file-ID')
                 // let dataUrl = $(el).attr('data-file-id')
-                sendStr.push(tdAPI.fileID.getValueByKey(fileID))
+                sendStr.push(tdAPI.fileList.getValueByKey(fileID))
                 // sendStr.push(dataUrl)
             } else {
                 sendStr = sendStr.concat(tdInput.simpleInput($(el).html()))
