@@ -10,6 +10,7 @@ const { tdMessage } = require('tdMessage')
 const { tdBasic, tdPage } = require('tdBasic')
 const { tdOS, tdFileSend } = require('tdSys')
 const { tdSimulator } = require('tdSimulator')
+const request = require('request')
 
 /**
  * 用来统一管理List
@@ -1842,7 +1843,7 @@ class tdUI {
                     tdUI.autoSizeImg(item.dataUrl, tdUI.inputImgWeightLimit, tdUI.inputImgHeightLimit).then((newSize) => {
 
                         item.localSave().then(() => {
-                            // console.log("debug : path : ", item.path, "-----------------------------------")
+                            // console.log("debug : path : ", newItem.path, "-----------------------------------")
                             tdAPI.fileList.addListFromEle(item.fileID, item)
     
                             $("div.td-dropFile > img").addClass("td-none")
@@ -1904,16 +1905,16 @@ class tdUI {
 
             let arrayString = new Array()
 
-            console.log("filterDataTransfer : data : ", data)
+            // console.log("filterDataTransfer : data : ", data)
 
             let objHTML = data.getData('text/html') // 拖拽的是一个含有链接的东西, html, 在线img, 文件
             let strURL = data.getData('URL')
-            console.log('--------objHTML-----------')
-            console.log(objHTML)
-            console.log('--------strURL-----------')
-            console.log(strURL)
+            // console.log('--------objHTML-----------')
+            // console.log(objHTML)
+            // console.log('--------strURL-----------')
+            // console.log(strURL)
             if (objHTML && $(objHTML).get(0) && $(objHTML).get(0).nodeName == 'IMG' && $(objHTML).attr('src')) {
-                console.log("发现图片")
+                // console.log("发现图片")
                 let pathR = $(objHTML).attr('src')
                 let pathFile = undefined
 
@@ -1928,7 +1929,13 @@ class tdUI {
                             if (img.isEmpty()) {
                                 reject('filterDataTransfer : img not access')
                             } else {
-                                let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathFile), pathFile, '', undefined, img.toDataURL())
+
+                                let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathFile), pathFile, '',                                
+                                undefined,  //id
+                                'image/', // type
+                                undefined, // size 
+                                img.toDataURL())
+
                                 resolve(imgSend)
                             }
                         }))
@@ -1944,7 +1951,11 @@ class tdUI {
                                     // console.log("------request-----")
                                     // console.log(strRequest)
                                     if (strRequest) {
-                                        let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathR), '', pathR, undefined, urldata)
+                                        let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathR), '', pathR, 
+                                        undefined,  //id
+                                        'image/', // type
+                                        undefined, // size
+                                        urldata)
                                         resolve(imgSend)
                                     } else {
                                         reject('filterDataTransfer : img not access')
@@ -1962,16 +1973,16 @@ class tdUI {
                 // console.log(img.getSize())
 
             } else if (strURL) {
-                console.log("发现网址")
+                // console.log("发现网址")
                 arrayItem.push(Promise.resolve(strURL))
             } else {
                 if (data.items) {
                     let items = data.items
 
-                    console.log("---found items---", items.length)
+                    // console.log("---found items---", items.length)
                     // Use DataTransferItemList interface to access the file(s)
                     for (var i = 0; i < items.length; i++) {
-                        console.log(i, "item", items[i].kind, items[i].type, items[i])
+                        // console.log(i, "item", items[i].kind, items[i].type, items[i])
                         // If dropped items aren't files, reject them
                         if ((items[i].kind == 'string') &&
                             (items[i].type.match('^text/plain'))) {
@@ -2029,7 +2040,7 @@ class tdUI {
                     }
 
                 } else {
-                    console.log("---found files---")
+                    // console.log("---found files---")
                     // Use DataTransfer interface to access the file(s)
                     for (var i = 0; i < data.files.length; i++) {
                         // console.log(data.files[i])
@@ -2083,8 +2094,7 @@ class tdUI {
                     }
                 })
 
-                console.log('-----uniqueItem-------')
-                console.log(uniqueItem)
+                console.log('------\ndrag list : \n', uniqueItem,'\n-----\n')
 
                 resolve(uniqueItem)
 
@@ -2097,7 +2107,7 @@ class tdUI {
 
 
     /**
-     * 将data数据转化为Html附加到页面上
+     * 将drag/paste data数据转化为Html附加到页面上
      * @param {dataTransfer} data 
      */
     static processDataTransfer(data) {
@@ -2123,7 +2133,7 @@ class tdUI {
 
 
     /**
-     * 将input转化成array
+     * 将html <input>转化成array
      * @param {FileList} data 
      * @returns {Promise} 
      *  arra[{'key':value},{}] 
@@ -2134,7 +2144,7 @@ class tdUI {
         return new Promise((resolve, reject) => {
             let arrayItem = new Array();
 
-            console.log("---found files---")
+            // console.log("---found files---")
             // Use DataTransfer interface to access the file(s)
             for (var i = 0; i < files.length; i++) {
                 // console.log(data.files[i])
@@ -2172,7 +2182,7 @@ class tdUI {
 
 
     /**
-     * 将input传入的data数据转化为Html附加到页面上
+     * 将html <input>传入的data数据转化为Html附加到页面上
      * @param {FileList} fileList 
      */
     static processFileList(fileList) {

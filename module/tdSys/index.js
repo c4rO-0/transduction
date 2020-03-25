@@ -22,11 +22,7 @@ class tdFileSend {
 
 
         return new tdFileSend(file.name, file.path, file.webkitRelativePath,'', file.type, file.size)
-        this.name = file.name
-        this.path = file.path
-        this.webkitRelativePath = file.webkitRelativePath
-        this.size = file.size
-        this.type = file.type    
+ 
     }
 
     updateFromFile(file) {
@@ -40,7 +36,7 @@ class tdFileSend {
     }
 
     isImg(){
-        return this.type.match('^image/')
+        return this.type.match('^image/') !== null
     }
 
     addFileID(fileID) {
@@ -83,6 +79,9 @@ class tdFileSend {
                 tempDir,
                 'transduction', 'fileSend')
 
+            let prePath = this.path
+            this.path = uploadedImagePath
+
             if(this.isImg()){
                 var base64Data = this.dataUrl;
 
@@ -96,17 +95,19 @@ class tdFileSend {
                             throw (errMK)
                         }
                         fs.writeFile(uploadedImagePath, imageBuffer.data,
-                            function () {
-                                console.log('DEBUG : Saved image to :', uploadedImagePath);
-                                this.path = uploadedImagePath
-                                resolve('')
+                            function (errWriteFile) {
+                                if (errWriteFile) throw errWriteFile;
+
+                                // console.log('DEBUG : Saved image to :', uploadedImagePath);
+
+                                resolve()
                             });
     
                     })
     
                 }
                 catch (error) {
-                    console.log('ERROR:', error);
+                    console.error('ERROR:', error);
                     reject('error : localSave')
                 }
             }else{
@@ -115,18 +116,18 @@ class tdFileSend {
                         if (errMK) {
                             throw (errMK)
                         }
-                        fs.copyFile(this.path, uploadedImagePath, (errCopy) => {
+                        fs.copyFile(prePath, uploadedImagePath, (errCopy) => {
                             if (errCopy) throw errCopy;
-                            console.log('DEBUG : Saved file to :', uploadedImagePath);
-                            this.path = uploadedImagePath
-                            resolve('')
+                            // console.log('DEBUG : Saved file to :', uploadedImagePath);
+                            
+                            resolve()
                           });
     
                     })
     
                 }
                 catch (error) {
-                    console.log('ERROR:', error);
+                    console.error('ERROR:', error);
                     reject('error : localSave')
                 }
             }
