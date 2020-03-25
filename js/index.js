@@ -329,7 +329,7 @@ $(document).ready(() => {
     $('#td-pin').draggable({
         grid: [10, 10],
         containment: "#td-pin-area",
-        drag: td.tdUI.followPin,
+        drag: td.tdUI.setPin,
         stop: function (event, ui) {
             td.tdUI.followPin()
             let target = document.getElementById('td-pin')

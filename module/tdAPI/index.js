@@ -220,7 +220,9 @@ class tdAPI {
         tdSettings.setSettings('swTray', true, false)
         tdUI.setSwTray(tdSettings.getSettings('swTray'))
 
-        tdUI.setPin()
+    
+        tdUI.setPin(tdSettings.getSettings('pinCoord'))
+        tdUI.followPin()
 
 
         //=================================
@@ -1669,16 +1671,33 @@ class tdUI {
         document.getElementById('swTray').checked = value == undefined ? false : value
     }
 
-    static setPin() {
+    static getPinCoordFromPage(){
         let target = document.getElementById('td-pin')
         let x = target.getBoundingClientRect().x
         let y = target.getBoundingClientRect().bottom
-        let pinCoord = [x, window.innerHeight - y]
+
+        return [x, window.innerHeight - y]
+    }
+
+    static setPin(pinCoord=undefined){
+        if(pinCoord == undefined){
+            return 
+        }
+        document.getElementById('td-pin').style.left = pinCoord[0] +'px'
+        document.getElementById('td-pin').style.bottom = pinCoord[1] +'px'
+
+    }
+
+    static followPin() {
+
+        let pinCoord = tdUI.getPinCoordFromPage()
+
         window.scrollTo(0, 0)
-        document.getElementById('td-left').style.width = x + 'px'
-        document.getElementById('td-input').style.height = window.innerHeight - y + 'px'
-        // store.set('tdSettings.pinCoord', pinCoord)
+        document.getElementById('td-left').style.width = pinCoord[0] + 'px'
+        document.getElementById('td-input').style.height = pinCoord[1] + 'px'
         tdSettings.setSettings('pinCoord', pinCoord, true)
+        // store.set('tdSettings.pinCoord', pinCoord)
+        
         // console.log('tdSettings.pinCoord changed to: ', pinCoord)
     }
 
