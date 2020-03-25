@@ -321,12 +321,12 @@ class tdAPI {
             noise.play()
         }
 
-        if (notTile) {
-            let convoNotification = new Notification('Tr| ' + notTile, {
-                body: notBody,
-                silent: true
-            })
-        }
+
+        let convoNotification = new Notification('Tr| ' + (notTile == undefined? "": notTile), {
+            body: notBody,
+            silent: true
+        })
+
         convoNotification.onclick = () => {
             notCallback()
         }
@@ -571,7 +571,7 @@ class tdAPI {
                     && !(document.hasFocus() || $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().isFocused())
                 ) {
                     if (Convo.counter > 0) { //未读消息 >0
-                        notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, () => {
+                        tdAPI.notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, () => {
                             tdMessage.sendToMain({ 'show': '' })
                             tdMessage.sendToMain({ 'focus': '' })
                             $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
@@ -583,7 +583,7 @@ class tdAPI {
                         if ($('div.td-chat-title[data-user-i-d="' + Convo.userID + '"]').length > 0) {
                             setTimeout(() => {
                                 if ($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child > div').hasClass('td-them')) {
-                                    notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, () => {
+                                    tdAPI.notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, () => {
                                         tdMessage.sendToMain({ 'show': '' })
                                         tdMessage.sendToMain({ 'focus': '' })
                                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
