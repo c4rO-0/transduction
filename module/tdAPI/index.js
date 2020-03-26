@@ -169,6 +169,8 @@ class tdAPI {
      */
 
     static isDebugOn
+    // 新消息是否静音
+    static mute
 
     // static fileSendList
     // static donwloadList
@@ -230,6 +232,11 @@ class tdAPI {
         // initialize bubble valuable
         tdBubble.iniTemplate()
 
+        //================================= 
+        // listener Main
+        tdMessage.WinReply((key, arg) => {
+            return tdAPI.respFuncWinReply(key, arg)
+        })
         //=================================
         // - initial extension list
         tdAPI.extList = new tdList(tdExt.rootPathInStore)
@@ -571,7 +578,7 @@ class tdAPI {
                     && !(document.hasFocus() || $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().isFocused())
                 ) {
                     if (Convo.counter > 0) { //未读消息 >0
-                        tdAPI.notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, () => {
+                        tdAPI.notifyLocal(true, !tdAPI.mute, webTag, Convo.nickName + '|' + Convo.message, () => {
                             tdMessage.sendToMain({ 'show': '' })
                             tdMessage.sendToMain({ 'focus': '' })
                             $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
@@ -583,7 +590,7 @@ class tdAPI {
                         if ($('div.td-chat-title[data-user-i-d="' + Convo.userID + '"]').length > 0) {
                             setTimeout(() => {
                                 if ($('div.td-chatLog[wintype="chatLog"] > .td-bubble:last-child > div').hasClass('td-them')) {
-                                    tdAPI.notifyLocal(true, true, webTag, Convo.nickName + '|' + Convo.message, () => {
+                                    tdAPI.notifyLocal(true, !tdAPI.mute, webTag, Convo.nickName + '|' + Convo.message, () => {
                                         tdMessage.sendToMain({ 'show': '' })
                                         tdMessage.sendToMain({ 'focus': '' })
                                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').click()
@@ -745,6 +752,68 @@ class tdAPI {
             }, 5000);
         })])
 
+    }
+
+    
+    // 处理消息
+    /**
+     * td.tdMessage.WinReply 处理消息的函数
+     * @param {String} key MSG的类别 : 
+     * MSG-Log : 收到右侧窗口聊天记录
+     * MSG-new : 左侧提示有新消息
+     * @param {Object} Obj 收到的具体消息
+     */
+    static respFuncWinReply(key, Obj) {
+        return Promise.race([new Promise((resolve, reject) => {
+            console.log("debug : ", "----------------------")
+            console.log("debug : ", "MSG from Win")
+            console.log(Obj)
+
+            if (key == 'mute') {
+                tdAPI.mute = Obj.mute
+                tdAPI.notifyLocal(false, !tdAPI.mute, '', 'set mute'+(Obj.mute))
+                resolve('')
+            }else if (key == 'downloadUpdated') {
+                // console.log("progress update : ", Obj)
+
+                $('div.td-bubble[msgid="' + Obj.msgID + '"] div.progress-bar').css('width', (Obj.progress * 100.).toString() + '%')
+
+                let timeStr = 'time left: '
+                if (Obj.leftTime < 0) {
+                    timeStr += '--'
+                } else if (Obj.leftTime < 60) {
+                    timeStr += Obj.leftTime.toFixed().toString() + 's'
+                } else if (Obj.leftTime < 3600) {
+                    let min = Math.floor(Obj.leftTime / 60.)
+                    timeStr += min.toString() + 'm'
+                        + (Obj.leftTime - min * 60.).toFixed().toString() + 's'
+                } else if (Obj.leftTime < 3600 * 24) {
+                    let hour = Math.floor(Obj.leftTime / 3600.)
+                    let min = Math.floor((Obj.leftTime - hour * 3600) / 60.)
+                    timeStr += hour.toString() + 'h'
+                        + min.toString() + 'm'
+                } else {
+                    let day = Math.floor(Obj.leftTime / (3600. * 24.))
+                    if (day < 10) {
+                        let hour = Math.floor((Obj.leftTime - day * 3600. * 24) / 3600.)
+                        timeStr += day.toString() + 'd'
+                            + hour.toString() + 'h'
+                    } else {
+                        timeStr += day.toString() + 'd'
+                    }
+                }
+                $('div.td-bubble[msgid="' + Obj.msgID + '"] div[time-left]').text(timeStr)
+
+                resolve("got the progress")
+            }
+
+        }),
+        new Promise((resolve, reject) => {
+            let erTime = setTimeout(() => {
+                clearTimeout(erTime)
+                reject("respFuncWinReply : " + key + " time out")
+            }, 5000);
+        })])
     }
 
 
