@@ -959,7 +959,7 @@ window.onload = function () {
                 mutation.addedNodes.forEach((node, index) => {
                     if ($(node).is(' div.ng-scope')
                         && ($('div[ng-repeat="message in chatContent"]').length < 2 || $('div[ng-repeat="message in chatContent"]').index(node) >= 1)) {
-                        console.log($('div[ng-repeat="message in chatContent"]').length, $('div[ng-repeat="message in chatContent"]').index(node))
+                        // console.log($('div[ng-repeat="message in chatContent"]').length, $('div[ng-repeat="message in chatContent"]').index(node))
                         addedNewBubble = addedNewBubble || true
                     }
                 })
@@ -999,7 +999,7 @@ window.onload = function () {
         })
 
         if (addedNewBubble) {
-            console.log("addedNewBubble", mutationList)
+            // console.log("addedNewBubble", mutationList)
             grepAndSendRight()
         }
 
