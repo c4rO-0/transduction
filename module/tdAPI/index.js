@@ -547,8 +547,8 @@ class tdAPI {
                     Obj.counter,
                     Obj.index,
                     Obj.muted)
-                console.log("debug : ", "new Convo")
-                Convo.print()
+                // console.log("debug : ", "new Convo")
+                // Convo.print()
 
                 // 判断右侧窗口是否为当前convo
 
