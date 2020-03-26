@@ -7,24 +7,38 @@ const os = require('os')
 const path = require('path')
 const mkdirp = require('mkdirp')
 
+
 class tdFileSend {
-    constructor(name, path, webkitRelativePath, fileID = '', dataUrl = undefined) {
+    constructor(name, path, webkitRelativePath, fileID = '', type=undefined, size=undefined, dataUrl = undefined) {
         this.name = name
         this.path = path
         this.webkitRelativePath = webkitRelativePath
-        // this.size = size
-        // this.type = type
+        this.size = size
+        this.type = type
         this.fileID = fileID
         this.dataUrl = dataUrl
     }
-    convertFile(file) {
+    static fromFile(file) {
+
+
+        return new tdFileSend(file.name, file.path, file.webkitRelativePath,'', file.type, file.size)
+ 
+    }
+
+    updateFromFile(file) {
+
         this.name = file.name
         this.path = file.path
         this.webkitRelativePath = file.webkitRelativePath
-        // this.size = file.size
-        // this.type = file.type    
+        this.size = file.size
+        this.type = file.type    
 
     }
+
+    isImg(){
+        return this.type.match('^image/') !== null
+    }
+
     addFileID(fileID) {
         this.fileID = fileID
     }
@@ -53,50 +67,69 @@ class tdFileSend {
                 return response;
             }
 
-            // Regular expression for image type:
-            // This regular image extracts the "jpeg" from "image/jpeg"
-            var imageExpression = /\/(.*?)$/;
-
-            var base64Data = this.dataUrl;
-
-            var imageBuffer = decodeBase64Image(base64Data);
             var tempDir = os.tmpdir();
-
-            // This variable is actually an array which has 5 values,
-            // The [1] value is the real image extension
-            var imageTypeDetected = imageBuffer
-                .type
-                .match(imageExpression);
 
             var uploadedImagePath = path.join(
                 tempDir,
-                'transduction', 'img', this.fileID,
+                'transduction', 'fileSend', this.fileID,
                 this.name);
 
-            this.path = uploadedImagePath
+            
             this.pathRoot = path.join(
                 tempDir,
-                'transduction', 'img')
-            this.dataUrl = ''
+                'transduction', 'fileSend')
 
-            // Save decoded binary image to disk
-            try {
-                mkdirp(path.dirname(uploadedImagePath), (errMK) => {
-                    if (errMK) {
-                        throw (errMK)
-                    }
-                    fs.writeFile(uploadedImagePath, imageBuffer.data,
-                        function () {
-                            console.log('DEBUG : Saved image to :', uploadedImagePath);
-                            resolve('')
-                        });
+            let prePath = this.path
+            this.path = uploadedImagePath
 
-                })
+            if(this.isImg()){
+                var base64Data = this.dataUrl;
 
-            }
-            catch (error) {
-                console.log('ERROR:', error);
-                reject('error : localSave')
+                var imageBuffer = decodeBase64Image(base64Data);
+                this.dataUrl = ''
+    
+                // Save decoded binary image to disk
+                try {
+                    mkdirp(path.dirname(uploadedImagePath), (errMK) => {
+                        if (errMK) {
+                            throw (errMK)
+                        }
+                        fs.writeFile(uploadedImagePath, imageBuffer.data,
+                            function (errWriteFile) {
+                                if (errWriteFile) throw errWriteFile;
+
+                                // console.log('DEBUG : Saved image to :', uploadedImagePath);
+
+                                resolve()
+                            });
+    
+                    })
+    
+                }
+                catch (error) {
+                    console.error('ERROR:', error);
+                    reject('error : localSave')
+                }
+            }else{
+                try {
+                    mkdirp(path.dirname(uploadedImagePath), (errMK) => {
+                        if (errMK) {
+                            throw (errMK)
+                        }
+                        fs.copyFile(prePath, uploadedImagePath, (errCopy) => {
+                            if (errCopy) throw errCopy;
+                            // console.log('DEBUG : Saved file to :', uploadedImagePath);
+                            
+                            resolve()
+                          });
+    
+                    })
+    
+                }
+                catch (error) {
+                    console.error('ERROR:', error);
+                    reject('error : localSave')
+                }
             }
 
             // }
@@ -111,8 +144,8 @@ class tdFileSend {
 /**
  * all things about operating system
  */
-class tdOS{
-    constructor(){
+class tdOS {
+    constructor() {
 
     }
     static strUserAgentWin = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
@@ -126,10 +159,10 @@ Chrome/73.0.3683.121 Safari/537.36"
      * @param {string} dir 绝对路径
      */
     static removeDir(dir) {
-        if(! path.isAbsolute(dir)){
+        if (!path.isAbsolute(dir)) {
             return
         }
-        
+
         let files = fs.readdirSync(dir)
         for (var i = 0; i < files.length; i++) {
             let childPath = path.join(dir, files[i]);
@@ -145,8 +178,16 @@ Chrome/73.0.3683.121 Safari/537.36"
         fs.rmdirSync(dir)
     }
 
+    static tdRootPath(){
 
+        try {
+            return require('electron').remote.app.getAppPath()
+        } catch (error) {
+            return require('electron').app.getAppPath()
+        }
+        
+    }
 
 }
 
-module.exports = {tdFileSend, tdOS}
+module.exports = { tdFileSend, tdOS }

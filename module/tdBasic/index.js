@@ -15,7 +15,46 @@ class tdBasic {
      * @returns {String} uniqueStr 
      */
     static uniqueStr() {
-        return (Date.now() + Math.random()).toString()
+        return ( Math.round((Date.now() + Math.random())*1000) ).toString()
+    }
+
+    static timeAny2Obj(timeAny){
+        let timeObj = undefined
+
+        if (typeof (timeAny) === 'number') {
+            timeObj = new Date(timeAny)
+        } else if (typeof (timeAny) == "string") {
+            timeObj = new Date(timeAny)
+        } else if (typeof (timeAny) == "object") {
+            timeObj = timeAny
+        } else {
+            timeObj = new Date()
+        }
+
+        return timeObj
+    }
+    static timeObj2Str(timeObj){
+        return timeObj.toTimeString().slice(0, 5)
+    }
+
+    static size2Str(size){
+        let sizeStr
+        if (size < 1024.) {
+            sizeStr = size.toFixed().toString() + ' B'
+        } else if (size < 1024. ** 2) {
+            sizeStr = (size / 1024.).toFixed(1).toString() + ' KB'
+        } else if (size < 1024. ** 3) {
+            sizeStr = (size / 1024. ** 2).toFixed(1).toString() + ' MB'
+        } else if (size < 1024. ** 4) {
+            sizeStr = (size / 1024. ** 3).toFixed(1).toString() + ' GB'
+        } else {
+            sizeStr = (size / 1024. ** 4).toFixed(1).toString() + ' TB'
+        }
+        return sizeStr
+    }
+
+    static getFileNameFromUrl(url) {
+        return url.split('/').pop().split('#')[0].split('?')[0];
     }
 
 }
@@ -130,6 +169,32 @@ el.innerHTML = '"+ script + "';\
 document.body.appendChild(el);}")
         })
 
+    }
+
+    
+    /**
+     * 光标移动到最后
+     * https://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity/3866442#3866442
+     * @param {*} contentEditableElement 
+     */
+    static setEndOfContenteditable(contentEditableElement) {
+        var range, selection;
+        if (document.createRange)//Firefox, Chrome, Opera, Safari, IE 9+
+        {
+            range = document.createRange();//Create a range (a range is a like the selection but invisible)
+            range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
+            range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+            selection = window.getSelection();//get the selection object (allows you to change selection)
+            selection.removeAllRanges();//remove any selections already made
+            selection.addRange(range);//make the range you have just created the visible selection
+        }
+        else if (document.selection)//IE 8 and lower
+        {
+            range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
+            range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
+            range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+            range.select();//Select the range (make it the visible selection
+        }
     }
 }
 

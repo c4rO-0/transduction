@@ -10,7 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const URL = require('url').URL
 
-const {tdMessage} = require("td")
+const { tdMessage, tdOS } = require("td")
 
 const debug = /--debug/.test(process.argv[2])
 
@@ -22,6 +22,7 @@ require('electron-reload')(__dirname)
 let win = undefined
 let tray = null
 let isQuitting = false
+
 
 function createWindow() {
 
@@ -52,14 +53,14 @@ function createWindow() {
   win.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
 
     let isAllowed = true
-    
+
     console.log("PermissionRequest ")
     console.log('from : ', webContents.getURL())
     console.log('permission : ', permission)
 
-    if(webContents.getURL().startsWith("file:///")){
+    if (webContents.getURL().startsWith("file:///")) {
 
-    }else{
+    } else {
       if (permission === 'notifications') {
         isAllowed = false
       }
@@ -77,16 +78,16 @@ function createWindow() {
     console.log('from : ', webContents.getURL())
     console.log('permission : ', permission)
 
-    if(webContents.getURL().startsWith("file:///")){
+    if (webContents.getURL().startsWith("file:///")) {
 
-    }else{
+    } else {
       if (permission === 'notifications') {
         isAllowed = false
       }
     }
 
     console.log('allowed : ', isAllowed)
-    if(typeof(tcallback)  === 'function'){
+    if (typeof (tcallback) === 'function') {
       callback(isAllowed)
     }
     console.log("-----------------------")
@@ -142,12 +143,28 @@ function createWindow() {
   const contextMenu = Menu.buildFromTemplate([
     { id: 'main', label: 'main window', click() { win.show() } },
     {
+      id: 'mute', label: 'mute', type: "checkbox",
+      click(event) {
+        // console.log(event.checked)
+        tdMessage.mainSendToWin(win, {
+        'mute':
+        {
+          'mute':event.checked
+        }
+        }).then(reply => {
+        console.log('mute reply : ', reply)
+        }).catch(er => {
+          console.log('mute reply error : ', er)
+        }) 
+      }
+    },
+    { type: 'separator' },
+    {
       id: 'quit', label: 'quit', click() {
         isQuiting = true;
         app.quit();
       }
-    },
-    { type: 'separator' }
+    }
   ])
   tray.setContextMenu(contextMenu)
 
@@ -227,14 +244,16 @@ function respFuncMainReply(key, Obj) {
         })
         .then(dl => {
           resolve({
-              ...Obj,
-              'savePath': dl.getSavePath()
-            })
-        }).catch(er => {
-          reject({"download":{
             ...Obj,
-            'error': er
-          }})
+            'savePath': dl.getSavePath()
+          })
+        }).catch(er => {
+          reject({
+            "download": {
+              ...Obj,
+              'error': er
+            }
+          })
         })
 
     } else if (key == 'flash') {
@@ -254,9 +273,9 @@ function respFuncMainReply(key, Obj) {
       win.focus()
     } else if (key == 'show') {
       win.show()
-    } else if (key == 'openDevTools'){
+    } else if (key == 'openDevTools') {
       win.webContents.openDevTools()
-    } else if (key == 'isDebug'){
+    } else if (key == 'isDebug') {
       resolve(debug)
     }
   })])
