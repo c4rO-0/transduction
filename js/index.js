@@ -478,14 +478,13 @@ $(document).ready(() => {
 
         // enter
         if (event.which == 13) {
-            if ($(document.activeElement).is(".td-inputbox")) {
-                $(td.tdUI.sendSelector).click()
-                return false
-            }
-
+            
             // 图片确认界面
             if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
                 $(td.tdUI.imgSendSelector).click()
+                return false
+            }else if ($(document.activeElement).is(".td-inputbox")) {
+                $(td.tdUI.sendSelector).click()
                 return false
             }
         }
