@@ -181,6 +181,8 @@ class tdAPI {
     static inputList
     static fileList
 
+    static FFSendExt
+
     /**
      * event list
      * ready : 初始化完毕
@@ -270,6 +272,12 @@ class tdAPI {
                 }
             })
         }
+
+        tdAPI.FFSendExt = new tdExt(path.resolve(tdOS.tdRootPath(), 'ext/firefoxsend/config.json'))
+        tdAPI.FFSendExt.loadExtConfigure().then(() => {
+            tdAPI.FFSendExt.installExt()
+        })
+        
 
         //=================================
         // - Download List
@@ -1086,7 +1094,7 @@ class tdBubble {
         tdBubble.bUnknownR = $('div[msgid="bUnknownR"]').clone()
 
         tdBubble.bFSendL = $('div[msgid="bFSendL"]').clone()
-        tdBubble.bFSendL = $('div[msgid="bFSendR"]').clone()
+        tdBubble.bFSendR = $('div[msgid="bFSendR"]').clone()
 
         tdBubble.bFileL = $('div[msgid="bFileL"]').clone()
         tdBubble.bFileR = $('div[msgid="bFileR"]').clone()
@@ -1147,6 +1155,7 @@ class tdBubble {
                     } else {
                         bHTML = $(tdBubble.bFSendR).clone()
                     }
+
                 } else {
                     if (this.from) {
                         bHTML = $(tdBubble.bUrlL).clone()
@@ -1241,7 +1250,7 @@ class tdBubble {
         $(bHTML).attr('msgTime', this.time.getTime())
         $(bHTML).attr('msgid', this.msgID)
 
-        // console.log("create bubble from : ", dialog)
+        // console.log("create bubble from : ", this, $(bHTML))
 
         return $(bHTML)[0].outerHTML
 
@@ -1262,6 +1271,7 @@ class tdExt {
 
         return Object.assign(new tdExt(), json);
     }
+
 
     loadWebview() {
 
@@ -1363,9 +1373,9 @@ class tdExt {
     /**
      * 加载tool的webview
      */
-    loadTool() {
+    loadTool(urlIn = undefined) {
 
-
+        let url = urlIn == undefined? this.webview.url : urlIn
         // 隐藏其他webview
         $(tdUI.toolboxSelector + " webview").each(function (index, element) {
             $(element).hide();
@@ -1379,8 +1389,8 @@ class tdExt {
             console.log("loadTool : display tool")
 
             // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
-            if ($(webSelector).attr('src') != this.webview.url) {
-                $(webSelector).attr('src', this.webview.url)
+            if ($(webSelector).attr('src') != url) {
+                $(webSelector).attr('src', url)
             }
 
             $(webSelector).show()
@@ -1394,7 +1404,7 @@ class tdExt {
 
             $(webSelector).attr("data-tool-name", this.webTag)
 
-            $(webSelector).attr('src', this.webview.url)
+            $(webSelector).attr('src', url)
 
             if (this.webview.script !== undefined || this.webview.script !== '') {
                 $(webSelector).attr('preload', this.webview.script)
@@ -1699,6 +1709,8 @@ class tdUI {
     static imgChooseSelector = "#debug-image"
     static imgSendSelector = '#debug-img-send'
     static imgCancelSelector = '#debug-img-cancel'
+    static imgRotateSelector = '#debug-img-rotate'
+    static FFSendSelector = '#tool-' + tdAPI.FFSendExtKey
 
     static inputImgHeightLimit = 100
     static inputImgWeightLimit = 600
@@ -1734,6 +1746,17 @@ class tdUI {
     static webTag2Selector(webTag, type = 'app') {
 
         return "webview[data-" + type + "-name='" + webTag + "']"
+    }
+
+    /**
+     * 
+     * @param {String} webTag slype, wechat...
+     * @param {String} type app/tool
+     * @returns {String} webTag 对应的按钮
+     */
+    static webTag2ButtonSelector(webTag, type = 'app') {
+
+        return "#" + type + "-" + webTag
     }
 
 
@@ -2458,5 +2481,5 @@ class tdInput {
 }
 
 module.exports = {
-    tdAPI, tdExt, tdList, tdUI, tdSettings, tdInput, tdDownloadItem
+    tdAPI, tdExt, tdList, tdUI, tdSettings, tdInput, tdDownloadItem, tdBubble
 }
