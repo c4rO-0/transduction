@@ -3,6 +3,12 @@ const Store = require('electron-store');
 const path = require('path');
 const { nativeImage, dialog, shell, session } = require('electron').remote
 
+function modalImage(event) {
+    document.getElementById('modal-image').querySelector('img').src = event.target.src
+    $('#modal-image img[download]').attr('href', event.target.src)
+    $('#modal-image img[download]').attr('msgid', $(event.target).closest('div.td-bubble').attr("msgid"))
+    $("#modal-image").modal()
+}
 
 $(document).ready(() => {
 
@@ -93,6 +99,42 @@ $(document).ready(() => {
         $(".modal-body > img", this).css({ "transform": "rotate(0deg)" })
     })
 
+    // ======================bubble img==========================
+    // show
+    $(document).on('hidden.bs.modal', '.modal', function (e) {
+        if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
+            $('>div.modal-dialog', this).removeClass('modal-xl')
+            // 关闭webview app重新静音
+            $(td.tdUI.webTag2Selector(this.id.substring(6))).get(0).setAudioMuted(true)
+        }
+        // $('#modal-wechat > div.modal-dialog').css('left', '')
+        $(this).css('left', '100000px')
+        $(this).show()
+
+        $(td.tdUI.webTag2Selector(this.id.substring(6))).width("800px")
+        $(td.tdUI.webTag2Selector(this.id.substring(6))).height("800px")
+    })
+    // hide
+    $('#modal-image').on('hidden.bs.modal', function (e) {
+        angle = 0
+        $(".modal-body > img", this).css({ "transform": "rotate(0deg)" })
+    })
+    // rotate
+    $(td.tdUI.imgRotateSelector).get(0).addEventListener('click', function (e) {
+        console.warn($(e.target).siblings('div').first().children().first())
+        angle += 90
+        let target = $(e.target).siblings('div').first().children().first()
+        aspectRatio = target.height() / target.width()
+        if (angle % 180 == 0) {
+            console.warn("")
+            target.css({ "transform": "rotate(" + angle + "deg)" })
+        } else {
+            target.css({ "transform": "rotate(" + angle + "deg) scale(" + aspectRatio + ", " + aspectRatio + ")" })
+        }
+    })
+
+    // ======================setting contextmenu==========================
+    // show
     $('#modal-settings').on('show.bs.modal', function (e) {
 
 
@@ -231,7 +273,7 @@ $(document).ready(() => {
 
     })
 
-    
+    // ================================================
     // 下载
     $(document).on('click', '[download]', function (event) {
         // console.log('download : ', this)
@@ -278,6 +320,7 @@ $(document).ready(() => {
 
     });
 
+    // ================================================
     // open directory
     $(document).on('click', '[open]', function (event) {
         console.log("show item : ", $(this).closest('div.td-bubble button[open]').attr('path'),
@@ -326,6 +369,7 @@ $(document).ready(() => {
         })
     })
 
+    // ======================drag pin==========================
     $('#td-pin').draggable({
         grid: [10, 10],
         containment: "#td-pin-area",
@@ -339,7 +383,7 @@ $(document).ready(() => {
         },
     })
     
-
+    // ======================setting: Tray==========================
     document.getElementById('swTray').addEventListener('click', function () {
         // store.set('tdSettings.swTray', this.checked)
         td.tdSettings.setSettings('swTray', this.checked, true)
@@ -430,9 +474,11 @@ $(document).ready(() => {
 
             $(".td-inputbox").focus()
 
-            td.tdMessage.sendToMain({ "focus": "" })
+            td.tdMessage.sendToMain({ "focus": "" }).then(()=>{
 
-            console.log("insert input done")
+                console.log("insert input done")
+            })
+
         })
     })
 
@@ -478,14 +524,13 @@ $(document).ready(() => {
 
         // enter
         if (event.which == 13) {
-            if ($(document.activeElement).is(".td-inputbox")) {
-                $(td.tdUI.sendSelector).click()
-                return false
-            }
-
+            
             // 图片确认界面
             if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
                 $(td.tdUI.imgSendSelector).click()
+                return false
+            }else if ($(document.activeElement).is(".td-inputbox")) {
+                $(td.tdUI.sendSelector).click()
                 return false
             }
         }
@@ -630,9 +675,10 @@ $(document).ready(() => {
                 // 在tool打开
                 // console.log("click : ", this.href)
 
-                $(debug_firefox_send_str).click()
+                $(td.tdUI.webTag2ButtonSelector(td.tdAPI.FFSendExt.webTag, td.tdAPI.FFSendExt.type)).click()
 
-                loadTool("#td-right div.td-chatLog[winType='tool']", "firefox-send", this.href, '')
+                td.tdAPI.FFSendExt.loadTool(this.href)
+
             } else {
                 shell.openExternal(this.href);
                 // let options = {
