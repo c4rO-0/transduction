@@ -617,6 +617,50 @@ $(document).ready(() => {
     })
 
 
+    
+    // 阻拦全部链接点击
+    $(document).on('click', 'a[href]', function (event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+        // console.log(this.href.substring(0,4))
+        if (this.href.substring(0, 4) == 'http') {
+
+            if (this.href.search('https://send.firefox.com/download') !== -1) {
+                // 在tool打开
+                // console.log("click : ", this.href)
+
+                $(debug_firefox_send_str).click()
+
+                loadTool("#td-right div.td-chatLog[winType='tool']", "firefox-send", this.href, '')
+            } else {
+                shell.openExternal(this.href);
+                // let options = {
+                //     type: 'info',
+                //     buttons: ['OK'],
+                //     defaultId: 2,
+                //     title: 'Question',
+                //     message: 'The link is opened in the default browser.',
+                //     // detail: 'It does not really matter',
+                //     // checkboxLabel: 'Remember my answer',
+                //     // checkboxChecked: true,
+                //   };
+                //   dialog.showMessageBox(null, options, (response, checkboxChecked) => {
+                //     console.log(response);
+                //     // console.log(checkboxChecked);
+                //   });
+                console.log(this)
+                let objBubble = $(this).closest("div.td-bubble")
+                if ($(objBubble).length > 0) {
+                    $(objBubble).find("div.td-chatText p").text("opened in default browser.")
+                }
+            }
+
+        }
+
+    });
+
+
 })
 
 
