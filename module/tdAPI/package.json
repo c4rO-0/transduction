@@ -11,6 +11,7 @@
   "dependencies": {
     "tdBasic": "file:../tdBasic",
     "tdMessage": "file:../tdMessage",
-    "tdSys": "file:../tdSys"
+    "tdSys": "file:../tdSys",
+    "tdSimulator": "file:../tdSimulator"
   }
 }
