@@ -7,7 +7,7 @@ const fs = require('fs')
 const path = require('path')
 const Store = require('electron-store');
 const { tdMessage } = require('tdMessage')
-const { tdBasic, tdPage, tdList, tdConvo, tdBubble } = require('tdBasic')
+const { tdBasic, tdPage, tdList, tdConvo, tdBubble, tdDownloadItem } = require('tdBasic')
 const { tdOS, tdFileSend } = require('tdSys')
 const { tdSimulator } = require('tdSimulator')
 const request = require('request')
@@ -1330,63 +1330,6 @@ class tdExt {
     }
 }
 
-class tdDownloadItem {
-
-    static rootPathInStore = 'donwloadList'
-
-    constructor(msgID, webTag, userID, type = undefined, url = undefined, savePath = undefined) {
-        this.url = url
-        this.unicode = tdBasic.uniqueStr()
-        this.webTag = webTag
-        this.userID = userID
-        this.msgID = msgID
-        this.type = type
-        this.savePath = savePath
-    }
-
-    static fromObj(obj) {
-        let val = new tdDownloadItem(
-            obj.msgID,
-            obj.webTag,
-            obj.userID,
-            obj.type,
-            obj.url,
-            obj.savePath
-        )
-        if (obj.unicode !== undefined) {
-            val.unicode = obj.unicode
-        }
-        return val
-    }
-
-    static fromJSON(json) {
-        // console.log("obj from json ", json)
-        return tdDownloadItem.fromObj(json)
-    }
-
-    toObj() {
-        return {
-            'url': this.url,
-            'unicode': this.unicode,
-            'webTag': this.webTag,
-            'userID': this.userID,
-            'msgID': this.msgID,
-            'type': this.type,
-            'savePath': this.savePath
-        }
-    }
-
-    isSame(webTag, userID, msgID) {
-        if (this.webTag == webTag &&
-            this.userID == userID &&
-            this.msgID == msgID
-        ) {
-            return true
-        } else {
-            return false
-        }
-    }
-}
 
 /**
  * 相应配套渲染UI的函数在这
@@ -2173,5 +2116,5 @@ class tdInput {
 }
 
 module.exports = {
-    tdAPI, tdExt, tdUI, tdSettings, tdInput, tdDownloadItem, tdBubbleUI, tdConvoUI
+    tdAPI, tdExt, tdUI, tdSettings, tdInput, tdBubbleUI, tdConvoUI
 }

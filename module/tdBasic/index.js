@@ -532,6 +532,65 @@ class tdBubble {
 
 }
 
+
+class tdDownloadItem {
+
+    static rootPathInStore = 'donwloadList'
+
+    constructor(msgID, webTag, userID, type = undefined, url = undefined, savePath = undefined) {
+        this.url = url
+        this.unicode = tdBasic.uniqueStr()
+        this.webTag = webTag
+        this.userID = userID
+        this.msgID = msgID
+        this.type = type
+        this.savePath = savePath
+    }
+
+    static fromObj(obj) {
+        let val = new tdDownloadItem(
+            obj.msgID,
+            obj.webTag,
+            obj.userID,
+            obj.type,
+            obj.url,
+            obj.savePath
+        )
+        if (obj.unicode !== undefined) {
+            val.unicode = obj.unicode
+        }
+        return val
+    }
+
+    static fromJSON(json) {
+        // console.log("obj from json ", json)
+        return tdDownloadItem.fromObj(json)
+    }
+
+    toObj() {
+        return {
+            'url': this.url,
+            'unicode': this.unicode,
+            'webTag': this.webTag,
+            'userID': this.userID,
+            'msgID': this.msgID,
+            'type': this.type,
+            'savePath': this.savePath
+        }
+    }
+
+    isSame(webTag, userID, msgID) {
+        if (this.webTag == webTag &&
+            this.userID == userID &&
+            this.msgID == msgID
+        ) {
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
 // ====================================================
 // local functions and variables
 // ====================================================
@@ -627,4 +686,4 @@ function waitForKeyElements(
 }
 
 
-module.exports = { tdBasic, tdPage, tdMath, tdList, tdConvo, tdBubble }
+module.exports = { tdBasic, tdPage, tdMath, tdList, tdConvo, tdBubble, tdDownloadItem }
