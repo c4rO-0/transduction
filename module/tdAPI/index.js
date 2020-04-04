@@ -7,7 +7,7 @@ const fs = require('fs')
 const path = require('path')
 const Store = require('electron-store');
 const { tdMessage } = require('tdMessage')
-const { tdBasic, tdPage, tdList } = require('tdBasic')
+const { tdBasic, tdPage, tdList, tdConvo } = require('tdBasic')
 const { tdOS, tdFileSend } = require('tdSys')
 const { tdSimulator } = require('tdSimulator')
 const request = require('request')
@@ -477,7 +477,7 @@ class tdAPI {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
                             .hasClass('theme-transduction-active')
 
-                    Convo.addToPage(true)
+                    tdConvoUI.addToPage(Convo,true)
 
                     if (active) {
                         $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]')
@@ -492,7 +492,7 @@ class tdAPI {
                     }
                 } else if (Convo.action === 'c') {
                     console.log('going to change html snippet')
-                    Convo.addToPage()
+                    tdConvoUI.addToPage(Convo)
                 } else if (Convo.action === 'r') {
                     console.log('going to remove convo')
                     let active =
@@ -686,139 +686,24 @@ class tdAPI {
 
 }
 
+class tdConvoUI {
 
-// class tdConvo {
-//     //---------------------
-//     action // 最近一次动作
-//     userID // convoID, 也是userID
-//     nickName // 显示的昵称
-//     time // 最新一条消息时间
-//     avatar // 头像地址
-//     message // 最新一条消息
-//     counter // 未读消息数
-//     index // 在所属app中的Index
-//     muted // 是否静音
-//     isActInTd // 在transduction里是否为显示状态
-//     appTag // 所属appTag
-//     isBundle // 该convo是否捆绑了其他convo, 如果是appTag应该为'td'
-//     bundleList // 捆绑的其他app convo列表, bundleList = undefined , if isBundle == false
-
-//     // ----function-----
-//     // print()
-//     // update({key:value})
-//     // clone(old)
-//     // active()
-//     //---------------------
-
-
-//     print() {
-//         console.log("=====output Convo======")
-//         console.log("Name :", this.nickName)
-//         console.log("ID : ", this.userID)
-//         console.log("avatar : ", this.avatar)
-//         console.log("index :", this.index)
-//         console.log("message :", this.message)
-//         console.log("time :", this.time)
-//         console.log("counter :", this.counter)
-//         console.log("action :", this.action)
-//         console.log("muted :", this.muted)
-//     }
-
-// }
-class tdConvo {
-    constructor(webTag, action, userID, nickName, time, avatar, message, counter, index, muted) {
-        this.webTag = webTag
-        this.action = action
-        this.userID = userID
-        this.nickName = nickName
-
-        // time为str
-        if (time === undefined) {
-            this.time = time
-        } else if (typeof (time) === 'number') {
-            this.time = (new Date(time)).toTimeString().slice(0, 5)
-        } else if (typeof (time) == "string") {
-            this.time = time
-        } else {
-            console.log("error : tdConvo :  wrong type of time : ", typeof (time), time)
-            this.time = new Date()
-        }
-
-        this.avatar = avatar
-        this.message = message
-
-        if (counter === undefined) {
-            this.counter = counter
-        } else if (typeof (counter) == "number") {
-            this.counter = counter
-        } else if (typeof (counter) == "string") {
-            this.counter = parseInt(counter)
-        } else {
-            console.log("error : tdConvo :  unknown counter type : ", typeof (counter), counter)
-            this.counter = undefined
-        }
-
-        if (index === undefined) {
-            this.index = index
-        } else if (typeof (index) == "number") {
-            this.index = index
-        } else if (typeof (index) == "string") {
-            this.index = parseInt(index)
-        } else {
-            console.log("error : tdConvo :  unknown index type : ", typeof (index), index)
-            this.index = undefined
-        }
-
-        if (muted === undefined) {
-            this.muted = muted
-        } else if (typeof (muted) == "boolean") {
-            this.muted = muted
-        } else if (typeof (muted) == "string") {
-            if (muted.toLowerCase == "false") {
-                this.muted = false
-            } else if (muted.toLowerCase == "true") {
-                this.muted = true
-            } else {
-                console.log("error : tdConvo :  unknown muted value : ", muted)
-                this.muted = undefined
-            }
-
-        } else {
-            console.log("error : tdConvo :  unknown muted type : ", typeof (muted), muted)
-            this.muted = undefined
-        }
-
-    }
-
-    print() {
-        console.log("debug : ", "Name :", this.nickName)
-        console.log("debug : ", "ID : ", this.userID)
-        console.log("debug : ", "avatar : ", this.avatar)
-        console.log("debug : ", "index :", this.index)
-        console.log("debug : ", "message :", this.message)
-        console.log("debug : ", "time :", this.time)
-        console.log("debug : ", "counter :", this.counter)
-        console.log("debug : ", "action :", this.action)
-        console.log("debug : ", "muted :", this.muted)
-    }
-
-
-    toHTML() {
+    static toHTML(valTdConvo) {
         let displayCounter = "display: none;"
         let visibility = "td-invisible"
-        if (this.counter) {
+        if (valTdConvo.counter) {
             displayCounter = ""
         }
-        if (this.muted) {
+        if (valTdConvo.muted) {
             visibility = ""
         }
 
-        let avatar = this.avatar == undefined ? '../res/pic/weird.png' : this.avatar
+        let avatar = valTdConvo.avatar == undefined ? '../res/pic/weird.png' : valTdConvo.avatar
         // console.log(appName , extList )
-        let ext = tdAPI.extList.getValueByKey(this.webTag)
+        let ext = tdAPI.extList.getValueByKey(valTdConvo.webTag)
 
         return '\
-        <div class="td-convo theme-transduction td-font" data-user-i-d='+ this.userID + ' data-app-name=' + this.webTag + ' muted=' + this.muted + '>\
+        <div class="td-convo theme-transduction td-font" data-user-i-d='+ valTdConvo.userID + ' data-app-name=' + valTdConvo.webTag + ' muted=' + valTdConvo.muted + '>\
             <div class="col-appLogo">\
                 <img src="'+ path.join(ext.dir, ext.icon.any) + '">\
             </div>\
@@ -828,52 +713,52 @@ class tdConvo {
             <div class="col-avatar d-flex justify-content-center">\
                 <div class="td-avatar align-self-center" style="background-image: url('+ avatar + ')"></div>\
                 <div class="td-counter" style="'+ displayCounter + '">\
-                    <div style="align-self:center;">'+ this.counter + '</div>\
+                    <div style="align-self:center;">'+ valTdConvo.counter + '</div>\
                 </div>\
             </div >\
         <div class="col col-text flex-column justify-content-center">\
-                <div class="m-0 td-nickname">'+ this.nickName + '</div>\
-                <div class="m-0 td-text">'+ tdPage.htmlEntities(this.message) + '</div>\
+                <div class="m-0 td-nickname">'+ valTdConvo.nickName + '</div>\
+                <div class="m-0 td-text">'+ tdPage.htmlEntities(valTdConvo.message) + '</div>\
             </div>\
             <div class="col-auto pl-0 col-timestamp justify-content-around">\
-                '+ this.time + '\
+                '+ valTdConvo.time + '\
                 <img class="' + visibility + ' align-self-center" src="../res/pic/mute.svg" height="18px">\
             </div>\
         </div > '
     }
 
 
-    addToPage(isPretend = false) {
-        let objConvo = $('#td-convo-container [data-app-name=' + this.webTag + '][data-user-i-d="' + this.userID + '"]')
+    static addToPage(valTdConvo, isPretend = false) {
+        let objConvo = $('#td-convo-container [data-app-name=' + valTdConvo.webTag + '][data-user-i-d="' + valTdConvo.userID + '"]')
         if (objConvo.length == 0 && isPretend) {
-            $('#td-convo-container').prepend(this.toHTML())
+            $('#td-convo-container').prepend( tdConvoUI.toHTML(valTdConvo) )
         } else { // 检测存在
-            for (let key in this) {
-                if (this[key] != undefined) {
+            for (let key in valTdConvo) {
+                if (valTdConvo[key] != undefined) {
                     switch (key) {
                         case "avatar":
-                            $(objConvo).find("div.td-avatar").attr("style", 'background-image: url(' + this.avatar + ')')
+                            $(objConvo).find("div.td-avatar").attr("style", 'background-image: url(' + valTdConvo.avatar + ')')
                             break;
                         case "counter":
-                            $(objConvo).find("div.td-counter div").text(this.counter)
-                            if (this.counter) {
+                            $(objConvo).find("div.td-counter div").text(valTdConvo.counter)
+                            if (valTdConvo.counter) {
                                 $(objConvo).find("div.td-counter").css("display", "")
                             } else {
                                 $(objConvo).find("div.td-counter").css("display", "none")
                             }
                             break;
                         case "nickName":
-                            $(objConvo).find("div.td-nickname").text(this.nickName)
+                            $(objConvo).find("div.td-nickname").text(valTdConvo.nickName)
                             break;
                         case "message":
-                            $(objConvo).find("div.td-text").text(this.message)
+                            $(objConvo).find("div.td-text").text(valTdConvo.message)
                             break;
                         case "time":
-                            $(objConvo).find("div.col-timestamp").contents().filter(function () { return this.nodeType == 3; }).first().replaceWith(this.time);
+                            $(objConvo).find("div.col-timestamp").contents().filter(function () { return valTdConvo.nodeType == 3; }).first().replaceWith(valTdConvo.time);
                             break;
                         case "muted":
-                            $(objConvo).attr('muted', this.muted)
-                            if (this.muted) {
+                            $(objConvo).attr('muted', valTdConvo.muted)
+                            if (valTdConvo.muted) {
                                 $(objConvo).find('img.align-self-center').removeClass('td-invisible')
                             } else {
                                 $(objConvo).find('img.align-self-center').addClass('td-invisible')
@@ -886,7 +771,6 @@ class tdConvo {
             }
         }
     }
-
 }
 
 class tdBubble {
@@ -2340,5 +2224,5 @@ class tdInput {
 }
 
 module.exports = {
-    tdAPI, tdExt, tdUI, tdSettings, tdInput, tdDownloadItem, tdBubble
+    tdAPI, tdExt, tdUI, tdSettings, tdInput, tdDownloadItem, tdBubble, tdConvoUI
 }

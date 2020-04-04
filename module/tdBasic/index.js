@@ -360,6 +360,126 @@ class tdList {
 }
 
 
+// class tdConvo {
+//     //---------------------
+//     action // 最近一次动作
+//     userID // convoID, 也是userID
+//     nickName // 显示的昵称
+//     time // 最新一条消息时间
+//     avatar // 头像地址
+//     message // 最新一条消息
+//     counter // 未读消息数
+//     index // 在所属app中的Index
+//     muted // 是否静音
+//     isActInTd // 在transduction里是否为显示状态
+//     appTag // 所属appTag
+//     isBundle // 该convo是否捆绑了其他convo, 如果是appTag应该为'td'
+//     bundleList // 捆绑的其他app convo列表, bundleList = undefined , if isBundle == false
+
+//     // ----function-----
+//     // print()
+//     // update({key:value})
+//     // clone(old)
+//     // active()
+//     //---------------------
+
+
+//     print() {
+//         console.log("=====output Convo======")
+//         console.log("Name :", this.nickName)
+//         console.log("ID : ", this.userID)
+//         console.log("avatar : ", this.avatar)
+//         console.log("index :", this.index)
+//         console.log("message :", this.message)
+//         console.log("time :", this.time)
+//         console.log("counter :", this.counter)
+//         console.log("action :", this.action)
+//         console.log("muted :", this.muted)
+//     }
+
+// }
+class tdConvo {
+    constructor(webTag, action, userID, nickName, time, avatar, message, counter, index, muted) {
+        this.webTag = webTag
+        this.action = action
+        this.userID = userID
+        this.nickName = nickName
+
+        // time为str
+        if (time === undefined) {
+            this.time = time
+        } else if (typeof (time) === 'number') {
+            this.time = (new Date(time)).toTimeString().slice(0, 5)
+        } else if (typeof (time) == "string") {
+            this.time = time
+        } else {
+            console.log("error : tdConvo :  wrong type of time : ", typeof (time), time)
+            this.time = new Date()
+        }
+
+        this.avatar = avatar
+        this.message = message
+
+        if (counter === undefined) {
+            this.counter = counter
+        } else if (typeof (counter) == "number") {
+            this.counter = counter
+        } else if (typeof (counter) == "string") {
+            this.counter = parseInt(counter)
+        } else {
+            console.log("error : tdConvo :  unknown counter type : ", typeof (counter), counter)
+            this.counter = undefined
+        }
+
+        if (index === undefined) {
+            this.index = index
+        } else if (typeof (index) == "number") {
+            this.index = index
+        } else if (typeof (index) == "string") {
+            this.index = parseInt(index)
+        } else {
+            console.log("error : tdConvo :  unknown index type : ", typeof (index), index)
+            this.index = undefined
+        }
+
+        if (muted === undefined) {
+            this.muted = muted
+        } else if (typeof (muted) == "boolean") {
+            this.muted = muted
+        } else if (typeof (muted) == "string") {
+            if (muted.toLowerCase == "false") {
+                this.muted = false
+            } else if (muted.toLowerCase == "true") {
+                this.muted = true
+            } else {
+                console.log("error : tdConvo :  unknown muted value : ", muted)
+                this.muted = undefined
+            }
+
+        } else {
+            console.log("error : tdConvo :  unknown muted type : ", typeof (muted), muted)
+            this.muted = undefined
+        }
+
+    }
+
+    print() {
+        console.log("debug : ", "Name :", this.nickName)
+        console.log("debug : ", "ID : ", this.userID)
+        console.log("debug : ", "avatar : ", this.avatar)
+        console.log("debug : ", "index :", this.index)
+        console.log("debug : ", "message :", this.message)
+        console.log("debug : ", "time :", this.time)
+        console.log("debug : ", "counter :", this.counter)
+        console.log("debug : ", "action :", this.action)
+        console.log("debug : ", "muted :", this.muted)
+    }
+
+
+
+}
+
+
 // ====================================================
 // local functions and variables
 // ====================================================
@@ -455,4 +575,4 @@ function waitForKeyElements(
 }
 
 
-module.exports = { tdBasic, tdPage, tdMath, tdList }
+module.exports = { tdBasic, tdPage, tdMath, tdList, tdConvo }
