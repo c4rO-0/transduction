@@ -7,152 +7,11 @@ const fs = require('fs')
 const path = require('path')
 const Store = require('electron-store');
 const { tdMessage } = require('tdMessage')
-const { tdBasic, tdPage } = require('tdBasic')
+const { tdBasic, tdPage, tdList } = require('tdBasic')
 const { tdOS, tdFileSend } = require('tdSys')
 const { tdSimulator } = require('tdSimulator')
 const request = require('request')
 
-/**
- * 用来统一管理List
- * 比如 extList, downloadList等
- * list本质是object
- */
-class tdList {
-
-    constructor(pathInStore = undefined, storeIn = undefined) {
-        this.list = {}
-        this.pathInStore = pathInStore
-        if (storeIn) {
-            this.store = storeIn
-        } else {
-            this.store = new Store()
-        }
-
-        // console.log(this.pathInStore, this.store)
-    }
-    addListFromSub(subList) {
-        this.list = { ...this.list, ...subList }
-    }
-    addListFromEle(key, element) {
-        this.list[key] = element
-    }
-    deleteEleByKey(key) {
-        delete this.list[key]
-    }
-    deleteEleByIndex(index) {
-        delete this.list[Object.keys(this.list)[index]];
-    }
-    hasEle(key) {
-        return this.list.hasOwnProperty(key)
-    }
-    getLen() {
-        return (Object.keys(this.list)).length
-    }
-    getList() {
-        return this.list
-    }
-    getValueByKey(key) {
-        return this.list[key]
-    }
-    getSubByKeys(...keys) {
-        let subList = new tdList()
-        keys.forEach(key => {
-            subList.addListFromEle(key, this.list[key])
-        })
-        return subList
-    }
-    getValueByIndex(index) {
-        return this.list[Object.keys(this.list)[index]]
-    }
-    updateEleValue(key, value) {
-        this.list[key] = value
-    }
-    print(commit = undefined) {
-        if (commit) {
-            console.log(commit)
-        }
-        console.log(this.list)
-    }
-    toJSONList(funToJSON = (obj) => {
-        return JSON.stringify(obj)
-    }) {
-        let pList
-        for (let key in this.list) {
-            pList[key] = funToJSON(this.list[key])
-        }
-        return pList
-    }
-    fromJSONList(pList, funFromJSON = (obj) => {
-        return obj
-    }) {
-        for (let key in pList) {
-            this.list[key] = funFromJSON(pList[key])
-        }
-    }
-    getPathInStore() {
-        return this.pathInStore
-    }
-    hasPathInSore() {
-        return !(this.pathInStore === undefined
-            || this.pathInStore === '')
-    }
-    setPathInStore(pathInStore) {
-        this.pathInStore = pathInStore
-        if (!this.hasPathInSore()) {
-            throw ('illegal path : ', pathInStore);
-        }
-    }
-    getListInSore(funFromObj = (obj) => {
-        return obj
-    }) {
-        if (this.store.has(this.pathInStore)) {
-            this.fromJSONList(this.store.get(this.pathInStore), funFromObj)
-        } else {
-            console.error('no ', this.pathInStore, ' in store.')
-        }
-
-    }
-    saveListInStore(override = true, funToJSON = (obj) => {
-        return JSON.stringify(obj)
-    }) {
-        if (override) {
-            this.store.set(this.pathInStore, this.toJSONList(funToJSON))
-        } else {
-            if (!this.store.has(this.pathInStore)) {
-                this.store.set(this.pathInStore, this.toJSONList(funToJSON))
-            }
-        }
-    }
-    saveEleInStore(key, override = true, funToJSON = (obj) => {
-        return JSON.parse(JSON.stringify(obj))
-    }) {
-        if (!(key in this.list)) {
-            return
-        }
-
-        if (override) {
-            this.store.set(this.pathInStore + '.' + key, funToJSON(this.list[key]))
-        } else {
-            if (!this.store.has(this.pathInStore + '.' + key)) {
-                this.store.set(this.pathInStore + '.' + key, funToJSON(this.list[key]))
-            }
-        }
-    }
-    resetListInStore() {
-        if (this.hasPathInSore()) {
-            this.store.reset(this.pathInStore)
-        }
-
-    }
-    deleteListInStore() {
-        if (this.hasPathInSore()) {
-            this.store.delete(this.pathInStore)
-        }
-    }
-    hasListInStore() {
-        return (this.hasPathInSore() && this.store.has(this.pathInStore))
-    }
-}
 
 class tdAPI {
 
@@ -2481,5 +2340,5 @@ class tdInput {
 }
 
 module.exports = {
-    tdAPI, tdExt, tdList, tdUI, tdSettings, tdInput, tdDownloadItem, tdBubble
+    tdAPI, tdExt, tdUI, tdSettings, tdInput, tdDownloadItem, tdBubble
 }
