@@ -7,7 +7,7 @@ const fs = require('fs')
 const path = require('path')
 const Store = require('electron-store');
 const { tdMessage } = require('tdMessage')
-const { tdBasic, tdPage, tdList, tdConvo } = require('tdBasic')
+const { tdBasic, tdPage, tdList, tdConvo, tdBubble } = require('tdBasic')
 const { tdOS, tdFileSend } = require('tdSys')
 const { tdSimulator } = require('tdSimulator')
 const request = require('request')
@@ -91,7 +91,7 @@ class tdAPI {
 
         //=================================
         // initialize bubble valuable
-        tdBubble.iniTemplate()
+        tdBubbleUI.iniTemplate()
 
         //================================= 
         // listener Main
@@ -262,7 +262,7 @@ class tdAPI {
                 if ($(dialogSelector + " div.td-bubble").length == 0) {
                     // 窗口已被清空, 直接附加
                     Obj.reverse().forEach((value, index) => {
-                        $(dialogSelector).prepend(tdBubble.genFromDialog(value).createBubble())
+                        $(dialogSelector).prepend(tdBubbleUI.toHTML(tdBubble.genFromDialog(value)))
                     })
 
                     // 滑动到最下面
@@ -338,11 +338,11 @@ class tdAPI {
                                 if (currentInsertIndex == arrayExistBubble.length - 1
                                     && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
 
-                                    $(dialogSelector).append(tdBubble.genFromDialog(value).createBubble())
+                                    $(dialogSelector).append(tdBubbleUI.toHTML(tdBubble.genFromDialog(value)))
 
                                     arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                                 } else {
-                                    $(tdBubble.genFromDialog(value).createBubble())
+                                    $(tdBubbleUI.toHTML(tdBubble.genFromDialog(value)))
                                         .insertBefore(
                                             dialogSelector
                                             + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
@@ -355,7 +355,7 @@ class tdAPI {
                                 // 重复的ID, 替换成新的
                                 $(dialogSelector
                                     + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
-                                    .replaceWith(tdBubble.genFromDialog(value).createBubble()
+                                    .replaceWith(tdBubbleUI.toHTML(tdBubble.genFromDialog(value))
                                     )
                                 // arrayExistBubble[-currentInsertIndex - 1].msgTime
                             }
@@ -773,7 +773,7 @@ class tdConvoUI {
     }
 }
 
-class tdBubble {
+class tdBubbleUI {
 
     static bTextL
     static bTextR
@@ -788,148 +788,97 @@ class tdBubble {
     static bImgL
     static bImgR
 
-    constructor(msgID,
-        time = undefined,
-        status = undefined,
-        type = undefined,
-        from = undefined,
-        avatar = undefined,
-        message = undefined,
-        fileName = undefined,
-        fileSize = undefined) {
-
-        this.msgID = msgID
-
-        // time
-        if (time) {
-            this.time = time
-        } else {
-            this.time = new Date()
-        }
-
-        this.status = status
-
-        // type  'text' 'img' 'url' 'file' 'unknown' undefined
-        this.type = type
-
-        this.from = from
-
-        this.avatar = avatar
-
-        this.fileName = fileName
-
-        this.fileSize = fileSize
-
-        this.message = message
-
-    }
-
 
     static iniTemplate() {
 
-        tdBubble.bTextL = $('div[msgid="bTextL"]').clone()
-        tdBubble.bTextR = $('div[msgid="bTextR"]').clone()
+        tdBubbleUI.bTextL = $('div[msgid="bTextL"]').clone()
+        tdBubbleUI.bTextR = $('div[msgid="bTextR"]').clone()
 
-        tdBubble.bUrlL = $('div[msgid="bUrlL"]').clone()
-        tdBubble.bUrlR = $('div[msgid="bUrlR"]').clone()
+        tdBubbleUI.bUrlL = $('div[msgid="bUrlL"]').clone()
+        tdBubbleUI.bUrlR = $('div[msgid="bUrlR"]').clone()
 
-        tdBubble.bUnknownL = $('div[msgid="bUnknownL"]').clone()
-        tdBubble.bUnknownR = $('div[msgid="bUnknownR"]').clone()
+        tdBubbleUI.bUnknownL = $('div[msgid="bUnknownL"]').clone()
+        tdBubbleUI.bUnknownR = $('div[msgid="bUnknownR"]').clone()
 
-        tdBubble.bFSendL = $('div[msgid="bFSendL"]').clone()
-        tdBubble.bFSendR = $('div[msgid="bFSendR"]').clone()
+        tdBubbleUI.bFSendL = $('div[msgid="bFSendL"]').clone()
+        tdBubbleUI.bFSendR = $('div[msgid="bFSendR"]').clone()
 
-        tdBubble.bFileL = $('div[msgid="bFileL"]').clone()
-        tdBubble.bFileR = $('div[msgid="bFileR"]').clone()
+        tdBubbleUI.bFileL = $('div[msgid="bFileL"]').clone()
+        tdBubbleUI.bFileR = $('div[msgid="bFileR"]').clone()
 
-        tdBubble.bImgL = $('div[msgid="bImgL"]').clone()
-        tdBubble.bImgR = $('div[msgid="bImgR"]').clone()
+        tdBubbleUI.bImgL = $('div[msgid="bImgL"]').clone()
+        tdBubbleUI.bImgR = $('div[msgid="bImgR"]').clone()
     }
 
 
-    static genFromDialog(dialog) {
-
-        return new tdBubble(
-            dialog['msgID'],
-            tdBasic.timeAny2Obj(dialog["time"]),
-            dialog["status"],
-            dialog['type'],
-            dialog["from"],
-            dialog["avatar"],
-            dialog['message'],
-            dialog['fileName'],
-            dialog['fileSize'])
-
-    }
-
-    createBubble() {
+    static toHTML(bubble) {
 
         let cUser = $('div.td-chat-title').attr('data-user-i-d')
         let cwebTag = $('div.td-chat-title').attr('data-app-name')
 
-        let time = tdBasic.timeObj2Str(this.time)
+        let time = tdBasic.timeObj2Str(bubble.time)
 
         let bHTML
 
-        switch (this.type) {
+        switch (bubble.type) {
             case 'text':
-                if (this.from) {
-                    bHTML = $(tdBubble.bTextL).clone()
+                if (bubble.from) {
+                    bHTML = $(tdBubbleUI.bTextL).clone()
                 } else {
-                    bHTML = $(tdBubble.bTextR).clone()
+                    bHTML = $(tdBubbleUI.bTextR).clone()
                 }
 
-                $(bHTML).find('div.td-chatText').text(this.message)
+                $(bHTML).find('div.td-chatText').text(bubble.message)
                 break;
             case 'img':
-                if (this.from) {
-                    bHTML = $(tdBubble.bImgL).clone()
+                if (bubble.from) {
+                    bHTML = $(tdBubbleUI.bImgL).clone()
                 } else {
-                    bHTML = $(tdBubble.bImgR).clone()
+                    bHTML = $(tdBubbleUI.bImgR).clone()
                 }
 
-                $(bHTML).find('div.td-chatImg img').attr('src', this.message)
+                $(bHTML).find('div.td-chatImg img').attr('src', bubble.message)
                 break;
             case 'url':
 
-                if (this.message.search('https://send.firefox.com/download') !== -1) {
-                    if (this.from) {
-                        bHTML = $(tdBubble.bFSendL).clone()
+                if (bubble.message.search('https://send.firefox.com/download') !== -1) {
+                    if (bubble.from) {
+                        bHTML = $(tdBubbleUI.bFSendL).clone()
                     } else {
-                        bHTML = $(tdBubble.bFSendR).clone()
+                        bHTML = $(tdBubbleUI.bFSendR).clone()
                     }
 
                 } else {
-                    if (this.from) {
-                        bHTML = $(tdBubble.bUrlL).clone()
+                    if (bubble.from) {
+                        bHTML = $(tdBubbleUI.bUrlL).clone()
                     } else {
-                        bHTML = $(tdBubble.bUrlR).clone()
+                        bHTML = $(tdBubbleUI.bUrlR).clone()
                     }
                 }
 
-                $(bHTML).find('div.td-chatText a').attr('href', this.message)
-                $(bHTML).find('div.td-chatText a').text(this.message)
+                $(bHTML).find('div.td-chatText a').attr('href', bubble.message)
+                $(bHTML).find('div.td-chatText a').text(bubble.message)
 
                 break;
             case 'file':
-                if (this.from) {
-                    bHTML = $(tdBubble.bFileL).clone()
+                if (bubble.from) {
+                    bHTML = $(tdBubbleUI.bFileL).clone()
                 } else {
-                    bHTML = $(tdBubble.bFileR).clone()
+                    bHTML = $(tdBubbleUI.bFileR).clone()
                 }
 
-                $(bHTML).find('div.td-chatText > div > div > p').text("File Name: " + this.fileName)
+                $(bHTML).find('div.td-chatText > div > div > p').text("File Name: " + bubble.fileName)
 
-                let sizeStr = tdBasic.size2Str(this.fileSize)
+                let sizeStr = tdBasic.size2Str(bubble.fileSize)
 
                 $(bHTML).find('div.td-chatText > div > div > div > p').text("Size: " + sizeStr)
-                $(bHTML).find('div.td-chatText button[download]').attr('href', this.message)
+                $(bHTML).find('div.td-chatText button[download]').attr('href', bubble.message)
 
                 // 查看 是否已经下载
                 // console.log("download list", tdAPI.donwloadList.getList())
                 for (let key in tdAPI.donwloadList.getList()) {
                     // console.log("key", key)
-                    if (tdAPI.donwloadList.getValueByKey(key).isSame(cwebTag, cUser, this.msgID)) {
+                    if (tdAPI.donwloadList.getValueByKey(key).isSame(cwebTag, cUser, bubble.msgID)) {
 
                         $(bHTML).addClass('td-downloaded')
 
@@ -941,46 +890,46 @@ class tdBubble {
 
                 break;
             case 'unknown':
-                if (this.from) {
-                    bHTML = $(tdBubble.bUnknownL).clone()
+                if (bubble.from) {
+                    bHTML = $(tdBubbleUI.bUnknownL).clone()
                 } else {
-                    bHTML = $(tdBubble.bUnknownR).clone()
+                    bHTML = $(tdBubbleUI.bUnknownR).clone()
                 }
-                $(bHTML).find('div.td-chatText > p').text(this.message)
+                $(bHTML).find('div.td-chatText > p').text(bubble.message)
                 break;
             default:
-                if (this.from) {
-                    bHTML = $(tdBubble.bUnknownL).clone()
+                if (bubble.from) {
+                    bHTML = $(tdBubbleUI.bUnknownL).clone()
                 } else {
-                    bHTML = $(tdBubble.bUnknownR).clone()
+                    bHTML = $(tdBubbleUI.bUnknownR).clone()
                 }
-                $(bHTML).find('div.td-chatText > p').text(this.message)
+                $(bHTML).find('div.td-chatText > p').text(bubble.message)
                 break;
         }
 
 
-        if (this.from) {
+        if (bubble.from) {
             let userID = $("#td-right div.td-chat-title").attr("data-user-i-d")
             let appName = $("#td-right div.td-chat-title").attr("data-app-name")
-            let avatarUrl = this.avatar === undefined ?
+            let avatarUrl = bubble.avatar === undefined ?
                 $("#td-left \
             div.td-convo[data-user-i-d='" + userID + "'][data-app-name='" + appName + "'] \
             div.td-avatar").css('background-image').slice(5, -2)
-                : this.avatar
+                : bubble.avatar
 
             $(bHTML).find("div.td-chatAvatar img").attr('src', avatarUrl)
 
-            $(bHTML).find('> p.m-0').text(this.from)
+            $(bHTML).find('> p.m-0').text(bubble.from)
             $(bHTML).find('div.td-them p.m-0').text(time)
 
         } else {
             $(bHTML).find('p.m-0').text(time)
 
-            if (this.status == "done") {
+            if (bubble.status == "done") {
 
-            } else if (this.status == "sending") {
+            } else if (bubble.status == "sending") {
                 $(bHTML).find('.td-bubbleStatus').removeClass('td-none')
-            } else if (this.status == "failed") {
+            } else if (bubble.status == "failed") {
                 $(bHTML).find('.td-bubbleStatus').removeClass('td-none')
                 $(bHTML).find('.td-bubbleStatus').addClass('bubbleError')
             } else {
@@ -990,10 +939,10 @@ class tdBubble {
         }
 
 
-        $(bHTML).attr('msgTime', this.time.getTime())
-        $(bHTML).attr('msgid', this.msgID)
+        $(bHTML).attr('msgTime', bubble.time.getTime())
+        $(bHTML).attr('msgid', bubble.msgID)
 
-        // console.log("create bubble from : ", this, $(bHTML))
+        // console.log("create bubble from : ", bubble, $(bHTML))
 
         return $(bHTML)[0].outerHTML
 
@@ -2224,5 +2173,5 @@ class tdInput {
 }
 
 module.exports = {
-    tdAPI, tdExt, tdUI, tdSettings, tdInput, tdDownloadItem, tdBubble, tdConvoUI
+    tdAPI, tdExt, tdUI, tdSettings, tdInput, tdDownloadItem, tdBubbleUI, tdConvoUI
 }

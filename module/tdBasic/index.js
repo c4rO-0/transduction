@@ -474,11 +474,63 @@ class tdConvo {
         console.log("debug : ", "action :", this.action)
         console.log("debug : ", "muted :", this.muted)
     }
-
-
-
 }
 
+
+
+class tdBubble {
+
+    constructor(msgID,
+        time = undefined,
+        status = undefined,
+        type = undefined,
+        from = undefined,
+        avatar = undefined,
+        message = undefined,
+        fileName = undefined,
+        fileSize = undefined) {
+
+        this.msgID = msgID
+
+        // time
+        if (time) {
+            this.time = time
+        } else {
+            this.time = new Date()
+        }
+
+        this.status = status
+
+        // type  'text' 'img' 'url' 'file' 'unknown' undefined
+        this.type = type
+
+        this.from = from
+
+        this.avatar = avatar
+
+        this.fileName = fileName
+
+        this.fileSize = fileSize
+
+        this.message = message
+
+    }
+
+    static genFromDialog(dialog) {
+
+        return new tdBubble(
+            dialog['msgID'],
+            tdBasic.timeAny2Obj(dialog["time"]),
+            dialog["status"],
+            dialog['type'],
+            dialog["from"],
+            dialog["avatar"],
+            dialog['message'],
+            dialog['fileName'],
+            dialog['fileSize'])
+    }
+
+}
 
 // ====================================================
 // local functions and variables
@@ -575,4 +627,4 @@ function waitForKeyElements(
 }
 
 
-module.exports = { tdBasic, tdPage, tdMath, tdList, tdConvo }
+module.exports = { tdBasic, tdPage, tdMath, tdList, tdConvo, tdBubble }
