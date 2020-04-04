@@ -398,7 +398,7 @@ $(document).ready(() => {
 
         let draft = new td.tdInput(cWebTag, cUserID, td.tdUI.getInputHTML())
 
-        draft.send().then((res)=>{
+        td.tdAPI.send(draft).then((res)=>{
             // console.log("send done : ", res)
             td.tdUI.resetInput()
         }).catch(err=>{
@@ -418,7 +418,7 @@ $(document).ready(() => {
 
         let draft = new td.tdInput(cWebTag, cUserID, 
             $('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
-        draft.send().then((res)=>{
+            td.tdAPI.send(draft).then((res)=>{
             // console.log("send done : ", res)
             // td.tdUI.resetInput()
         }).catch(err=>{

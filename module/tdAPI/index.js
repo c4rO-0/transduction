@@ -6,12 +6,16 @@ const events = require('events')
 const fs = require('fs')
 const path = require('path')
 const Store = require('electron-store');
-const { tdMessage } = require('tdMessage')
-const { tdBasic, tdPage, tdList, tdConvo, tdBubble, tdDownloadItem } = require('tdBasic')
-const { tdOS, tdFileSend } = require('tdSys')
-const { tdSimulator } = require('tdSimulator')
 const request = require('request')
 
+const { tdMessage } = require('tdMessage')
+const { tdBasic, tdPage } = require('tdBasic')
+
+const { tdOS } = require('tdSys')
+const { tdSimulator } = require('tdSimulator')
+
+const { tdList, tdConvo, tdBubble, 
+    tdDownloadItem, tdFileSend, tdSettings, tdInput } = require('tdElement')
 
 class tdAPI {
 
@@ -204,6 +208,48 @@ class tdAPI {
         convoNotification.onclick = () => {
             notCallback()
         }
+    }
+
+    /**
+     * 获取发送内容, 并发送
+     * 如果给fromHtml, 那就从fromHtml中抓取消息发送
+     * @param {tdInput} input
+     * @param {String} fromHtml 
+     */    
+    static sendInput(input, fromHtml = undefined){
+        console.log("start send", input)
+
+        return new Promise((resolve, reject) => {
+            console.log(input.userID, input.userID !== undefined
+                , input.webTag, input.webTag !== undefined)
+            if (input.userID !== undefined
+                && input.webTag !== undefined) {
+
+                let arraySend = undefined
+                if (fromHtml == undefined) {
+                    arraySend = tdInput.getInputFromHtml(input.getDraftHTML())
+                } else {
+                    arraySend = tdInput.getInputFromHtml(fromHtml)
+                }
+
+                // console.log('-----send-----')
+                if (arraySend.length > 0) {
+
+                    arraySend.unshift(input.userID)
+                    // $(webTag2Selector(webTag)).focus()
+                    tdMessage.HostSendToWeb(tdUI.webTag2Selector(input.webTag), { 'sendDialog': arraySend }, 500000).then(() => {
+                        resolve("send success")
+                    }).catch((err) => {
+                        // console.log("send failed", err)
+                        reject(err)
+                    })
+                } else {
+                    resolve("no content")
+                }
+            } else {
+                resolve("no user&webTag")
+            }
+        })
     }
 
     //------------------------
@@ -1933,188 +1979,8 @@ class tdUI {
 
 }
 
-class tdSettings {
 
-    static rootPathInStore = 'tdSettings'
-    static store = new Store()
-
-    /**
-     * 获取全部设置
-     * @returns 返回全部设置的值
-     */
-    static getAllSettings() {
-
-        return tdSettings.store.get(tdSettings.rootPathInStore, undefined)
-    }
-
-    /**
-     * 获取指定项设置
-     * @param {string} property 指定的设置项
-     * @returns 返回指定设置的值
-     */
-    static getSettings(property) {
-
-        return tdSettings.store.get(tdSettings.rootPathInStore + '.' + property, undefined)
-
-    }
-
-    /**
-     * 重置设置
-     * @param {*} value 值
-     */
-    static resetSettings(value = undefined) {
-        tdSettings.store.set(tdSettings.rootPathInStore, value)
-    }
-
-    /**
-     * 设置指定设置项
-     * @param {string} property 指定的设置项
-     * @param {*} value 值
-     * @param {boolean} reset 如果存在是否覆盖, 默认不覆盖
-     */
-    static setSettings(property, value, reset = false) {
-
-        let path = tdSettings.rootPathInStore + '.' + property
-        if (!tdSettings.store.has(path) || reset) {
-            tdSettings.store.set(path, value)
-        }
-    }
-
-
-}
-
-
-/**
- * input草稿
- * 以字典的形式储存字符串
- * ["webtag+ID":"content"]
- */
-class tdInput {
-    constructor(webTag = undefined, userID = undefined, draftHTML = undefined) {
-
-        this.webTag = webTag
-        this.userID = userID
-
-        if (webTag && userID) {
-            this.key = tdInput.genKey(webTag, userID)
-        } else {
-            this.key = undefined
-        }
-        this.draftHTML = draftHTML
-    }
-    static genKey(webTag, userID) {
-        return webTag + '-' + userID
-    }
-
-    getKey() {
-        return this.key
-    }
-    getDraftHTML() {
-        return this.draftHTML
-    }
-
-
-    /**
-     * 去掉input html中的tag
-     * getInput函数调用该函数
-     * @param {String} HTML 
-     * @returns {Array} 数组只包含string和File, 并按照input中顺序排列
-     */
-    static simpleInput(HTML) {
-        let arrayHTML = jQuery.parseHTML(HTML);
-
-        let sendStr = new Array()
-
-        $.each(arrayHTML, function (i, el) {
-            // console.log(el)
-            if ($(el)[0].nodeName == '#text') {
-                sendStr.push($(el).text())
-            } else if ($(el)[0].nodeName == 'IMG') {
-                let fileID = $(el).attr('data-file-ID')
-                // let dataUrl = $(el).attr('data-file-id')
-                sendStr.push(tdAPI.fileList.getValueByKey(fileID))
-                // sendStr.push(dataUrl)
-            } else {
-                sendStr = sendStr.concat(tdInput.simpleInput($(el).html()))
-            }
-        })
-
-        return sendStr
-    }
-
-    /**
-     * 从给定的html中直接拿到sending
-     * @param {String} innerHTML 
-     * @returns {Array} 以数组形式储存, 只含有string和File. 
-     */
-    static getInputFromHtml(innerHTML) {
-        let arrayInput = tdInput.simpleInput(innerHTML)
-        let arraySimpleInput = new Array()
-
-
-        let fileIndex = -1
-        let strInput = ''
-        arrayInput.forEach((value, index) => {
-            // console.log(index, typeof (value), '----')
-            // console.log(value)
-            if (typeof (value) != 'string') {
-                strInput = arrayInput.slice(fileIndex + 1, index).join('\n')
-                if (strInput.length > 0) arraySimpleInput.push(strInput)
-
-                arraySimpleInput.push(value)
-                fileIndex = index
-            }
-        })
-
-        strInput = arrayInput.slice(fileIndex + 1).join('\n')
-        if (strInput.length > 0) arraySimpleInput.push(strInput)
-
-        return arraySimpleInput
-    }
-    /**
-     * 获取发送内容, 并发送
-     * 如果给fromHtml, 那就从fromHtml中抓取消息发送
-     * @param {String} fromHtml 
-     */
-    send(fromHtml = undefined) {
-        console.log("start send", this)
-
-        return new Promise((resolve, reject) => {
-            console.log(this.userID, this.userID !== undefined
-                , this.webTag, this.webTag !== undefined)
-            if (this.userID !== undefined
-                && this.webTag !== undefined) {
-
-                let arraySend = undefined
-                if (fromHtml == undefined) {
-                    arraySend = tdInput.getInputFromHtml(this.getDraftHTML())
-                } else {
-                    arraySend = tdInput.getInputFromHtml(fromHtml)
-                }
-
-                // console.log('-----send-----')
-                if (arraySend.length > 0) {
-
-                    arraySend.unshift(this.userID)
-                    // $(webTag2Selector(webTag)).focus()
-                    tdMessage.HostSendToWeb(tdUI.webTag2Selector(this.webTag), { 'sendDialog': arraySend }, 500000).then(() => {
-                        resolve("send success")
-                    }).catch((err) => {
-                        // console.log("send failed", err)
-                        reject(err)
-                    })
-                } else {
-                    resolve("no content")
-                }
-            } else {
-                resolve("no user&webTag")
-            }
-        })
-    }
-
-
-}
 
 module.exports = {
-    tdAPI, tdExt, tdUI, tdSettings, tdInput, tdBubbleUI, tdConvoUI
+    tdAPI, tdExt, tdUI, tdBubbleUI, tdConvoUI
 }

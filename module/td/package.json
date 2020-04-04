@@ -13,6 +13,7 @@
     "tdBasic": "file:../tdBasic",
     "tdMessage": "file:../tdMessage",
     "tdSimulator": "file:../tdSimulator",
-    "tdSys": "file:../tdSys"
+    "tdSys": "file:../tdSys",
+    "tdElement": "file:../tdElement"
   }
 }
