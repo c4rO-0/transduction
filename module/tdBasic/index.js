@@ -59,7 +59,7 @@ class tdBasic {
 
 }
 
-class tdPage {
+class tdBasicPage {
 
 
     static toolboxSelector = "#td-right div.td-chatLog[winType='tool']"
@@ -72,6 +72,19 @@ class tdPage {
     static imgCancelSelector = '#debug-img-cancel'
     static imgRotateSelector = '#debug-img-rotate'
     static FFSendSelector = '#tool-' + tdAPI.FFSendExtKey
+
+
+    /**
+     * 
+     * @param {String} webTag slype, wechat...
+     * @param {String} type app/tool
+     * @returns {String} webview的selector
+     */
+    static webTag2Selector(webTag, type = 'app') {
+
+        return "webview[data-" + type + "-name='" + webTag + "']"
+    }
+
 
     /**
      * HTML encode
@@ -320,4 +333,4 @@ function waitForKeyElements(
 }
 
 
-module.exports = { tdBasic, tdPage, tdMath }
+module.exports = { tdBasic, tdBasicPage, tdMath }

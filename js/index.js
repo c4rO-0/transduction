@@ -24,8 +24,8 @@ $(document).ready(() => {
         let webTag = this.id.substring(4)
 
         let webTagSelector = '#modal-' + webTag
-        $(td.tdUI.webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
-        $(td.tdUI.webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
+        $(td.tdBasicPage.webTag2Selector(this.id.substring(4))).width("-webkit-fill-available")
+        $(td.tdBasicPage.webTag2Selector(this.id.substring(4))).height("-webkit-fill-available")
 
         if (this.matches('.app-offline')) {
             $(webTagSelector).modal('show')
@@ -36,7 +36,7 @@ $(document).ready(() => {
         }
 
         // 打开webview app, 取消静音
-        $(td.tdUI.webTag2Selector(webTag)).get(0).setAudioMuted(false)
+        $(td.tdBasicPage.webTag2Selector(webTag)).get(0).setAudioMuted(false)
 
 
     })
@@ -47,18 +47,18 @@ $(document).ready(() => {
             // 返回聊天窗口
             $('.td-toolbox > img').removeClass('theme-transduction-active')
 
-            $(td.tdPage.chatLogSelector).show()
+            $(td.tdBasicPage.chatLogSelector).show()
             // webview隐藏, 防止再次点击刷新页面
-            $(td.tdPage.toolboxSelector + " webview").each(function (index) {
+            $(td.tdBasicPage.toolboxSelector + " webview").each(function (index) {
                 $(this).hide();
             });
-            $(td.tdPage.toolboxSelector).hide()
+            $(td.tdBasicPage.toolboxSelector).hide()
         } else {
             $('.td-toolbox > img').removeClass('theme-transduction-active')
             $(e.target).addClass('theme-transduction-active')
             let toolTagName = e.target.id.substring(5)
-            $(td.tdPage.chatLogSelector).hide()
-            $(td.tdPage.toolboxSelector).show()
+            $(td.tdBasicPage.chatLogSelector).hide()
+            $(td.tdBasicPage.toolboxSelector).show()
 
             td.tdAPI.extList.getValueByKey(toolTagName).loadTool()
 
@@ -85,14 +85,14 @@ $(document).ready(() => {
         if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
             $('>div.modal-dialog', this).removeClass('modal-xl')
             // 关闭webview app重新静音
-            $(td.tdUI.webTag2Selector(this.id.substring(6))).get(0).setAudioMuted(true)
+            $(td.tdBasicPage.webTag2Selector(this.id.substring(6))).get(0).setAudioMuted(true)
         }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(this).css('left', '100000px')
         $(this).show()
 
-        $(td.tdUI.webTag2Selector(this.id.substring(6))).width("800px")
-        $(td.tdUI.webTag2Selector(this.id.substring(6))).height("800px")
+        $(td.tdBasicPage.webTag2Selector(this.id.substring(6))).width("800px")
+        $(td.tdBasicPage.webTag2Selector(this.id.substring(6))).height("800px")
     })
     $('#modal-image').on('hidden.bs.modal', function (e) {
         angle = 0
@@ -105,14 +105,14 @@ $(document).ready(() => {
         if (!this.matches('#modal-image') && !this.matches('#modal-settings')) {
             $('>div.modal-dialog', this).removeClass('modal-xl')
             // 关闭webview app重新静音
-            $(td.tdUI.webTag2Selector(this.id.substring(6))).get(0).setAudioMuted(true)
+            $(td.tdBasicPage.webTag2Selector(this.id.substring(6))).get(0).setAudioMuted(true)
         }
         // $('#modal-wechat > div.modal-dialog').css('left', '')
         $(this).css('left', '100000px')
         $(this).show()
 
-        $(td.tdUI.webTag2Selector(this.id.substring(6))).width("800px")
-        $(td.tdUI.webTag2Selector(this.id.substring(6))).height("800px")
+        $(td.tdBasicPage.webTag2Selector(this.id.substring(6))).width("800px")
+        $(td.tdBasicPage.webTag2Selector(this.id.substring(6))).height("800px")
     })
     // hide
     $('#modal-image').on('hidden.bs.modal', function (e) {
@@ -120,7 +120,7 @@ $(document).ready(() => {
         $(".modal-body > img", this).css({ "transform": "rotate(0deg)" })
     })
     // rotate
-    $(td.tdPage.imgRotateSelector).get(0).addEventListener('click', function (e) {
+    $(td.tdBasicPage.imgRotateSelector).get(0).addEventListener('click', function (e) {
         console.warn($(e.target).siblings('div').first().children().first())
         angle += 90
         let target = $(e.target).siblings('div').first().children().first()
@@ -186,7 +186,7 @@ $(document).ready(() => {
 
         // 读取和临时储存草稿
         //去掉focus, focus在向后台发送查询后再添加
-        $(td.tdPage.inputboxSelector).blur()
+        $(td.tdBasicPage.inputboxSelector).blur()
         // 记录
         if (cWebTag != undefined && cUserID != undefined) {
 
@@ -210,9 +210,9 @@ $(document).ready(() => {
 
 
         // 加载dialog(当前可能显示的是tool)
-        $(td.tdPage.goBackSelector).click()
+        $(td.tdBasicPage.goBackSelector).click()
         // 滑动条拖到最后
-        $(td.tdPage.chatLogSelector).scrollTop($(td.tdPage.chatLogSelector)[0].scrollHeight)
+        $(td.tdBasicPage.chatLogSelector).scrollTop($(td.tdBasicPage.chatLogSelector)[0].scrollHeight)
 
         if (
             $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
@@ -221,15 +221,15 @@ $(document).ready(() => {
         ) {
             // 当前聊天内容不需要清空, 只需要补充
             td.tdMessage.HostSendToWeb(
-                td.tdUI.webTag2Selector(webTag),
+                td.tdBasicPage.webTag2Selector(webTag),
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
-                $(td.tdPage.inputboxSelector).focus()
-                td.tdPage.setEndOfContenteditable($(td.tdPage.inputboxSelector).get(0))
+                $(td.tdBasicPage.inputboxSelector).focus()
+                td.tdBasicPage.setEndOfContenteditable($(td.tdBasicPage.inputboxSelector).get(0))
             }).catch((error) => {
-                $(td.tdPage.inputboxSelector).focus()
-                td.tdPage.setEndOfContenteditable($(td.tdPage.inputboxSelector).get(0))
+                $(td.tdBasicPage.inputboxSelector).focus()
+                td.tdBasicPage.setEndOfContenteditable($(td.tdBasicPage.inputboxSelector).get(0))
                 throw error
             })
 
@@ -244,26 +244,26 @@ $(document).ready(() => {
                     ext.dir, ext.icon.any
                 )
             )
-            $(td.tdPage.chatLogSelector).empty()
+            $(td.tdBasicPage.chatLogSelector).empty()
 
             td.tdMessage.HostSendToWeb(
-                td.tdUI.webTag2Selector(webTag),
+                td.tdBasicPage.webTag2Selector(webTag),
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
 
-                $(td.tdPage.inputboxSelector).focus()
-                td.tdPage.setEndOfContenteditable($(td.tdPage.inputboxSelector).get(0))
+                $(td.tdBasicPage.inputboxSelector).focus()
+                td.tdBasicPage.setEndOfContenteditable($(td.tdBasicPage.inputboxSelector).get(0))
 
             }).catch((error) => {
-                $(td.tdPage.inputboxSelector).focus()
+                $(td.tdBasicPage.inputboxSelector).focus()
 
-                $(td.tdPage.inputboxSelector).get(0).setSelectionRange(
-                    $(td.tdPage.inputboxSelector).html().length,
-                    $(td.tdPage.inputboxSelector).html().length)
+                $(td.tdBasicPage.inputboxSelector).get(0).setSelectionRange(
+                    $(td.tdBasicPage.inputboxSelector).html().length,
+                    $(td.tdBasicPage.inputboxSelector).html().length)
 
-                td.tdPage.setEndOfContenteditable(
-                    $(td.tdPage.inputboxSelector).get(0)
+                td.tdBasicPage.setEndOfContenteditable(
+                    $(td.tdBasicPage.inputboxSelector).get(0)
                 )
 
                 throw error
@@ -391,7 +391,7 @@ $(document).ready(() => {
 
 
     // ===========================发送消息===========================
-    $(td.tdPage.sendSelector).on('click', event => {
+    $(td.tdBasicPage.sendSelector).on('click', event => {
         console.log("send click")
         let cWebTag = $("div.td-chat-title").attr("data-app-name")
         let cUserID = $("div.td-chat-title").attr("data-user-i-d")
@@ -409,7 +409,7 @@ $(document).ready(() => {
 
     
     // 发送图片
-    $(td.tdPage.imgSendSelector).on('click', function () {
+    $(td.tdBasicPage.imgSendSelector).on('click', function () {
         // console.log("send clicked------>")
 
         // sendInput($('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
@@ -435,7 +435,7 @@ $(document).ready(() => {
     })
 
     //取消发送图片
-    $(td.tdPage.imgCancelSelector).on('click', function () {
+    $(td.tdBasicPage.imgCancelSelector).on('click', function () {
         $("div.td-dropFile > img").removeClass("td-none")
         $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
         $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
@@ -499,7 +499,7 @@ $(document).ready(() => {
 
     //--------------------------------------
     // 通过按钮添加文件
-    $(td.tdPage.imgChooseSelector).on('click', event => {
+    $(td.tdBasicPage.imgChooseSelector).on('click', event => {
         $('.td-toolbox > input[type="file"]').get(0).click()
     })
 
@@ -527,22 +527,22 @@ $(document).ready(() => {
             
             // 图片确认界面
             if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
-                $(td.tdPage.imgSendSelector).click()
+                $(td.tdBasicPage.imgSendSelector).click()
                 return false
             }else if ($(document.activeElement).is(".td-inputbox")) {
-                $(td.tdPage.sendSelector).click()
+                $(td.tdBasicPage.sendSelector).click()
                 return false
             }
         }
 
         // ctr+enter : newline
         if (event.ctrlKey && event.which == 10) {
-            if ($(document.activeElement).is(td.tdPage.inputboxSelector)) {
-                arrayIn = jQuery.parseHTML($(td.tdPage.inputboxSelector).get(0).innerHTML)
+            if ($(document.activeElement).is(td.tdBasicPage.inputboxSelector)) {
+                arrayIn = jQuery.parseHTML($(td.tdBasicPage.inputboxSelector).get(0).innerHTML)
                 if (arrayIn.length == 0 || ($(arrayIn)[arrayIn.length - 1].nodeName != 'BR')) {
-                    $(td.tdPage.inputboxSelector).append('<br>')
+                    $(td.tdBasicPage.inputboxSelector).append('<br>')
                 }
-                td.tdUI.pasteHtmlAtCaret("<br>", td.tdPage.inputboxSelector)
+                td.tdUI.pasteHtmlAtCaret("<br>", td.tdBasicPage.inputboxSelector)
             }
         }
 
@@ -551,7 +551,7 @@ $(document).ready(() => {
     $(document).keydown(function (event) {
 
         // console.log("keydown",event.which )
-        if ($(document.activeElement).is(td.tdPage.inputboxSelector)) {
+        if ($(document.activeElement).is(td.tdBasicPage.inputboxSelector)) {
 
             // tab 只能激活keydown, 不能激活keypress
             if (!event.ctrlKey && event.which == 9) {
@@ -559,7 +559,7 @@ $(document).ready(() => {
                 // $('div.td-inputbox').append('&nbsp;')
                 event.preventDefault();
                 event.stopPropagation();
-                td.tdUI.pasteHtmlAtCaret("\t", td.tdPage.inputboxSelector)
+                td.tdUI.pasteHtmlAtCaret("\t", td.tdBasicPage.inputboxSelector)
             }
 
         }
@@ -631,7 +631,7 @@ $(document).ready(() => {
             // console.log('esc down')
             // 图片确认界面
             if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
-                $(td.tdPage.imgCancelSelector).click()
+                $(td.tdBasicPage.imgCancelSelector).click()
             }
 
         }

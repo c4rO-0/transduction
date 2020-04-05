@@ -59,7 +59,7 @@ all basic classes and functions are here
 
 ---
 
-## class: tdPage
+## class: tdBasicPage
 
 对html页面的相关操作
 

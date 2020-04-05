@@ -9,7 +9,7 @@ const Store = require('electron-store');
 const request = require('request')
 
 const { tdMessage } = require('tdMessage')
-const { tdBasic, tdPage } = require('tdBasic')
+const { tdBasic, tdBasicPage } = require('tdBasic')
 
 const { tdOS } = require('tdSys')
 const { tdSimulator } = require('tdSimulator')
@@ -218,21 +218,21 @@ class tdExt {
         let strUserAgent = this.getUserAgent()
 
 
-        if ($(tdUI.webTag2Selector(webTag)).length > 0) {
+        if ($(tdBasicPage.webTag2Selector(webTag)).length > 0) {
             console.log("load")
             if (strUserAgent) {
-                $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
+                $(tdBasicPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
                     {
                         "userAgent":
                             "userAgent : " + strUserAgent,
                         "extraHeaders": "User-Agent:" + strUserAgent + "\n"
                     })
             } else {
-                $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
+                $(tdBasicPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
             }
 
             // 静音
-            $(tdUI.webTag2Selector(webTag)).get(0).setAudioMuted(true)
+            $(tdBasicPage.webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
         }
     }
@@ -314,11 +314,11 @@ class tdExt {
 
         let url = urlIn == undefined? this.webview.url : urlIn
         // 隐藏其他webview
-        $(tdPage.toolboxSelector + " webview").each(function (index, element) {
+        $(tdBasicPage.toolboxSelector + " webview").each(function (index, element) {
             $(element).hide();
         });
 
-        let webSelector = tdUI.webTag2Selector(this.webTag, this.type)
+        let webSelector = tdBasicPage.webTag2Selector(this.webTag, this.type)
 
 
         // 已经加载过webview
@@ -335,7 +335,7 @@ class tdExt {
 
             if ($(webSelector).length == 0) {
 
-                $(tdPage.toolboxSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + this.webTag + "' src='' style='display:none;'></webview>")
+                $(tdBasicPage.toolboxSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + this.webTag + "' src='' style='display:none;'></webview>")
 
             }
 
@@ -395,8 +395,8 @@ class tdExt {
                 $(element).css('left', '100000px')
                 $(element).show()
 
-                $(tdUI.webTag2Selector(element.id.substring(6))).width("800px")
-                $(tdUI.webTag2Selector(element.id.substring(6))).height("800px")
+                $(tdBasicPage.webTag2Selector(element.id.substring(6))).width("800px")
+                $(tdBasicPage.webTag2Selector(element.id.substring(6))).height("800px")
 
 
                 this.loadWebview()
@@ -419,7 +419,7 @@ class tdExt {
                 // -o add message listener
                 console.log("add listener")
 
-                tdMessage.WinReplyWeb(tdUI.webTag2Selector(this.webTag), (key, arg) => {
+                tdMessage.WinReplyWeb(tdBasicPage.webTag2Selector(this.webTag), (key, arg) => {
                     return tdAPI.respFuncWinReplyWeb(this.webTag, key, arg)
                 })
             } else if (this.type === 'tool') {
@@ -611,17 +611,6 @@ class tdUI {
      * 
      * @param {String} webTag slype, wechat...
      * @param {String} type app/tool
-     * @returns {String} webview的selector
-     */
-    static webTag2Selector(webTag, type = 'app') {
-
-        return "webview[data-" + type + "-name='" + webTag + "']"
-    }
-
-    /**
-     * 
-     * @param {String} webTag slype, wechat...
-     * @param {String} type app/tool
      * @returns {String} webTag 对应的按钮
      */
     static webTag2ButtonSelector(webTag, type = 'app') {
@@ -666,17 +655,17 @@ class tdUI {
 
 
     static getInputHTML() {
-        return $(tdPage.inputboxSelector).html()
+        return $(tdBasicPage.inputboxSelector).html()
     }
 
     static resetInput(html = undefined) {
-        $(tdPage.inputboxSelector).empty()
+        $(tdBasicPage.inputboxSelector).empty()
         if (html) {
-            $(tdPage.inputboxSelector).append(html)
+            $(tdBasicPage.inputboxSelector).append(html)
         }
     }
     static appendInputHTML(html) {
-        $(tdPage.inputboxSelector).append(html)
+        $(tdBasicPage.inputboxSelector).append(html)
     }
 
     /**

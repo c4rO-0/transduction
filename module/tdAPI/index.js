@@ -9,7 +9,7 @@ const Store = require('electron-store');
 const request = require('request')
 
 const { tdMessage } = require('tdMessage')
-const { tdBasic, tdPage } = require('tdBasic')
+const { tdBasic, tdBasicPage } = require('tdBasic')
 
 const { tdOS } = require('tdSys')
 const { tdSimulator } = require('tdSimulator')
@@ -237,7 +237,7 @@ class tdAPI {
 
                     arraySend.unshift(input.userID)
                     // $(webTag2Selector(webTag)).focus()
-                    tdMessage.HostSendToWeb(tdUI.webTag2Selector(input.webTag), { 'sendDialog': arraySend }, 500000).then(() => {
+                    tdMessage.HostSendToWeb(tdBasicPage.webTag2Selector(input.webTag), { 'sendDialog': arraySend }, 500000).then(() => {
                         resolve("send success")
                     }).catch((err) => {
                         // console.log("send failed", err)
@@ -267,7 +267,7 @@ class tdAPI {
 
         return Promise.race([new Promise((resolve, reject) => {
 
-            if ($(tdUI.webTag2Selector(webTag)).length == 0) {
+            if ($(tdBasicPage.webTag2Selector(webTag)).length == 0) {
                 reject("respFuncWinReplyWeb : no " + webTag + "exist")
                 return
             }
@@ -422,7 +422,7 @@ class tdAPI {
                     // fixme : -----------------------
                     // 目前程序已经去除对webview focus, 理论上来说不需要blur
                     console.log('bluring outttttttttttttttttttt')
-                    $(tdUI.webTag2Selector(webTag)).blur()
+                    $(tdBasicPage.webTag2Selector(webTag)).blur()
                     //--------------------------------
 
                     $(dialogSelector + " div.td-bubble").each((index, element) => {
@@ -488,7 +488,7 @@ class tdAPI {
                 if (!Convo.muted // 非静音
                     && Convo.action != 'r' // 类型是a或者c
                     && Convo.message != undefined && Convo.message != ''
-                    && !(document.hasFocus() || $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().isFocused())
+                    && !(document.hasFocus() || $(tdBasicPage.webTag2Selector(webTag)).get(0).getWebContents().isFocused())
                 ) {
                     if (Convo.counter > 0) { //未读消息 >0
                         tdAPI.notifyLocal(true, !tdAPI.mute, webTag, Convo.nickName + '|' + Convo.message, () => {
@@ -555,7 +555,7 @@ class tdAPI {
             } else if (key == 'focus') {
                 console.log('focusing innnnnnnnnnnn')
                 // let activeE = document.activeElement
-                $(tdUI.webTag2Selector(webTag)).focus()
+                $(tdBasicPage.webTag2Selector(webTag)).focus()
                 setTimeout(() => {
                     // $(activeE).focus()
                     $(".td-inputbox").focus()
@@ -564,7 +564,7 @@ class tdAPI {
                 resolve("focus done")
             } else if (key == 'blur') {
                 console.log('bluring outttttttttttttttttttt')
-                $(tdUI.webTag2Selector(webTag)).blur()
+                $(tdBasicPage.webTag2Selector(webTag)).blur()
                 console.log(document.activeElement)
                 resolve("blur done")
             } else if (key == 'attachFile') {
@@ -574,7 +574,7 @@ class tdAPI {
                     "file" : obj file
                 */
                 tdSimulator.attachInputFile(
-                    tdUI.webTag2Selector(webTag),
+                    tdBasicPage.webTag2Selector(webTag),
                     Obj.selector,
                     (tdAPI.fileList.getValueByKey(Obj.file.fileID)).path)
 
@@ -582,13 +582,13 @@ class tdAPI {
             } else if (key == 'simulateKey') {
                 // 按键模拟
 
-                tdSimulator.keypressSimulator(tdUI.webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
+                tdSimulator.keypressSimulator(tdBasicPage.webTag2Selector(webTag), Obj.type, Obj.charCode, Obj.shift, Obj.alt, Obj.ctrl, Obj.cmd)
 
                 resolve("simulated")
             } else if (key == 'simulateMouse') {
                 // 按键模拟
                 console.log("simulateMouse", Obj)
-                tdSimulator.mouseSimulator(tdUI.webTag2Selector(webTag), Obj.type, Obj.x, Obj.y)
+                tdSimulator.mouseSimulator(tdBasicPage.webTag2Selector(webTag), Obj.type, Obj.x, Obj.y)
 
                 resolve("simulated")
             } else if (key == 'logStatus') {
@@ -757,21 +757,21 @@ class tdExt {
         let strUserAgent = this.getUserAgent()
 
 
-        if ($(tdUI.webTag2Selector(webTag)).length > 0) {
+        if ($(tdBasicPage.webTag2Selector(webTag)).length > 0) {
             console.log("load")
             if (strUserAgent) {
-                $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
+                $(tdBasicPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
                     {
                         "userAgent":
                             "userAgent : " + strUserAgent,
                         "extraHeaders": "User-Agent:" + strUserAgent + "\n"
                     })
             } else {
-                $(tdUI.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
+                $(tdBasicPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
             }
 
             // 静音
-            $(tdUI.webTag2Selector(webTag)).get(0).setAudioMuted(true)
+            $(tdBasicPage.webTag2Selector(webTag)).get(0).setAudioMuted(true)
 
         }
     }
@@ -853,11 +853,11 @@ class tdExt {
 
         let url = urlIn == undefined? this.webview.url : urlIn
         // 隐藏其他webview
-        $(tdPage.toolboxSelector + " webview").each(function (index, element) {
+        $(tdBasicPage.toolboxSelector + " webview").each(function (index, element) {
             $(element).hide();
         });
 
-        let webSelector = tdUI.webTag2Selector(this.webTag, this.type)
+        let webSelector = tdBasicPage.webTag2Selector(this.webTag, this.type)
 
 
         // 已经加载过webview
@@ -874,7 +874,7 @@ class tdExt {
 
             if ($(webSelector).length == 0) {
 
-                $(tdPage.toolboxSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + this.webTag + "' src='' style='display:none;'></webview>")
+                $(tdBasicPage.toolboxSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + this.webTag + "' src='' style='display:none;'></webview>")
 
             }
 
@@ -934,8 +934,8 @@ class tdExt {
                 $(element).css('left', '100000px')
                 $(element).show()
 
-                $(tdUI.webTag2Selector(element.id.substring(6))).width("800px")
-                $(tdUI.webTag2Selector(element.id.substring(6))).height("800px")
+                $(tdBasicPage.webTag2Selector(element.id.substring(6))).width("800px")
+                $(tdBasicPage.webTag2Selector(element.id.substring(6))).height("800px")
 
 
                 this.loadWebview()
@@ -958,7 +958,7 @@ class tdExt {
                 // -o add message listener
                 console.log("add listener")
 
-                tdMessage.WinReplyWeb(tdUI.webTag2Selector(this.webTag), (key, arg) => {
+                tdMessage.WinReplyWeb(tdBasicPage.webTag2Selector(this.webTag), (key, arg) => {
                     return tdAPI.respFuncWinReplyWeb(this.webTag, key, arg)
                 })
             } else if (this.type === 'tool') {
