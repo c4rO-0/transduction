@@ -15,6 +15,7 @@ $(document).ready(() => {
     console.log(td.tdOS.tdRootPath())
 
     td.tdAPI.initialize()
+    td.tdUI.initialize()
 
 
     /**

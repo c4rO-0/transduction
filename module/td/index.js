@@ -9,6 +9,7 @@ module.exports = {
     ...require('tdMessage'),
     ...require('tdSimulator'),
     ...require('tdElement'),
-    ...require('tdAPI')
+    ...require('tdAPI'),
+    ...require('tdUI')
     
 }

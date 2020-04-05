@@ -11,9 +11,10 @@
   "dependencies": {
     "tdAPI": "file:../tdAPI",
     "tdBasic": "file:../tdBasic",
+    "tdElement": "file:../tdElement",
     "tdMessage": "file:../tdMessage",
     "tdSimulator": "file:../tdSimulator",
     "tdSys": "file:../tdSys",
-    "tdElement": "file:../tdElement"
+    "tdUI": "file:../tdUI"
   }
 }

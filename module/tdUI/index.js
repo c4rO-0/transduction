@@ -14,8 +14,96 @@ const { tdBasic, tdBasicPage } = require('tdBasic')
 const { tdOS } = require('tdSys')
 const { tdSimulator } = require('tdSimulator')
 
-const { tdList, tdConvo, tdBubble, 
+const { tdList, tdConvo, tdBubble,
     tdDownloadItem, tdFileSend, tdSettings, tdInput } = require('tdElement')
+
+
+class tdConvoUI {
+
+    static toHTML(valTdConvo) {
+        let displayCounter = "display: none;"
+        let visibility = "td-invisible"
+        if (valTdConvo.counter) {
+            displayCounter = ""
+        }
+        if (valTdConvo.muted) {
+            visibility = ""
+        }
+
+        let avatar = valTdConvo.avatar == undefined ? '../res/pic/weird.png' : valTdConvo.avatar
+        // console.log(appName , extList )
+        let ext = tdAPI.extList.getValueByKey(valTdConvo.webTag)
+
+        return '\
+            <div class="td-convo theme-transduction td-font" data-user-i-d='+ valTdConvo.userID + ' data-app-name=' + valTdConvo.webTag + ' muted=' + valTdConvo.muted + '>\
+                <div class="col-appLogo">\
+                    <img src="'+ path.join(ext.dir, ext.icon.any) + '">\
+                </div>\
+                <div class="col-hint">\
+                    <div class="row-hint" style="background-color:'+ ext.icon.color + ';"></div>\
+                </div>\
+                <div class="col-avatar d-flex justify-content-center">\
+                    <div class="td-avatar align-self-center" style="background-image: url('+ avatar + ')"></div>\
+                    <div class="td-counter" style="'+ displayCounter + '">\
+                        <div style="align-self:center;">'+ valTdConvo.counter + '</div>\
+                    </div>\
+                </div >\
+            <div class="col col-text flex-column justify-content-center">\
+                    <div class="m-0 td-nickname">'+ valTdConvo.nickName + '</div>\
+                    <div class="m-0 td-text">'+ tdPage.htmlEntities(valTdConvo.message) + '</div>\
+                </div>\
+                <div class="col-auto pl-0 col-timestamp justify-content-around">\
+                    '+ valTdConvo.time + '\
+                    <img class="' + visibility + ' align-self-center" src="../res/pic/mute.svg" height="18px">\
+                </div>\
+            </div > '
+    }
+
+
+    static addToPage(valTdConvo, isPretend = false) {
+        let objConvo = $('#td-convo-container [data-app-name=' + valTdConvo.webTag + '][data-user-i-d="' + valTdConvo.userID + '"]')
+        if (objConvo.length == 0 && isPretend) {
+            $('#td-convo-container').prepend(tdConvoUI.toHTML(valTdConvo))
+        } else { // 检测存在
+            for (let key in valTdConvo) {
+                if (valTdConvo[key] != undefined) {
+                    switch (key) {
+                        case "avatar":
+                            $(objConvo).find("div.td-avatar").attr("style", 'background-image: url(' + valTdConvo.avatar + ')')
+                            break;
+                        case "counter":
+                            $(objConvo).find("div.td-counter div").text(valTdConvo.counter)
+                            if (valTdConvo.counter) {
+                                $(objConvo).find("div.td-counter").css("display", "")
+                            } else {
+                                $(objConvo).find("div.td-counter").css("display", "none")
+                            }
+                            break;
+                        case "nickName":
+                            $(objConvo).find("div.td-nickname").text(valTdConvo.nickName)
+                            break;
+                        case "message":
+                            $(objConvo).find("div.td-text").text(valTdConvo.message)
+                            break;
+                        case "time":
+                            $(objConvo).find("div.col-timestamp").contents().filter(function () { return valTdConvo.nodeType == 3; }).first().replaceWith(valTdConvo.time);
+                            break;
+                        case "muted":
+                            $(objConvo).attr('muted', valTdConvo.muted)
+                            if (valTdConvo.muted) {
+                                $(objConvo).find('img.align-self-center').removeClass('td-invisible')
+                            } else {
+                                $(objConvo).find('img.align-self-center').addClass('td-invisible')
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 class tdBubbleUI {
@@ -194,387 +282,6 @@ class tdBubbleUI {
     }
 }
 
-class tdExt {
-
-    constructor(configPath = undefined) {
-        this.configPath = configPath
-    }
-
-    static rootPathInStore = 'tdSettings.extList'
-
-    static store = new Store();
-
-    static fromJSON(json) {
-
-        return Object.assign(new tdExt(), json);
-    }
-
-
-    loadWebview() {
-
-
-        let webTag = this.webTag
-        let url = this.webview.url
-        let strUserAgent = this.getUserAgent()
-
-
-        if ($(tdBasicPage.webTag2Selector(webTag)).length > 0) {
-            console.log("load")
-            if (strUserAgent) {
-                $(tdBasicPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url,
-                    {
-                        "userAgent":
-                            "userAgent : " + strUserAgent,
-                        "extraHeaders": "User-Agent:" + strUserAgent + "\n"
-                    })
-            } else {
-                $(tdBasicPage.webTag2Selector(webTag)).get(0).getWebContents().loadURL(url)
-            }
-
-            // 静音
-            $(tdBasicPage.webTag2Selector(webTag)).get(0).setAudioMuted(true)
-
-        }
-    }
-
-
-    loadExtConfigure() {
-
-        console.log("load extension config ...")
-
-        return new Promise((resolve, reject) => {
-
-            fs.readFile(this.configPath, (err, rawConfig) => {
-
-                if (err) {
-                    // 文件不存在, 或者 
-                    if (err.code === 'ENOENT') {
-                        console.error('no configure found in ', this.configPath)
-                    } else if (err.code === 'EISDIR') {
-                        console.error('configure path \' ', this.configPath, '\' is a directory')
-                    } else {
-                        console.error('configure read failed', this.configPath)
-                    }
-
-                    reject(err)
-                    return
-                } else {
-                    let config = JSON.parse(rawConfig)
-                    config.dir = path.dirname(this.configPath)
-                    config.configPath = this.configPath
-                    config.webTag = config.name + "-" + config.unicode
-
-                    // 必须含有name
-                    // 不能含有. - 
-                    if (config.name === undefined
-                        || config.name === "") {
-                        reject("load extension error , no name found in ", this.configPath)
-                        return
-                    }
-
-                    // 必须含有type
-                    if (config.type !== 'app' && config.type !== 'tool') {
-                        reject("load extension error , unknown type in ", this.configPath)
-                        return
-                    }
-
-                    // 必须含有unicode
-                    if (config.unicode === undefined && config.unicode === "") {
-                        reject("load extension error , no unicode in ", this.configPath)
-                        return
-                    }
-
-                    try {
-                        // icon是必需的
-                        if (!fs.existsSync(path.join(config.dir, config.icon.any))) {
-                            reject("load extension error , no logo found in ", config.icon.any)
-                            return
-                        }
-                    } catch (err) {
-                        console.error(err)
-                        reject("load extension error , no logo found in ", config.icon.any)
-                        return
-                    }
-
-
-                    Object.assign(this, tdExt.fromJSON(config));
-                    resolve('done')
-
-                }
-
-            });
-
-        })
-    }
-
-    /**
-     * 加载tool的webview
-     */
-    loadTool(urlIn = undefined) {
-
-        let url = urlIn == undefined? this.webview.url : urlIn
-        // 隐藏其他webview
-        $(tdBasicPage.toolboxSelector + " webview").each(function (index, element) {
-            $(element).hide();
-        });
-
-        let webSelector = tdBasicPage.webTag2Selector(this.webTag, this.type)
-
-
-        // 已经加载过webview
-        if ($(webSelector).length > 0 && $(webSelector).css("display") == "none") {
-            console.log("loadTool : display tool")
-
-            // console.log("loadtool : ", strUrl, $(webSelector).attr('src'))
-            if ($(webSelector).attr('src') != url) {
-                $(webSelector).attr('src', url)
-            }
-
-            $(webSelector).show()
-        } else {
-
-            if ($(webSelector).length == 0) {
-
-                $(tdBasicPage.toolboxSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + this.webTag + "' src='' style='display:none;'></webview>")
-
-            }
-
-            $(webSelector).attr("data-tool-name", this.webTag)
-
-            $(webSelector).attr('src', url)
-
-            if (this.webview.script !== undefined || this.webview.script !== '') {
-                $(webSelector).attr('preload', this.webview.script)
-            }
-
-            $(webSelector).show()
-
-        }
-
-        return true
-    }
-
-    enableExtConfigure() {
-
-        console.log("act ", this.name, " config ...")
-
-        return new Promise((resolve, reject) => {
-
-            // -o 判断extension是否已安装
-            if (this.isExtLoaded()) {
-                console.log(this.name, " already enabled")
-                resolve('done')
-                return
-            }
-
-            if (this.type === 'app') {
-                // -o insert logo
-                $("div.td-app-status").append('\
-<img id="app-'+ this.webTag + '" class="app-offline" src="' + path.join(this.dir, this.icon.any) + '">')
-
-                // -o insert webview
-                $(".td-stealth").append('\
-<div id="modal-'+ this.webTag + '" class="modal fade" tabindex="-1" role="dialog">\
-<div class="modal-dialog modal-dialog-centered" role="document">\
-    <div class="modal-content">\
-        <div class="modal-body">\
-            <webview data-app-name="'+ this.webTag + '" preload="' + path.join(this.dir, this.webview.script) + '" style="width:800px; height:800px">\
-            </webview>\
-        </div>\
-        <img reload style="position: absolute; bottom: 0; right: 0; width: 42px; height: 42px;" src="../res/pic/reload.png">\
-        <!-- <button reload>reload</button> -->\
-    </div>\
-</div>\
-</div>')
-
-                // -o replace hide
-                let element = $('#modal-' + this.webTag).get(0)
-                if (!element.matches('#modal-image') && !element.matches('#modal-settings')) {
-                    $('>div.modal-dialog', element).removeClass('modal-xl')
-                }
-                $(element).css('left', '100000px')
-                $(element).show()
-
-                $(tdBasicPage.webTag2Selector(element.id.substring(6))).width("800px")
-                $(tdBasicPage.webTag2Selector(element.id.substring(6))).height("800px")
-
-
-                this.loadWebview()
-
-                // -o run action
-                try {
-                    if (!fs.existsSync(path.join(this.dir, this.action_script))) {
-                        console.log(this.name, " warning : no action file", this)
-                    } else {
-
-                        require(path.join(this.dir, this.action_script)).action()
-
-                    }
-
-                } catch (err) {
-                    console.error(this.name, " action error : ", err)
-
-                }
-
-                // -o add message listener
-                console.log("add listener")
-
-                tdMessage.WinReplyWeb(tdBasicPage.webTag2Selector(this.webTag), (key, arg) => {
-                    return tdAPI.respFuncWinReplyWeb(this.webTag, key, arg)
-                })
-            } else if (this.type === 'tool') {
-                // -o insert logo
-                $('div.td-chat div.td-toolbox').append(
-                    '<img id="tool-'
-                    + this.webTag + '" class="theme-transduction" src="'
-                    + path.join(this.dir, this.icon.any) + '">')
-
-            } else {
-                reject("unknown type")
-                return
-            }
-
-            this.status = true
-
-            resolve("done")
-        })
-    }
-
-
-    installExt() {
-
-        return new Promise((resolve, reject) => {
-
-            this.loadExtConfigure().then(() => {
-                this.enableExtConfigure()
-            }).then(() => {
-                // save
-                this.saveExtInStore()
-            }).then(() => {
-                tdAPI.extList.addListFromEle(this.webTag, this)
-
-                resolve()
-            }).catch(err => {
-                reject(err)
-            })
-
-        })
-    }
-
-    removeExt() {
-
-        return new Promise((resolve, reject) => {
-            this.disableExtConfigure().then(() => {
-                this.saveExtInStore()
-            }).then(() => {
-                tdAPI.extList.addListFromEle(this.webTag, this)
-                resolve()
-            }).catch(err => {
-                reject(err)
-            })
-
-        })
-    }
-
-
-    disableExtConfigure() {
-
-        return new Promise((resolve, reject) => {
-
-            this.status = false
-            if (this.type == 'app') {
-                // check modal is on
-                if ($('#modal-' + this.webTag).hasClass('show')) {
-                    $('#modal-' + this.webTag).modal('hide')
-                }
-
-                // waiting modal is hiden
-                setTimeout(() => {
-                    // remove logo
-                    $('#app-' + this.webTag).off('click')
-
-                    $('#app-' + this.webTag).remove()
-
-                    // remove webview
-                    $('#modal-' + this.webTag + ' webview').off('load-commit')
-
-                    $('#modal-' + this.webTag + ' webview').off('dom-ready')
-
-                    $('#modal-' + this.webTag).off('show.bs.modal')
-
-                    $('#modal-' + this.webTag).remove()
-
-                    // remove convo
-                    $('div.td-convo[data-app-name="' + this.webTag + '"]').remove()
-
-                    // empty right
-                    tdUI.rightBackToDefault()
-
-
-                    resolve()
-                }, 1000);
-
-
-            } else if (this.type == 'tool') {
-                // -o is shown
-                if ($('#td-right div.td-chatLog[winType="tool"] webview[data-tool-name="' + this.webTag + '"]').is(":visible")) {
-                    $('tool-goBackChat').click()
-                }
-
-                // -o delete icon
-                $('#tool-' + this.webTag).remove()
-
-                // -o delete webview
-                $('webview[data-tool-name="' + this.webTag + '"]').remove()
-
-                resolve()
-            }
-
-        })
-
-    }
-
-    isExtLoaded() {
-
-        return ($('[id*="' + this.webTag + '"]').length > 0)
-
-    }
-
-    print(commit = undefined) {
-        if (commit) {
-            console.log(commit)
-        }
-        console.log(this)
-    }
-
-    saveExtInStore(override = true, funToJSON = (obj) => {
-        return JSON.parse(JSON.stringify(obj))
-    }) {
-
-        if (override) {
-
-            tdExt.store.set(tdExt.rootPathInStore + '.' + this.webTag, funToJSON(this))
-        } else {
-            if (!tdExt.store.has(tdExt.rootPathInStore + '.' + this.webTag)) {
-                tdExt.store.set(tdExt.rootPathInStore + '.' + this.webTag, funToJSON(this))
-            }
-        }
-    }
-    getUserAgent() {
-        let strUserAgent = tdOS.strUserAgentWin
-        if (this.webview.useragent == 'windows'
-            || this.webview.useragent == ''
-            || this.webview.useragent == undefined) {
-
-        } else if (this.webview.useragent == 'linux') {
-            strUserAgent = tdOS.strUserAgentLinux
-        } else {
-            strUserAgent = this.webview.useragent
-        }
-        return strUserAgent
-    }
-}
-
 
 /**
  * 相应配套渲染UI的函数在这
@@ -584,6 +291,22 @@ class tdUI {
 
     static inputImgHeightLimit = 100
     static inputImgWeightLimit = 600
+
+    static initialize(){
+        //=================================
+        // - settings
+        tdSettings.setSettings('swTray', true, false)
+        tdUI.setSwTray(tdSettings.getSettings('swTray'))
+
+    
+        tdUI.setPin(tdSettings.getSettings('pinCoord'))
+        tdUI.followPin()
+
+
+        //=================================
+        // initialize bubble valuable
+        tdBubbleUI.iniTemplate()
+    }
 
     static rightBackToDefault() {
         // 右侧恢复到开始状态
@@ -623,7 +346,7 @@ class tdUI {
         document.getElementById('swTray').checked = value == undefined ? false : value
     }
 
-    static getPinCoordFromPage(){
+    static getPinCoordFromPage() {
         let target = document.getElementById('td-pin')
         let x = target.getBoundingClientRect().x
         let y = target.getBoundingClientRect().bottom
@@ -631,12 +354,12 @@ class tdUI {
         return [x, window.innerHeight - y]
     }
 
-    static setPin(pinCoord=undefined){
-        if(pinCoord == undefined){
-            return 
+    static setPin(pinCoord = undefined) {
+        if (pinCoord == undefined) {
+            return
         }
-        document.getElementById('td-pin').style.left = pinCoord[0] +'px'
-        document.getElementById('td-pin').style.bottom = pinCoord[1] +'px'
+        document.getElementById('td-pin').style.left = pinCoord[0] + 'px'
+        document.getElementById('td-pin').style.bottom = pinCoord[1] + 'px'
 
     }
 
@@ -649,7 +372,7 @@ class tdUI {
         document.getElementById('td-input').style.height = pinCoord[1] + 'px'
         tdSettings.setSettings('pinCoord', pinCoord, true)
         // store.set('tdSettings.pinCoord', pinCoord)
-        
+
         // console.log('tdSettings.pinCoord changed to: ', pinCoord)
     }
 
@@ -786,35 +509,35 @@ class tdUI {
                 tdUI.pasteHtmlAtCaret($($("<div> </div>").text(item)).html(), 'div.td-inputbox')
 
                 resolve("")
-            } else if(item.constructor.name == 'tdFileSend'){
+            } else if (item.constructor.name == 'tdFileSend') {
                 // insert file
                 item.addFileID(tdBasic.uniqueStr())
 
-                if(item.isImg()){
+                if (item.isImg()) {
                     tdUI.autoSizeImg(item.dataUrl, tdUI.inputImgWeightLimit, tdUI.inputImgHeightLimit).then((newSize) => {
 
                         item.localSave().then(() => {
                             // console.log("debug : path : ", newItem.path, "-----------------------------------")
                             tdAPI.fileList.addListFromEle(item.fileID, item)
-    
+
                             $("div.td-dropFile > img").addClass("td-none")
                             $('div.td-dropFile > div > img:nth-child(1)').attr('src', item.path)
                             $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
                             $('div.td-dropFile > div').removeClass('td-none')
                             $('.td-dropFile').removeClass('hide')
-    
-    
+
+
                             resolve("")
                         }).catch((err) => {
                             console.log("error : itemToHTML : localSave ")
                             console.log(err)
                             reject(err)
                         })
-    
+
                     }).catch((err) => {
                         reject("error : itemToHTML : autoSizeImg")
                     })
-                }else{
+                } else {
                     item.localSave().then(() => {
                         // console.log("debug : path : ", item.path, "-----------------------------------")
                         tdAPI.fileList.addListFromEle(item.fileID, item)
@@ -881,11 +604,11 @@ class tdUI {
                                 reject('filterDataTransfer : img not access')
                             } else {
 
-                                let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathFile), pathFile, '',                                
-                                undefined,  //id
-                                'image/', // type
-                                undefined, // size 
-                                img.toDataURL())
+                                let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathFile), pathFile, '',
+                                    undefined,  //id
+                                    'image/', // type
+                                    undefined, // size 
+                                    img.toDataURL())
 
                                 resolve(imgSend)
                             }
@@ -902,11 +625,11 @@ class tdUI {
                                     // console.log("------request-----")
                                     // console.log(strRequest)
                                     if (strRequest) {
-                                        let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathR), '', pathR, 
-                                        undefined,  //id
-                                        'image/', // type
-                                        undefined, // size
-                                        urldata)
+                                        let imgSend = new tdFileSend(tdBasic.getFileNameFromUrl(pathR), '', pathR,
+                                            undefined,  //id
+                                            'image/', // type
+                                            undefined, // size
+                                            urldata)
                                         resolve(imgSend)
                                     } else {
                                         reject('filterDataTransfer : img not access')
@@ -969,20 +692,20 @@ class tdUI {
                             //         });
                             //     }))
 
-                        } else if ((items[i].kind == 'file') ) {
+                        } else if ((items[i].kind == 'file')) {
                             // Drag data item is an image file
                             let file = items[i].getAsFile()
                             arrayItem.push(new Promise(
                                 (resolve, reject) => {
                                     let fileSend = tdFileSend.fromFile(file)
-                                    if(fileSend.isImg()){
+                                    if (fileSend.isImg()) {
                                         let reader = new FileReader();
                                         reader.onload = function (e) {
                                             fileSend.addDataUrl(reader.result)
                                             resolve(fileSend)
                                         }
                                         reader.readAsDataURL(file)
-                                    }else{
+                                    } else {
                                         resolve(fileSend)
                                     }
                                 }))
@@ -1000,14 +723,14 @@ class tdUI {
                         arrayItem.push(new Promise(
                             (resolve, reject) => {
                                 let fileSend = tdFileSend.fromFile(file)
-                                if(fileSend.isImg()){
+                                if (fileSend.isImg()) {
                                     let reader = new FileReader();
                                     reader.onload = function (e) {
                                         fileSend.addDataUrl(reader.result)
                                         resolve(fileSend)
                                     }
                                     reader.readAsDataURL(file)
-                                }else{
+                                } else {
                                     resolve(fileSend)
                                 }
                             }))
@@ -1045,7 +768,7 @@ class tdUI {
                     }
                 })
 
-                console.log('------\ndrag list : \n', uniqueItem,'\n-----\n')
+                console.log('------\ndrag list : \n', uniqueItem, '\n-----\n')
 
                 resolve(uniqueItem)
 
@@ -1104,14 +827,14 @@ class tdUI {
                 arrayItem.push(new Promise(
                     (resolve, reject) => {
                         let fileSend = tdFileSend.fromFile(file)
-                        if(fileSend.isImg()){
+                        if (fileSend.isImg()) {
                             let reader = new FileReader();
                             reader.onload = function (e) {
                                 fileSend.addDataUrl(reader.result)
                                 resolve(fileSend)
                             }
                             reader.readAsDataURL(file)
-                        }else{
+                        } else {
                             resolve(fileSend)
                         }
                     }))
@@ -1160,5 +883,5 @@ class tdUI {
 
 
 module.exports = {
-    tdUI, tdInput, tdBubbleUI, tdConvoUI
+    tdUI, tdBubbleUI, tdConvoUI
 }

@@ -71,7 +71,7 @@ class tdBasicPage {
     static imgSendSelector = '#debug-img-send'
     static imgCancelSelector = '#debug-img-cancel'
     static imgRotateSelector = '#debug-img-rotate'
-    static FFSendSelector = '#tool-' + tdAPI.FFSendExtKey
+    // static FFSendSelector = '#tool-' + tdAPI.FFSendExtKey
 
 
     /**

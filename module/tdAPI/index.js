@@ -83,20 +83,6 @@ class tdAPI {
             }
         })
 
-        //=================================
-        // - settings
-        tdSettings.setSettings('swTray', true, false)
-        tdUI.setSwTray(tdSettings.getSettings('swTray'))
-
-    
-        tdUI.setPin(tdSettings.getSettings('pinCoord'))
-        tdUI.followPin()
-
-
-        //=================================
-        // initialize bubble valuable
-        tdBubbleUI.iniTemplate()
-
         //================================= 
         // listener Main
         tdMessage.WinReply((key, arg) => {
@@ -227,9 +213,9 @@ class tdAPI {
 
                 let arraySend = undefined
                 if (fromHtml == undefined) {
-                    arraySend = tdInput.getInputFromHtml(input.getDraftHTML())
+                    arraySend = tdInput.getInputFromHtml(tdAPI.fileList, input.getDraftHTML())
                 } else {
-                    arraySend = tdInput.getInputFromHtml(fromHtml)
+                    arraySend = tdInput.getInputFromHtml(tdAPI.fileList, fromHtml)
                 }
 
                 // console.log('-----send-----')
@@ -547,7 +533,7 @@ class tdAPI {
 
                     $('#td-convo-container [data-app-name=' + webTag + '][data-user-i-d="' + Convo.userID + '"]').remove()
                     if (active) {
-                        tdUI.rightBackToDefault()
+                        // tdUI.rightBackToDefault()
                     }
                 }
 
@@ -611,7 +597,7 @@ class tdAPI {
                         // 右侧恢复到开始状态
                         if ($('.app-online').length == 0) {
                             // 空白页
-                            tdUI.rightBackToDefault()
+                            // tdUI.rightBackToDefault()
                         }
 
 
@@ -1047,7 +1033,7 @@ class tdExt {
                     $('div.td-convo[data-app-name="' + this.webTag + '"]').remove()
 
                     // empty right
-                    tdUI.rightBackToDefault()
+                    // tdUI.rightBackToDefault()
 
 
                     resolve()

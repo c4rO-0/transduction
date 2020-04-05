@@ -3,7 +3,7 @@ const Store = require('electron-store');
 const path = require('path')
 const mkdirp = require('mkdirp')
 
-const { tdBasic } = require('tdBasic')
+const { tdBasic, tdBasicPage } = require('tdBasic')
 const { tdOS } = require('tdSys')
 
 /**
@@ -599,11 +599,12 @@ class tdInput {
 
     /**
      * 去掉input html中的tag
-     * getInput函数调用该函数
+     * getInput函数调用该函数 
+     * @param {tdList} fileList 待发送的文件列表
      * @param {String} HTML 
      * @returns {Array} 数组只包含string和File, 并按照input中顺序排列
      */
-    static simpleInput(HTML) {
+    static simpleInput(fileList, HTML) {
         let arrayHTML = jQuery.parseHTML(HTML);
 
         let sendStr = new Array()
@@ -615,10 +616,10 @@ class tdInput {
             } else if ($(el)[0].nodeName == 'IMG') {
                 let fileID = $(el).attr('data-file-ID')
                 // let dataUrl = $(el).attr('data-file-id')
-                sendStr.push(tdAPI.fileList.getValueByKey(fileID))
+                sendStr.push(fileList.getValueByKey(fileID))
                 // sendStr.push(dataUrl)
             } else {
-                sendStr = sendStr.concat(tdInput.simpleInput($(el).html()))
+                sendStr = sendStr.concat(tdInput.simpleInput(fileList, $(el).html()))
             }
         })
 
@@ -627,11 +628,12 @@ class tdInput {
 
     /**
      * 从给定的html中直接拿到sending
+     * @param {tdList} fileList 待发送的文件列表
      * @param {String} innerHTML 
      * @returns {Array} 以数组形式储存, 只含有string和File. 
      */
-    static getInputFromHtml(innerHTML) {
-        let arrayInput = tdInput.simpleInput(innerHTML)
+    static getInputFromHtml(fileList, innerHTML) {
+        let arrayInput = tdInput.simpleInput(fileList, innerHTML)
         let arraySimpleInput = new Array()
 
 
@@ -655,5 +657,7 @@ class tdInput {
         return arraySimpleInput
     }
 }
+
+
 
 module.exports = {  tdList, tdConvo, tdBubble, tdDownloadItem, tdFileSend, tdSettings, tdInput }
