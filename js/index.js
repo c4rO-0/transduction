@@ -47,18 +47,18 @@ $(document).ready(() => {
             // 返回聊天窗口
             $('.td-toolbox > img').removeClass('theme-transduction-active')
 
-            $(td.tdUI.chatLogSelector).show()
+            $(td.tdPage.chatLogSelector).show()
             // webview隐藏, 防止再次点击刷新页面
-            $(td.tdUI.toolboxSelector + " webview").each(function (index) {
+            $(td.tdPage.toolboxSelector + " webview").each(function (index) {
                 $(this).hide();
             });
-            $(td.tdUI.toolboxSelector).hide()
+            $(td.tdPage.toolboxSelector).hide()
         } else {
             $('.td-toolbox > img').removeClass('theme-transduction-active')
             $(e.target).addClass('theme-transduction-active')
             let toolTagName = e.target.id.substring(5)
-            $(td.tdUI.chatLogSelector).hide()
-            $(td.tdUI.toolboxSelector).show()
+            $(td.tdPage.chatLogSelector).hide()
+            $(td.tdPage.toolboxSelector).show()
 
             td.tdAPI.extList.getValueByKey(toolTagName).loadTool()
 
@@ -120,7 +120,7 @@ $(document).ready(() => {
         $(".modal-body > img", this).css({ "transform": "rotate(0deg)" })
     })
     // rotate
-    $(td.tdUI.imgRotateSelector).get(0).addEventListener('click', function (e) {
+    $(td.tdPage.imgRotateSelector).get(0).addEventListener('click', function (e) {
         console.warn($(e.target).siblings('div').first().children().first())
         angle += 90
         let target = $(e.target).siblings('div').first().children().first()
@@ -186,7 +186,7 @@ $(document).ready(() => {
 
         // 读取和临时储存草稿
         //去掉focus, focus在向后台发送查询后再添加
-        $(td.tdUI.inputboxSelector).blur()
+        $(td.tdPage.inputboxSelector).blur()
         // 记录
         if (cWebTag != undefined && cUserID != undefined) {
 
@@ -210,9 +210,9 @@ $(document).ready(() => {
 
 
         // 加载dialog(当前可能显示的是tool)
-        $(td.tdUI.goBackSelector).click()
+        $(td.tdPage.goBackSelector).click()
         // 滑动条拖到最后
-        $(td.tdUI.chatLogSelector).scrollTop($(td.tdUI.chatLogSelector)[0].scrollHeight)
+        $(td.tdPage.chatLogSelector).scrollTop($(td.tdPage.chatLogSelector)[0].scrollHeight)
 
         if (
             $("#td-right div.td-chat-title").attr("data-user-i-d") == userID
@@ -225,11 +225,11 @@ $(document).ready(() => {
                 { "queryDialog": { "userID": userID } }
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
-                $(td.tdUI.inputboxSelector).focus()
-                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSelector).get(0))
+                $(td.tdPage.inputboxSelector).focus()
+                td.tdPage.setEndOfContenteditable($(td.tdPage.inputboxSelector).get(0))
             }).catch((error) => {
-                $(td.tdUI.inputboxSelector).focus()
-                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSelector).get(0))
+                $(td.tdPage.inputboxSelector).focus()
+                td.tdPage.setEndOfContenteditable($(td.tdPage.inputboxSelector).get(0))
                 throw error
             })
 
@@ -244,7 +244,7 @@ $(document).ready(() => {
                     ext.dir, ext.icon.any
                 )
             )
-            $(td.tdUI.chatLogSelector).empty()
+            $(td.tdPage.chatLogSelector).empty()
 
             td.tdMessage.HostSendToWeb(
                 td.tdUI.webTag2Selector(webTag),
@@ -252,18 +252,18 @@ $(document).ready(() => {
             ).then((res) => {
                 console.log("queryDialog : webReply : ", res)
 
-                $(td.tdUI.inputboxSelector).focus()
-                td.tdPage.setEndOfContenteditable($(td.tdUI.inputboxSelector).get(0))
+                $(td.tdPage.inputboxSelector).focus()
+                td.tdPage.setEndOfContenteditable($(td.tdPage.inputboxSelector).get(0))
 
             }).catch((error) => {
-                $(td.tdUI.inputboxSelector).focus()
+                $(td.tdPage.inputboxSelector).focus()
 
-                $(td.tdUI.inputboxSelector).get(0).setSelectionRange(
-                    $(td.tdUI.inputboxSelector).html().length,
-                    $(td.tdUI.inputboxSelector).html().length)
+                $(td.tdPage.inputboxSelector).get(0).setSelectionRange(
+                    $(td.tdPage.inputboxSelector).html().length,
+                    $(td.tdPage.inputboxSelector).html().length)
 
                 td.tdPage.setEndOfContenteditable(
-                    $(td.tdUI.inputboxSelector).get(0)
+                    $(td.tdPage.inputboxSelector).get(0)
                 )
 
                 throw error
@@ -391,7 +391,7 @@ $(document).ready(() => {
 
 
     // ===========================发送消息===========================
-    $(td.tdUI.sendSelector).on('click', event => {
+    $(td.tdPage.sendSelector).on('click', event => {
         console.log("send click")
         let cWebTag = $("div.td-chat-title").attr("data-app-name")
         let cUserID = $("div.td-chat-title").attr("data-user-i-d")
@@ -409,7 +409,7 @@ $(document).ready(() => {
 
     
     // 发送图片
-    $(td.tdUI.imgSendSelector).on('click', function () {
+    $(td.tdPage.imgSendSelector).on('click', function () {
         // console.log("send clicked------>")
 
         // sendInput($('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
@@ -435,7 +435,7 @@ $(document).ready(() => {
     })
 
     //取消发送图片
-    $(td.tdUI.imgCancelSelector).on('click', function () {
+    $(td.tdPage.imgCancelSelector).on('click', function () {
         $("div.td-dropFile > img").removeClass("td-none")
         $('div.td-dropFile > div > img:nth-child(1)').attr('src', '../res/pic/nothing.png')
         $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', '')
@@ -499,7 +499,7 @@ $(document).ready(() => {
 
     //--------------------------------------
     // 通过按钮添加文件
-    $(td.tdUI.imgChooseSelector).on('click', event => {
+    $(td.tdPage.imgChooseSelector).on('click', event => {
         $('.td-toolbox > input[type="file"]').get(0).click()
     })
 
@@ -527,22 +527,22 @@ $(document).ready(() => {
             
             // 图片确认界面
             if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
-                $(td.tdUI.imgSendSelector).click()
+                $(td.tdPage.imgSendSelector).click()
                 return false
             }else if ($(document.activeElement).is(".td-inputbox")) {
-                $(td.tdUI.sendSelector).click()
+                $(td.tdPage.sendSelector).click()
                 return false
             }
         }
 
         // ctr+enter : newline
         if (event.ctrlKey && event.which == 10) {
-            if ($(document.activeElement).is(td.tdUI.inputboxSelector)) {
-                arrayIn = jQuery.parseHTML($(td.tdUI.inputboxSelector).get(0).innerHTML)
+            if ($(document.activeElement).is(td.tdPage.inputboxSelector)) {
+                arrayIn = jQuery.parseHTML($(td.tdPage.inputboxSelector).get(0).innerHTML)
                 if (arrayIn.length == 0 || ($(arrayIn)[arrayIn.length - 1].nodeName != 'BR')) {
-                    $(td.tdUI.inputboxSelector).append('<br>')
+                    $(td.tdPage.inputboxSelector).append('<br>')
                 }
-                td.tdUI.pasteHtmlAtCaret("<br>", td.tdUI.inputboxSelector)
+                td.tdUI.pasteHtmlAtCaret("<br>", td.tdPage.inputboxSelector)
             }
         }
 
@@ -551,7 +551,7 @@ $(document).ready(() => {
     $(document).keydown(function (event) {
 
         // console.log("keydown",event.which )
-        if ($(document.activeElement).is(td.tdUI.inputboxSelector)) {
+        if ($(document.activeElement).is(td.tdPage.inputboxSelector)) {
 
             // tab 只能激活keydown, 不能激活keypress
             if (!event.ctrlKey && event.which == 9) {
@@ -559,7 +559,7 @@ $(document).ready(() => {
                 // $('div.td-inputbox').append('&nbsp;')
                 event.preventDefault();
                 event.stopPropagation();
-                td.tdUI.pasteHtmlAtCaret("\t", td.tdUI.inputboxSelector)
+                td.tdUI.pasteHtmlAtCaret("\t", td.tdPage.inputboxSelector)
             }
 
         }
@@ -631,7 +631,7 @@ $(document).ready(() => {
             // console.log('esc down')
             // 图片确认界面
             if (!$("div.td-dropFile > img").is(':visible') && $("div.td-dropFile > div").is(':visible')) {
-                $(td.tdUI.imgCancelSelector).click()
+                $(td.tdPage.imgCancelSelector).click()
             }
 
         }

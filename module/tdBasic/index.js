@@ -60,9 +60,18 @@ class tdBasic {
 }
 
 class tdPage {
-    constructor() {
 
-    }
+
+    static toolboxSelector = "#td-right div.td-chatLog[winType='tool']"
+    static chatLogSelector = "#td-right div.td-chatLog[winType='chatLog']"
+    static inputboxSelector = ".td-inputbox"
+    static goBackSelector = "#debug-goBackChat"
+    static sendSelector = "#debug-send"
+    static imgChooseSelector = "#debug-image"
+    static imgSendSelector = '#debug-img-send'
+    static imgCancelSelector = '#debug-img-cancel'
+    static imgRotateSelector = '#debug-img-rotate'
+    static FFSendSelector = '#tool-' + tdAPI.FFSendExtKey
 
     /**
      * HTML encode

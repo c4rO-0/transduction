@@ -314,7 +314,7 @@ class tdExt {
 
         let url = urlIn == undefined? this.webview.url : urlIn
         // 隐藏其他webview
-        $(tdUI.toolboxSelector + " webview").each(function (index, element) {
+        $(tdPage.toolboxSelector + " webview").each(function (index, element) {
             $(element).hide();
         });
 
@@ -335,7 +335,7 @@ class tdExt {
 
             if ($(webSelector).length == 0) {
 
-                $(tdUI.toolboxSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + this.webTag + "' src='' style='display:none;'></webview>")
+                $(tdPage.toolboxSelector).append("<webview style='width:100%; height:100%' data-tool-name='" + this.webTag + "' src='' style='display:none;'></webview>")
 
             }
 
@@ -581,16 +581,6 @@ class tdExt {
  */
 class tdUI {
 
-    static toolboxSelector = "#td-right div.td-chatLog[winType='tool']"
-    static chatLogSelector = "#td-right div.td-chatLog[winType='chatLog']"
-    static inputboxSelector = ".td-inputbox"
-    static goBackSelector = "#debug-goBackChat"
-    static sendSelector = "#debug-send"
-    static imgChooseSelector = "#debug-image"
-    static imgSendSelector = '#debug-img-send'
-    static imgCancelSelector = '#debug-img-cancel'
-    static imgRotateSelector = '#debug-img-rotate'
-    static FFSendSelector = '#tool-' + tdAPI.FFSendExtKey
 
     static inputImgHeightLimit = 100
     static inputImgWeightLimit = 600
@@ -676,17 +666,17 @@ class tdUI {
 
 
     static getInputHTML() {
-        return $(tdUI.inputboxSelector).html()
+        return $(tdPage.inputboxSelector).html()
     }
 
     static resetInput(html = undefined) {
-        $(tdUI.inputboxSelector).empty()
+        $(tdPage.inputboxSelector).empty()
         if (html) {
-            $(tdUI.inputboxSelector).append(html)
+            $(tdPage.inputboxSelector).append(html)
         }
     }
     static appendInputHTML(html) {
-        $(tdUI.inputboxSelector).append(html)
+        $(tdPage.inputboxSelector).append(html)
     }
 
     /**
