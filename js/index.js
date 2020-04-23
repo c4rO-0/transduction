@@ -17,6 +17,17 @@ $(document).ready(() => {
     td.tdAPI.initialize()
     td.tdUI.initialize()
 
+    td.tdAPI.event.on('Convo-new',(convo)=>{
+        td.tdUI.addConvo(convo)
+    })
+
+    td.tdAPI.event.on('Dialog', (webTag, dialog)=>{
+        td.tdUI.addDialog(webTag, dialog)
+    })
+
+    td.tdAPI.event.on('downloadUpdated', (Obj)=>{
+        td.tdUI.updateDownloadBar(Obj)
+    })
 
     /**
      * app icon clicked
@@ -399,7 +410,7 @@ $(document).ready(() => {
 
         let draft = new td.tdInput(cWebTag, cUserID, td.tdUI.getInputHTML())
 
-        td.tdAPI.send(draft).then((res)=>{
+        td.tdAPI.sendInput(draft).then((res)=>{
             // console.log("send done : ", res)
             td.tdUI.resetInput()
         }).catch(err=>{
@@ -419,7 +430,7 @@ $(document).ready(() => {
 
         let draft = new td.tdInput(cWebTag, cUserID, 
             $('div.td-dropFile > div > img:nth-child(1)').get(0).outerHTML)
-            td.tdAPI.send(draft).then((res)=>{
+            td.tdAPI.sendInput(draft).then((res)=>{
             // console.log("send done : ", res)
             // td.tdUI.resetInput()
         }).catch(err=>{
