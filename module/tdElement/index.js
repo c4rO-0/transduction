@@ -45,6 +45,12 @@ class tdList {
     getList() {
         return this.list
     }
+    getKeys() {
+        return Object.keys(this.getList())
+    }
+    getValues() {
+        return Object.values(this.getList())
+    }
     getValueByKey(key) {
         return this.list[key]
     }
@@ -277,7 +283,8 @@ class tdBubble {
         avatar = undefined,
         message = undefined,
         fileName = undefined,
-        fileSize = undefined) {
+        fileSize = undefined,
+        oldMsgID = undefined) {
 
         this.msgID = msgID
 
@@ -303,6 +310,8 @@ class tdBubble {
 
         this.message = message
 
+        this.oldMsgID = oldMsgID
+
     }
 
     static genFromDialog(dialog) {
@@ -316,7 +325,8 @@ class tdBubble {
             dialog["avatar"],
             dialog['message'],
             dialog['fileName'],
-            dialog['fileSize'])
+            dialog['fileSize'],
+            dialog['oldMsgID'])
     }
 
 }

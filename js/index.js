@@ -17,12 +17,12 @@ $(document).ready(() => {
     td.tdAPI.initialize()
     td.tdUI.initialize()
 
-    td.tdAPI.event.on('Convo-new',(convo)=>{
-        td.tdUI.addConvo(convo)
+    td.tdAPI.event.on('Convo-new',(webTag, convo)=>{
+        td.tdUI.addConvo(webTag, convo)
     })
 
-    td.tdAPI.event.on('Dialog', (webTag, dialog)=>{
-        td.tdUI.addDialog(webTag, dialog)
+    td.tdAPI.event.on('Dialog', (webTag, bubbleList)=>{
+        td.tdUI.addDialog(webTag, bubbleList)
     })
 
     td.tdAPI.event.on('downloadUpdated', (Obj)=>{

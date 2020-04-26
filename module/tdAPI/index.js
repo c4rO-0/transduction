@@ -285,7 +285,16 @@ class tdAPI {
                     return
                 }
 
-                tdAPI.event.emit('Dialog', webTag, Obj)
+                let bubbleList = new tdList()
+
+                Obj.forEach((value, index) => {
+                    if(value.msgID != undefined){
+                        let bubble = tdBubble.genFromDialog(value)
+                        bubbleList.addListFromEle(bubble.msgID,bubble) 
+                    }
+                })
+
+                tdAPI.event.emit('Dialog', webTag, bubbleList)
 
 
                 resolve("copy that.")
@@ -309,7 +318,7 @@ class tdAPI {
                     Obj.index,
                     Obj.muted)
 
-                tdAPI.event.emit('Convo-new', Convo)
+                tdAPI.event.emit('Convo-new', webTag, Convo)
 
 
                 resolve("copy that")

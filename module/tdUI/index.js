@@ -880,10 +880,9 @@ class tdUI {
 
     }
 
-    static addConvo(convo) {
+    static addConvo(webTag, convo) {
 
         // 判断右侧窗口是否为当前convoConvo
-        let webTag = convo.webTag
         let DialogUserID = $("#td-right div.td-chat-title").attr("data-user-i-d")
         let DialogWebTag = $("#td-right div.td-chat-title").attr("data-app-name")
 
@@ -973,7 +972,7 @@ class tdUI {
     }
 
 
-    static addDialog(webTag, dialog) {
+    static addDialog(webTag, bubbleList) {
 
         // 判断当前用户是否在看最后一条
         let atBottom = false
@@ -982,8 +981,8 @@ class tdUI {
         // 附加到右边
         if ($(dialogSelector + " div.td-bubble").length == 0) {
             // 窗口已被清空, 直接附加
-            dialog.reverse().forEach((value, index) => {
-                $(dialogSelector).prepend(tdBubbleUI.toHTML(tdBubble.genFromDialog(value)))
+            bubbleList.getValues().reverse().forEach((bubble, index) => {
+                $(dialogSelector).prepend(tdBubbleUI.toHTML(bubble))
             })
 
             // 滑动到最下面
@@ -1001,9 +1000,9 @@ class tdUI {
             }
 
             // 首先检查有没有msgID变更
-            dialog.forEach((value, index) => {
-                if (value.oldMsgID != undefined && $(dialogSelector + " [msgID='" + value['oldMsgID'] + "']").length > 0) {
-                    $(dialogSelector + " [msgID='" + value['oldMsgID'] + "']").attr('msgID', value.msgID)
+            bubbleList.getValues().forEach((bubble, index) => {
+                if (bubble.oldMsgID != undefined && $(dialogSelector + " [msgID='" + bubble['oldMsgID'] + "']").length > 0) {
+                    $(dialogSelector + " [msgID='" + bubble['oldMsgID'] + "']").attr('msgID', bubble.msgID)
                 }
             })
 
@@ -1019,32 +1018,22 @@ class tdUI {
                 }
             })
 
-            dialog.forEach((value, index) => {
+            bubbleList.getValues().forEach((bubble, index) => {
 
-                if (value.oldMsgID != undefined && $(dialogSelector + " [msgID='" + value['msgID'] + "']").length == 0) {
+                if (bubble.oldMsgID != undefined && $(dialogSelector + " [msgID='" + bubble['msgID'] + "']").length == 0) {
                     // 可能后台传上来一个oldMsgIDv不存在的消息
                 } else {
 
-                    let timeObj = undefined
-
-                    if (typeof (value["time"]) === 'number') {
-                        timeObj = new Date(value["time"])
-                    } else if (typeof (value["time"]) == "string") {
-                        timeObj = new Date(value["time"])
-                    } else if (typeof (value["time"]) == "object") {
-                        timeObj = value["time"]
-                    } else {
-                        timeObj = new Date()
-                    }
+                    let timeObj = bubble["time"]
 
                     let timeWaitInsert = timeObj.getTime()
-                    // console.log("debug : ", value["time"], " timeWaitInsert", timeWaitInsert)
+                    // console.log("debug : ", bubble["time"], " timeWaitInsert", timeWaitInsert)
 
                     // 在index对应的bubble之前插入
                     let currentInsertIndex = 0
                     for (let indexOfExistBubble = 0;
                         indexOfExistBubble < arrayExistBubble.length; indexOfExistBubble++) {
-                        if (value.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
+                        if (bubble.msgID == arrayExistBubble[indexOfExistBubble].msgID) {
                             currentInsertIndex = -(indexOfExistBubble + 1)
                         }
                         if (currentInsertIndex >= 0 && timeWaitInsert > arrayExistBubble[indexOfExistBubble].msgTime) {
@@ -1059,11 +1048,11 @@ class tdUI {
                         if (currentInsertIndex == arrayExistBubble.length - 1
                             && timeWaitInsert > arrayExistBubble[arrayExistBubble.length - 1].msgTime) {
 
-                            $(dialogSelector).append(tdBubbleUI.toHTML(tdBubble.genFromDialog(value)))
+                            $(dialogSelector).append(tdBubbleUI.toHTML(bubble))
 
                             arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
                         } else {
-                            $(tdBubbleUI.toHTML(tdBubble.genFromDialog(value)))
+                            $(tdBubbleUI.toHTML(bubble))
                                 .insertBefore(
                                     dialogSelector
                                     + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
@@ -1076,7 +1065,7 @@ class tdUI {
                         // 重复的ID, 替换成新的
                         $(dialogSelector
                             + " [msgID='" + arrayExistBubble[-currentInsertIndex - 1].msgID + "']")
-                            .replaceWith(tdBubbleUI.toHTML(tdBubble.genFromDialog(value))
+                            .replaceWith(tdBubbleUI.toHTML(bubble)
                             )
                         // arrayExistBubble[-currentInsertIndex - 1].msgTime
                     }
