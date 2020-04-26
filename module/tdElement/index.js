@@ -331,12 +331,12 @@ class tdBubble {
 
 }
 
-
 class tdDownloadItem {
 
     static rootPathInStore = 'donwloadList'
 
-    constructor(msgID, webTag, userID, type = undefined, url = undefined, savePath = undefined) {
+    constructor(msgID, webTag, userID, type = undefined, url = undefined, savePath = undefined, 
+        progress = undefined, totalBytes = undefined, receivedBytes = undefined, startTime = undefined, speed = undefined, leftTime = undefined) {
         this.url = url
         this.unicode = tdBasic.uniqueStr()
         this.webTag = webTag
@@ -344,6 +344,12 @@ class tdDownloadItem {
         this.msgID = msgID
         this.type = type
         this.savePath = savePath
+        this.progress = progress
+        this.totalBytes = totalBytes
+        this.receivedBytes = receivedBytes
+        this.startTime = startTime
+        this.speed = speed
+        this.leftTime = leftTime
     }
 
     static fromObj(obj) {
@@ -355,9 +361,12 @@ class tdDownloadItem {
             obj.url,
             obj.savePath
         )
-        if (obj.unicode !== undefined) {
-            val.unicode = obj.unicode
-        }
+
+        Object.assign(val, obj)
+
+        // if (obj.unicode !== undefined) {
+        //     val.unicode = obj.unicode
+        // }
         return val
     }
 

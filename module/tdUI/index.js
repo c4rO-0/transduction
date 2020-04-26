@@ -1112,37 +1112,37 @@ class tdUI {
      * "startTime": startTime,
      * "speed": speed,
      * "leftTime": leftTime
-     * @param {*} Obj 
+     * @param {*} downItem 
      */
-    static updateDownloadBar(Obj) {
+    static updateDownloadBar(downItem) {
 
-        $('div.td-bubble[msgid="' + Obj.msgID + '"] div.progress-bar').css('width', (Obj.progress * 100.).toString() + '%')
+        $('div.td-bubble[msgid="' + downItem.msgID + '"] div.progress-bar').css('width', (downItem.progress * 100.).toString() + '%')
 
         let timeStr = 'time left: '
-        if (Obj.leftTime < 0) {
+        if (downItem.leftTime < 0) {
             timeStr += '--'
-        } else if (Obj.leftTime < 60) {
-            timeStr += Obj.leftTime.toFixed().toString() + 's'
-        } else if (Obj.leftTime < 3600) {
-            let min = Math.floor(Obj.leftTime / 60.)
+        } else if (downItem.leftTime < 60) {
+            timeStr += downItem.leftTime.toFixed().toString() + 's'
+        } else if (downItem.leftTime < 3600) {
+            let min = Math.floor(downItem.leftTime / 60.)
             timeStr += min.toString() + 'm'
-                + (Obj.leftTime - min * 60.).toFixed().toString() + 's'
-        } else if (Obj.leftTime < 3600 * 24) {
-            let hour = Math.floor(Obj.leftTime / 3600.)
-            let min = Math.floor((Obj.leftTime - hour * 3600) / 60.)
+                + (downItem.leftTime - min * 60.).toFixed().toString() + 's'
+        } else if (downItem.leftTime < 3600 * 24) {
+            let hour = Math.floor(downItem.leftTime / 3600.)
+            let min = Math.floor((downItem.leftTime - hour * 3600) / 60.)
             timeStr += hour.toString() + 'h'
                 + min.toString() + 'm'
         } else {
-            let day = Math.floor(Obj.leftTime / (3600. * 24.))
+            let day = Math.floor(downItem.leftTime / (3600. * 24.))
             if (day < 10) {
-                let hour = Math.floor((Obj.leftTime - day * 3600. * 24) / 3600.)
+                let hour = Math.floor((downItem.leftTime - day * 3600. * 24) / 3600.)
                 timeStr += day.toString() + 'd'
                     + hour.toString() + 'h'
             } else {
                 timeStr += day.toString() + 'd'
             }
         }
-        $('div.td-bubble[msgid="' + Obj.msgID + '"] div[time-left]').text(timeStr)
+        $('div.td-bubble[msgid="' + downItem.msgID + '"] div[time-left]').text(timeStr)
     }
 
 }

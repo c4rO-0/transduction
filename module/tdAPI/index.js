@@ -458,8 +458,9 @@ class tdAPI {
                 resolve('')
             }else if (key == 'downloadUpdated') {
                 // console.log("progress update : ", Obj)
+                let downItem = tdDownloadItem.fromObj(Obj)
 
-                API.event.emit('downloadUpdated', Obj)
+                tdAPI.event.emit('downloadUpdated', downItem)
                 resolve("got the progress")
             }
 
