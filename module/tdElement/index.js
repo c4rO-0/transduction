@@ -8,7 +8,7 @@ const { tdOS } = require('tdSys')
 
 /**
  * 用来统一管理List
- * 比如 extList, downloadList等
+ * 比如 extList, bubbleList等
  * list本质是object
  */
 class tdList {
@@ -209,7 +209,7 @@ class tdConvo {
             this.time = time
         } else {
             console.log("error : tdConvo :  wrong type of time : ", typeof (time), time)
-            this.time = new Date()
+            this.time = (new Date()).toTimeString().slice(0, 5)
         }
 
         this.avatar = avatar

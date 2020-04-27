@@ -1057,7 +1057,7 @@ class tdUI {
 
                             $(dialogSelector).append(tdBubbleUI.toHTML(bubble))
 
-                            arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                            arrayExistBubble.push({ 'msgTime': timeWaitInsert, 'msgID': bubble.msgID })
                         } else {
                             $(tdBubbleUI.toHTML(bubble))
                                 .insertBefore(
@@ -1065,7 +1065,7 @@ class tdUI {
                                     + " [msgID='" + arrayExistBubble[currentInsertIndex].msgID + "']"
                                 )
 
-                            arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': value.msgID })
+                            arrayExistBubble.slice(currentInsertIndex, 0, { 'msgTime': timeWaitInsert, 'msgID': bubble.msgID })
                         }
 
                     } else {
