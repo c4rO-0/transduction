@@ -21,8 +21,8 @@ $(document).ready(() => {
         td.tdUI.addConvo(webTag, convo)
     })
 
-    td.tdAPI.event.on('Dialog', (webTag, bubbleList)=>{
-        td.tdUI.addDialog(webTag, bubbleList)
+    td.tdAPI.event.on('Dialog', (webTag, userID, bubbleList)=>{
+        td.tdUI.addDialog(webTag, userID, bubbleList)
     })
 
     td.tdAPI.event.on('downloadUpdated', (Obj)=>{

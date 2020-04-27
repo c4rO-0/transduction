@@ -276,14 +276,7 @@ class tdAPI {
                     reject("error : respFuncWinReplyWeb : no userID")
                     return
                 }
-                if (webTag != $("#td-right div.td-chat-title").attr('data-app-name')) {
-                    resolve("nothing change")
-                    return
-                }
-                if (userID != $("#td-right div.td-chat-title").attr('data-user-i-d')) {
-                    resolve("nothing change")
-                    return
-                }
+
 
                 let bubbleList = new tdList()
 
@@ -294,7 +287,7 @@ class tdAPI {
                     }
                 })
 
-                tdAPI.event.emit('Dialog', webTag, bubbleList)
+                tdAPI.event.emit('Dialog', webTag, userID, bubbleList)
 
 
                 resolve("copy that.")

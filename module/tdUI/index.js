@@ -972,7 +972,14 @@ class tdUI {
     }
 
 
-    static addDialog(webTag, bubbleList) {
+    static addDialog(webTag,userID, bubbleList) {
+
+        if (webTag != $("#td-right div.td-chat-title").attr('data-app-name')) {
+            return
+        }
+        if (userID != $("#td-right div.td-chat-title").attr('data-user-i-d')) {
+            return
+        }
 
         // 判断当前用户是否在看最后一条
         let atBottom = false
