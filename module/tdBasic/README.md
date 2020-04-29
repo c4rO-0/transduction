@@ -6,111 +6,204 @@ all basic classes and functions are here
 
 ## class: tdBasic
 
+> 不依赖其他tdClass的基础操作
+
 ### Static Priorities
+
+#### none
+
+### Priorities
+
+#### none
 
 ### Static Methods
 
-#### uniqueStr()
+#### tdBasic.uniqueStr()
+
+- returns String 具有唯一性的字符串
+
 返回一个以时间作为种子的唯一字符串.
 目前被用在消息传递的时候创建一个独一无二的channel
 
-##### Input
-`none`
+#### tdBasic.timeAny2Obj(timeAny)
 
-##### Output
-- `String` uniqueStr : 具有唯一性的字符串
+- timeAny number/string/object 要识别的时间
+- returns Date 
 
-### Instance Events
+将`timeAny`转化为Date()格式. new Date(timeAny)
 
-### Instance Methods
+#### tdBasic.timeObj2Str(timeObj)
 
-### Instance priorities
+- timeObj Date 要转化的时间
+- returns String 转化后的String
 
----
+将`timeObj`td中需要使用的时间格式. 比如 `12:30`
 
-## class: tdMath
+#### tdBasic.size2Str(size)
 
-和数学有关的换算
+- size number(Integer) 文件大小. 单位B
+- returns String 易读的文件大小
 
-### Static Priorities
+将`size`变为以`KB`, `MB`, `GB`, `TB`易读的单位.
 
-### Static Methods
+#### tdBasic.getFileNameFromUrl(url)
 
-#### periodicPos(index, length)
+- url String 链接
+- returns String 文件名
 
-给定长度length的周期点环, 从0位开始计数. 返回第index个节点对应实际圆环的节点.
+从`url`中提取文件名. 比如`http://www.test.com/example.txt?en`得到`example.txt`.
 
-例如 : 圆环长度为3. index=5. 实际是圆环第2个点.
+###  Methods
 
-##### Input
+#### none
 
-- index `Int` : 非周期位置(可以是负数), 0代表开始位置
-- length `Int` : 圆环长度 > 0 
+### Events
 
-##### Output
-
-- `int` 实际位置 0~(length-1)
-
-### Instance Events
-
-### Instance Methods
-
-### Instance priorities
+#### none
 
 ---
 
 ## class: tdBasicPage
 
-对html页面的相关操作
+> 不依赖其他tdClass的关于页面的基础操作.
 
 ### Static Priorities
 
+#### tdBasicPage.toolboxSelector
+
+- type : String 
+- default : 
+
+#### tdBasicPage.toolboxSelector 
+
+- type : String 
+- default : 
+
+#### tdBasicPage.chatLogSelector 
+
+- type : String 
+- default : 
+
+#### tdBasicPage.inputboxSelector 
+
+- type : String 
+- default : 
+
+#### tdBasicPage.goBackSelector 
+
+- type : String 
+- default : 
+
+#### tdBasicPage.sendSelector 
+
+- type : String 
+- default : 
+
+#### tdBasicPage.imgChooseSelector 
+
+- type : String 
+- default : 
+
+#### tdBasicPage.imgSendSelector 
+
+- type : String 
+- default : 
+
+#### tdBasicPage.imgCancelSelector 
+
+- type : String 
+- default : 
+
+#### tdBasicPage.imgRotateSelector 
+
+- type : String 
+- default : 
+
+### Priorities
+
+#### none
+
 ### Static Methods
 
-#### htmlEntities(str)
+##### tdBasicPage.webTag2Selector
 
-HTML encode
+- webTag String 要查询的`webTag`
+- type String(opt) `webTag`对应的类型. 默认值为`app`
+- returns String webview的selector
 
-##### Input
+返回`webTag`对应的`webview`的JQ selector.
 
-- str `String` : html正常编码(包含\t等)
+#### tdBasicPage.htmlEntities(str)
 
-##### output
+- str String 要转化的字符串
+- returns String 去HTML化的字符串
 
-- `string` : 编码转还后. (包含`&lt;`等)
+给`str`进行编码转化为纯文本. 防止在网页插入文本变成插入HTML代码.
 
-#### insertReady()
+#### tdBasicPage.waitForKeyElements(selectorTxt, actionFunction, bWaitOnce, iframeSelector)
 
-页面插入<p id=electronReady>来标记页面已经加载好.
-
-#### waitForKeyElements(selectorTxt, actionFunction, [bWaitOnce], [iframeSelector])
+- selectorTxt String The jQuery selector string that specifies the desired element(s).
+- actionFunction Function The code to run when elements are found. It is passed a jNode to the matched element.
+- bWaitOnce Bool(opt) If false, will continue to scan for new elements even after the first match is found.
+- iframeSelector String(opt) If set, identifies the iframe to search.
 
 A utility function that detects and handles AJAXed content. 
+(该函数不建议使用, 推荐使用observation)
 
-author : [BrockA](https://gist.github.com/BrockA/2625891#file-waitforkeyelements-js)
+#### tdBasicPage.insertReady()
 
-##### Input
+在页面插入<p id=electronReady>来标记页面已经加载好.
+(不推荐使用)
 
-- selectorTxt `String` : The jQuery selector string that specifies the desired element(s).
 
-- actionFunction  `Function` : The code to run when elements are found. It is passed a jNode to the matched element.
+#### tdBasicPage.webviewDynamicInsertJS(IDwebview, pathJS)
 
-- [bWaitOnce] `Boolean` : If false, will continue to scan for new elements even after the first match is found.
+- IDwebview String webview的ID
+- pathJS String 插入脚本的路径. 该处为绝对路径.
 
-- [iframeSelector] `String`  If set, identifies the iframe to search.
+在webview页面插入一段JS代码.(不推荐使用)
 
-#### webviewDynamicInsertJS(IDwebview, pathJS)
+#### tdBasicPage.setEndOfContenteditable(contentEditableElement)
 
-在指定webview页面插入一段JS代码.
+- contentEditableElement Object 可编辑文本的元素.
 
-##### Input
+将光标移动到可编辑文本的元素的最后. 比如input输入框, 想把光标移动到最后一个字符.
 
-- IDwebview `String` : 要插入webview对应tag的ID
+### Methods
 
-- pathJS `String`: 要插入的脚本存放的路径. 该处为绝对路径.
+#### none
 
-### Instance Events
+### event
 
-### Instance Methods
+#### none
 
-### Instance priorities
+---
+
+## class: tdMath
+
+> 和数学有关的换算
+
+### Static Priorities
+
+#### none
+
+#### Priorities
+
+#### none
+
+### Static Methods
+
+#### tdMath.periodicPos(index, length)
+
+- index number(Integer) : 非周期位置(可以是负数), 0代表开始位置
+- length number(Integer) : 圆环长度 > 0 
+- returns number(Integer) 实际位置 0~(length-1)
+
+给定长度length的周期点环, 从0位开始计数. 返回第index个节点对应实际圆环的节点.
+
+例如 : 圆环长度为3. index=5. 实际是圆环第2个点.
+
+
+### Events
+
+#### none
