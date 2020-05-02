@@ -1,7 +1,7 @@
 #tdSimulator
 
-- 模拟用户(硬件)输入
-- chrome debug函数的封装
+> 模拟用户(硬件)输入
+> chrome debug函数的封装
 
 ---
 
