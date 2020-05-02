@@ -59,10 +59,32 @@ class tdBasic {
 
 }
 
-class tdPage {
-    constructor() {
+class tdBasicPage {
 
+
+    static toolboxSelector = "#td-right div.td-chatLog[winType='tool']"
+    static chatLogSelector = "#td-right div.td-chatLog[winType='chatLog']"
+    static inputboxSelector = ".td-inputbox"
+    static goBackSelector = "#debug-goBackChat"
+    static sendSelector = "#debug-send"
+    static imgChooseSelector = "#debug-image"
+    static imgSendSelector = '#debug-img-send'
+    static imgCancelSelector = '#debug-img-cancel'
+    static imgRotateSelector = '#debug-img-rotate'
+    // static FFSendSelector = '#tool-' + tdAPI.FFSendExtKey
+
+
+    /**
+     * 
+     * @param {String} webTag slype, wechat...
+     * @param {String} type app/tool
+     * @returns {String} webview的selector
+     */
+    static webTag2Selector(webTag, type = 'app') {
+
+        return "webview[data-" + type + "-name='" + webTag + "']"
     }
+
 
     /**
      * HTML encode
@@ -214,7 +236,6 @@ class tdMath {
     }
 }
 
-module.exports = { tdBasic, tdPage, tdMath }
 
 
 // ====================================================
@@ -310,3 +331,6 @@ function waitForKeyElements(
     }
     waitForKeyElements.controlObj = controlObj;
 }
+
+
+module.exports = { tdBasic, tdBasicPage, tdMath }

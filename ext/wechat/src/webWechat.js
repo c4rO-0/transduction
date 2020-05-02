@@ -81,7 +81,7 @@ window.onload = function () {
     console.log("transduction root directory : ", rootDir)
     console.log('current path : ', __dirname)
     const path = require('path')
-    const {tdMessage, tdPage} = require('td')
+    const {tdMessage, tdBasicPage} = require('td')
     // -----------------------
 
     const fs = require('fs')
@@ -1303,7 +1303,7 @@ window.onload = function () {
                         value = arrayValue[index]
                         if (typeof (value) == 'string') {
 
-                            angular.element('pre:last').scope().editAreaCtn = tdPage.htmlEntities(value)
+                            angular.element('pre:last').scope().editAreaCtn = tdBasicPage.htmlEntities(value)
 
                             angular.element('pre:last').scope().sendTextMessage();
 

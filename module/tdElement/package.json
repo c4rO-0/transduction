@@ -1,5 +1,5 @@
 {
-  "name": "tdAPI",
+  "name": "tdElement",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,10 +9,7 @@
   "author": "c4r",
   "license": "MPL-2.0",
   "dependencies": {
-    "tdBasic": "file:../tdBasic",
-    "tdMessage": "file:../tdMessage",
-    "tdSys": "file:../tdSys",
-    "tdSimulator": "file:../tdSimulator",
-    "tdElement": "file:../tdElement"
+    "jquery": "^3.4.1",
+    "tdSys": "file:../tdSys"
   }
 }

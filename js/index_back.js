@@ -597,7 +597,7 @@ $(document).ready(function () {
             </div >\
         <div class="col col-text flex-column justify-content-center">\
                 <div class="m-0 td-nickname">'+ convo.nickName + '</div>\
-                <div class="m-0 td-text">'+ td.tdPage.htmlEntities(convo.message) + '</div>\
+                <div class="m-0 td-text">'+ td.tdBasicPage.htmlEntities(convo.message) + '</div>\
             </div>\
             <div class="col-auto pl-0 col-timestamp justify-content-around">\
                 '+ convo.time + '\

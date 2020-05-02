@@ -8,6 +8,8 @@ module.exports = {
     ...require('tdSys'),
     ...require('tdMessage'),
     ...require('tdSimulator'),
-    ...require('tdAPI')
+    ...require('tdElement'),
+    ...require('tdAPI'),
+    ...require('tdUI')
     
 }

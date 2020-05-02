@@ -1,5 +1,5 @@
 {
-  "name": "tdAPI",
+  "name": "tdUI",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,6 +13,7 @@
     "tdMessage": "file:../tdMessage",
     "tdSys": "file:../tdSys",
     "tdSimulator": "file:../tdSimulator",
-    "tdElement": "file:../tdElement"
+    "tdElement": "file:../tdElement",
+    "tdAPI": "file:../tdAPI"
   }
 }
