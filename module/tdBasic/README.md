@@ -1,6 +1,6 @@
 #tdBasic
 
-all basic classes and functions are here
+all basic independent classes and functions are here
 
 ---
 
