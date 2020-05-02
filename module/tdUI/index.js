@@ -66,7 +66,8 @@ class tdConvoUI {
         let objConvo = $('#td-convo-container [data-app-name=' + valTdConvo.webTag + '][data-user-i-d="' + valTdConvo.userID + '"]')
         if (objConvo.length == 0 && isPretend) {
             $('#td-convo-container').prepend(tdConvoUI.toHTML(valTdConvo))
-        } else { // 检测存在
+        } else if(objConvo.length >0) { // 检测存在
+
             for (let key in valTdConvo) {
                 if (valTdConvo[key] != undefined) {
                     switch (key) {
