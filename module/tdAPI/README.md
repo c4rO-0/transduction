@@ -61,6 +61,15 @@ td是否消息静音.
 
 firefox send的tdExt. firefox send是td默认安装插件.
 
+#### tdAPI.event
+
+- type : tdExt 
+- default : events.EventEmitter()
+
+用来处理listener功能. 
+这里没有直接使用tdAPI.emit/tdAPI.on.
+因为希望tdAPI使用是个静态类.
+
 ### Priorities
 
 #### none
@@ -119,6 +128,29 @@ key : 'mute', 'downloadUpdated'...等
 
 ### event
 
+通过tdAPI.event.on使用.
+
+#### 'Dialog'
+
+- webTag String 
+- userID String
+- bubbleList tdList(tdBubble)
+
+发现有新的bubble.
+
+#### 'Convo-new'
+
+- webTag String 
+- Convo tdConvo
+
+发现有新的convo.
+
+#### 'downloadUpdated'
+
+- downItem tdDownloadItem
+
+
+发现下载有新的状态. 
 
 ---
 
