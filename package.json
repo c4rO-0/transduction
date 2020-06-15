@@ -21,7 +21,7 @@
   "dependencies": {
     "electron-dl": "^1.14.0",
     "electron-store": "^2.0.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "mkdirp": "^0.5.1",
     "request": "^2.88.0"
   },
