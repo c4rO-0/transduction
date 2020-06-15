@@ -81,7 +81,7 @@ window.onload = function () {
     console.log("transduction root directory : ", rootDir)
     console.log('current path : ', __dirname)
     const path = require('path')
-    const core = require(path.join(rootDir, 'js/core.js'))
+    const {tdMessage, tdBasicPage} = require('td')
     // -----------------------
 
     const fs = require('fs')
@@ -117,12 +117,22 @@ window.onload = function () {
     // 微信UserName是ID, RemarkName是给别人取得昵称 NickName是本人的微信名
 
     function getIDfromUserName(userName) {
+        // console.log("getting id from : ", userName, '')
         if(_contacts[userName] !== undefined){
+            // console.log("found user Obj:", _contacts[userName])
             if(_contacts[userName].id !== undefined){
+                // console.log("id is defined ", _contacts[userName].id)
                 return _contacts[userName].id
             }else{
                 let s = _contacts[userName].HeadImgUrl
-                window._contacts[userName].id = s.slice(s.indexOf('seq') + 'seq='.length, s.indexOf('&'))
+                // console.log("id not found, grep from ", s)
+                let id = s.slice(s.indexOf('seq') + 'seq='.length, s.indexOf('&'))
+                if(id.length < 4 ){ // at initializing step, id is '0'
+                    return undefined
+                }
+
+                window._contacts[userName].id = id
+
                 return _contacts[userName].id
             }
         }else{
@@ -151,7 +161,7 @@ window.onload = function () {
 
                                 console.log("change isXRHinDocumentReady", convo)
 
-                                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                     console.log(res)
                                 }).catch((error) => {
                                     throw error
@@ -198,7 +208,7 @@ window.onload = function () {
                                 convoScope.chatList.forEach((chat, convoIndex) => {
                                     if (chat.UserName == fromUserName) {
                                         let convo = grepConvoInChatList(chat)
-                                        core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                        tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                             console.log(res)
                                         }).catch((error) => {
                                             throw error
@@ -228,7 +238,7 @@ window.onload = function () {
 
                                         if (chat.UserName == usrID) {
                                             let convo = grepConvoInChatList(chat)
-                                            core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                            tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                                 console.log(res)
                                             }).catch((error) => {
                                                 throw error
@@ -257,7 +267,7 @@ window.onload = function () {
                                 convoScope.chatList.forEach((chat, convoIndex) => {
                                     if (chat.UserName == element.UserName) {
                                         let convo = grepConvoInChatList(chat)
-                                        core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                        tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                             console.log(res)
                                         }).catch((error) => {
                                             throw error
@@ -315,6 +325,12 @@ window.onload = function () {
                     foundName = true
                 }
             })
+            if(! foundName){
+                // wechat bug, cannot get  blocked user information
+                avatar = undefined
+                remarkName = "(blocked user)"
+
+            }
             // console.log('member name : ', remarkName, nickName)
             // console.log('memberlist : ', memberList)
         } else if (contacts[fromUserName] != undefined) {
@@ -441,6 +457,11 @@ window.onload = function () {
             type = 'unknown'
         }
 
+        // 防止消息过长
+        if(type == 'unknown'){
+            content = content.slice(0,100)
+        }
+
         let usernameStr = $('div.header .avatar img.img').attr('mm-src')
 
         let posUsername = usernameStr.indexOf('username')
@@ -454,7 +475,7 @@ window.onload = function () {
 
 
         return {
-            "from": MSG["FromUserName"] == meinUsername ? undefined : (remarkName == '' ? nickName : remarkName),
+            "from": nickNameEmoji(MSG["FromUserName"] == meinUsername ? undefined : (remarkName == '' ? nickName : remarkName)),
             "msgID": MSGID,
             "time": time.getTime(),
             "type": type,
@@ -519,6 +540,41 @@ window.onload = function () {
 
     }
 
+
+    function nickNameEmoji(nickNameHtml){
+
+        let nickName = ''
+        if (nickNameHtml && nickNameHtml != '') {
+            $('<p>' + nickNameHtml + '</p>').contents().toArray().forEach((c, i) => {
+                // 将内容进行切割, 判断是否为img
+
+                let nodeName = $(c).prop('nodeName')
+                if (nodeName == "IMG" || nodeName == "SPAN") {
+                    // 对左侧栏筛选字符表情
+                    if ($(c).hasClass("qqemoji")) {
+                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        let strEmoji = $(c).attr("text")
+                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
+                        nickName = nickName + strEmoji
+                    } else if ($(c).hasClass("emoji")) {
+                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
+                        nickName = nickName + emojiClasstoStr(c.classList[1])
+                    } else {
+                        nickName = nickName + "[image]"
+                    }
+                }
+
+                // 链接文字
+                nickName = nickName + $(c).text()
+
+            })
+        } else {
+            nickName = undefined
+        }
+
+        return nickName
+    }
+
     // 
     /**
      * 通过左侧边栏读取消息
@@ -565,12 +621,14 @@ window.onload = function () {
 
         }
 
-        let nickName = $(obj).find("div.info h3.nickname span").text()
+        // let nickName = $(obj).find("div.info h3.nickname span").text()
         let userName = $(obj).attr("data-username")
+        let nickName = _contacts[userName].getDisplayName()
 
 
         let time = new Date() // Now
         let chatObj = _chatContent[userName]
+        
         if (chatObj.length > 0) { // last MSG
             time = new Date((chatObj[chatObj.length - 1])["MMDisplayTime"] * 1000)
         }
@@ -720,37 +778,12 @@ window.onload = function () {
 
         }
 
-        let nickNameHtml = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
-        let nickName = ''
-        if (nickNameHtml && nickNameHtml != '') {
-            $('<p>' + nickNameHtml + '</p>').contents().toArray().forEach((c, i) => {
-                // 将内容进行切割, 判断是否为img
 
-                let nodeName = $(c).prop('nodeName')
-                if (nodeName == "IMG") {
-                    // 对左侧栏筛选字符表情
-                    if ($(c).hasClass("qqemoji")) {
-                        // <img class="qqemoji qqemoji68" text="[蛋糕]_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                        let strEmoji = $(c).attr("text")
-                        strEmoji = strEmoji.substr(0, strEmoji.length - 4)
-                        nickName = nickName + strEmoji
-                    } else if ($(c).hasClass("emoji")) {
-                        // <img class="emoji emoji1f63c" text="_web" src="/zh_CN/htmledition/v2/images/spacer.gif"></img>
-                        nickName = nickName + emojiClasstoStr(c.classList[1])
-                    } else {
-                        nickName = nickName + "[image]"
-                    }
-                }
-
-                // 链接文字
-                nickName = nickName + $(c).text()
-
-            })
-        } else {
-            nickName = undefined
-        }
 
         let userName = obj.UserName
+
+        // let nickNameHtml = obj.RemarkName == '' ? obj.NickName : obj.RemarkName
+        let nickName = nickNameEmoji(_contacts[userName].getDisplayName())
 
 
         let time = new Date() // Now
@@ -830,6 +863,7 @@ window.onload = function () {
 
 
 
+
     function grepAndSendRight(MSGID = undefined) {
 
 
@@ -869,7 +903,7 @@ window.onload = function () {
                 // console.log(MSGList[0])
                 // console.log(userName)
                 // console.log(typeof(userName))
-                core.WebToHost({ "Dialog": MSGList }).then((res) => {
+                tdMessage.WebToHost({ "Dialog": MSGList }).then((res) => {
                     console.log(res)
                 }).catch((error) => {
                     throw error
@@ -925,7 +959,7 @@ window.onload = function () {
                 mutation.addedNodes.forEach((node, index) => {
                     if ($(node).is(' div.ng-scope')
                         && ($('div[ng-repeat="message in chatContent"]').length < 2 || $('div[ng-repeat="message in chatContent"]').index(node) >= 1)) {
-                        console.log($('div[ng-repeat="message in chatContent"]').length, $('div[ng-repeat="message in chatContent"]').index(node))
+                        // console.log($('div[ng-repeat="message in chatContent"]').length, $('div[ng-repeat="message in chatContent"]').index(node))
                         addedNewBubble = addedNewBubble || true
                     }
                 })
@@ -949,7 +983,7 @@ window.onload = function () {
                                 MSG["userID"] = getIDfromUserName(userName);
                                 MSG["oldMsgID"] = getMSGIDFromString(mutation.oldValue)
                                 if (MSG["oldMsgID"] != '{{message.MsgId}}') {
-                                    core.WebToHost({ "Dialog": [MSG] }).then((res) => {
+                                    tdMessage.WebToHost({ "Dialog": [MSG] }).then((res) => {
                                         console.log(res)
                                     }).catch((error) => {
                                         throw error
@@ -965,7 +999,7 @@ window.onload = function () {
         })
 
         if (addedNewBubble) {
-            console.log("addedNewBubble", mutationList)
+            // console.log("addedNewBubble", mutationList)
             grepAndSendRight()
         }
 
@@ -1021,7 +1055,7 @@ window.onload = function () {
                         })
                         if (!existInChatList) {
                             convoDel.action = 'r'
-                            core.WebToHost({ "Convo-new": convoDel }).then((res) => {
+                            tdMessage.WebToHost({ "Convo-new": convoDel }).then((res) => {
                                 console.log(res)
                             }).catch((error) => {
                                 throw error
@@ -1037,7 +1071,7 @@ window.onload = function () {
                 if (convoObj != undefined) {
                     let convoClicked = grepNewMSG(convoObj)
                     convoClicked.action = 'a'
-                    core.WebToHost({ "Convo-new": convoClicked }).then((res) => {
+                    tdMessage.WebToHost({ "Convo-new": convoClicked }).then((res) => {
                         console.log(res)
                     }).catch((error) => {
                         throw error
@@ -1079,8 +1113,8 @@ window.onload = function () {
         if ($("div.login").length > 0) {
             console.log("********************offline***************************************")
             logStatus.status = "offline"
-            core.WebToHost({ "logStatus": logStatus })
-            core.WebToHost({ "show": {} })
+            tdMessage.WebToHost({ "logStatus": logStatus })
+            tdMessage.WebToHost({ "show": {} })
 
 
             session.defaultSession.cookies.get({ url: window.location.href }, (err, cookies) => {
@@ -1113,8 +1147,8 @@ window.onload = function () {
                     logStatus.status = "online"
                     console.log("=======================online=====================================")
                     // console.log($("div.login"))
-                    core.WebToHost({ "logStatus": logStatus })
-                    core.WebToHost({ "hide": {} })
+                    tdMessage.WebToHost({ "logStatus": logStatus })
+                    tdMessage.WebToHost({ "hide": {} })
 
                     // =====skey=========
                     obsHead.observe($("head")[0], {
@@ -1148,8 +1182,8 @@ window.onload = function () {
             logStatus.status = "online"
             console.log("=======================online=====================================")
             // console.log($("div.login"))
-            core.WebToHost({ "logStatus": logStatus })
-            core.WebToHost({ "hide": {} })
+            tdMessage.WebToHost({ "logStatus": logStatus })
+            tdMessage.WebToHost({ "hide": {} })
 
             // =====skey=========
             obsHead.observe($("head")[0], {
@@ -1185,12 +1219,12 @@ window.onload = function () {
 
 
         $(document).on('click', 'a[download]', function () {
-            core.sendToMain({ 'download': { 'url': $(this).attr('href') } })
+            tdMessage.sendToMain({ 'download': { 'url': $(this).attr('href') } })
         })
 
 
         // 接收上层消息
-        core.WebReply((key, arg) => {
+        tdMessage.WebReply((key, arg) => {
             return new Promise((resolve, reject) => {
                 if (key == 'queryDialog') {
 
@@ -1213,7 +1247,7 @@ window.onload = function () {
                         convoScope.chatList.forEach((chat, convoIndex) => {
                             if (chat.UserName == userNameClicked) {
                                 let convo = grepConvoInChatList(chat)
-                                core.WebToHost({ "Convo-new": convo }).then((res) => {
+                                tdMessage.WebToHost({ "Convo-new": convo }).then((res) => {
                                     console.log(res)
                                 }).catch((error) => {
                                     throw error
@@ -1269,7 +1303,7 @@ window.onload = function () {
                         value = arrayValue[index]
                         if (typeof (value) == 'string') {
 
-                            angular.element('pre:last').scope().editAreaCtn = core.htmlEntities(value)
+                            angular.element('pre:last').scope().editAreaCtn = tdBasicPage.htmlEntities(value)
 
                             angular.element('pre:last').scope().sendTextMessage();
 
@@ -1279,7 +1313,7 @@ window.onload = function () {
 
                         } else {
 
-                            core.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
+                            tdMessage.WebToHost({ "attachFile": { "selector": "input.webuploader-element-invisible", "file": value } }).then((resHost) => {
                                 console.log("---file---", value)
 
                                 send(arrayValue, index + 1)

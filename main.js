@@ -10,7 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const URL = require('url').URL
 
-const core = require("./js/core.js")
+const { tdMessage, tdOS } = require("td")
 
 const debug = /--debug/.test(process.argv[2])
 
@@ -22,6 +22,7 @@ require('electron-reload')(__dirname)
 let win = undefined
 let tray = null
 let isQuitting = false
+
 
 function createWindow() {
 
@@ -52,14 +53,14 @@ function createWindow() {
   win.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
 
     let isAllowed = true
-    
+
     console.log("PermissionRequest ")
     console.log('from : ', webContents.getURL())
     console.log('permission : ', permission)
 
-    if(webContents.getURL().startsWith("file:///")){
+    if (webContents.getURL().startsWith("file:///")) {
 
-    }else{
+    } else {
       if (permission === 'notifications') {
         isAllowed = false
       }
@@ -77,16 +78,18 @@ function createWindow() {
     console.log('from : ', webContents.getURL())
     console.log('permission : ', permission)
 
-    if(webContents.getURL().startsWith("file:///")){
+    if (webContents.getURL().startsWith("file:///")) {
 
-    }else{
+    } else {
       if (permission === 'notifications') {
         isAllowed = false
       }
     }
 
     console.log('allowed : ', isAllowed)
-    callback(isAllowed)
+    if (typeof (tcallback) === 'function') {
+      callback(isAllowed)
+    }
     console.log("-----------------------")
   })
 
@@ -140,12 +143,28 @@ function createWindow() {
   const contextMenu = Menu.buildFromTemplate([
     { id: 'main', label: 'main window', click() { win.show() } },
     {
+      id: 'mute', label: 'mute', type: "checkbox",
+      click(event) {
+        // console.log(event.checked)
+        tdMessage.mainSendToWin(win, {
+        'mute':
+        {
+          'mute':event.checked
+        }
+        }).then(reply => {
+        console.log('mute reply : ', reply)
+        }).catch(er => {
+          console.log('mute reply error : ', er)
+        }) 
+      }
+    },
+    { type: 'separator' },
+    {
       id: 'quit', label: 'quit', click() {
         isQuiting = true;
         app.quit();
       }
-    },
-    { type: 'separator' }
+    }
   ])
   tray.setContextMenu(contextMenu)
 
@@ -160,38 +179,13 @@ function createWindow() {
     tray.setImage(path.join(__dirname, '/res/pic/ico.png'))
   })
 
-
-  // win.webContents.session.on('will-download', (event, item, webContents) => {
-
-  //   item.on('updated', (event, state) => {
-  //     if (state === 'interrupted') {
-  //       console.log('Download is interrupted but can be resumed')
-  //     } else if (state === 'progressing') {
-  //       if (item.isPaused()) {
-  //         console.log('Download is paused')
-  //       } else {
-  //         console.log(`Received bytes: ${item.getReceivedBytes()}`)
-  //       }
-  //     }
-  //   })
-  //   item.once('done', (event, state) => {
-  //     if (state === 'completed') {
-  //       console.log('Download successfully')
-  //       console.log("save path : ", item.getSavePath())
-  //     } else {
-  //       console.log(`Download failed: ${state}`)
-  //     }
-  //   })
-
-  // })
-
 }
 
 app.on('ready', createWindow)
 //------------------------
 // 处理消息
 /**
- * core.MainReply 处理消息的函数
+ * tdMessage.MainReply 处理消息的函数
  * @param {String} key MSG的类别 : 
  * MSG-Log : 收到右侧窗口聊天记录
  * MSG-new : 左侧提示有新消息
@@ -228,7 +222,7 @@ function respFuncMainReply(key, Obj) {
               leftTime = speed == 0 ? -1 : (totalBytes - receivedBytes) / speed
             }
 
-            core.mainSendToWin(win, {
+            tdMessage.mainSendToWin(win, {
               'downloadUpdated':
               {
                 ...Obj,
@@ -250,14 +244,16 @@ function respFuncMainReply(key, Obj) {
         })
         .then(dl => {
           resolve({
-              ...Obj,
-              'savePath': dl.getSavePath()
-            })
-        }).catch(er => {
-          reject({"download":{
             ...Obj,
-            'error': er
-          }})
+            'savePath': dl.getSavePath()
+          })
+        }).catch(er => {
+          reject({
+            "download": {
+              ...Obj,
+              'error': er
+            }
+          })
         })
 
     } else if (key == 'flash') {
@@ -277,9 +273,9 @@ function respFuncMainReply(key, Obj) {
       win.focus()
     } else if (key == 'show') {
       win.show()
-    } else if (key == 'openDevTools'){
+    } else if (key == 'openDevTools') {
       win.webContents.openDevTools()
-    } else if (key == 'isDebug'){
+    } else if (key == 'isDebug') {
       resolve(debug)
     }
   })])
@@ -290,6 +286,6 @@ app.on('before-quit', function () {
   isQuitting = true;
 });
 
-core.MainReply((key, arg) => {
+tdMessage.MainReply((key, arg) => {
   return respFuncMainReply(key, arg)
 })

@@ -1,0 +1,20 @@
+{
+  "name": "td",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "c4r",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "tdAPI": "file:../tdAPI",
+    "tdBasic": "file:../tdBasic",
+    "tdElement": "file:../tdElement",
+    "tdMessage": "file:../tdMessage",
+    "tdSimulator": "file:../tdSimulator",
+    "tdSys": "file:../tdSys",
+    "tdUI": "file:../tdUI"
+  }
+}

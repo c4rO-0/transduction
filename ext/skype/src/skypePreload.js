@@ -10,8 +10,10 @@ window.onload = function () {
     let rootDir = app.getAppPath()
     console.log("transduction root directory : ", rootDir )
     const path = require('path')
-    const core = require(path.join(rootDir, 'js/core.js'))
+    
     window.$ = window.jQuery = require(path.join(rootDir, "toolkit/jquery-3.3.1.min.js"))
+
+    const {tdMessage} = require('td')
     // -----------------------
 
     let logStatus = { "status": "offline" }
@@ -20,8 +22,8 @@ window.onload = function () {
     if (document.getElementById("timelineComponent")) {
         logStatus.status = "online"
         console.log("=======================online=====================================")
-        core.WebToHost({ "logStatus": logStatus })
-        core.WebToHost({ "hide": {} })
+        tdMessage.WebToHost({ "logStatus": logStatus })
+        tdMessage.WebToHost({ "hide": {} })
     }
 
     $(document).ready(function () {
@@ -29,8 +31,8 @@ window.onload = function () {
         if (document.getElementById("forgotUsername")) {
             logStatus.status = "offline"
             console.log("********************offline***************************************")
-            core.WebToHost({ "logStatus": logStatus })
-            core.WebToHost({ "show": {} })
+            tdMessage.WebToHost({ "logStatus": logStatus })
+            tdMessage.WebToHost({ "show": {} })
         }
     })
 
@@ -56,7 +58,7 @@ window.onload = function () {
          * 发送消息到Win
          */
         send() {
-            core.WebToHost({
+            tdMessage.WebToHost({
                 "Convo-new":
                 {
                     "userID": this.userID,
@@ -259,10 +261,10 @@ window.onload = function () {
         })
         console.log(msglog)
         if (msglog.length > 0) {
-            core.WebToHost({ 'Dialog': msglog }).then((res) => {
+            tdMessage.WebToHost({ 'Dialog': msglog }).then((res) => {
                 console.log(res)
-                // core.WebToHost({'focus':''}).then((res) =>{
-                //     core.WebToHost({'blur':''})
+                // tdMessage.WebToHost({'focus':''}).then((res) =>{
+                //     tdMessage.WebToHost({'blur':''})
                 // }).catch((error) =>{
                 //     throw error
                 // })                    
@@ -284,7 +286,7 @@ window.onload = function () {
         if (msglog.length > 0) {
             (msglog[0])["userID"] = $("a.active[data-user-i-d]").attr("data-user-i-d")
         }
-        core.WebToHost({ 'Dialog': msglog }).then((res) => {
+        tdMessage.WebToHost({ 'Dialog': msglog }).then((res) => {
             console.log(res)
         }).catch((error) => {
             throw error
@@ -357,7 +359,7 @@ window.onload = function () {
 
 
     // 等待win发来消息
-    core.WebReply((key, arg) => {
+    tdMessage.WebReply((key, arg) => {
         return new Promise((resolve, reject) => {
             //  收到消息进行处理
             if (key == 'queryDialog') {
@@ -417,7 +419,7 @@ window.onload = function () {
                         });
 
                     } else {
-                        core.WebToHost({ "attachFile": { "selector": "input.fileInput", "file": value } }).then((resHost) => {
+                        tdMessage.WebToHost({ "attachFile": { "selector": "input.fileInput", "file": value } }).then((resHost) => {
                             console.log("---file---")
                             waitSend(arrayValue, index)
                         })
