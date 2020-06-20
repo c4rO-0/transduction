@@ -524,7 +524,9 @@ class tdUI {
                             tdAPI.fileList.addListFromEle(item.fileID, item)
 
                             $("div.td-dropFile > img").addClass("td-none")
+                            // load img abstract
                             $('div.td-dropFile > div > img:nth-child(1)').attr('src', item.path)
+
                             $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
                             $('div.td-dropFile > div').removeClass('td-none')
                             $('.td-dropFile').removeClass('hide')
@@ -546,7 +548,9 @@ class tdUI {
                         tdAPI.fileList.addListFromEle(item.fileID, item)
 
                         $("div.td-dropFile > img").addClass("td-none")
-                        $('div.td-dropFile > div > img:nth-child(1)').attr('src')
+                        // load file abstract
+                        $('div.td-dropFile > div > img:nth-child(1)').attr('src', path.resolve(tdOS.tdRootPath(), 'res/pic/document.svg'))
+
                         $('div.td-dropFile > div > img:nth-child(1)').attr('data-file-ID', item.fileID)
                         $('div.td-dropFile > div').removeClass('td-none')
                         $('.td-dropFile').removeClass('hide')
